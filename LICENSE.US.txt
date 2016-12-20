@@ -1,0 +1,147 @@
+Hotspot COMMERCIAL LICENSE AGREEMENT
+FOR COMMERCIAL VERSIONS
+December 20, 2016
+
+
+IMPORTANT-READ CAREFULLY: This Klarälvdalens Datakonsult AB End-User
+License Agreement ("EULA") is a legal agreement between you (either an
+individual or a legal entity) and Klarälvdalens Datakonsult AB
+("KDAB") for the Klarälvdalens Datakonsult AB software product(s)
+accompanying this EULA, which include(s) computer software and may
+include "online" or electronic documentation, associated media, and
+printed materials ("Licensed Product").
+
+The Licensed Product is protected by copyright laws and international
+copyright treaties, as well as other intellectual property laws and
+treaties. The Licensed Product is licensed, not sold.
+
+By installing, copying, or otherwise using the Licensed Product, you
+agree to be bound by the terms of this EULA. If you do not agree to
+the terms of this EULA, do not install, copy, or otherwise use the
+Licensed Product; you may, however, return it to your place of
+purchase for a full refund. In addition, by installing, copying, or
+otherwise using any updates or other components of the Licensed
+Product that you receive separately as part of the Licensed Product
+("Updates"), you agree to be bound by any additional license terms
+that accompany such Updates. If you do not agree to the additional
+license terms that accompany such Updates, you may not install, copy,
+or otherwise use such Updates.
+
+Upon your acceptance of the terms and conditions of this EULA, KDAB
+grants you the right to use the Licensed Product in the manner
+provided below.
+
+KDAB grants to you as an individual a personal, nonexclusive,
+nontransferable license to make and use copies of the Licensed Product
+for the sole purposes of designing, developing, and testing your
+software product(s) ("Applications"). You may install copies of the
+Licensed Product on an unlimited number of computers provided that you
+are the only individual using the Licensed Product. If you are an
+entity, KDAB grants you the right to designate one, and only one,
+individual within your organization who shall have the sole right to
+use the Licensed Product in the manner provided above.  You may at any
+time, but not more frequently that once every six (6) months,
+designate another individual to replace the current designated user by
+notifying KDAB, so long as there is no more than one designated user
+at any given time.
+
+
+GENERAL TERMS THAT APPLY TO APPLICATIONS AND REDISTRIBUTABLES
+KDAB grants you a nonexclusive, royalty-free right to reproduce and
+distribute the object code form of any portion of the Licensed Product
+("Redistributables") for execution on any operating system of a type
+listed in the License Certificate ("Platforms"). Copies of
+Redistributables may only be distributed with and for the sole purpose
+of executing Applications permitted under this License Agreement that
+you have created using the Licensed Product.  Under no circumstances
+may any copies of Redistributables be distributed separately.
+
+The license granted in this EULA for you to create your own
+Applications and distribute them and the Redistributables (if any) to
+your customers is subject to all of the following conditions: (i) all
+copies of the Applications you create must bear a valid copyright
+notice, either your own or the copyright notice that appears on the
+Licensed Product; (ii) you may not remove or alter any copyright,
+trademark or other proprietary rights notice contained in any portion
+of the Licensed Product; (iii) Redistributables, if any, shall be
+licensed to your customer "as is" (KDAB MAKES NO WARRANTIES OR
+REPRESENTATIONS VIS-A-VIS YOUR CUSTOMER WITH RESPECT TO
+REDISTRIBUTABLES, AND KDAB EXPRESSLY DISCLAIMS ANY AND ALL WARRANTIES
+VIS-A-VIS YOUR CUSTOMER, WHETHER EXPRESS OR IMPLIED, ORAL OR WRITTEN,
+INCLUDING, BUT NOT LIMITED TO ANY IMPLIED WARRANTY OF MERCHANTABILITY
+OR FITNESS FOR ANY PARTICULAR PURPOSE, WHETHER OR NOT KDAB KNOWS, HAS
+REASON TO KNOW, HAS BEEN ADVISED OR IS OTHERWISE AWARE OF SUCH
+PURPOSE); (iv) you will indemnify and hold KDAB, its related companies
+and its suppliers, harmless from and against any claims or liabilities
+arising out of the use, reproduction or distribution of your
+Applications; (v) your Applications must be written using a licensed,
+registered copy of the Licensed Product; (vi) your Applications must
+add primary and substantial functionality to the Licensed Product;
+(vii) your Applications may not pass on functionality which in any way
+makes it possible for others to create Applications with the Software;
+(viii) your Applications may not compete with the Licensed Product;
+(ix)) you may not use KDAB's or any of its suppliers' names, logos, or
+trademarks to market your programs, except to state that your program
+was written using the Licensed Product.
+
+LICENSEE'S BREACH OF CONTRACT
+In addition to penalties, other sanctions and the like as stated in
+the Swedish Copyright Act (1960:729), or successive legislation as it
+may appear, the Licensee agrees to pay a Contractual Fine in case of
+his/her/their breach of any of the above mentioned obligations,
+including but not limited to, the Licensee's obligation to let only
+one person per license use the Software as stated under above. The
+Contractual Fine is EUR 5000 and is payable by the Licensee to the
+Licenser immediately upon the Licenser having reasonably demonstrated
+that the Licensee is in breach of his obligations in this Agreement.
+
+WARRANTY DISCLAIMER
+THE LICENSED PRODUCT IS LICENSED TO YOU "AS IS".  TO THE MAXIMUM
+EXTENT PERMITTED BY APPLICABLE LAW, KDAB ON BEHALF OF ITSELF AND ITS
+SUPPLIERS, DISCLAIMS ALL WARRANTIES AND CONDITIONS, EITHER EXPRESS OR
+IMPLIED, INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND
+NON-INFRINGEMENT WITH REGARD TO THE LICENSED PRODUCT.  THIS WARRANTY
+DISCLAIMER NOTWITHSTANDING, YOU MAY HAVE SPECIFIC LEGAL RIGHTS WHICH
+MAY VARY FROM STATE/JURISDICTION TO STATE/JURISDICTION.
+
+
+LIMITATION OF LIABILITY
+IF, KDAB'S WARRANTY DISCLAIMER NOTWITHSTANDING, KDAB IS HELD LIABLE TO
+YOU, WHETHER IN CONTRACT, TORT OR ANY OTHER LEGAL THEORY, BASED ON THE
+LICENSED PRODUCT, KDAB'S ENTIRE LIABILITY TO YOU AND YOUR EXCLUSIVE
+REMEDY SHALL BE, AT KDAB'S OPTION, EITHER (A) RETURN OF THE PRICE YOU
+PAID FOR THE LICENSED PRODUCT, OR (B) REPAIR OR REPLACEMENT OF THE
+LICENSED PRODUCT, PROVIDED YOU RETURN TO KDAB ALL COPIES OF THE
+LICENSED PRODUCT AS ORIGINALLY DELIVERED TO YOU.  KDAB SHALL NOT UNDER
+ANY CIRCUMSTANCES BE LIABLE TO YOU BASED ON FAILURE OF THE LICENSED
+PRODUCT IF THE FAILURE RESULTED FROM ACCIDENT, ABUSE OR
+MISAPPLICATION, NOR SHALL KDAB UNDER ANY CIRCUMSTANCES BE LIABLE FOR
+SPECIAL DAMAGES, PUNITIVE OR EXEMPLARY DAMAGES, DAMAGES FOR LOSS OF
+PROFITS OR INTERRUPTION OF BUSINESS OR FOR LOSS OR CORRUPTION OF DATA.
+ANY AWARD OF DAMAGES FROM KDAB TO YOU SHALL NOT EXCEED THE TOTAL AMOUNT
+YOU HAVE PAID TO KDAB IN CONNECTION WITH THIS EULA.
+
+
+SUPPORT AND UPDATES
+You will receive email based, software developer support and access to
+Updates to the Licensed Product for one year from the date of initial
+delivery, in accordance with KDAB support policies and procedures.
+Such policies and procedures may be changed from time to time.
+
+
+GENERAL PROVISIONS
+This EULA may only be modified in writing signed by you and an
+authorized officer of KDAB. All terms of any purchase order or other
+ordering document shall be superseded by this EULA.  If any provision
+of the EULA is found void or unenforceable, the remainder will remain
+valid and enforceable according to its terms.  If any remedy provided
+is determined to have failed for its essential purpose, all
+limitations of liability and exclusions of damages set forth in this
+EULA shall remain in effect.
+
+This EULA shall be construed, interpreted and governed by the laws of
+Sweden, the venue to be Sunne Tingsratt.  The EULA gives you specific
+legal rights; you may have others, which vary from state to state and
+from country to country.  KDAB reserves all rights not specifically
+granted in this EULA.
