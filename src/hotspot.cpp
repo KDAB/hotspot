@@ -1,5 +1,5 @@
 /*
-  hotspot-config.h
+  hotspot.cpp
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
@@ -25,15 +25,23 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef HOTSPOT_CONFIG_H
-#define HOTSPOT_CONFIG_H
+#include "hotspot.h"
 
-#define HOTSPOT_VERSION_STRING "@HOTSPOT_VERSION_STRING@"
-#define HOTSPOT_VERSION_MAJOR @HOTSPOT_VERSION_MAJOR@
-#define HOTSPOT_VERSION_MINOR @HOTSPOT_VERSION_MINOR@
-#define HOTSPOT_VERSION_PATCH @HOTSPOT_VERSION_PATCH@
-#define HOTSPOT_VERSION ((HOTSPOT_VERSION_MAJOR<<16)|(HOTSPOT_VERSION_MINOR<<8)|(HOTSPOT_VERSION_PATCH))
+#include "parsers/perf/perfparser.h"
 
-#define HOTSPOT_LIBEXEC_REL_PATH "@LIBEXEC_REL_PATH@"
+Hotspot::Hotspot(QObject* parent)
+    : QObject(parent)
+{
+}
 
-#endif // HOTSPOT_CONFIG_H
+Hotspot::~Hotspot() = default;
+
+void Hotspot::openFile(const QString& path)
+{
+    // TODO: support more performance input files via plugins
+    PerfParser parser;
+    bool success = parser.parseFile(path);
+
+    // TODO: display results in the GUI, don't exit
+    exit(success ? 0 : 1);
+}

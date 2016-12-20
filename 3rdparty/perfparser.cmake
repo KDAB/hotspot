@@ -22,3 +22,10 @@ target_link_libraries(hotspot-perfparser
     ${LIBDW_LIBRARIES}
     ${LIBELF_LIBRARIES}
 )
+
+set_target_properties(hotspot-perfparser
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${LIBEXEC_INSTALL_DIR}"
+)
+
+install(TARGETS hotspot-perfparser RUNTIME DESTINATION ${LIBEXEC_INSTALL_DIR})

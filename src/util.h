@@ -1,5 +1,5 @@
 /*
-  hotspot-config.h
+  util.h
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
@@ -25,15 +25,15 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef HOTSPOT_CONFIG_H
-#define HOTSPOT_CONFIG_H
+#pragma once
 
-#define HOTSPOT_VERSION_STRING "@HOTSPOT_VERSION_STRING@"
-#define HOTSPOT_VERSION_MAJOR @HOTSPOT_VERSION_MAJOR@
-#define HOTSPOT_VERSION_MINOR @HOTSPOT_VERSION_MINOR@
-#define HOTSPOT_VERSION_PATCH @HOTSPOT_VERSION_PATCH@
-#define HOTSPOT_VERSION ((HOTSPOT_VERSION_MAJOR<<16)|(HOTSPOT_VERSION_MINOR<<8)|(HOTSPOT_VERSION_PATCH))
+class QString;
 
-#define HOTSPOT_LIBEXEC_REL_PATH "@LIBEXEC_REL_PATH@"
+namespace Util {
 
-#endif // HOTSPOT_CONFIG_H
+/**
+ * Find a binary called @p name in this application's libexec directory.
+ */
+QString findLibexecBinary(const QString& name);
+
+}

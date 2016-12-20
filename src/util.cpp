@@ -1,5 +1,5 @@
 /*
-  hotspot-config.h
+  util.cpp
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
@@ -25,15 +25,26 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef HOTSPOT_CONFIG_H
-#define HOTSPOT_CONFIG_H
+#include "util.h"
 
-#define HOTSPOT_VERSION_STRING "@HOTSPOT_VERSION_STRING@"
-#define HOTSPOT_VERSION_MAJOR @HOTSPOT_VERSION_MAJOR@
-#define HOTSPOT_VERSION_MINOR @HOTSPOT_VERSION_MINOR@
-#define HOTSPOT_VERSION_PATCH @HOTSPOT_VERSION_PATCH@
-#define HOTSPOT_VERSION ((HOTSPOT_VERSION_MAJOR<<16)|(HOTSPOT_VERSION_MINOR<<8)|(HOTSPOT_VERSION_PATCH))
+#include "hotspot-config.h"
 
-#define HOTSPOT_LIBEXEC_REL_PATH "@LIBEXEC_REL_PATH@"
+#include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
+#include <QDebug>
 
-#endif // HOTSPOT_CONFIG_H
+QString Util::findLibexecBinary(const QString& name)
+{
+    QDir dir(qApp->applicationDirPath());
+    qDebug() << qApp->applicationDirPath() << name << HOTSPOT_LIBEXEC_REL_PATH;
+    if (!dir.cd(QStringLiteral(HOTSPOT_LIBEXEC_REL_PATH))) {
+        qDebug() << "cd failed";
+        return {};
+    }
+    QFileInfo info(dir.filePath(name));
+    if (!info.exists() || !info.isFile() || !info.isExecutable()) {
+        return {};
+    }
+    return info.absoluteFilePath();
+}

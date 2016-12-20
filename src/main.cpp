@@ -30,6 +30,7 @@
 #include <QTextStream>
 #include <cstdio>
 
+#include "hotspot.h"
 #include "hotspot-config.h"
 
 namespace {
@@ -67,6 +68,10 @@ int main(int argc, char** argv)
         printUsage(parser, QCoreApplication::translate("main", "Error: Input file is missing."));
         return 1;
     }
+
+    Hotspot hotspot;
+
+    hotspot.openFile(parser.value(input));
 
     return app.exec();
 }

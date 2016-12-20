@@ -1,5 +1,5 @@
 /*
-  hotspot-config.h
+  perfparser.coo
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
@@ -25,15 +25,40 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef HOTSPOT_CONFIG_H
-#define HOTSPOT_CONFIG_H
+#include "perfparser.h"
 
-#define HOTSPOT_VERSION_STRING "@HOTSPOT_VERSION_STRING@"
-#define HOTSPOT_VERSION_MAJOR @HOTSPOT_VERSION_MAJOR@
-#define HOTSPOT_VERSION_MINOR @HOTSPOT_VERSION_MINOR@
-#define HOTSPOT_VERSION_PATCH @HOTSPOT_VERSION_PATCH@
-#define HOTSPOT_VERSION ((HOTSPOT_VERSION_MAJOR<<16)|(HOTSPOT_VERSION_MINOR<<8)|(HOTSPOT_VERSION_PATCH))
+#include <QProcess>
+#include <QDebug>
 
-#define HOTSPOT_LIBEXEC_REL_PATH "@LIBEXEC_REL_PATH@"
+#include "util.h"
 
-#endif // HOTSPOT_CONFIG_H
+PerfParser::PerfParser(QObject* parent)
+    : QObject(parent)
+{
+}
+
+PerfParser::~PerfParser() = default;
+
+// FIXME: make this API async
+bool PerfParser::parseFile(const QString& path)
+{
+    const auto parser = Util::findLibexecBinary(QStringLiteral("hotspot-perfparser"));
+    if (parser.isEmpty()) {
+        qWarning() << "Failed to find hotspot-perfparser binary.";
+        return {false};
+    }
+
+    QProcess parserProcess;
+    parserProcess.start(parser, {QStringLiteral("--input"), path});
+    if (!parserProcess.waitForStarted()) {
+        qWarning() << "Failed to start hotspot-perfparser binary" << parser;
+        return false;
+    }
+
+    if (!parserProcess.waitForFinished()) {
+        qWarning() << "Failed to finish hotspot-perfparser:" << parserProcess.errorString();
+        return false;
+    }
+
+    return true;
+}
