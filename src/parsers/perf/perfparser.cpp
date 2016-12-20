@@ -81,6 +81,27 @@ QDebug operator<<(QDebug stream, const ThreadStart& threadStart) {
     return stream;
 }
 
+struct ThreadEnd
+{
+    quint32 childPid = 0;
+    quint32 childTid = 0;
+    quint64 time = 0;
+};
+
+QDataStream& operator>>(QDataStream& stream, ThreadEnd& threadEnd)
+{
+    return stream >> threadEnd.childPid >> threadEnd.childTid >> threadEnd.time;
+}
+
+QDebug operator<<(QDebug stream, const ThreadEnd& threadEnd) {
+    stream.noquote().nospace() << "ThreadEnd{"
+        << "childPid=" << threadEnd.childPid << ", "
+        << "childTid=" << threadEnd.childTid << ", "
+        << "time=" << threadEnd.time
+        << "}";
+    return stream;
+}
+
 struct Location
 {
     quint64 address = 0;
@@ -314,9 +335,12 @@ struct ParserData
                 qDebug() << "parsed:" << threadStart;
                 break;
             }
-            case ThreadEnd:
-                // TODO
+            case ThreadEnd: {
+                struct ThreadStart threadEnd;
+                stream >> threadEnd;
+                qDebug() << "parsed:" << threadEnd;
                 break;
+            }
             case Command: {
                 struct Command command;
                 stream >> command;
