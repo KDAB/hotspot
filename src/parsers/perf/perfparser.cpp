@@ -418,6 +418,7 @@ bool PerfParser::parseFile(const QString& path)
     }
 
     QProcess parserProcess;
+    parserProcess.setProcessChannelMode(QProcess::ForwardedErrorChannel);
 
     ParserData data;
     connect(&parserProcess, &QProcess::readyRead,
