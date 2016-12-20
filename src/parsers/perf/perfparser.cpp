@@ -137,6 +137,54 @@ QDebug operator<<(QDebug stream, const LocationDefinition& locationDefinition) {
     return stream;
 }
 
+struct Symbol
+{
+    QByteArray name;
+    QByteArray binary;
+    bool isKernel = false;
+};
+
+QDataStream& operator>>(QDataStream& stream, Symbol& symbol)
+{
+    return stream >> symbol.name >> symbol.binary >> symbol.isKernel;
+}
+
+QDebug operator<<(QDebug stream, const Symbol& symbol) {
+    stream.noquote().nospace() << "Symbol{"
+        << "name=" << symbol.name << ", "
+        << "binary=" << symbol.binary << ", "
+        << "isKernel=" << symbol.isKernel
+        << "}";
+    return stream;
+}
+
+struct SymbolDefinition
+{
+    quint32 pid = 0;
+    quint32 tid = 0;
+    quint64 time = 0;
+    qint32 id = 0;
+    Symbol symbol;
+};
+
+QDataStream& operator>>(QDataStream& stream, SymbolDefinition& symbolDefinition)
+{
+    return stream >> symbolDefinition.pid >> symbolDefinition.tid
+        >> symbolDefinition.time >> symbolDefinition.id
+        >> symbolDefinition.symbol;
+}
+
+QDebug operator<<(QDebug stream, const SymbolDefinition& symbolDefinition) {
+    stream.noquote().nospace() << "SymbolDefinition{"
+        << "pid=" << symbolDefinition.pid << ", "
+        << "tid=" << symbolDefinition.tid << ", "
+        << "time=" << symbolDefinition.time << ", "
+        << "id=" << symbolDefinition.id << ", "
+        << "symbol=" << symbolDefinition.symbol
+        << "}";
+    return stream;
+}
+
 struct ParserData
 {
     ParserData()
@@ -249,9 +297,12 @@ struct ParserData
                 qDebug() << "parsed:" << locationDefinition;
                 break;
             }
-            case SymbolDefinition:
-                // TODO
+            case SymbolDefinition: {
+                struct SymbolDefinition symbolDefinition;
+                stream >> symbolDefinition;
+                qDebug() << "parsed:" << symbolDefinition;
                 break;
+            }
             case AttributesDefinition:
                 // TODO
                 break;
