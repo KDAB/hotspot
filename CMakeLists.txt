@@ -2,6 +2,14 @@ project(hotspot CXX C)
 
 cmake_minimum_required(VERSION 3.1.0)
 
+if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/perfparser/.git" )
+    message( FATAL_ERROR
+        "The perfparser git submodule is not initialized.\n"
+        "Please run the following commands in the source directory (${PROJECT_SOURCE_DIR}):\n"
+        "    git submodule update --init --recursive\n"
+    )
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ ${CMAKE_MODULE_PATH})
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
