@@ -121,7 +121,7 @@ QDataStream& operator>>(QDataStream& stream, Location& location)
 
 QDebug operator<<(QDebug stream, const Location& location) {
     stream.noquote().nospace() << "Location{"
-        << "address=" << location.address << ", "
+        << "address=0x" << hex << location.address << dec << ", "
         << "file=" << location.file << ", "
         << "pid=" << location.pid << ", "
         << "line=" << location.line << ", "
