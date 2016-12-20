@@ -1,0 +1,25 @@
+CHECKSETS qt5,c++,foss
+
+#KDAB-specific checks
+EXTRA kdabcopyright,kdabcommercial
+
+#additional checks
+EXTRA defines,null
+#EXTRA style
+
+#exclude checks now being done by clazy
+EXCLUDE foreach
+
+#coding style settings
+STYLE_CPPSTYLE qt
+STYLE_OFFSET 4
+STYLE_LINEMAX 0
+STYLE_CMAKESTYLE_OFFSET 2
+
+#no need to check 3rdparty stuff
+SKIP /3rdparty/
+#if you have a build subdir, skip it
+SKIP /build-
+
+#skip the borrowed code in the cmake subdir
+SKIP /cmake/ECMEnableSanitizers.cmake
