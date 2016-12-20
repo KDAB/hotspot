@@ -76,7 +76,63 @@ QDebug operator<<(QDebug stream, const ThreadStart& threadStart) {
     stream.noquote().nospace() << "ThreadStart{"
         << "childPid=" << threadStart.childPid << ", "
         << "childTid=" << threadStart.childTid << ", "
-        << "time=" << threadStart.time << ", "
+        << "time=" << threadStart.time
+        << "}";
+    return stream;
+}
+
+struct Location
+{
+    quint64 address = 0;
+    QByteArray file;
+    quint32 pid = 0;
+    qint32 line = 0;
+    qint32 column = 0;
+    qint32 parentLocationId = 0;
+};
+
+QDataStream& operator>>(QDataStream& stream, Location& location)
+{
+    return stream >> location.address >> location.file
+        >> location.pid >> location.line
+        >> location.column >> location.parentLocationId;
+}
+
+QDebug operator<<(QDebug stream, const Location& location) {
+    stream.noquote().nospace() << "Location{"
+        << "address=" << location.address << ", "
+        << "file=" << location.file << ", "
+        << "pid=" << location.pid << ", "
+        << "line=" << location.line << ", "
+        << "column=" << location.column << ", "
+        << "parentLocationId=" << location.parentLocationId
+        << "}";
+    return stream;
+}
+
+struct LocationDefinition
+{
+    quint32 pid = 0;
+    quint32 tid = 0;
+    quint64 time = 0;
+    qint32 id = 0;
+    Location location;
+};
+
+QDataStream& operator>>(QDataStream& stream, LocationDefinition& locationDefinition)
+{
+    return stream >> locationDefinition.pid >> locationDefinition.tid
+        >> locationDefinition.time >> locationDefinition.id
+        >> locationDefinition.location;
+}
+
+QDebug operator<<(QDebug stream, const LocationDefinition& locationDefinition) {
+    stream.noquote().nospace() << "LocationDefinition{"
+        << "pid=" << locationDefinition.pid << ", "
+        << "tid=" << locationDefinition.tid << ", "
+        << "time=" << locationDefinition.time << ", "
+        << "id=" << locationDefinition.id << ", "
+        << "location=" << locationDefinition.location
         << "}";
     return stream;
 }
@@ -187,9 +243,12 @@ struct ParserData
                 qDebug() << "parsed:" << command;
                 break;
             }
-            case LocationDefinition:
-                // TODO
+            case LocationDefinition: {
+                struct LocationDefinition locationDefinition;
+                stream >> locationDefinition;
+                qDebug() << "parsed:" << locationDefinition;
                 break;
+            }
             case SymbolDefinition:
                 // TODO
                 break;
