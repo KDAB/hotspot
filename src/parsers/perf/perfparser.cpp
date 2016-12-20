@@ -185,6 +185,35 @@ QDebug operator<<(QDebug stream, const SymbolDefinition& symbolDefinition) {
     return stream;
 }
 
+struct Sample
+{
+    quint32 pid = 0;
+    quint32 tid = 0;
+    quint64 time = 0;
+    QVector<int> frames;
+    quint8 guessedFrames;
+    qint32 attributeId;
+};
+
+QDataStream& operator>>(QDataStream& stream, Sample& sample)
+{
+    return stream >> sample.pid >> sample.tid
+        >> sample.time >> sample.frames >> sample.guessedFrames
+        >> sample.attributeId;
+}
+
+QDebug operator<<(QDebug stream, const Sample& sample) {
+    stream.noquote().nospace() << "Sample{"
+        << "pid=" << sample.pid << ", "
+        << "tid=" << sample.tid << ", "
+        << "time=" << sample.time << ", "
+        << "frames=" << sample.frames << ", "
+        << "guessedFrames=" << sample.guessedFrames << ", "
+        << "attributeId=" << sample.attributeId
+        << "}";
+    return stream;
+}
+
 struct ParserData
 {
     ParserData()
@@ -273,9 +302,12 @@ struct ParserData
         }
 
         switch (static_cast<EventType>(eventType)) {
-            case Sample:
-                // TODO
+            case Sample: {
+                struct Sample sample;
+                stream >> sample;
+                qDebug() << "parsed:" << sample;
                 break;
+            }
             case ThreadStart: {
                 struct ThreadStart threadStart;
                 stream >> threadStart;
