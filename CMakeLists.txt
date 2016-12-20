@@ -50,4 +50,6 @@ find_package(Elfutils REQUIRED) # TODO: make optional, use internal copy
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
 add_subdirectory(3rdparty)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_subdirectory(src)

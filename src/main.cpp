@@ -26,10 +26,47 @@
 */
 
 #include <QApplication>
+#include <QCommandLineParser>
+#include <QTextStream>
+#include <cstdio>
+
+#include "hotspot-config.h"
+
+namespace {
+void printUsage(const QCommandLineParser& parser, const QString& errorMessage)
+{
+    QTextStream qerr(stderr);
+    if (!errorMessage.isEmpty()) {
+        qerr << errorMessage << "\n\n";
+    }
+    qerr << parser.helpText() << endl;
+}
+}
 
 int main(int argc, char** argv)
 {
     QApplication app(argc, argv);
+
+    app.setApplicationName(QStringLiteral("hotspot"));
+    app.setApplicationVersion(QStringLiteral(HOTSPOT_VERSION_STRING));
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription(QStringLiteral("Qt GUI for performance analysis."));
+    parser.addHelpOption();
+    parser.addVersionOption();
+
+    QCommandLineOption input({QStringLiteral("i"), QStringLiteral("input")},
+        QCoreApplication::translate("main",
+            "The input file to process, i.e. a perf.data file."),
+        QStringLiteral("file"));
+    parser.addOption(input);
+
+    parser.process(app);
+
+    if (!parser.isSet(input)) {
+        printUsage(parser, QCoreApplication::translate("main", "Error: Input file is missing."));
+        return 1;
+    }
 
     return app.exec();
 }
