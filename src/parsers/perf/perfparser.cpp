@@ -36,6 +36,30 @@
 #include "util.h"
 
 namespace {
+
+struct Command
+{
+    quint32 pid = 0;
+    quint32 tid = 0;
+    quint64 time = 0;
+    QByteArray comm;
+};
+
+QDataStream& operator>>(QDataStream& stream, Command& command)
+{
+    return stream >> command.pid >> command.tid >> command.time >> command.comm;
+}
+
+QDebug operator<<(QDebug stream, const Command& command) {
+    stream.noquote().nospace() << "Command{"
+        << "pid=" << command.pid << ", "
+        << "tid=" << command.tid << ", "
+        << "time=" << command.time << ", "
+        << "comm=" << command.comm
+        << "}";
+    return stream;
+}
+
 struct ParserData
 {
     ParserData()
@@ -118,7 +142,42 @@ struct ParserData
         qDebug() << "next event is:" << eventType;
 
         if (eventType < 0 || eventType >= InvalidType) {
+            qWarning() << "invalid event type" << eventType;
             state = PARSE_ERROR;
+            return false;
+        }
+
+        switch (static_cast<EventType>(eventType)) {
+            case Sample:
+                // TODO
+                break;
+            case ThreadStart:
+                // TODO
+                break;
+            case ThreadEnd:
+                // TODO
+                break;
+            case Command: {
+                struct Command command;
+                stream >> command;
+                qDebug() << "command parsed:" << command;
+                break;
+            }
+            case LocationDefinition:
+                // TODO
+                break;
+            case SymbolDefinition:
+                // TODO
+                break;
+            case AttributesDefinition:
+                // TODO
+                break;
+            case InvalidType:
+                break;
+        }
+
+        if (!stream.atEnd()) {
+            qWarning() << "did not consume all bytes for event of type" << eventType;
             return false;
         }
 
