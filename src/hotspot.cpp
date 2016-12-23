@@ -28,6 +28,9 @@
 #include "hotspot.h"
 
 #include "parsers/perf/perfparser.h"
+#include "models/costmodel.h"
+
+#include <QTreeView>
 
 Hotspot::Hotspot(QObject* parent)
     : QObject(parent)
@@ -38,10 +41,14 @@ Hotspot::~Hotspot() = default;
 
 void Hotspot::openFile(const QString& path)
 {
-    // TODO: support more performance input files via plugins
+    // TODO: support input files of different types via plugins
     PerfParser parser;
-    bool success = parser.parseFile(path);
+    auto data = parser.parseFile(path);
 
-    // TODO: display results in the GUI, don't exit
-    exit(success ? 0 : 1);
+    // TODO: move into separate mainwindow class
+    auto view = new QTreeView;
+    auto model = new CostModel(view);
+    model->setData(data);
+    view->setModel(model);
+    view->show();
 }

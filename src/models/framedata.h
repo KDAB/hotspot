@@ -1,5 +1,5 @@
 /*
-  perfparser.h
+  framedata.h
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
@@ -27,19 +27,18 @@
 
 #pragma once
 
-#include <QObject>
+#include <QString>
+#include <QVector>
 
-struct FrameData;
-
-// TODO: create a parser interface
-class PerfParser : public QObject
+struct FrameData
 {
-    Q_OBJECT
-public:
-    PerfParser(QObject* parent = nullptr);
-    ~PerfParser();
-
-    // TODO: make async, run in background
-    // TODO: emit signals for both, bottom-up and top-down frame data
-    FrameData parseFile(const QString& path);
+    // TODO: shared location class with dso, file, line, ...
+    QString symbol;
+    // TODO: abstract that away: there may be multiple costs per frame
+    quint32 selfCost = 0;
+    quint32 inclusiveCost = 0;
+    QVector<FrameData> children;
+    const FrameData* parent = nullptr;
 };
+
+Q_DECLARE_TYPEINFO(FrameData, Q_MOVABLE_TYPE);

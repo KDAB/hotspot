@@ -4,6 +4,8 @@ add_executable(hotspot
     util.cpp
 
     parsers/perf/perfparser.cpp
+
+    models/costmodel.cpp
 )
 
 target_link_libraries(hotspot

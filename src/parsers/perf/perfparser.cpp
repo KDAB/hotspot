@@ -35,6 +35,8 @@
 
 #include "util.h"
 
+#include <models/framedata.h>
+
 namespace {
 
 struct Command
@@ -211,7 +213,7 @@ struct Sample
     quint32 pid = 0;
     quint32 tid = 0;
     quint64 time = 0;
-    QVector<int> frames;
+    QVector<qint32> frames;
     quint8 guessedFrames;
     qint32 attributeId;
 };
@@ -234,6 +236,11 @@ QDebug operator<<(QDebug stream, const Sample& sample) {
         << "}";
     return stream;
 }
+
+struct SymbolData
+{
+    QString symbol;
+};
 
 struct ParserData
 {
@@ -327,6 +334,7 @@ struct ParserData
                 struct Sample sample;
                 stream >> sample;
                 qDebug() << "parsed:" << sample;
+                addSample(sample);
                 break;
             }
             case ThreadStart: {
@@ -357,6 +365,7 @@ struct ParserData
                 struct SymbolDefinition symbolDefinition;
                 stream >> symbolDefinition;
                 qDebug() << "parsed:" << symbolDefinition;
+                addSymbol(symbolDefinition);
                 break;
             }
             case AttributesDefinition:
@@ -372,6 +381,51 @@ struct ParserData
         }
 
         return true;
+    }
+
+    void finalize()
+    {
+        setParents(&result.children, nullptr);
+    }
+
+    void setParents(QVector<FrameData>* children, const FrameData* parent)
+    {
+        for (auto& frame : *children) {
+            frame.parent = parent;
+            setParents(&frame.children, &frame);
+        }
+    }
+
+    void addSymbol(const SymbolDefinition& symbol)
+    {
+        // TODO: do we need to handle pid/tid here?
+        // TODO: store binary, isKernel information
+        symbols.insert(symbol.id, SymbolData{QString::fromUtf8(symbol.symbol.name)});
+    }
+
+    void addSample(const Sample& sample)
+    {
+        ++result.inclusiveCost;
+        if (!sample.frames.isEmpty()) {
+            auto frameIt = sample.frames.begin();
+            const QString frameSymbol = symbols.value(*frameIt).symbol;
+            bool found = false;
+            for (auto& frame : result.children) {
+                if (frame.symbol == frameSymbol) {
+                    ++frame.selfCost;
+                    ++frame.inclusiveCost;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                FrameData frame;
+                frame.symbol = frameSymbol;
+                ++frame.selfCost;
+                ++frame.inclusiveCost;
+                result.children.append(frame);
+            }
+        }
     }
 
     enum State {
@@ -397,9 +451,13 @@ struct ParserData
     quint32 eventSize = 0;
     QBuffer buffer;
     QDataStream stream;
+    FrameData result;
+    QHash<qint32, SymbolData> symbols;
 };
 
 }
+
+Q_DECLARE_TYPEINFO(SymbolData, Q_MOVABLE_TYPE);
 
 PerfParser::PerfParser(QObject* parent)
     : QObject(parent)
@@ -408,13 +466,12 @@ PerfParser::PerfParser(QObject* parent)
 
 PerfParser::~PerfParser() = default;
 
-// FIXME: make this API async
-bool PerfParser::parseFile(const QString& path)
+FrameData PerfParser::parseFile(const QString& path)
 {
     const auto parser = Util::findLibexecBinary(QStringLiteral("hotspot-perfparser"));
     if (parser.isEmpty()) {
         qWarning() << "Failed to find hotspot-perfparser binary.";
-        return false;
+        return {};
     }
 
     QProcess parserProcess;
@@ -431,14 +488,17 @@ bool PerfParser::parseFile(const QString& path)
     parserProcess.start(parser, {QStringLiteral("--input"), path});
     if (!parserProcess.waitForStarted()) {
         qWarning() << "Failed to start hotspot-perfparser binary" << parser;
-        return false;
+        return {};
     }
 
     if (!parserProcess.waitForFinished()) {
         qWarning() << "Failed to finish hotspot-perfparser:" << parserProcess.errorString();
-        return false;
+        return {};
     }
 
     Q_ASSERT(data.state == ParserData::PARSE_ERROR || !parserProcess.bytesAvailable());
-    return true;
+
+    data.finalize();
+
+    return data.result;
 }
