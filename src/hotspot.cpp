@@ -31,6 +31,7 @@
 #include "models/costmodel.h"
 
 #include <QTreeView>
+#include <QSortFilterProxyModel>
 
 Hotspot::Hotspot(QObject* parent)
     : QObject(parent)
@@ -47,8 +48,15 @@ void Hotspot::openFile(const QString& path)
 
     // TODO: move into separate mainwindow class
     auto view = new QTreeView;
+    view->setSortingEnabled(true);
+
     auto model = new CostModel(view);
     model->setData(data);
-    view->setModel(model);
+
+    auto proxy = new QSortFilterProxyModel(view);
+    proxy->setSourceModel(model);
+
+    view->sortByColumn(CostModel::SelfCost);
+    view->setModel(proxy);
     view->show();
 }
