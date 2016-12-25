@@ -237,9 +237,20 @@ QDebug operator<<(QDebug stream, const Sample& sample) {
     return stream;
 }
 
+struct LocationData
+{
+    LocationData(qint32 parentLocationId = -1)
+        : parentLocationId(parentLocationId)
+    { }
+
+    qint32 parentLocationId = -1;
+    // TODO: address, file, line, (column?)
+};
+
 struct SymbolData
 {
     QString symbol;
+    // TODO: binary, isKernel
 };
 
 struct ParserData
@@ -359,6 +370,7 @@ struct ParserData
                 struct LocationDefinition locationDefinition;
                 stream >> locationDefinition;
                 qDebug() << "parsed:" << locationDefinition;
+                addLocation(locationDefinition);
                 break;
             }
             case SymbolDefinition: {
@@ -396,11 +408,20 @@ struct ParserData
         }
     }
 
+    void addLocation(const LocationDefinition& location)
+    {
+        Q_ASSERT(locations.size() == location.id);
+        Q_ASSERT(symbols.size() == location.id);
+        locations.push_back(LocationData{location.location.parentLocationId});
+        symbols.push_back({});
+    }
+
     void addSymbol(const SymbolDefinition& symbol)
     {
         // TODO: do we need to handle pid/tid here?
         // TODO: store binary, isKernel information
-        symbols.insert(symbol.id, SymbolData{QString::fromUtf8(symbol.symbol.name)});
+        Q_ASSERT(symbols.size() > symbol.id);
+        symbols[symbol.id] = {QString::fromUtf8(symbol.symbol.name)};
     }
 
     void addSample(const Sample& sample)
@@ -408,7 +429,17 @@ struct ParserData
         ++result.inclusiveCost;
         if (!sample.frames.isEmpty()) {
             auto frameIt = sample.frames.begin();
-            const QString frameSymbol = symbols.value(*frameIt).symbol;
+            auto id = *frameIt;
+            auto location = locations.value(id);
+            while (location.parentLocationId != -1) {
+                id = location.parentLocationId;
+                location = locations.value(id);
+            }
+            const auto& symbol = symbols.value(id);
+            QString frameSymbol = symbol.symbol;
+            if (frameSymbol.isEmpty()) {
+                qWarning() << "NO SYMBOL!!!";
+            }
             bool found = false;
             for (auto& frame : result.children) {
                 if (frame.symbol == frameSymbol) {
@@ -452,11 +483,13 @@ struct ParserData
     QBuffer buffer;
     QDataStream stream;
     FrameData result;
-    QHash<qint32, SymbolData> symbols;
+    QVector<SymbolData> symbols;
+    QVector<LocationData> locations;
 };
 
 }
 
+Q_DECLARE_TYPEINFO(LocationData, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(SymbolData, Q_MOVABLE_TYPE);
 
 PerfParser::PerfParser(QObject* parent)
