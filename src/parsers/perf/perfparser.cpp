@@ -397,6 +397,8 @@ struct ParserData
 
     void finalize()
     {
+        // don't set parent here for top items, those belong to the "root"
+        // which has a different address for every model
         setParents(&result.children, nullptr);
     }
 
@@ -424,38 +426,48 @@ struct ParserData
         symbols[symbol.id] = {QString::fromUtf8(symbol.symbol.name)};
     }
 
+    FrameData* addFrame(FrameData* parent, qint32 id) const
+    {
+        const auto& location = locations.value(id);
+
+        if (location.parentLocationId != -1) {
+            parent = addFrame(parent, location.parentLocationId);
+        }
+
+        const auto& symbol = symbols.value(id);
+        // TODO: implement merging, we currently get every symbol twice
+        //       possibly for entry/exit?
+        const auto& symName = symbol.symbol.isEmpty() ? parent->symbol : symbol.symbol;
+
+        FrameData* ret = nullptr;
+        for (auto& frame : parent->children) {
+            if (frame.symbol == symName) {
+                ret = &frame;
+                break;
+            }
+        }
+
+        if (!ret) {
+            FrameData frame;
+            frame.symbol = symName;
+            parent->children.append(frame);
+            ret = &parent->children.last();
+        }
+
+        if ((parent == &result) && location.parentLocationId == -1) {
+            ++ret->selfCost;
+        }
+        ++ret->inclusiveCost;
+
+        return ret;
+    }
+
     void addSample(const Sample& sample)
     {
         ++result.inclusiveCost;
-        if (!sample.frames.isEmpty()) {
-            auto frameIt = sample.frames.begin();
-            auto id = *frameIt;
-            auto location = locations.value(id);
-            while (location.parentLocationId != -1) {
-                id = location.parentLocationId;
-                location = locations.value(id);
-            }
-            const auto& symbol = symbols.value(id);
-            QString frameSymbol = symbol.symbol;
-            if (frameSymbol.isEmpty()) {
-                qWarning() << "NO SYMBOL!!!";
-            }
-            bool found = false;
-            for (auto& frame : result.children) {
-                if (frame.symbol == frameSymbol) {
-                    ++frame.selfCost;
-                    ++frame.inclusiveCost;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                FrameData frame;
-                frame.symbol = frameSymbol;
-                ++frame.selfCost;
-                ++frame.inclusiveCost;
-                result.children.append(frame);
-            }
+        auto parent = &result;
+        for (auto id : sample.frames) {
+            parent = addFrame(parent, id);
         }
     }
 
