@@ -444,40 +444,41 @@ struct ParserData
 
     FrameData* addFrame(FrameData* parent, qint32 id) const
     {
-        const auto& location = locations.value(id);
+        while (id != -1) {
+            const auto& location = locations.value(id);
+            const auto& symbol = symbols.value(id);
 
-        if (location.parentLocationId != -1) {
-            parent = addFrame(parent, location.parentLocationId);
-        }
+            // TODO: implement aggregation, i.e. to ignore location address
+            // TODO: fix empty symbol data for inlined
 
-        const auto& symbol = symbols.value(id);
-        // TODO: implement merging, we currently get every symbol twice
-        //       possibly for entry/exit?
-        const auto& symName = symbol.symbol.isEmpty() ? parent->symbol : symbol.symbol;
-
-        FrameData* ret = nullptr;
-        for (auto& frame : parent->children) {
-            if (frame.symbol == symName) {
-                ret = &frame;
-                break;
+            FrameData* ret = nullptr;
+            for (auto& frame : parent->children) {
+                if (frame.symbol == symbol.symbol && frame.binary == symbol.binary
+                    && frame.location == location.location)
+                {
+                    ret = &frame;
+                    break;
+                }
             }
+
+            if (!ret) {
+                FrameData frame;
+                frame.symbol = symbol.symbol;
+                frame.binary = symbol.binary;
+                frame.location = location.location;
+                parent->children.append(frame);
+                ret = &parent->children.last();
+            }
+
+            if (parent == &result) {
+                ++ret->selfCost;
+            }
+            ++ret->inclusiveCost;
+            parent = ret;
+            id = location.parentLocationId;
         }
 
-        if (!ret) {
-            FrameData frame;
-            frame.symbol = symName;
-            frame.binary = symbol.binary;
-            frame.location = location.location;
-            parent->children.append(frame);
-            ret = &parent->children.last();
-        }
-
-        if ((parent == &result) && location.parentLocationId == -1) {
-            ++ret->selfCost;
-        }
-        ++ret->inclusiveCost;
-
-        return ret;
+        return parent;
     }
 
     void addSample(const Sample& sample)
