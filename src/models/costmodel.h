@@ -41,6 +41,8 @@ public:
     enum Columns {
         // TODO: extend
         Symbol = 0,
+        Binary,
+        Location,
         SelfCost,
         InclusiveCost,
         NUM_COLUMNS

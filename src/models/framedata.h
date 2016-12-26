@@ -34,6 +34,8 @@ struct FrameData
 {
     // TODO: shared location class with dso, file, line, ...
     QString symbol;
+    QString binary;
+    QString location;
     // TODO: abstract that away: there may be multiple costs per frame
     quint32 selfCost = 0;
     quint32 inclusiveCost = 0;

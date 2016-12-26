@@ -87,6 +87,10 @@ QVariant CostModel::headerData(int section, Qt::Orientation orientation, int rol
     switch (static_cast<Columns>(section)) {
         case Symbol:
             return tr("Symbol");
+        case Binary:
+            return tr("Binary");
+        case Location:
+            return tr("Location");
         case SelfCost:
             return tr("Self Cost");
         case InclusiveCost:
@@ -110,6 +114,10 @@ QVariant CostModel::data(const QModelIndex& index, int role) const
         switch (static_cast<Columns>(index.column())) {
             case Symbol:
                 return item->symbol;
+            case Binary:
+                return item->binary;
+            case Location:
+                return item->location;
             case SelfCost:
                 return item->selfCost;
             case InclusiveCost:

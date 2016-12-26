@@ -239,18 +239,19 @@ QDebug operator<<(QDebug stream, const Sample& sample) {
 
 struct LocationData
 {
-    LocationData(qint32 parentLocationId = -1)
+    LocationData(qint32 parentLocationId = -1, const QString& location = {})
         : parentLocationId(parentLocationId)
+        , location(location)
     { }
 
     qint32 parentLocationId = -1;
-    // TODO: address, file, line, (column?)
+    QString location;
 };
 
 struct SymbolData
 {
     QString symbol;
-    // TODO: binary, isKernel
+    QString binary;
 };
 
 struct ParserData
@@ -414,7 +415,19 @@ struct ParserData
     {
         Q_ASSERT(locations.size() == location.id);
         Q_ASSERT(symbols.size() == location.id);
-        locations.push_back(LocationData{location.location.parentLocationId});
+        QString locationString;
+        if (location.location.file.isEmpty()) {
+            locationString = QString::number(location.location.address, 16);
+        } else {
+            locationString = QString::fromUtf8(location.location.file);
+            if (location.location.line != -1) {
+                locationString += QLatin1Char(':') + QString::number(location.location.line);
+            }
+        }
+        locations.push_back({
+            location.location.parentLocationId,
+            locationString
+        });
         symbols.push_back({});
     }
 
@@ -423,7 +436,10 @@ struct ParserData
         // TODO: do we need to handle pid/tid here?
         // TODO: store binary, isKernel information
         Q_ASSERT(symbols.size() > symbol.id);
-        symbols[symbol.id] = {QString::fromUtf8(symbol.symbol.name)};
+        symbols[symbol.id] = {
+            QString::fromUtf8(symbol.symbol.name),
+            QString::fromUtf8(symbol.symbol.binary)
+        };
     }
 
     FrameData* addFrame(FrameData* parent, qint32 id) const
@@ -450,6 +466,8 @@ struct ParserData
         if (!ret) {
             FrameData frame;
             frame.symbol = symName;
+            frame.binary = symbol.binary;
+            frame.location = location.location;
             parent->children.append(frame);
             ret = &parent->children.last();
         }
