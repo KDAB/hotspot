@@ -239,13 +239,16 @@ QDebug operator<<(QDebug stream, const Sample& sample) {
 
 struct LocationData
 {
-    LocationData(qint32 parentLocationId = -1, const QString& location = {})
+    LocationData(qint32 parentLocationId = -1, const QString& location = {},
+                 const QString& address = {})
         : parentLocationId(parentLocationId)
         , location(location)
+        , address(address)
     { }
 
     qint32 parentLocationId = -1;
     QString location;
+    QString address;
 };
 
 struct SymbolData
@@ -416,9 +419,7 @@ struct ParserData
         Q_ASSERT(locations.size() == location.id);
         Q_ASSERT(symbols.size() == location.id);
         QString locationString;
-        if (location.location.file.isEmpty()) {
-            locationString = QString::number(location.location.address, 16);
-        } else {
+        if (!location.location.file.isEmpty()) {
             locationString = QString::fromUtf8(location.location.file);
             if (location.location.line != -1) {
                 locationString += QLatin1Char(':') + QString::number(location.location.line);
@@ -426,7 +427,8 @@ struct ParserData
         }
         locations.push_back({
             location.location.parentLocationId,
-            locationString
+            locationString,
+            QString::number(location.location.address, 16)
         });
         symbols.push_back({});
     }
@@ -454,7 +456,8 @@ struct ParserData
             FrameData* ret = nullptr;
             for (auto& frame : parent->children) {
                 if (frame.symbol == symbol.symbol && frame.binary == symbol.binary
-                    && frame.location == location.location)
+                    && frame.location == location.location
+                    && frame.address == location.address)
                 {
                     ret = &frame;
                     break;
@@ -466,6 +469,7 @@ struct ParserData
                 frame.symbol = symbol.symbol;
                 frame.binary = symbol.binary;
                 frame.location = location.location;
+                frame.address = location.address;
                 parent->children.append(frame);
                 ret = &parent->children.last();
             }

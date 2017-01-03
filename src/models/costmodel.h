@@ -42,6 +42,7 @@ public:
         // TODO: extend
         Symbol = 0,
         Binary,
+        Address,
         Location,
         SelfCost,
         InclusiveCost,

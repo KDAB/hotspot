@@ -91,6 +91,8 @@ QVariant CostModel::headerData(int section, Qt::Orientation orientation, int rol
             return tr("Binary");
         case Location:
             return tr("Location");
+        case Address:
+            return tr("Address");
         case SelfCost:
             return tr("Self Cost");
         case InclusiveCost:
@@ -118,6 +120,8 @@ QVariant CostModel::data(const QModelIndex& index, int role) const
                 return item->binary;
             case Location:
                 return item->location;
+            case Address:
+                return item->address;
             case SelfCost:
                 return item->selfCost;
             case InclusiveCost:

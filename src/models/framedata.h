@@ -36,6 +36,7 @@ struct FrameData
     QString symbol;
     QString binary;
     QString location;
+    QString address;
     // TODO: abstract that away: there may be multiple costs per frame
     quint32 selfCost = 0;
     quint32 inclusiveCost = 0;
