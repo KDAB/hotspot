@@ -255,6 +255,11 @@ struct SymbolData
 {
     QString symbol;
     QString binary;
+
+    bool isValid() const
+    {
+        return !symbol.isEmpty() || !binary.isEmpty();
+    }
 };
 
 struct ParserData
@@ -448,10 +453,9 @@ struct ParserData
     {
         while (id != -1) {
             const auto& location = locations.value(id);
-            const auto& symbol = symbols.value(id);
+            const auto& symbol = findSymbol(id, location.parentLocationId);
 
             // TODO: implement aggregation, i.e. to ignore location address
-            // TODO: fix empty symbol data for inlined
 
             FrameData* ret = nullptr;
             for (auto& frame : parent->children) {
@@ -492,6 +496,15 @@ struct ParserData
         for (auto id : sample.frames) {
             parent = addFrame(parent, id);
         }
+    }
+
+    SymbolData findSymbol(qint32 id, qint32 parentId) const
+    {
+        auto ret = symbols.value(id);
+        if (!ret.isValid()) {
+            ret = symbols.value(parentId);
+        }
+        return ret;
     }
 
     enum State {
