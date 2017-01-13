@@ -1,10 +1,10 @@
 /*
-  hotspot.h
+  mainwindow.h
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
   Copyright (C) 2016-2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
-  Author: Milian Wolff <milian.wolff@kdab.com>
+  Author: Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
   accordance with Hotspot Commercial License Agreement provided with the Software.
@@ -27,22 +27,37 @@
 
 #pragma once
 
-#include <QObject>
+#include <QMainWindow>
+#include <QScopedPointer>
+
+namespace Ui {
+class MainWindow;
+}
 
 class CostModel;
 class PerfParser;
 
-class Hotspot : public QObject
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
+
 public:
-    Hotspot(QObject* parent = nullptr);
-    ~Hotspot();
+    explicit MainWindow(QWidget *parent = 0);
+    ~MainWindow();
 
 public slots:
     void openFile(const QString& path);
 
+private slots:
+    void on_openFileButton_clicked();
+    void on_startButton_clicked();
+    void on_resultsButton_clicked();
+
 private:
-    CostModel* m_model;
+    Ui::MainWindow *ui;
+    CostModel* m_bottomUpCostModel;
     PerfParser* m_parser;
+
+    void showLoadingResults();
+    void hideLoadingResults();
 };
