@@ -32,6 +32,7 @@
 #include <QtEndian>
 #include <QBuffer>
 #include <QDataStream>
+#include <QFileInfo>
 
 #include "util.h"
 
@@ -628,6 +629,20 @@ PerfParser::~PerfParser() = default;
 
 void PerfParser::startParseFile(const QString& path)
 {
+    QFileInfo info(path);
+    if (!info.exists()) {
+        emit parsingFailed(tr("File '%1' does not exist.").arg(path));
+        return;
+    }
+    if (!info.isFile()) {
+        emit parsingFailed(tr("'%1' is not a file.").arg(path));
+        return;
+    }
+    if (!info.isReadable()) {
+        emit parsingFailed(tr("File '%1' is not readable.").arg(path));
+        return;
+    }
+
     if (d->parserBinary.isEmpty()) {
         emit parsingFailed(tr("Failed to find hotspot-perfparser binary."));
         return;

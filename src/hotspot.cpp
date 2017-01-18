@@ -32,6 +32,7 @@
 
 #include <QTreeView>
 #include <QSortFilterProxyModel>
+#include <QDebug>
 
 Hotspot::Hotspot(QObject* parent)
     : QObject(parent)
@@ -56,8 +57,13 @@ Hotspot::Hotspot(QObject* parent)
                 m_model->setData(data);
             });
 
-    // TODO: show results when finished
-    // TODO: show error messages
+    // TODO: show progress bar, switch to show results on parsingFinished
+
+    connect(m_parser, &PerfParser::parsingFailed,
+            this, [this] (const QString& errorMessage) {
+                // TODO: show in GUI
+                qWarning() << errorMessage;
+            });
 }
 
 Hotspot::~Hotspot() = default;
