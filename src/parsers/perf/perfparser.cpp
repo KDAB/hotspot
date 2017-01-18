@@ -70,7 +70,8 @@ QDataStream& operator>>(QDataStream& stream, Command& command)
     return stream >> command.pid >> command.tid >> command.time >> command.comm;
 }
 
-QDebug operator<<(QDebug stream, const Command& command) {
+QDebug operator<<(QDebug stream, const Command& command)
+{
     stream.noquote().nospace() << "Command{"
         << "pid=" << command.pid << ", "
         << "tid=" << command.tid << ", "
@@ -92,7 +93,8 @@ QDataStream& operator>>(QDataStream& stream, ThreadStart& threadStart)
     return stream >> threadStart.childPid >> threadStart.childTid >> threadStart.time;
 }
 
-QDebug operator<<(QDebug stream, const ThreadStart& threadStart) {
+QDebug operator<<(QDebug stream, const ThreadStart& threadStart)
+{
     stream.noquote().nospace() << "ThreadStart{"
         << "childPid=" << threadStart.childPid << ", "
         << "childTid=" << threadStart.childTid << ", "
@@ -113,7 +115,8 @@ QDataStream& operator>>(QDataStream& stream, ThreadEnd& threadEnd)
     return stream >> threadEnd.childPid >> threadEnd.childTid >> threadEnd.time;
 }
 
-QDebug operator<<(QDebug stream, const ThreadEnd& threadEnd) {
+QDebug operator<<(QDebug stream, const ThreadEnd& threadEnd)
+{
     stream.noquote().nospace() << "ThreadEnd{"
         << "childPid=" << threadEnd.childPid << ", "
         << "childTid=" << threadEnd.childTid << ", "
@@ -139,7 +142,8 @@ QDataStream& operator>>(QDataStream& stream, Location& location)
         >> location.column >> location.parentLocationId;
 }
 
-QDebug operator<<(QDebug stream, const Location& location) {
+QDebug operator<<(QDebug stream, const Location& location)
+{
     stream.noquote().nospace() << "Location{"
         << "address=0x" << hex << location.address << dec << ", "
         << "file=" << location.file << ", "
@@ -162,7 +166,8 @@ QDataStream& operator>>(QDataStream& stream, LocationDefinition& locationDefinit
     return stream >> locationDefinition.id >> locationDefinition.location;
 }
 
-QDebug operator<<(QDebug stream, const LocationDefinition& locationDefinition) {
+QDebug operator<<(QDebug stream, const LocationDefinition& locationDefinition)
+{
     stream.noquote().nospace() << "LocationDefinition{"
         << "id=" << locationDefinition.id << ", "
         << "location=" << locationDefinition.location
@@ -182,7 +187,8 @@ QDataStream& operator>>(QDataStream& stream, Symbol& symbol)
     return stream >> symbol.name >> symbol.binary >> symbol.isKernel;
 }
 
-QDebug operator<<(QDebug stream, const Symbol& symbol) {
+QDebug operator<<(QDebug stream, const Symbol& symbol)
+{
     stream.noquote().nospace() << "Symbol{"
         << "name=" << symbol.name << ", "
         << "binary=" << symbol.binary << ", "
@@ -202,7 +208,8 @@ QDataStream& operator>>(QDataStream& stream, SymbolDefinition& symbolDefinition)
     return stream >> symbolDefinition.id >> symbolDefinition.symbol;
 }
 
-QDebug operator<<(QDebug stream, const SymbolDefinition& symbolDefinition) {
+QDebug operator<<(QDebug stream, const SymbolDefinition& symbolDefinition)
+{
     stream.noquote().nospace() << "SymbolDefinition{"
         << "id=" << symbolDefinition.id << ", "
         << "symbol=" << symbolDefinition.symbol
@@ -227,7 +234,8 @@ QDataStream& operator>>(QDataStream& stream, Sample& sample)
         >> sample.attributeId;
 }
 
-QDebug operator<<(QDebug stream, const Sample& sample) {
+QDebug operator<<(QDebug stream, const Sample& sample)
+{
     stream.noquote().nospace() << "Sample{"
         << "pid=" << sample.pid << ", "
         << "tid=" << sample.tid << ", "
@@ -292,6 +300,7 @@ struct ParserData
         buffer.open(QIODevice::ReadOnly);
         stream.setDevice(&buffer);
     }
+
     bool tryParse (QProcess *process)
     {
         const auto bytesAvailable = process->bytesAvailable();
