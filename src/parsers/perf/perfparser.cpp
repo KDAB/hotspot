@@ -345,6 +345,7 @@ struct PerfParserPrivate
                     state = EVENT;
                     return true;
                 }
+                break;
             case EVENT:
                 if (bytesAvailable >= eventSize) {
                     buffer.buffer().resize(eventSize);
@@ -357,6 +358,7 @@ struct PerfParserPrivate
                     state = EVENT_HEADER;
                     return true;
                 }
+                break;
             case PARSE_ERROR:
                 // do nothing
                 break;
