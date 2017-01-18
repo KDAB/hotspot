@@ -29,6 +29,9 @@
 
 #include <QObject>
 
+class CostModel;
+class PerfParser;
+
 class Hotspot : public QObject
 {
     Q_OBJECT
@@ -38,4 +41,8 @@ public:
 
 public slots:
     void openFile(const QString& path);
+
+private:
+    CostModel* m_model;
+    PerfParser* m_parser;
 };

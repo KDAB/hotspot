@@ -35,7 +35,29 @@
 
 Hotspot::Hotspot(QObject* parent)
     : QObject(parent)
+    , m_model(new CostModel(this))
+    , m_parser(new PerfParser(this))
 {
+    // TODO: move into separate mainwindow class
+    auto view = new QTreeView;
+    view->setSortingEnabled(true);
+
+    m_model = new CostModel(view);
+
+    auto proxy = new QSortFilterProxyModel(view);
+    proxy->setSourceModel(m_model);
+
+    view->sortByColumn(CostModel::SelfCost);
+    view->setModel(proxy);
+    view->show();
+
+    connect(m_parser, &PerfParser::bottomUpDataAvailable,
+            this, [this] (const FrameData& data) {
+                m_model->setData(data);
+            });
+
+    // TODO: show results when finished
+    // TODO: show error messages
 }
 
 Hotspot::~Hotspot() = default;
@@ -43,20 +65,5 @@ Hotspot::~Hotspot() = default;
 void Hotspot::openFile(const QString& path)
 {
     // TODO: support input files of different types via plugins
-    PerfParser parser;
-    auto data = parser.parseFile(path);
-
-    // TODO: move into separate mainwindow class
-    auto view = new QTreeView;
-    view->setSortingEnabled(true);
-
-    auto model = new CostModel(view);
-    model->setData(data);
-
-    auto proxy = new QSortFilterProxyModel(view);
-    proxy->setSourceModel(model);
-
-    view->sortByColumn(CostModel::SelfCost);
-    view->setModel(proxy);
-    view->show();
+    m_parser->startParseFile(path);
 }

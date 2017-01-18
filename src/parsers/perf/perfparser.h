@@ -28,7 +28,9 @@
 #pragma once
 
 #include <QObject>
+#include <memory>
 
+struct PerfParserPrivate;
 struct FrameData;
 
 // TODO: create a parser interface
@@ -39,7 +41,16 @@ public:
     PerfParser(QObject* parent = nullptr);
     ~PerfParser();
 
-    // TODO: make async, run in background
-    // TODO: emit signals for both, bottom-up and top-down frame data
-    FrameData parseFile(const QString& path);
+    void startParseFile(const QString& path);
+
+signals:
+    void bottomUpDataAvailable(const FrameData& data);
+    // TODO: top-down data
+    // TODO: caller/callee data
+    // TODO: progress bar
+    void parsingFinished();
+    void parsingFailed(const QString& errorMessage);
+
+private:
+    std::unique_ptr<PerfParserPrivate> d;
 };
