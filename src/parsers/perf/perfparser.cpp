@@ -33,10 +33,13 @@
 #include <QBuffer>
 #include <QDataStream>
 #include <QFileInfo>
+#include <QLoggingCategory>
 
 #include "util.h"
 
 #include <models/framedata.h>
+
+Q_LOGGING_CATEGORY(LOG_PERFPARSER, "hotspot.perfparser", QtWarningMsg)
 
 namespace {
 
@@ -317,7 +320,7 @@ struct PerfParserPrivate
                     process.read(buffer.buffer().data(), magic.size() + 1);
                     if (buffer.buffer().data() != magic) {
                         state = PARSE_ERROR;
-                        qWarning() << "Failed to read header magic";
+                        qCWarning(LOG_PERFPARSER) << "Failed to read header magic";
                         return false;
                     } else {
                         state = DATA_STREAM_VERSION;
@@ -332,7 +335,7 @@ struct PerfParserPrivate
                     process.read(buffer.buffer().data(), sizeof(dataStreamVersion));
                     dataStreamVersion = qFromLittleEndian(*reinterpret_cast<qint32*>(buffer.buffer().data()));
                     stream.setVersion(dataStreamVersion);
-                    qDebug() << "data stream version is:" << dataStreamVersion;
+                    qCDebug(LOG_PERFPARSER) << "data stream version is:" << dataStreamVersion;
                     state = EVENT_HEADER;
                     return true;
                 }
@@ -342,7 +345,7 @@ struct PerfParserPrivate
                 if (bytesAvailable >= sizeof(eventSize)) {
                     process.read(buffer.buffer().data(), sizeof(eventSize));
                     eventSize = qFromLittleEndian(*reinterpret_cast<quint32*>(buffer.buffer().data()));
-                    qDebug() << "next event size is:" << eventSize;
+                    qCDebug(LOG_PERFPARSER) << "next event size is:" << eventSize;
                     state = EVENT;
                     return true;
                 }
@@ -379,10 +382,10 @@ struct PerfParserPrivate
 
         qint8 eventType = 0;
         stream >> eventType;
-        qDebug() << "next event is:" << eventType;
+        qCDebug(LOG_PERFPARSER) << "next event is:" << eventType;
 
         if (eventType < 0 || eventType >= InvalidType) {
-            qWarning() << "invalid event type" << eventType;
+            qCWarning(LOG_PERFPARSER) << "invalid event type" << eventType;
             state = PARSE_ERROR;
             return false;
         }
@@ -391,39 +394,39 @@ struct PerfParserPrivate
             case Sample: {
                 struct Sample sample;
                 stream >> sample;
-                qDebug() << "parsed:" << sample;
+                qCDebug(LOG_PERFPARSER) << "parsed:" << sample;
                 addSample(sample);
                 break;
             }
             case ThreadStart: {
                 struct ThreadStart threadStart;
                 stream >> threadStart;
-                qDebug() << "parsed:" << threadStart;
+                qCDebug(LOG_PERFPARSER) << "parsed:" << threadStart;
                 break;
             }
             case ThreadEnd: {
                 struct ThreadStart threadEnd;
                 stream >> threadEnd;
-                qDebug() << "parsed:" << threadEnd;
+                qCDebug(LOG_PERFPARSER) << "parsed:" << threadEnd;
                 break;
             }
             case Command: {
                 struct Command command;
                 stream >> command;
-                qDebug() << "parsed:" << command;
+                qCDebug(LOG_PERFPARSER) << "parsed:" << command;
                 break;
             }
             case LocationDefinition: {
                 struct LocationDefinition locationDefinition;
                 stream >> locationDefinition;
-                qDebug() << "parsed:" << locationDefinition;
+                qCDebug(LOG_PERFPARSER) << "parsed:" << locationDefinition;
                 addLocation(locationDefinition);
                 break;
             }
             case SymbolDefinition: {
                 struct SymbolDefinition symbolDefinition;
                 stream >> symbolDefinition;
-                qDebug() << "parsed:" << symbolDefinition;
+                qCDebug(LOG_PERFPARSER) << "parsed:" << symbolDefinition;
                 addSymbol(symbolDefinition);
                 break;
             }
@@ -433,7 +436,7 @@ struct PerfParserPrivate
             case StringDefinition: {
                 struct StringDefinition stringDefinition;
                 stream >> stringDefinition;
-                qDebug() << "parsed:" << stringDefinition;
+                qCDebug(LOG_PERFPARSER) << "parsed:" << stringDefinition;
                 addString(stringDefinition);
                 break;
             }
@@ -442,7 +445,7 @@ struct PerfParserPrivate
         }
 
         if (!stream.atEnd()) {
-            qWarning() << "did not consume all bytes for event of type" << eventType;
+            qCWarning(LOG_PERFPARSER) << "did not consume all bytes for event of type" << eventType;
             return false;
         }
 
@@ -606,7 +609,7 @@ PerfParser::PerfParser(QObject* parent)
 
     connect(&d->process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
             [this] (int exitCode, QProcess::ExitStatus exitStatus) {
-                qDebug() << exitCode << exitStatus;
+                qCDebug(LOG_PERFPARSER) << exitCode << exitStatus;
 
                 if (exitCode == EXIT_SUCCESS) {
                     d->finalize();
@@ -619,7 +622,7 @@ PerfParser::PerfParser(QObject* parent)
 
     connect(&d->process, &QProcess::errorOccurred,
             [this] (QProcess::ProcessError error) {
-                qWarning() << error << d->process.errorString();
+                qCWarning(LOG_PERFPARSER) << error << d->process.errorString();
 
                 emit parsingFailed(d->process.errorString());
             });
