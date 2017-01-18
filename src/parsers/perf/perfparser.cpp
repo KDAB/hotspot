@@ -39,12 +39,30 @@
 
 namespace {
 
+struct StringId
+{
+    qint32 id = -1;
+};
+
+QDataStream& operator>>(QDataStream& stream, StringId& stringId)
+{
+    return stream >> stringId.id;
+}
+
+QDebug operator<<(QDebug stream, const StringId& stringId)
+{
+    stream.noquote().nospace() << "String{"
+        << "id=" << stringId.id
+        << "}";
+    return stream;
+}
+
 struct Command
 {
     quint32 pid = 0;
     quint32 tid = 0;
     quint64 time = 0;
-    QByteArray comm;
+    StringId comm;
 };
 
 QDataStream& operator>>(QDataStream& stream, Command& command)
@@ -107,7 +125,7 @@ QDebug operator<<(QDebug stream, const ThreadEnd& threadEnd) {
 struct Location
 {
     quint64 address = 0;
-    QByteArray file;
+    StringId file;
     quint32 pid = 0;
     qint32 line = 0;
     qint32 column = 0;
@@ -135,25 +153,17 @@ QDebug operator<<(QDebug stream, const Location& location) {
 
 struct LocationDefinition
 {
-    quint32 pid = 0;
-    quint32 tid = 0;
-    quint64 time = 0;
     qint32 id = 0;
     Location location;
 };
 
 QDataStream& operator>>(QDataStream& stream, LocationDefinition& locationDefinition)
 {
-    return stream >> locationDefinition.pid >> locationDefinition.tid
-        >> locationDefinition.time >> locationDefinition.id
-        >> locationDefinition.location;
+    return stream >> locationDefinition.id >> locationDefinition.location;
 }
 
 QDebug operator<<(QDebug stream, const LocationDefinition& locationDefinition) {
     stream.noquote().nospace() << "LocationDefinition{"
-        << "pid=" << locationDefinition.pid << ", "
-        << "tid=" << locationDefinition.tid << ", "
-        << "time=" << locationDefinition.time << ", "
         << "id=" << locationDefinition.id << ", "
         << "location=" << locationDefinition.location
         << "}";
@@ -162,8 +172,8 @@ QDebug operator<<(QDebug stream, const LocationDefinition& locationDefinition) {
 
 struct Symbol
 {
-    QByteArray name;
-    QByteArray binary;
+    StringId name;
+    StringId binary;
     bool isKernel = false;
 };
 
@@ -183,25 +193,17 @@ QDebug operator<<(QDebug stream, const Symbol& symbol) {
 
 struct SymbolDefinition
 {
-    quint32 pid = 0;
-    quint32 tid = 0;
-    quint64 time = 0;
     qint32 id = 0;
     Symbol symbol;
 };
 
 QDataStream& operator>>(QDataStream& stream, SymbolDefinition& symbolDefinition)
 {
-    return stream >> symbolDefinition.pid >> symbolDefinition.tid
-        >> symbolDefinition.time >> symbolDefinition.id
-        >> symbolDefinition.symbol;
+    return stream >> symbolDefinition.id >> symbolDefinition.symbol;
 }
 
 QDebug operator<<(QDebug stream, const SymbolDefinition& symbolDefinition) {
     stream.noquote().nospace() << "SymbolDefinition{"
-        << "pid=" << symbolDefinition.pid << ", "
-        << "tid=" << symbolDefinition.tid << ", "
-        << "time=" << symbolDefinition.time << ", "
         << "id=" << symbolDefinition.id << ", "
         << "symbol=" << symbolDefinition.symbol
         << "}";
@@ -233,6 +235,26 @@ QDebug operator<<(QDebug stream, const Sample& sample) {
         << "frames=" << sample.frames << ", "
         << "guessedFrames=" << sample.guessedFrames << ", "
         << "attributeId=" << sample.attributeId
+        << "}";
+    return stream;
+}
+
+struct StringDefinition
+{
+    qint32 id = 0;
+    QByteArray string;
+};
+
+QDataStream& operator>>(QDataStream& stream, StringDefinition& stringDefinition)
+{
+    return stream >> stringDefinition.id >> stringDefinition.string;
+}
+
+QDebug operator<<(QDebug stream, const StringDefinition& stringDefinition)
+{
+    stream.noquote().nospace() << "StringDefinition{"
+        << "id=" << stringDefinition.id << ", "
+        << "string=" << stringDefinition.string
         << "}";
     return stream;
 }
@@ -392,6 +414,13 @@ struct ParserData
             case AttributesDefinition:
                 // TODO
                 break;
+            case StringDefinition: {
+                struct StringDefinition stringDefinition;
+                stream >> stringDefinition;
+                qDebug() << "parsed:" << stringDefinition;
+                addString(stringDefinition);
+                break;
+            }
             case InvalidType:
                 break;
         }
@@ -424,8 +453,8 @@ struct ParserData
         Q_ASSERT(locations.size() == location.id);
         Q_ASSERT(symbols.size() == location.id);
         QString locationString;
-        if (!location.location.file.isEmpty()) {
-            locationString = QString::fromUtf8(location.location.file);
+        if (location.location.file.id != -1) {
+            locationString = strings.value(location.location.file.id);
             if (location.location.line != -1) {
                 locationString += QLatin1Char(':') + QString::number(location.location.line);
             }
@@ -444,8 +473,8 @@ struct ParserData
         // TODO: store binary, isKernel information
         Q_ASSERT(symbols.size() > symbol.id);
         symbols[symbol.id] = {
-            QString::fromUtf8(symbol.symbol.name),
-            QString::fromUtf8(symbol.symbol.binary)
+            strings.value(symbol.symbol.name.id),
+            strings.value(symbol.symbol.binary.id)
         };
     }
 
@@ -507,6 +536,12 @@ struct ParserData
         return ret;
     }
 
+    void addString(const StringDefinition& string)
+    {
+        Q_ASSERT(string.id == strings.size());
+        strings.push_back(QString::fromUtf8(string.string));
+    }
+
     enum State {
         HEADER,
         DATA_STREAM_VERSION,
@@ -523,6 +558,7 @@ struct ParserData
         LocationDefinition,
         SymbolDefinition,
         AttributesDefinition,
+        StringDefinition,
         InvalidType
     };
 
@@ -533,6 +569,7 @@ struct ParserData
     FrameData result;
     QVector<SymbolData> symbols;
     QVector<LocationData> locations;
+    QVector<QString> strings;
 };
 
 }
