@@ -456,7 +456,9 @@ struct PerfParserPrivate
     {
         // don't set parent here for top items, those belong to the "root"
         // which has a different address for every model
-        setParents(&result.children, nullptr);
+        setParents(&bottomUpResult.children, nullptr);
+
+        // TODO: do the same as above for the topDownResult
     }
 
     void setParents(QVector<FrameData>* children, const FrameData* parent)
@@ -526,7 +528,7 @@ struct PerfParserPrivate
                 ret = &parent->children.last();
             }
 
-            if (parent == &result) {
+            if (parent == &bottomUpResult) {
                 ++ret->selfCost;
             }
             ++ret->inclusiveCost;
@@ -539,11 +541,9 @@ struct PerfParserPrivate
 
     void addSample(const Sample& sample)
     {
-        ++result.inclusiveCost;
-        auto parent = &result;
-        for (auto id : sample.frames) {
-            parent = addFrame(parent, id);
-        }
+        addSampleToBottomUp(sample);
+        addSampleToTopDown(sample);
+        addSampleToCallerCallee(sample);
     }
 
     SymbolData findSymbol(qint32 id, qint32 parentId) const
@@ -559,6 +559,51 @@ struct PerfParserPrivate
     {
         Q_ASSERT(string.id == strings.size());
         strings.push_back(QString::fromUtf8(string.string));
+    }
+
+    void addSampleToBottomUp(const Sample& sample)
+    {
+        ++bottomUpResult.inclusiveCost;
+        auto parent = &bottomUpResult;
+        for (auto id : sample.frames) {
+            parent = addFrame(parent, id);
+        }
+    }
+
+    void addSampleToTopDown(const Sample& sample)
+    {
+        /* TODO: build a top-down tree from the individual sample frames
+         *
+         * Essentially, do what is done in addSampleToBottomUp, but in reverse:
+         *
+         * - pick last frame
+         * - find location for this frame
+         * - add inlined frames:
+         *     - recurse into the parentLocationId tree (depth-first)
+         *     - add node to tree for inlined location / symbol
+         * - add node to tree for the frame
+         * - pick previous frame, start from above
+         */
+    }
+
+    void addSampleToCallerCallee(const Sample& sample)
+    {
+        /* TODO: build a list of caller/callee data from the individual sample frames
+         *
+         * This replicates the view known from e.g. kcachegrind
+         *
+         * - start at the first frame (i.e. bottom-up)
+         * - find an entry in the list for this frame
+         * - if current frame is the first frame of the sample: include entry's
+         *   self cost by 1
+         * - increase entry's inclusive cost by 1 (for every frame always)
+         * - loop over the inlined frames, do the same as above
+         *
+         * NOTE: You must take recursion into account on a per-sample basis!
+         *       Do not increase the cost for any entry more than once.
+         *       E.g. build a QSet with location/symbols handled and use that
+         *       to prevent this issue.
+         */
     }
 
     enum State {
@@ -585,7 +630,7 @@ struct PerfParserPrivate
     quint32 eventSize = 0;
     QBuffer buffer;
     QDataStream stream;
-    FrameData result;
+    FrameData bottomUpResult;
     QVector<SymbolData> symbols;
     QVector<LocationData> locations;
     QVector<QString> strings;
@@ -613,7 +658,7 @@ PerfParser::PerfParser(QObject* parent)
 
                 if (exitCode == EXIT_SUCCESS) {
                     d->finalize();
-                    emit bottomUpDataAvailable(d->result);
+                    emit bottomUpDataAvailable(d->bottomUpResult);
                     emit parsingFinished();
                 } else {
                     emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1.").arg(exitCode));
