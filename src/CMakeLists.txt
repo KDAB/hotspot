@@ -1,11 +1,20 @@
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 add_executable(hotspot
     main.cpp
-    hotspot.cpp
     util.cpp
 
     parsers/perf/perfparser.cpp
 
     models/costmodel.cpp
+
+    mainwindow.cpp
+
+    # ui files:
+    mainwindow.ui
+
+    # resources:
+    resources.qrc
 )
 
 target_link_libraries(hotspot

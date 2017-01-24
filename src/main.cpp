@@ -27,22 +27,9 @@
 
 #include <QApplication>
 #include <QCommandLineParser>
-#include <QTextStream>
-#include <cstdio>
 
-#include "hotspot.h"
 #include "hotspot-config.h"
-
-namespace {
-void printUsage(const QCommandLineParser& parser, const QString& errorMessage)
-{
-    QTextStream qerr(stderr);
-    if (!errorMessage.isEmpty()) {
-        qerr << errorMessage << "\n\n";
-    }
-    qerr << parser.helpText() << endl;
-}
-}
+#include "mainwindow.h"
 
 int main(int argc, char** argv)
 {
@@ -64,14 +51,11 @@ int main(int argc, char** argv)
 
     parser.process(app);
 
-    if (!parser.isSet(input)) {
-        printUsage(parser, QCoreApplication::translate("main", "Error: Input file is missing."));
-        return 1;
+    MainWindow window;
+    if (parser.isSet(input)) {
+        window.openFile(parser.value(input));
     }
-
-    Hotspot hotspot;
-
-    hotspot.openFile(parser.value(input));
+    window.show();
 
     return app.exec();
 }
