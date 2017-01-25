@@ -58,6 +58,13 @@ include(FeatureSummary)
 find_package(Qt5 COMPONENTS Core Widgets Network REQUIRED)
 find_package(LibElf REQUIRED)
 find_package(Elfutils REQUIRED) # TODO: make optional, use internal copy
+find_package(ECM 1.0.0 NO_MODULE REQUIRED)
+
+if(Qt5_FOUND AND ECM_FOUND)
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
+    find_package(KF5 OPTIONAL_COMPONENTS ThreadWeaver I18n ConfigWidgets CoreAddon REQUIRED)
+endif()
+
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
 add_subdirectory(3rdparty)

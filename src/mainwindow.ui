@@ -72,7 +72,8 @@
           <string>Start</string>
          </property>
          <property name="icon">
-          <iconset theme="system-run"/>
+          <iconset theme="system-run">
+           <normaloff>.</normaloff>.</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -158,7 +159,7 @@
        <number>0</number>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="startPage">
        <property name="sizePolicy">
@@ -316,7 +317,8 @@
            <string>Open File</string>
           </property>
           <property name="icon">
-           <iconset theme="document-open"/>
+           <iconset theme="document-open">
+            <normaloff>.</normaloff>.</iconset>
           </property>
           <property name="iconSize">
            <size>
@@ -371,7 +373,7 @@
         <item>
          <widget class="QTabWidget" name="resultsTabWidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="summaryTab">
            <property name="toolTip">
@@ -597,6 +599,19 @@
             </item>
            </layout>
           </widget>
+          <widget class="QWidget" name="flameGraphTab">
+           <property name="toolTip">
+            <string>Visually analyze CPU hotspots with a flame graph</string>
+           </property>
+           <attribute name="title">
+            <string>Flame Graph</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout">
+            <item>
+             <widget class="FlameGraph" name="flameGraph" native="true"/>
+            </item>
+           </layout>
+          </widget>
          </widget>
         </item>
        </layout>
@@ -629,6 +644,14 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>FlameGraph</class>
+   <extends>QWidget</extends>
+   <header>flamegraph.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources.qrc"/>
  </resources>
