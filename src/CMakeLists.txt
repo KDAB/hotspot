@@ -7,6 +7,7 @@ add_executable(hotspot
     parsers/perf/perfparser.cpp
 
     models/costmodel.cpp
+    models/topproxy.cpp
 
     mainwindow.cpp
     flamegraph.cpp

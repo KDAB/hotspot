@@ -1,9 +1,9 @@
 /*
-  mainwindow.h
+  summarydata.h
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2016-2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -27,41 +27,13 @@
 
 #pragma once
 
-#include <QMainWindow>
-#include <QScopedPointer>
-#include <QString>
+#include <QTypeInfo>
 
-#include "models/framedata.h"
-
-namespace Ui {
-class MainWindow;
-}
-
-class CostModel;
-class PerfParser;
-
-class MainWindow : public QMainWindow
+struct SummaryData
 {
-    Q_OBJECT
-
-public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
-
-public slots:
-    void openFile(const QString& path);
-
-private slots:
-    void on_openFileButton_clicked();
-    void on_startButton_clicked();
-    void on_resultsButton_clicked();
-
-private:
-    Ui::MainWindow *ui;
-    CostModel* m_bottomUpCostModel;
-    CostModel* m_topHotspotsCostModel;
-    PerfParser* m_parser;
-
-    void showLoadingResults();
-    void hideLoadingResults();
+    quint64 applicationRunningTime;
+    quint32 threadCount;
+    quint32 processCount;
 };
+
+Q_DECLARE_TYPEINFO(SummaryData, Q_MOVABLE_TYPE);

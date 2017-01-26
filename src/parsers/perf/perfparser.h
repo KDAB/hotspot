@@ -32,6 +32,7 @@
 
 struct PerfParserPrivate;
 struct FrameData;
+struct SummaryData;
 
 // TODO: create a parser interface
 class PerfParser : public QObject
@@ -48,6 +49,7 @@ signals:
     // TODO: top-down data
     // TODO: caller/callee data
     // TODO: progress bar
+    void summaryDataAvailable(const SummaryData& data);
     void parsingFinished();
     void parsingFailed(const QString& errorMessage);
 
