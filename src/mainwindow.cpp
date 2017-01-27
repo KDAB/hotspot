@@ -35,6 +35,7 @@
 #include "models/costmodel.h"
 #include "models/framedata.h"
 #include "parsers/perf/perfparser.h"
+#include "flamegraph.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -58,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_parser, &PerfParser::bottomUpDataAvailable,
             this, [this] (const FrameData& data) {
                 m_bottomUpCostModel->setData(data);
+                ui->flameGraph->setBottomUpData(data);
             });
 
     hideLoadingResults();

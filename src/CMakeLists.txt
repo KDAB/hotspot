@@ -9,6 +9,7 @@ add_executable(hotspot
     models/costmodel.cpp
 
     mainwindow.cpp
+    flamegraph.cpp
 
     # ui files:
     mainwindow.ui
@@ -19,6 +20,9 @@ add_executable(hotspot
 
 target_link_libraries(hotspot
     Qt5::Widgets
+    KF5::ThreadWeaver
+    KF5::I18n
+    KF5::ConfigWidgets
 )
 
 set_target_properties(hotspot
