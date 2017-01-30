@@ -33,9 +33,31 @@
 #include <QSortFilterProxyModel>
 
 #include "models/costmodel.h"
-#include "models/framedata.h"
 #include "parsers/perf/perfparser.h"
 #include "flamegraph.h"
+#include "models/summarydata.h"
+#include "models/topproxy.h"
+
+namespace {
+QString formatTimeString(quint64 nanoseconds)
+{
+    quint64 totalSeconds = nanoseconds / 1000000000;
+    quint64 days = totalSeconds / 60 / 60 / 24;
+    quint64 hours = (totalSeconds / 60 / 60) % 24;
+    quint64 minutes = (totalSeconds / 60) % 60;
+    quint64 seconds = totalSeconds % 60;
+    quint64 milliseconds = (nanoseconds / 1000000) % 1000;
+
+    auto format = [] (quint64 fragment, int precision = 2) -> QString {
+        return QString::number(fragment).rightJustified(precision, '0');
+    };
+    auto optional = [format] (quint64 fragment) -> QString {
+        return fragment > 0 ? format(fragment) + QLatin1Char(':') : QString();
+    };
+    return optional(days) + optional(hours) + optional(minutes)
+            + format(seconds) + QLatin1Char('.') + format(milliseconds, 3);
+}
+}
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -56,10 +78,23 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->bottomUpTreeView->sortByColumn(CostModel::SelfCost);
     ui->bottomUpTreeView->setModel(proxy);
 
+    auto topHotspotsProxy = new TopProxy(this);
+    topHotspotsProxy->setSourceModel(m_bottomUpCostModel);
+
+    ui->topHotspotsTableView->setSortingEnabled(false);
+    ui->topHotspotsTableView->setModel(topHotspotsProxy);
+
     connect(m_parser, &PerfParser::bottomUpDataAvailable,
             this, [this] (const FrameData& data) {
                 m_bottomUpCostModel->setData(data);
                 ui->flameGraph->setBottomUpData(data);
+            });
+
+    connect(m_parser, &PerfParser::summaryDataAvailable,
+            this, [this] (const SummaryData& data) {
+                ui->appRunTimeValue->setText(formatTimeString(data.applicationRunningTime));
+                ui->threadCountValue->setText(QString::number(data.threadCount));
+                ui->processCountValue->setText(QString::number(data.processCount));
             });
 
     hideLoadingResults();

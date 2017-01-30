@@ -38,6 +38,7 @@
 #include "util.h"
 
 #include <models/framedata.h>
+#include <models/summarydata.h>
 
 Q_LOGGING_CATEGORY(LOG_PERFPARSER, "hotspot.perfparser", QtWarningMsg)
 
@@ -459,6 +460,8 @@ struct PerfParserPrivate
         setParents(&bottomUpResult.children, nullptr);
 
         // TODO: do the same as above for the topDownResult
+
+        calculateSummary();
     }
 
     void setParents(QVector<FrameData>* children, const FrameData* parent)
@@ -557,6 +560,7 @@ struct PerfParserPrivate
         addSampleToBottomUp(sample);
         addSampleToTopDown(sample);
         addSampleToCallerCallee(sample);
+        addSampleToSummary(sample);
     }
 
     void addString(const StringDefinition& string)
@@ -610,6 +614,25 @@ struct PerfParserPrivate
          */
     }
 
+    void addSampleToSummary(const Sample& sample)
+    {
+        if (sample.time < applicationStartTime || applicationStartTime == 0) {
+            applicationStartTime = sample.time;
+        }
+        else if (sample.time > applicationEndTime || applicationEndTime == 0) {
+            applicationEndTime = sample.time;
+        }
+        uniqueThreads.insert(sample.tid);
+        uniqueProcess.insert(sample.pid);
+    }
+
+    void calculateSummary()
+    {
+        summaryResult.applicationRunningTime = applicationEndTime - applicationStartTime;
+        summaryResult.threadCount = uniqueThreads.size();
+        summaryResult.processCount = uniqueProcess.size();
+    }
+
     enum State {
         HEADER,
         DATA_STREAM_VERSION,
@@ -640,6 +663,11 @@ struct PerfParserPrivate
     QVector<QString> strings;
     QProcess process;
     QString parserBinary;
+    SummaryData summaryResult;
+    quint64 applicationStartTime = 0;
+    quint64 applicationEndTime = 0;
+    QSet<quint32> uniqueThreads;
+    QSet<quint32> uniqueProcess;
 };
 
 Q_DECLARE_TYPEINFO(LocationData, Q_MOVABLE_TYPE);
@@ -663,6 +691,7 @@ PerfParser::PerfParser(QObject* parent)
                 if (exitCode == EXIT_SUCCESS) {
                     d->finalize();
                     emit bottomUpDataAvailable(d->bottomUpResult);
+                    emit summaryDataAvailable(d->summaryResult);
                     emit parsingFinished();
                 } else {
                     emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1.").arg(exitCode));

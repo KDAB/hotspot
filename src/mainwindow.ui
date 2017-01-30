@@ -373,7 +373,7 @@
         <item>
          <widget class="QTabWidget" name="resultsTabWidget">
           <property name="currentIndex">
-           <number>2</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="summaryTab">
            <property name="toolTip">
@@ -413,86 +413,30 @@
                </widget>
               </item>
               <item row="1" column="0">
-               <widget class="QLabel" name="totalCpuTimeLabel">
+               <widget class="QLabel" name="threadCountLabel">
                 <property name="text">
-                 <string>Total CPU Time:</string>
+                 <string>Thread Count:</string>
                 </property>
                </widget>
               </item>
               <item row="1" column="1">
-               <widget class="QLabel" name="totalCpuTimeValue">
+               <widget class="QLabel" name="threadCountValue">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLabel" name="processCountValue">
                 <property name="text">
                  <string/>
                 </property>
                </widget>
               </item>
               <item row="2" column="0">
-               <widget class="QLabel" name="effectiveCpuTimeLabel">
+               <widget class="QLabel" name="processCountLabel">
                 <property name="text">
-                 <string>Effective CPU Time:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QLabel" name="effectiveCpuTimeValue">
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="cpuSpinTimeLabel">
-                <property name="text">
-                 <string>CPU Spin Time:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
-               <widget class="QLabel" name="cpuOverheadTimeLabel">
-                <property name="text">
-                 <string>CPU Overhead Time:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="1">
-               <widget class="QLabel" name="cpuOverheadTimeValue">
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QLabel" name="cpuSpinTimeValue">
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="0">
-               <widget class="QLabel" name="cpuPausedTimeLabel">
-                <property name="text">
-                 <string>CPU Paused Time:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="1">
-               <widget class="QLabel" name="cpuPausedTimeValue">
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="0">
-               <widget class="QLabel" name="threadCountLabel">
-                <property name="text">
-                 <string>Thread Count</string>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="1">
-               <widget class="QLabel" name="threadCountValue">
-                <property name="text">
-                 <string/>
+                 <string>Process Count:</string>
                 </property>
                </widget>
               </item>
@@ -506,70 +450,35 @@
              </widget>
             </item>
             <item>
-             <layout class="QGridLayout" name="topHotspotsGridLayout" columnstretch="10,10,10,40">
-              <property name="topMargin">
-               <number>0</number>
+             <widget class="QTableView" name="topHotspotsTableView">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
-              <property name="rightMargin">
-               <number>0</number>
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
               </property>
-              <property name="spacing">
-               <number>0</number>
+              <property name="frameShadow">
+               <enum>QFrame::Sunken</enum>
               </property>
-              <item row="0" column="1">
-               <widget class="QLabel" name="moduleLabel">
-                <property name="text">
-                 <string>Module</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <widget class="QLabel" name="cpuTimeLabel">
-                <property name="text">
-                 <string>CPU Time</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="functionLabel">
-                <property name="text">
-                 <string>Function</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="3">
-               <spacer name="topHotspotsHorizontalSpacer">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="1" column="0" colspan="3">
-               <widget class="Line" name="line">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>1</height>
-                 </size>
-                </property>
-                <property name="baseSize">
-                 <size>
-                  <width>0</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-             </layout>
+              <property name="sizeAdjustPolicy">
+               <enum>QAbstractScrollArea::AdjustToContentsOnFirstShow</enum>
+              </property>
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+              <attribute name="horizontalHeaderCascadingSectionResizes">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="horizontalHeaderDefaultSectionSize">
+               <number>210</number>
+              </attribute>
+              <attribute name="horizontalHeaderStretchLastSection">
+               <bool>true</bool>
+              </attribute>
+             </widget>
             </item>
             <item>
              <spacer name="summaryVerticalSpacer">
