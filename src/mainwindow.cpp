@@ -55,7 +55,7 @@ QString formatTimeString(quint64 nanoseconds)
         return fragment > 0 ? format(fragment) + QLatin1Char(':') : QString();
     };
     return optional(days) + optional(hours) + optional(minutes)
-            + format(seconds) + QLatin1Char('.') + format(milliseconds, 3);
+            + format(seconds) + QLatin1Char('.') + format(milliseconds, 3) + QLatin1Char('s');
 }
 
 void setupTreeView(QTreeView* view, CostModel* model)
