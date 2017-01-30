@@ -46,7 +46,7 @@ public:
 
 signals:
     void bottomUpDataAvailable(const FrameData& data);
-    // TODO: top-down data
+    void topDownDataAvailable(const FrameData& data);
     // TODO: caller/callee data
     // TODO: progress bar
     void summaryDataAvailable(const SummaryData& data);

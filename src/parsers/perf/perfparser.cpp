@@ -460,9 +460,10 @@ struct PerfParserPrivate
         // which has a different address for every model
         setParents(&bottomUpResult.children, nullptr);
 
-        // TODO: do the same as above for the topDownResult
-
         calculateSummary();
+
+        buildTopDownResult();
+        buildCallerCalleeResult();
     }
 
     void setParents(QVector<FrameData>* children, const FrameData* parent)
@@ -503,6 +504,37 @@ struct PerfParserPrivate
         };
     }
 
+    static FrameData* addFrame(FrameData* parent,
+                               const QString& symbol, const QString& binary,
+                               const QString& location, const QString& address)
+    {
+        FrameData* ret = nullptr;
+
+        for (auto row = parent->children.data(), end = row + parent->children.size();
+             row != end; ++row)
+        {
+            // TODO: implement aggregation, i.e. to ignore location address
+            if (row->symbol == symbol && row->binary == binary
+                && row->location == location && row->address == address)
+            {
+                ret = row;
+                break;
+            }
+        }
+
+        if (!ret) {
+            FrameData frame;
+            frame.symbol = symbol;
+            frame.binary = binary;
+            frame.location = location;
+            frame.address = address;
+            parent->children.append(frame);
+            ret = &parent->children.last();
+        }
+
+        return ret;
+    }
+
     FrameData* addFrame(FrameData* parent, qint32 id) const
     {
         bool skipNextFrame = false;
@@ -522,33 +554,14 @@ struct PerfParserPrivate
                 skipNextFrame = true;
             }
 
-            // TODO: implement aggregation, i.e. to ignore location address
+            auto ret = addFrame(parent, symbol.symbol, symbol.binary,
+                                location.location, location.address);
 
-            FrameData* ret = nullptr;
-            for (auto& frame : parent->children) {
-                if (frame.symbol == symbol.symbol && frame.binary == symbol.binary
-                    && frame.location == location.location
-                    && frame.address == location.address)
-                {
-                    ret = &frame;
-                    break;
-                }
-            }
-
-            if (!ret) {
-                FrameData frame;
-                frame.symbol = symbol.symbol;
-                frame.binary = symbol.binary;
-                frame.location = location.location;
-                frame.address = location.address;
-                parent->children.append(frame);
-                ret = &parent->children.last();
-            }
-
+            ++ret->inclusiveCost;
             if (parent == &bottomUpResult) {
                 ++ret->selfCost;
             }
-            ++ret->inclusiveCost;
+
             parent = ret;
             id = location.parentLocationId;
         }
@@ -559,8 +572,6 @@ struct PerfParserPrivate
     void addSample(const Sample& sample)
     {
         addSampleToBottomUp(sample);
-        addSampleToTopDown(sample);
-        addSampleToCallerCallee(sample);
         addSampleToSummary(sample);
     }
 
@@ -579,30 +590,48 @@ struct PerfParserPrivate
         }
     }
 
-    void addSampleToTopDown(const Sample& sample)
+    static void buildTopDownResult(const QVector<FrameData>& bottomUpData, FrameData* topDownData)
     {
-        /* TODO: build a top-down tree from the individual sample frames
-         *
-         * Essentially, do what is done in addSampleToBottomUp, but in reverse:
-         *
-         * - pick last frame
-         * - find location for this frame
-         * - add inlined frames:
-         *     - recurse into the parentLocationId tree (depth-first)
-         *     - add node to tree for inlined location / symbol
-         * - add node to tree for the frame
-         * - pick previous frame, start from above
-         */
+        foreach (const auto& row, bottomUpData) {
+            if (row.children.isEmpty()) {
+                // leaf node found, bubble up the parent chain to build a top-down tree
+                auto node = &row;
+                auto stack = topDownData;
+                while (node) {
+                    auto frame = addFrame(stack,
+                                          node->symbol, node->binary,
+                                          node->location, node->address);
+
+                    // always use the leaf node's cost and propagate that one up the chain
+                    // otherwise we'd count the cost of some nodes multiple times
+                    frame->inclusiveCost += row.inclusiveCost;
+                    if (node == &row) {
+                        frame->selfCost += 1;
+                    }
+                    stack = frame;
+                    node = node->parent;
+                }
+            } else {
+                // recurse to find a leaf
+                buildTopDownResult(row.children, topDownData);
+            }
+        }
     }
 
-    void addSampleToCallerCallee(const Sample& sample)
+    void buildTopDownResult()
     {
-        /* TODO: build a list of caller/callee data from the individual sample frames
+        buildTopDownResult(bottomUpResult.children, &topDownResult);
+        setParents(&topDownResult.children, nullptr);
+    }
+
+    void buildCallerCalleeResult()
+    {
+        /* TODO: build a list of caller/callee data from the bottom up result
          *
          * This replicates the view known from e.g. kcachegrind
          *
          * - start at the first frame (i.e. bottom-up)
-         * - find an entry in the list for this frame
+         * - find an entry in the caller/callee list for this frame
          * - if current frame is the first frame of the sample: include entry's
          *   self cost by 1
          * - increase entry's inclusive cost by 1 (for every frame always)
@@ -659,6 +688,7 @@ struct PerfParserPrivate
     QBuffer buffer;
     QDataStream stream;
     FrameData bottomUpResult;
+    FrameData topDownResult;
     QVector<SymbolData> symbols;
     QVector<LocationData> locations;
     QVector<QString> strings;
@@ -720,6 +750,7 @@ void PerfParser::startParseFile(const QString& path)
                     if (exitCode == EXIT_SUCCESS) {
                         d.finalize();
                         emit bottomUpDataAvailable(d.bottomUpResult);
+                        emit topDownDataAvailable(d.topDownResult);
                         emit summaryDataAvailable(d.summaryResult);
                         emit parsingFinished();
                     } else {

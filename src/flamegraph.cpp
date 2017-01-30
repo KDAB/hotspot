@@ -309,7 +309,6 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     auto bottomUpCheckbox = new QCheckBox(i18n("Bottom-Down View"), this);
     bottomUpCheckbox->setToolTip(i18n("Enable the bottom-down flame graph view. When this is unchecked, the top-down view is enabled by default."));
     bottomUpCheckbox->setChecked(m_showBottomUpData);
-    bottomUpCheckbox->hide(); // Hide this checkbox until the top-down feature is implemented
     connect(bottomUpCheckbox, &QCheckBox::toggled, this, [this, bottomUpCheckbox] {
         m_showBottomUpData = bottomUpCheckbox->isChecked();
         showData();

@@ -60,6 +60,7 @@ private:
     Ui::MainWindow *ui;
     CostModel* m_bottomUpCostModel;
     CostModel* m_topHotspotsCostModel;
+    CostModel* m_topDownCostModel;
     PerfParser* m_parser;
 
     void showLoadingResults();

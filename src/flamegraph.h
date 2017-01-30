@@ -68,7 +68,7 @@ private:
     QVector<FrameGraphicsItem*> m_selectionHistory;
     int m_selectedItem = -1;
     int m_minRootWidth = 0;
-    bool m_showBottomUpData = true;
+    bool m_showBottomUpData = false;
     bool m_collapseRecursion = false;
     // cost threshold in percent, items below that value will not be shown
     double m_costThreshold = 0.1;

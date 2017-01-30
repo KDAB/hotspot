@@ -57,12 +57,23 @@ QString formatTimeString(quint64 nanoseconds)
     return optional(days) + optional(hours) + optional(minutes)
             + format(seconds) + QLatin1Char('.') + format(milliseconds, 3);
 }
+
+void setupTreeView(QTreeView* view, CostModel* model)
+{
+    auto proxy = new QSortFilterProxyModel(view);
+    proxy->setSourceModel(model);
+
+    view->setSortingEnabled(true);
+    view->sortByColumn(CostModel::SelfCost);
+    view->setModel(proxy);
+}
 }
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     m_bottomUpCostModel(new CostModel(this)),
+    m_topDownCostModel(new CostModel(this)),
     m_parser(new PerfParser(this))
 {
     setWindowTitle(tr("Hotspot"));
@@ -73,12 +84,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->mainPageStack->setCurrentWidget(ui->startPage);
     ui->openFileButton->setFocus();
 
-    auto proxy = new QSortFilterProxyModel(this);
-    proxy->setSourceModel(m_bottomUpCostModel);
-
-    ui->bottomUpTreeView->setSortingEnabled(true);
-    ui->bottomUpTreeView->sortByColumn(CostModel::SelfCost);
-    ui->bottomUpTreeView->setModel(proxy);
+    setupTreeView(ui->bottomUpTreeView, m_bottomUpCostModel);
+    setupTreeView(ui->topDownTreeView, m_topDownCostModel);
 
     auto topHotspotsProxy = new TopProxy(this);
     topHotspotsProxy->setSourceModel(m_bottomUpCostModel);
@@ -90,6 +97,12 @@ MainWindow::MainWindow(QWidget *parent) :
             this, [this] (const FrameData& data) {
                 m_bottomUpCostModel->setData(data);
                 ui->flameGraph->setBottomUpData(data);
+            });
+
+    connect(m_parser, &PerfParser::topDownDataAvailable,
+            this, [this] (const FrameData& data) {
+                m_topDownCostModel->setData(data);
+                ui->flameGraph->setTopDownData(data);
             });
 
     connect(m_parser, &PerfParser::summaryDataAvailable,

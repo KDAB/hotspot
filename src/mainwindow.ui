@@ -508,6 +508,16 @@
             </item>
            </layout>
           </widget>
+          <widget class="QWidget" name="topDownTab">
+           <attribute name="title">
+            <string>Top Down</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="QTreeView" name="topDownTreeView"/>
+            </item>
+           </layout>
+          </widget>
           <widget class="QWidget" name="flameGraphTab">
            <property name="toolTip">
             <string>Visually analyze CPU hotspots with a flame graph</string>
@@ -538,7 +548,7 @@
      <x>0</x>
      <y>0</y>
      <width>745</width>
-     <height>25</height>
+     <height>27</height>
     </rect>
    </property>
   </widget>
