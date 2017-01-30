@@ -49,6 +49,7 @@ public:
     ~MainWindow();
 
 public slots:
+    void clear();
     void openFile(const QString& path);
 
 private slots:

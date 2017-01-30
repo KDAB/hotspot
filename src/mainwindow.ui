@@ -571,6 +571,12 @@
      <height>27</height>
     </rect>
    </property>
+   <widget class="QMenu" name="fileMenu">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+   </widget>
+   <addaction name="fileMenu"/>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

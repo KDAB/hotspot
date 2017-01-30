@@ -33,6 +33,7 @@
 #include <QSortFilterProxyModel>
 
 #include <KRecursiveFilterProxyModel>
+#include <KStandardAction>
 
 #include "models/costmodel.h"
 #include "parsers/perf/perfparser.h"
@@ -81,9 +82,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     m_parser(new PerfParser(this))
 {
-    setWindowTitle(tr("Hotspot"));
-
     ui->setupUi(this);
+
+    ui->fileMenu->addAction(KStandardAction::open(this, &MainWindow::on_openFileButton_clicked, this));
+    ui->fileMenu->addAction(KStandardAction::clear(this, &MainWindow::clear, this));
+    ui->fileMenu->addAction(KStandardAction::close(this, &QMainWindow::close, this));
 
     ui->mainPageStack->setCurrentWidget(ui->startPage);
     ui->openFileButton->setFocus();
@@ -124,9 +127,6 @@ MainWindow::MainWindow(QWidget *parent) :
                 ui->commandValue->setText(data.command);
             });
 
-    hideLoadingResults();
-    ui->loadingResultsErrorLabel->hide();
-
     connect(m_parser, &PerfParser::parsingFinished,
             this, [this] () {
                 ui->resultsButton->setEnabled(true);
@@ -143,6 +143,8 @@ MainWindow::MainWindow(QWidget *parent) :
                 ui->loadingResultsErrorLabel->setText(errorMessage);
                 ui->loadingResultsErrorLabel->show();
             });
+
+    clear();
 }
 
 MainWindow::~MainWindow() = default;
@@ -162,6 +164,15 @@ void MainWindow::on_startButton_clicked()
 void MainWindow::on_resultsButton_clicked()
 {
     ui->mainPageStack->setCurrentWidget(ui->resultsPage);
+}
+
+void MainWindow::clear()
+{
+    setWindowTitle(tr("Hotspot"));
+    hideLoadingResults();
+    ui->loadingResultsErrorLabel->hide();
+    ui->resultsButton->setEnabled(false);
+    ui->mainPageStack->setCurrentWidget(ui->startPage);
 }
 
 void MainWindow::openFile(const QString& path)
