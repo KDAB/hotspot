@@ -107,6 +107,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->topHotspotsTableView->setSortingEnabled(false);
     ui->topHotspotsTableView->setModel(topHotspotsProxy);
 
+    setStyleSheet(QStringLiteral("QMainWindow { background: url(:/images/kdabproducts.png) top right no-repeat; }"));
+
     connect(m_parser, &PerfParser::bottomUpDataAvailable,
             this, [this, bottomUpCostModel] (const FrameData& data) {
                 bottomUpCostModel->setData(data);
