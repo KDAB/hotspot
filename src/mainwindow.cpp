@@ -72,8 +72,6 @@ void setupTreeView(QTreeView* view, CostModel* model)
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    m_bottomUpCostModel(new CostModel(this)),
-    m_topDownCostModel(new CostModel(this)),
     m_parser(new PerfParser(this))
 {
     setWindowTitle(tr("Hotspot"));
@@ -84,24 +82,27 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->mainPageStack->setCurrentWidget(ui->startPage);
     ui->openFileButton->setFocus();
 
-    setupTreeView(ui->bottomUpTreeView, m_bottomUpCostModel);
-    setupTreeView(ui->topDownTreeView, m_topDownCostModel);
+    auto bottomUpCostModel = new CostModel(this);
+    setupTreeView(ui->bottomUpTreeView, bottomUpCostModel);
+
+    auto topDownCostModel = new CostModel(this);
+    setupTreeView(ui->topDownTreeView, topDownCostModel);
 
     auto topHotspotsProxy = new TopProxy(this);
-    topHotspotsProxy->setSourceModel(m_bottomUpCostModel);
+    topHotspotsProxy->setSourceModel(bottomUpCostModel);
 
     ui->topHotspotsTableView->setSortingEnabled(false);
     ui->topHotspotsTableView->setModel(topHotspotsProxy);
 
     connect(m_parser, &PerfParser::bottomUpDataAvailable,
-            this, [this] (const FrameData& data) {
-                m_bottomUpCostModel->setData(data);
+            this, [this, bottomUpCostModel] (const FrameData& data) {
+                bottomUpCostModel->setData(data);
                 ui->flameGraph->setBottomUpData(data);
             });
 
     connect(m_parser, &PerfParser::topDownDataAvailable,
-            this, [this] (const FrameData& data) {
-                m_topDownCostModel->setData(data);
+            this, [this, topDownCostModel] (const FrameData& data) {
+                topDownCostModel->setData(data);
                 ui->flameGraph->setTopDownData(data);
             });
 
