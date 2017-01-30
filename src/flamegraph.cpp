@@ -465,6 +465,7 @@ void FlameGraph::updateTooltip()
 void FlameGraph::setData(FrameGraphicsItem* rootItem)
 {
     m_scene->clear();
+    m_tooltipItem = nullptr;
     m_rootItem = rootItem;
     m_selectionHistory.clear();
     m_selectionHistory.push_back(rootItem);
