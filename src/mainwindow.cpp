@@ -65,6 +65,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_bottomUpCostModel(new CostModel(this)),
     m_parser(new PerfParser(this))
 {
+    setWindowTitle(tr("Hotspot"));
+
     ui->setupUi(this);
     ui->mainToolBar->hide();
 
@@ -139,6 +141,8 @@ void MainWindow::on_resultsButton_clicked()
 
 void MainWindow::openFile(const QString& path)
 {
+    setWindowTitle(tr("%1 - Hotspot").arg(QFileInfo(path).fileName()));
+
     showLoadingResults();
 
     // TODO: support input files of different types via plugins
