@@ -181,9 +181,9 @@ void FrameGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 namespace {
 
 /**
- * Generate a brush from the "mem" color space used in upstream FlameGraph.pl
+ * Generate a brush from the "mem" color space used in upstream flamegraph.pl
  */
-QBrush brush()
+QBrush memBrush() [[maybe_unused]]
 {
     // intern the brushes, to reuse them across items which can be thousands
     // otherwise we'd end up with dozens of allocations and higher memory consumption
@@ -191,6 +191,23 @@ QBrush brush()
         QVector<QBrush> ret;
         std::generate_n(std::back_inserter(ret), 100, [] () {
             return QColor(0, 190 + 50 * qreal(rand()) / RAND_MAX, 210 * qreal(rand()) / RAND_MAX, 125);
+        });
+        return ret;
+    }) ();
+    return brushes.at(rand() % brushes.size());
+}
+
+/**
+ * Generate a brush from the "hot" color space used in upstream flamegraph.pl
+ */
+QBrush hotBrush()
+{
+    // intern the brushes, to reuse them across items which can be thousands
+    // otherwise we'd end up with dozens of allocations and higher memory consumption
+    static const QVector<QBrush> brushes = ([] () -> QVector<QBrush> {
+        QVector<QBrush> ret;
+        std::generate_n(std::back_inserter(ret), 100, [] () {
+            return QColor(205 + 50 * qreal(rand()) / RAND_MAX, 230 * qreal(rand()) / RAND_MAX, 55 * qreal(rand()) / RAND_MAX, 125);
         });
         return ret;
     }) ();
@@ -247,7 +264,7 @@ void toGraphicsItems(const QVector<FrameData>& data, FrameGraphicsItem *parent,
         if (!item) {
             item = new FrameGraphicsItem(row.inclusiveCost, row.symbol, parent);
             item->setPen(parent->pen());
-            item->setBrush(brush());
+            item->setBrush(hotBrush());
         } else {
             item->setCost(item->cost() + row.inclusiveCost);
         }
