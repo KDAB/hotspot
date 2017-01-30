@@ -35,10 +35,12 @@
 #include <QFileInfo>
 #include <QLoggingCategory>
 
-#include "util.h"
+#include <ThreadWeaver/ThreadWeaver>
 
 #include <models/framedata.h>
 #include <models/summarydata.h>
+
+#include <util.h>
 
 Q_LOGGING_CATEGORY(LOG_PERFPARSER, "hotspot.perfparser", QtWarningMsg)
 
@@ -307,7 +309,6 @@ struct PerfParserPrivate
         buffer.open(QIODevice::ReadOnly);
         stream.setDevice(&buffer);
         process.setProcessChannelMode(QProcess::ForwardedErrorChannel);
-        parserBinary = Util::findLibexecBinary(QStringLiteral("hotspot-perfparser"));
     }
 
     bool tryParse()
@@ -662,7 +663,6 @@ struct PerfParserPrivate
     QVector<LocationData> locations;
     QVector<QString> strings;
     QProcess process;
-    QString parserBinary;
     SummaryData summaryResult;
     quint64 applicationStartTime = 0;
     quint64 applicationEndTime = 0;
@@ -675,35 +675,7 @@ Q_DECLARE_TYPEINFO(SymbolData, Q_MOVABLE_TYPE);
 
 PerfParser::PerfParser(QObject* parent)
     : QObject(parent)
-    , d(new PerfParserPrivate)
 {
-    connect(&d->process, &QProcess::readyRead,
-            [this] {
-                while (d->tryParse()) {
-                    // just call tryParse until it fails
-                }
-            });
-
-    connect(&d->process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-            [this] (int exitCode, QProcess::ExitStatus exitStatus) {
-                qCDebug(LOG_PERFPARSER) << exitCode << exitStatus;
-
-                if (exitCode == EXIT_SUCCESS) {
-                    d->finalize();
-                    emit bottomUpDataAvailable(d->bottomUpResult);
-                    emit summaryDataAvailable(d->summaryResult);
-                    emit parsingFinished();
-                } else {
-                    emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1.").arg(exitCode));
-                }
-            });
-
-    connect(&d->process, &QProcess::errorOccurred,
-            [this] (QProcess::ProcessError error) {
-                qCWarning(LOG_PERFPARSER) << error << d->process.errorString();
-
-                emit parsingFailed(d->process.errorString());
-            });
 }
 
 PerfParser::~PerfParser() = default;
@@ -724,10 +696,49 @@ void PerfParser::startParseFile(const QString& path)
         return;
     }
 
-    if (d->parserBinary.isEmpty()) {
+    const auto parserBinary = Util::findLibexecBinary(QStringLiteral("hotspot-perfparser"));
+    if (parserBinary.isEmpty()) {
         emit parsingFailed(tr("Failed to find hotspot-perfparser binary."));
         return;
     }
 
-    d->process.start(d->parserBinary, {QStringLiteral("--input"), path});
+    using namespace ThreadWeaver;
+    stream() << make_job([path, parserBinary, this]() {
+        PerfParserPrivate d;
+
+        connect(&d.process, &QProcess::readyRead,
+                [&d] {
+                    while (d.tryParse()) {
+                        // just call tryParse until it fails
+                    }
+                });
+
+        connect(&d.process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+                [&d, this] (int exitCode, QProcess::ExitStatus exitStatus) {
+                    qCDebug(LOG_PERFPARSER) << exitCode << exitStatus;
+
+                    if (exitCode == EXIT_SUCCESS) {
+                        d.finalize();
+                        emit bottomUpDataAvailable(d.bottomUpResult);
+                        emit summaryDataAvailable(d.summaryResult);
+                        emit parsingFinished();
+                    } else {
+                        emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1.").arg(exitCode));
+                    }
+                });
+
+        connect(&d.process, &QProcess::errorOccurred,
+                [&d, this] (QProcess::ProcessError error) {
+                    qCWarning(LOG_PERFPARSER) << error << d.process.errorString();
+
+                    emit parsingFailed(d.process.errorString());
+                });
+
+        d.process.start(parserBinary, {QStringLiteral("--input"), path});
+        if (!d.process.waitForStarted()) {
+            emit parsingFailed(tr("Failed to start the hotspot-perfparser process"));
+            return;
+        }
+        d.process.waitForFinished();
+    });
 }

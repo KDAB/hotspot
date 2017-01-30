@@ -36,4 +36,5 @@ struct SummaryData
     quint32 processCount;
 };
 
+Q_DECLARE_METATYPE(SummaryData)
 Q_DECLARE_TYPEINFO(SummaryData, Q_MOVABLE_TYPE);

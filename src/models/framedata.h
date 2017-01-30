@@ -44,4 +44,5 @@ struct FrameData
     const FrameData* parent = nullptr;
 };
 
+Q_DECLARE_METATYPE(FrameData)
 Q_DECLARE_TYPEINFO(FrameData, Q_MOVABLE_TYPE);

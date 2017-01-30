@@ -52,7 +52,4 @@ signals:
     void summaryDataAvailable(const SummaryData& data);
     void parsingFinished();
     void parsingFailed(const QString& errorMessage);
-
-private:
-    std::unique_ptr<PerfParserPrivate> d;
 };
