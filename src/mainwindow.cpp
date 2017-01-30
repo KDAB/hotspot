@@ -84,6 +84,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     auto bottomUpCostModel = new CostModel(this);
     setupTreeView(ui->bottomUpTreeView, bottomUpCostModel);
+    // only the top rows have a self cost == inclusive cost in the bottom up view
+    ui->bottomUpTreeView->hideColumn(CostModel::SelfCost);
 
     auto topDownCostModel = new CostModel(this);
     setupTreeView(ui->topDownTreeView, topDownCostModel);
