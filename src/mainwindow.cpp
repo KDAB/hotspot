@@ -32,6 +32,8 @@
 #include <QFileDialog>
 #include <QSortFilterProxyModel>
 
+#include <KRecursiveFilterProxyModel>
+
 #include "models/costmodel.h"
 #include "parsers/perf/perfparser.h"
 #include "flamegraph.h"
@@ -58,10 +60,15 @@ QString formatTimeString(quint64 nanoseconds)
             + format(seconds) + QLatin1Char('.') + format(milliseconds, 3) + QLatin1Char('s');
 }
 
-void setupTreeView(QTreeView* view, CostModel* model)
+void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter,
+                   CostModel* model)
 {
-    auto proxy = new QSortFilterProxyModel(view);
+    auto proxy = new KRecursiveFilterProxyModel(view);
+    proxy->setSortRole(CostModel::SortRole);
+    proxy->setFilterRole(CostModel::FilterRole);
     proxy->setSourceModel(model);
+
+    filter->setProxy(proxy);
 
     view->setSortingEnabled(true);
     view->sortByColumn(CostModel::SelfCost);
@@ -83,12 +90,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->openFileButton->setFocus();
 
     auto bottomUpCostModel = new CostModel(this);
-    setupTreeView(ui->bottomUpTreeView, bottomUpCostModel);
+    setupTreeView(ui->bottomUpTreeView,  ui->bottomUpSearch,
+                  bottomUpCostModel);
     // only the top rows have a self cost == inclusive cost in the bottom up view
     ui->bottomUpTreeView->hideColumn(CostModel::SelfCost);
 
     auto topDownCostModel = new CostModel(this);
-    setupTreeView(ui->topDownTreeView, topDownCostModel);
+    setupTreeView(ui->topDownTreeView, ui->topDownSearch,
+                  topDownCostModel);
 
     auto topHotspotsProxy = new TopProxy(this);
     topHotspotsProxy->setSourceModel(bottomUpCostModel);

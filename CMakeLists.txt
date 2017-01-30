@@ -62,7 +62,15 @@ find_package(ECM 1.0.0 NO_MODULE REQUIRED)
 
 if(Qt5_FOUND AND ECM_FOUND)
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
-    find_package(KF5 OPTIONAL_COMPONENTS ThreadWeaver I18n ConfigWidgets CoreAddons REQUIRED)
+    find_package(KF5 OPTIONAL_COMPONENTS
+        ThreadWeaver
+        I18n
+        ConfigWidgets
+        CoreAddons
+        ItemViews
+        ItemModels
+        REQUIRED
+    )
 endif()
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)

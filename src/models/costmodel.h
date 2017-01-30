@@ -49,6 +49,11 @@ public:
         NUM_COLUMNS
     };
 
+    enum Roles {
+        SortRole = Qt::UserRole,
+        FilterRole
+    };
+
     int columnCount(const QModelIndex& parent) const override;
     int rowCount(const QModelIndex& parent) const override;
 

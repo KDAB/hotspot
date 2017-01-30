@@ -112,7 +112,28 @@ QVariant CostModel::data(const QModelIndex& index, int role) const
         return {};
     }
 
-    if (role == Qt::DisplayRole) {
+    if (role == SortRole) {
+        switch (static_cast<Columns>(index.column())) {
+            case Symbol:
+                return item->symbol;
+            case Binary:
+                return item->binary;
+            case Location:
+                return item->location;
+            case Address:
+                return item->address;
+            case SelfCost:
+                return item->selfCost;
+            case InclusiveCost:
+                return item->inclusiveCost;
+            case NUM_COLUMNS:
+                // do nothing
+                break;
+        }
+    } else if (role == FilterRole) {
+        return item->symbol + item->binary + item->location;
+    } else if (role == Qt::DisplayRole) {
+        // TODO: show fractional cost
         switch (static_cast<Columns>(index.column())) {
             case Symbol:
                 return item->symbol;

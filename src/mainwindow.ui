@@ -518,6 +518,9 @@
            </attribute>
            <layout class="QVBoxLayout" name="bottomUpVerticalLayout">
             <item>
+             <widget class="KFilterProxySearchLine" name="bottomUpSearch"/>
+            </item>
+            <item>
              <widget class="QTreeView" name="bottomUpTreeView"/>
             </item>
            </layout>
@@ -527,6 +530,9 @@
             <string>Top Down</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="KFilterProxySearchLine" name="topDownSearch"/>
+            </item>
             <item>
              <widget class="QTreeView" name="topDownTreeView"/>
             </item>
@@ -578,6 +584,11 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
+  <customwidget>
+   <class>KFilterProxySearchLine</class>
+   <extends>QWidget</extends>
+   <header>kfilterproxysearchline.h</header>
+  </customwidget>
   <customwidget>
    <class>FlameGraph</class>
    <extends>QWidget</extends>
