@@ -416,6 +416,7 @@ struct PerfParserPrivate
                 struct Command command;
                 stream >> command;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << command;
+                addCommand(command);
                 break;
             }
             case LocationDefinition: {
@@ -471,6 +472,14 @@ struct PerfParserPrivate
         for (auto& frame : *children) {
             frame.parent = parent;
             setParents(&frame.children, &frame);
+        }
+    }
+
+    void addCommand(const Command& command)
+    {
+        // pid == 0 is "perf", which is not interesting to us
+        if (command.pid && summaryResult.command.isEmpty()) {
+            summaryResult.command = strings.value(command.comm.id);
         }
     }
 

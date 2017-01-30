@@ -386,46 +386,60 @@
             <item>
              <widget class="QGroupBox" name="groupBox">
               <property name="title">
-               <string>Run Time</string>
+               <string>Summary</string>
               </property>
               <layout class="QFormLayout" name="formLayout">
                <item row="0" column="0">
+                <widget class="QLabel" name="commandLabel">
+                 <property name="text">
+                  <string>Command:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
                 <widget class="QLabel" name="appRunTimeLabel">
                  <property name="text">
                   <string>Application Run Time:</string>
                  </property>
                 </widget>
                </item>
-               <item row="0" column="1">
+               <item row="2" column="1">
                 <widget class="QLabel" name="appRunTimeValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="0">
+               <item row="4" column="0">
                 <widget class="QLabel" name="processCountLabel">
                  <property name="text">
                   <string>Process Count:</string>
                  </property>
                 </widget>
                </item>
-               <item row="1" column="1">
+               <item row="4" column="1">
                 <widget class="QLabel" name="processCountValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="2" column="0">
+               <item row="5" column="0">
                 <widget class="QLabel" name="threadCountLabel">
                  <property name="text">
                   <string>Thread Count:</string>
                  </property>
                 </widget>
                </item>
-               <item row="2" column="1">
+               <item row="5" column="1">
                 <widget class="QLabel" name="threadCountValue">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLabel" name="commandValue">
                  <property name="text">
                   <string/>
                  </property>

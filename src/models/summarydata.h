@@ -34,6 +34,7 @@ struct SummaryData
     quint64 applicationRunningTime;
     quint32 threadCount;
     quint32 processCount;
+    QString command;
 };
 
 Q_DECLARE_METATYPE(SummaryData)
