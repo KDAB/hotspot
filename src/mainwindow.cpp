@@ -129,7 +129,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(m_parser, &PerfParser::parsingFinished,
             this, [this] () {
-                ui->resultsButton->setEnabled(true);
                 ui->mainPageStack->setCurrentWidget(ui->resultsPage);
                 ui->resultsTabWidget->setCurrentWidget(ui->summaryTab);
                 ui->resultsTabWidget->setFocus();
@@ -156,22 +155,11 @@ void MainWindow::on_openFileButton_clicked()
     openFile(fileName);
 }
 
-void MainWindow::on_startButton_clicked()
-{
-    ui->mainPageStack->setCurrentWidget(ui->startPage);
-}
-
-void MainWindow::on_resultsButton_clicked()
-{
-    ui->mainPageStack->setCurrentWidget(ui->resultsPage);
-}
-
 void MainWindow::clear()
 {
     setWindowTitle(tr("Hotspot"));
     hideLoadingResults();
     ui->loadingResultsErrorLabel->hide();
-    ui->resultsButton->setEnabled(false);
     ui->mainPageStack->setCurrentWidget(ui->startPage);
 }
 

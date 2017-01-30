@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
         <file>images/hotspot_logo.png</file>
-        <file>images/results_icon.png</file>
     </qresource>
 </RCC>

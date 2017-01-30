@@ -54,8 +54,6 @@ public slots:
 
 private slots:
     void on_openFileButton_clicked();
-    void on_startButton_clicked();
-    void on_resultsButton_clicked();
 
 private:
     Ui::MainWindow *ui;
