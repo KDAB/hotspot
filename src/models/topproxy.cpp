@@ -36,6 +36,9 @@ bool TopProxy::filterAcceptsColumn(int source_column, const QModelIndex& /*sourc
 
 int TopProxy::rowCount(const QModelIndex& parent) const
 {
+    if (parent.isValid()) {
+        return 0; // this is not a tree
+    }
     return std::min(5, sourceModel()->rowCount(parent));
 }
 
