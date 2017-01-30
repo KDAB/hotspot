@@ -43,19 +43,23 @@ int main(int argc, char** argv)
     parser.addHelpOption();
     parser.addVersionOption();
 
-    QCommandLineOption input({QStringLiteral("i"), QStringLiteral("input")},
-        QCoreApplication::translate("main",
-            "The input file to process, i.e. a perf.data file."),
-        QStringLiteral("file"));
-    parser.addOption(input);
+    parser.addPositionalArgument(QStringLiteral("files"),
+        QCoreApplication::translate("main", "Optional input files to open on startup, i.e. perf.data files."),
+                                 QStringLiteral("[files...]"));
 
     parser.process(app);
 
-    MainWindow window;
-    if (parser.isSet(input)) {
-        window.openFile(parser.value(input));
+    for (const auto& file : parser.positionalArguments()) {
+        auto window = new MainWindow;
+        window->openFile(file);
+        window->show();
     }
-    window.show();
+
+    // show at least one mainwindow
+    if (parser.positionalArguments().isEmpty()) {
+        auto window = new MainWindow;
+        window->show();
+    }
 
     return app.exec();
 }
