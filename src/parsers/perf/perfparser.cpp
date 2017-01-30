@@ -501,9 +501,22 @@ struct PerfParserPrivate
 
     FrameData* addFrame(FrameData* parent, qint32 id) const
     {
+        bool skipNextFrame = false;
         while (id != -1) {
             const auto& location = locations.value(id);
-            const auto& symbol = findSymbol(id, location.parentLocationId);
+            if (skipNextFrame) {
+                id = location.parentLocationId;
+                skipNextFrame = false;
+                continue;
+            }
+
+            auto symbol = symbols.value(id);
+            if (!symbol.isValid()) {
+                // we get function entry points from the perfparser but
+                // those are imo not interesting - skip them
+                symbol = symbols.value(location.parentLocationId);
+                skipNextFrame = true;
+            }
 
             // TODO: implement aggregation, i.e. to ignore location address
 
@@ -544,15 +557,6 @@ struct PerfParserPrivate
         addSampleToBottomUp(sample);
         addSampleToTopDown(sample);
         addSampleToCallerCallee(sample);
-    }
-
-    SymbolData findSymbol(qint32 id, qint32 parentId) const
-    {
-        auto ret = symbols.value(id);
-        if (!ret.isValid()) {
-            ret = symbols.value(parentId);
-        }
-        return ret;
     }
 
     void addString(const StringDefinition& string)
