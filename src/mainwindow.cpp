@@ -84,7 +84,6 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowTitle(tr("Hotspot"));
 
     ui->setupUi(this);
-    ui->mainToolBar->hide();
 
     ui->mainPageStack->setCurrentWidget(ui->startPage);
     ui->openFileButton->setFocus();
