@@ -19,6 +19,8 @@
 
 #include "topproxy.h"
 
+#include "costmodel.h"
+
 TopProxy::TopProxy(QObject* parent)
     : QSortFilterProxyModel(parent)
 {

@@ -22,8 +22,6 @@
 
 #include <QSortFilterProxyModel>
 
-#include "costmodel.h"
-
 class TopProxy : public QSortFilterProxyModel
 {
     Q_OBJECT
