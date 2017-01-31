@@ -145,15 +145,14 @@ MainWindow::MainWindow(QWidget *parent) :
                 ui->mainPageStack->setCurrentWidget(ui->resultsPage);
                 ui->resultsTabWidget->setCurrentWidget(ui->summaryTab);
                 ui->resultsTabWidget->setFocus();
-                hideLoadingResults();
             });
 
     connect(m_parser, &PerfParser::parsingFailed,
             this, [this] (const QString& errorMessage) {
                 qWarning() << errorMessage;
-                hideLoadingResults();
                 ui->loadingResultsErrorLabel->setText(errorMessage);
                 ui->loadingResultsErrorLabel->show();
+                ui->loadStack->setCurrentWidget(ui->openFilePage);
             });
 
     clear();
@@ -171,32 +170,20 @@ void MainWindow::on_openFileButton_clicked()
 void MainWindow::clear()
 {
     setWindowTitle(tr("Hotspot"));
-    hideLoadingResults();
     ui->loadingResultsErrorLabel->hide();
     ui->mainPageStack->setCurrentWidget(ui->startPage);
+    ui->loadStack->setCurrentWidget(ui->openFilePage);
 }
 
 void MainWindow::openFile(const QString& path)
 {
     setWindowTitle(tr("%1 - Hotspot").arg(QFileInfo(path).fileName()));
 
-    showLoadingResults();
+    ui->loadingResultsErrorLabel->hide();
+    ui->loadStack->setCurrentWidget(ui->parseProgressPage);
 
     // TODO: support input files of different types via plugins
     m_parser->startParseFile(path);
-}
-
-void MainWindow::showLoadingResults()
-{
-    ui->openFileProgressBar->show();
-    ui->loadingResultsLabel->show();
-    ui->loadingResultsErrorLabel->hide();
-}
-
-void MainWindow::hideLoadingResults()
-{
-    ui->openFileProgressBar->hide();
-    ui->loadingResultsLabel->hide();
 }
 
 void MainWindow::aboutKDAB()

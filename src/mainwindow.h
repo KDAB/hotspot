@@ -61,7 +61,4 @@ private slots:
 private:
     Ui::MainWindow *ui;
     PerfParser* m_parser;
-
-    void showLoadingResults();
-    void hideLoadingResults();
 };

@@ -113,11 +113,11 @@
          </spacer>
         </item>
         <item alignment="Qt::AlignVCenter">
-         <widget class="QStackedWidget" name="stackedWidget">
+         <widget class="QStackedWidget" name="loadStack">
           <property name="currentIndex">
            <number>0</number>
           </property>
-          <widget class="QWidget" name="page">
+          <widget class="QWidget" name="openFilePage">
            <layout class="QVBoxLayout" name="verticalLayout_10">
             <item alignment="Qt::AlignHCenter">
              <widget class="QPushButton" name="openFileButton">
@@ -140,7 +140,8 @@
                <string>Open File</string>
               </property>
               <property name="icon">
-               <iconset theme="document-open"/>
+               <iconset theme="document-open">
+                <normaloff>.</normaloff>.</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -153,9 +154,19 @@
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QLabel" name="loadingResultsErrorLabel">
+              <property name="text">
+               <string/>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="page_2">
+          <widget class="QWidget" name="parseProgressPage">
            <layout class="QVBoxLayout" name="verticalLayout_8">
             <item alignment="Qt::AlignHCenter">
              <widget class="QProgressBar" name="openFileProgressBar">
@@ -208,16 +219,6 @@
            </size>
           </property>
          </spacer>
-        </item>
-        <item>
-         <widget class="QLabel" name="loadingResultsErrorLabel">
-          <property name="text">
-           <string/>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
         </item>
        </layout>
       </widget>
