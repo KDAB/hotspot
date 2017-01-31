@@ -1,6 +1,7 @@
 include_directories(
     ${LIBELF_INCLUDE_DIR}
     ${LIBDW_INCLUDE_DIR}/elfutils
+    perfparser/app
 )
 
 add_executable(hotspot-perfparser
@@ -30,3 +31,16 @@ set_target_properties(hotspot-perfparser
 )
 
 install(TARGETS hotspot-perfparser RUNTIME DESTINATION ${LIBEXEC_INSTALL_DIR})
+
+ecm_add_test(
+    perfparser/tests/auto/elfmap/tst_elfmap.cpp
+    perfparser/app/perfelfmap.cpp
+    LINK_LIBRARIES
+        Qt5::Core
+        Qt5::Network
+        Qt5::Test
+        ${LIBDW_LIBRARIES}
+        ${LIBELF_LIBRARIES}
+    TEST_NAME
+        tst_elfmap
+)

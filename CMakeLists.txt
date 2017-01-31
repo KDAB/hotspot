@@ -55,7 +55,7 @@ configure_file(
 
 include(FeatureSummary)
 
-find_package(Qt5 COMPONENTS Core Widgets Network REQUIRED)
+find_package(Qt5 COMPONENTS Core Widgets Network Test REQUIRED)
 find_package(LibElf REQUIRED)
 find_package(Elfutils REQUIRED) # TODO: make optional, use internal copy
 find_package(ECM 1.0.0 NO_MODULE REQUIRED)
@@ -74,6 +74,11 @@ if(Qt5_FOUND AND ECM_FOUND)
 endif()
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
+
+include(KDECMakeSettings)
+include(ECMAddTests)
+include(ECMCoverageOption)
+include(ECMEnableSanitizers)
 
 add_subdirectory(3rdparty)
 
