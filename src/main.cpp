@@ -27,6 +27,7 @@
 
 #include <QApplication>
 #include <QCommandLineParser>
+#include <QFile>
 
 #include "hotspot-config.h"
 #include "mainwindow.h"
@@ -62,6 +63,14 @@ int main(int argc, char** argv)
     // show at least one mainwindow
     if (parser.positionalArguments().isEmpty()) {
         auto window = new MainWindow;
+
+        // open perf.data in current CWD, if it exists
+        // this brings hotspot closer to the behavior of "perf report"
+        const auto perfDataFile = QStringLiteral("perf.data");
+        if (QFile::exists(perfDataFile)) {
+            window->openFile(perfDataFile);
+        }
+
         window->show();
     }
 
