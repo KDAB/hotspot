@@ -663,6 +663,7 @@ struct PerfParserPrivate
         }
         uniqueThreads.insert(sample.tid);
         uniqueProcess.insert(sample.pid);
+        ++summaryResult.sampleCount;
     }
 
     void calculateSummary()

@@ -31,9 +31,10 @@
 
 struct SummaryData
 {
-    quint64 applicationRunningTime;
-    quint32 threadCount;
-    quint32 processCount;
+    quint64 applicationRunningTime = 0;
+    quint32 threadCount = 0;
+    quint32 processCount = 0;
+    quint64 sampleCount = 0;
     QString command;
 };
 
