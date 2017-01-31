@@ -500,8 +500,40 @@
      <string>&amp;File</string>
     </property>
    </widget>
+   <widget class="QMenu" name="helpMenu">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionAbout_Hotspot"/>
+    <addaction name="actionAbout_KDAB"/>
+    <addaction name="actionAbout_Qt"/>
+   </widget>
    <addaction name="fileMenu"/>
+   <addaction name="helpMenu"/>
   </widget>
+  <action name="actionAbout_Hotspot">
+   <property name="text">
+    <string>About &amp;Hotspot</string>
+   </property>
+  </action>
+  <action name="actionAbout_KDAB">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/kdablogo.png</normaloff>:/images/kdablogo.png</iconset>
+   </property>
+   <property name="text">
+    <string>About &amp;KDAB</string>
+   </property>
+  </action>
+  <action name="actionAbout_Qt">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/qtlogo.png</normaloff>:/images/qtlogo.png</iconset>
+   </property>
+   <property name="text">
+    <string>About &amp;Qt</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

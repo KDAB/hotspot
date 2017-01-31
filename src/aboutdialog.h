@@ -1,10 +1,10 @@
 /*
-  mainwindow.h
+  aboutdialog.h
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2016-2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
-  Author: Nate Rogers <nate.rogers@kdab.com>
+  Copyright (C) 2013-2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Author: Volker Krause <volker.krause@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
   accordance with Hotspot Commercial License Agreement provided with the Software.
@@ -27,41 +27,23 @@
 
 #pragma once
 
-#include <QMainWindow>
-#include <QScopedPointer>
-#include <QString>
-
-#include "models/framedata.h"
+#include <QDialog>
 
 namespace Ui {
-class MainWindow;
+class AboutDialog;
 }
 
-class CostModel;
-class PerfParser;
-
-class MainWindow : public QMainWindow
+class AboutDialog : public QDialog
 {
     Q_OBJECT
-
 public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+    explicit AboutDialog(QWidget *parent = nullptr);
+    ~AboutDialog();
 
-public slots:
-    void clear();
-    void openFile(const QString& path);
-
-    void aboutKDAB();
-    void aboutHotspot();
-
-private slots:
-    void on_openFileButton_clicked();
+    void setTitle(const QString &title);
+    void setText(const QString &text);
+    void setLogo(const QString &iconFileName);
 
 private:
-    Ui::MainWindow *ui;
-    PerfParser* m_parser;
-
-    void showLoadingResults();
-    void hideLoadingResults();
+    QScopedPointer<Ui::AboutDialog> ui;
 };

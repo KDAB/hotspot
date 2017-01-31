@@ -11,9 +11,11 @@ add_executable(hotspot
 
     mainwindow.cpp
     flamegraph.cpp
+    aboutdialog.cpp
 
     # ui files:
     mainwindow.ui
+    aboutdialog.ui
 
     # resources:
     resources.qrc

@@ -31,13 +31,17 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QSortFilterProxyModel>
+#include <QApplication>
 
 #include <KRecursiveFilterProxyModel>
 #include <KStandardAction>
 
-#include "models/costmodel.h"
-#include "parsers/perf/perfparser.h"
+#include "aboutdialog.h"
 #include "flamegraph.h"
+
+#include "parsers/perf/perfparser.h"
+
+#include "models/costmodel.h"
 #include "models/summarydata.h"
 #include "models/topproxy.h"
 
@@ -87,6 +91,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->fileMenu->addAction(KStandardAction::open(this, &MainWindow::on_openFileButton_clicked, this));
     ui->fileMenu->addAction(KStandardAction::clear(this, &MainWindow::clear, this));
     ui->fileMenu->addAction(KStandardAction::close(this, &QMainWindow::close, this));
+    connect(ui->actionAbout_Qt, &QAction::triggered,
+            qApp, &QApplication::aboutQt);
+    connect(ui->actionAbout_KDAB, &QAction::triggered,
+            this, &MainWindow::aboutKDAB);
+    connect(ui->actionAbout_Hotspot, &QAction::triggered,
+            this, &MainWindow::aboutHotspot);
 
     ui->mainPageStack->setCurrentWidget(ui->startPage);
     ui->openFileButton->setFocus();
@@ -187,4 +197,48 @@ void MainWindow::hideLoadingResults()
 {
     ui->openFileProgressBar->hide();
     ui->loadingResultsLabel->hide();
+}
+
+void MainWindow::aboutKDAB()
+{
+    AboutDialog dialog(this);
+    dialog.setWindowTitle(tr("About KDAB"));
+    dialog.setTitle(trUtf8("Klarälvdalens Datakonsult AB (KDAB)"));
+    dialog.setText(
+        tr("<qt><p>Hotspot is supported and maintained by KDAB</p>"
+           "KDAB, the Qt experts, provide consulting and mentoring for developing "
+           "Qt applications from scratch and in porting from all popular and legacy "
+           "frameworks to Qt. We continue to help develop parts of Qt and are one "
+           "of the major contributors to the Qt Project. We can give advanced or "
+           "standard trainings anywhere around the globe.</p>"
+           "<p>Please visit <a href='https://www.kdab.com'>https://www.kdab.com</a> "
+           "to meet the people who write code like this."
+           "</p></qt>"));
+    dialog.setLogo(QStringLiteral(":/images/kdablogo.png"));
+    dialog.setWindowIcon(QPixmap(QStringLiteral(":/images/kdablogo.png")));
+    dialog.exec();
+}
+
+void MainWindow::aboutHotspot()
+{
+    AboutDialog dialog(this);
+    dialog.setWindowTitle(tr("About Hotspot"));
+    dialog.setTitle(tr("Hotspot - the Qt GUI for performance analysis"));
+    dialog.setText(
+        tr("<qt><p>Hotspot is supported and maintained by KDAB</p>"
+           "This project is a KDAB R&D effort to create a standalone GUI for performance data. "
+           "As the first goal, we want to provide a UI like KCachegrind around Linux perf. "
+           "Looking ahead, we intend to support various other performance data formats "
+           "under this umbrella.</p>"
+           "<p>Hotspot is an open source project:</p>"
+           "<ul>"
+           "<li><a href=\"https://github.com/KDAB/hotspot\">GitHub project page</a></li>"
+           "<li><a href=\"https://github.com/KDAB/hotspot/issues\">Issue Tracker</a></li>"
+           "<li><a href=\"https://github.com/KDAB/hotspot/graphs/contributors\">Contributors</a></li>"
+           "</ul><p>Patches welcome!</p></qt>"));
+    dialog.setLogo(QStringLiteral(":/images/hotspot_logo.png"));
+    // TODO:
+//     dialog.setWindowIcon(QPixmap(QStringLiteral("/images/hotspot_logo.png")));
+    dialog.adjustSize();
+    dialog.exec();
 }
