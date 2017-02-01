@@ -16,6 +16,7 @@ add_executable(hotspot-perfparser
     perfparser/app/perfstdin.cpp
     perfparser/app/perfsymboltable.cpp
     perfparser/app/perfelfmap.cpp
+    perfparser/app/perfkallsyms.cpp
 )
 
 target_link_libraries(hotspot-perfparser
@@ -43,4 +44,17 @@ ecm_add_test(
         ${LIBELF_LIBRARIES}
     TEST_NAME
         tst_elfmap
+)
+
+ecm_add_test(
+    perfparser/tests/auto/kallsyms/tst_kallsyms.cpp
+    perfparser/app/perfkallsyms.cpp
+    LINK_LIBRARIES
+        Qt5::Core
+        Qt5::Network
+        Qt5::Test
+        ${LIBDW_LIBRARIES}
+        ${LIBELF_LIBRARIES}
+    TEST_NAME
+        tst_kallsyms
 )
