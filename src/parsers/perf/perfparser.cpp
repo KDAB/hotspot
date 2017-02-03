@@ -86,9 +86,9 @@ QDebug operator<<(QDebug stream, const StringId& stringId)
     return stream;
 }
 
-struct AttributesDefinition : Record
+struct AttributesDefinition
 {
-    qint32 nextAttributeId = 0;
+    qint32 id = 0;
     quint32 type = 0;
     quint64 config = 0;
     StringId name;
@@ -96,8 +96,7 @@ struct AttributesDefinition : Record
 
 QDataStream& operator>>(QDataStream& stream, AttributesDefinition& attributesDefinition)
 {
-    return stream >> static_cast<Record&>(attributesDefinition)
-                  >> attributesDefinition.nextAttributeId
+    return stream >> attributesDefinition.id
                   >> attributesDefinition.type
                   >> attributesDefinition.config
                   >> attributesDefinition.name;
@@ -106,11 +105,10 @@ QDataStream& operator>>(QDataStream& stream, AttributesDefinition& attributesDef
 QDebug operator<<(QDebug stream, const AttributesDefinition& attributesDefinition)
 {
     stream.noquote().nospace() << "AttributesDefinition{"
-        << static_cast<const Record&>(attributesDefinition) << ", "
-        << "nextAttributeId=" << attributesDefinition.nextAttributeId << ", "
+        << "id=" << attributesDefinition.id << ", "
         << "type=" << attributesDefinition.type << ", "
         << "config=" << attributesDefinition.config << ", "
-        << "name=" << attributesDefinition.name << ", "
+        << "name=" << attributesDefinition.name
         << "}";
     return stream;
 }
@@ -314,6 +312,172 @@ QDebug operator<<(QDebug stream, const StringDefinition& stringDefinition)
     return stream;
 }
 
+struct LostDefinition : Record
+{
+};
+
+QDataStream& operator>>(QDataStream& stream, LostDefinition& lostDefinition)
+{
+    return stream >> static_cast<Record&>(lostDefinition);
+}
+
+QDebug operator<<(QDebug stream, const LostDefinition& lostDefinition)
+{
+    stream.noquote().nospace() << "LostDefinition{"
+        << static_cast<const Record&>(lostDefinition)
+        << "}";
+    return stream;
+}
+
+struct BuildId
+{
+    quint32 pid = 0;
+    QByteArray id;
+    QByteArray fileName;
+};
+
+QDataStream& operator>>(QDataStream& stream, BuildId& buildId)
+{
+    return stream >> buildId.pid >> buildId.id >> buildId.fileName;
+}
+
+QDebug operator<<(QDebug stream, const BuildId& buildId)
+{
+    stream.noquote().nospace() << "BuildId{"
+        << "pid=" << buildId.pid << ", "
+        << "id=" << buildId.id.toHex() << ", "
+        << "fileName=" << buildId.fileName
+        << "}";
+    return stream;
+}
+
+struct NumaNode
+{
+    quint32 nodeId = 0;
+    quint64 memTotal = 0;
+    quint64 memFree = 0;
+    QByteArray topology;
+};
+
+QDataStream& operator>>(QDataStream& stream, NumaNode& numaNode)
+{
+    return stream >> numaNode.nodeId >> numaNode.memTotal
+                  >> numaNode.memFree >> numaNode.topology;
+}
+
+QDebug operator<<(QDebug stream, const NumaNode& numaNode)
+{
+    stream.noquote().nospace() << "NumaNode{"
+        << "nodeId=" << numaNode.nodeId << ", "
+        << "memTotal=" << numaNode.memTotal << ", "
+        << "memFree=" << numaNode.memFree << ", "
+        << "topology=" << numaNode.topology
+        << "}";
+    return stream;
+}
+
+struct Pmu
+{
+    quint32 type = 0;
+    QByteArray name;
+};
+
+QDataStream& operator>>(QDataStream& stream, Pmu& pmu)
+{
+    return stream >> pmu.type >> pmu.name;
+}
+
+QDebug operator<<(QDebug stream, const Pmu& pmu)
+{
+    stream.noquote().nospace() << "Pmu{"
+        << "type=" << pmu.type << ", "
+        << "name=" << pmu.name
+        << "}";
+    return stream;
+}
+
+struct GroupDesc
+{
+    QByteArray name;
+    quint32 leaderIndex = 0;
+    quint32 numMembers = 0;
+};
+
+QDataStream& operator>>(QDataStream& stream, GroupDesc& groupDesc)
+{
+    return stream >> groupDesc.name >> groupDesc.leaderIndex
+                  >> groupDesc.numMembers;
+}
+
+QDebug operator<<(QDebug stream, const GroupDesc& groupDesc)
+{
+    stream.noquote().nospace() << "GroupDesc{"
+        << "name=" << groupDesc.name << ", "
+        << "leaderIndex=" << groupDesc.leaderIndex << ", "
+        << "numMembers=" << groupDesc.numMembers
+        << "}";
+    return stream;
+}
+
+
+struct FeaturesDefinition
+{
+    QByteArray hostName;
+    QByteArray osRelease;
+    QByteArray version;
+    QByteArray arch;
+    quint32 nrCpusOnline;
+    quint32 nrCpusAvailable;
+    QByteArray cpuDesc;
+    QByteArray cpuId;
+    // in kilobytes
+    quint64 totalMem;
+    QList<QByteArray> cmdline;
+    QList<BuildId> buildIds;
+    QList<QByteArray> siblingCores;
+    QList<QByteArray> siblingThreads;
+    QList<NumaNode> numaTopology;
+    QList<Pmu> pmuMappings;
+    QList<GroupDesc> groupDescs;
+};
+
+QDataStream& operator>>(QDataStream& stream, FeaturesDefinition& featuresDefinition)
+{
+    stream >> featuresDefinition.hostName >> featuresDefinition.osRelease
+           >> featuresDefinition.version >> featuresDefinition.arch
+           >> featuresDefinition.nrCpusOnline >> featuresDefinition.nrCpusAvailable
+           >> featuresDefinition.cpuDesc >> featuresDefinition.cpuId
+           >> featuresDefinition.totalMem >> featuresDefinition.cmdline
+           >> featuresDefinition.buildIds
+           >> featuresDefinition.siblingCores >> featuresDefinition.siblingThreads
+           >> featuresDefinition.numaTopology >> featuresDefinition.pmuMappings
+           >> featuresDefinition.groupDescs;
+    return stream;
+}
+
+QDebug operator<<(QDebug stream, const FeaturesDefinition& featuresDefinition)
+{
+    stream.noquote().nospace() << "FeaturesDefinition{"
+        << "hostName=" << featuresDefinition.hostName << ", "
+        << "osRelease=" << featuresDefinition.osRelease << ", "
+        << "version=" << featuresDefinition.version << ", "
+        << "arch=" << featuresDefinition.arch << ", "
+        << "nrCpusOnline=" << featuresDefinition.nrCpusOnline << ", "
+        << "nrCpusAvailable=" << featuresDefinition.nrCpusAvailable << ", "
+        << "cpuDesc=" << featuresDefinition.cpuDesc << ", "
+        << "cpuId=" << featuresDefinition.cpuId << ", "
+        << "totalMem=" << featuresDefinition.totalMem << ", "
+        << "cmdline=" << featuresDefinition.cmdline << ", "
+        << "buildIds=" << featuresDefinition.buildIds << ", "
+        << "siblingCores=" << featuresDefinition.siblingCores << ", "
+        << "siblingThreads=" << featuresDefinition.siblingThreads << ", "
+        << "numaTopology=" << featuresDefinition.numaTopology << ", "
+        << "pmuMappings=" << featuresDefinition.pmuMappings << ", "
+        << "groupDesc=" << featuresDefinition.groupDescs
+        << "}";
+    return stream;
+}
+
 struct LocationData
 {
     LocationData(qint32 parentLocationId = -1, const QString& location = {},
@@ -489,6 +653,20 @@ struct PerfParserPrivate
                 stream >> stringDefinition;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << stringDefinition;
                 addString(stringDefinition);
+                break;
+            }
+            case EventType::LostDefinition: {
+                LostDefinition lostDefinition;
+                stream >> lostDefinition;
+                qCDebug(LOG_PERFPARSER) << "parsed:" << lostDefinition;
+                addLost(lostDefinition);
+                break;
+            }
+            case EventType::FeaturesDefinition: {
+                FeaturesDefinition featuresDefinition;
+                stream >> featuresDefinition;
+                qCDebug(LOG_PERFPARSER) << "parsed:" << featuresDefinition;
+                setFeatures(featuresDefinition);
                 break;
             }
             case EventType::InvalidType:
@@ -727,6 +905,16 @@ struct PerfParserPrivate
         summaryResult.processCount = uniqueProcess.size();
     }
 
+    void addLost(const LostDefinition& lost)
+    {
+        // TODO: increment lost counter in summary, show warning when anything got lost
+    }
+
+    void setFeatures(const FeaturesDefinition& features)
+    {
+        // TODO: add to summary
+    }
+
     enum State {
         HEADER,
         DATA_STREAM_VERSION,
@@ -744,6 +932,8 @@ struct PerfParserPrivate
         SymbolDefinition,
         AttributesDefinition,
         StringDefinition,
+        LostDefinition,
+        FeaturesDefinition,
         InvalidType
     };
 
