@@ -400,64 +400,64 @@ struct PerfParserPrivate
         stream >> eventType;
         qCDebug(LOG_PERFPARSER) << "next event is:" << eventType;
 
-        if (eventType < 0 || eventType >= InvalidType) {
+        if (eventType < 0 || eventType >= static_cast<qint8>(EventType::InvalidType)) {
             qCWarning(LOG_PERFPARSER) << "invalid event type" << eventType;
             state = PARSE_ERROR;
             return false;
         }
 
         switch (static_cast<EventType>(eventType)) {
-            case Sample: {
-                struct Sample sample;
+            case EventType::Sample: {
+                Sample sample;
                 stream >> sample;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << sample;
                 addSample(sample);
                 break;
             }
-            case ThreadStart: {
-                struct ThreadStart threadStart;
+            case EventType::ThreadStart: {
+                ThreadStart threadStart;
                 stream >> threadStart;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << threadStart;
                 break;
             }
-            case ThreadEnd: {
-                struct ThreadStart threadEnd;
+            case EventType::ThreadEnd: {
+                ThreadStart threadEnd;
                 stream >> threadEnd;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << threadEnd;
                 break;
             }
-            case Command: {
-                struct Command command;
+            case EventType::Command: {
+                Command command;
                 stream >> command;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << command;
                 addCommand(command);
                 break;
             }
-            case LocationDefinition: {
-                struct LocationDefinition locationDefinition;
+            case EventType::LocationDefinition: {
+                LocationDefinition locationDefinition;
                 stream >> locationDefinition;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << locationDefinition;
                 addLocation(locationDefinition);
                 break;
             }
-            case SymbolDefinition: {
-                struct SymbolDefinition symbolDefinition;
+            case EventType::SymbolDefinition: {
+                SymbolDefinition symbolDefinition;
                 stream >> symbolDefinition;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << symbolDefinition;
                 addSymbol(symbolDefinition);
                 break;
             }
-            case AttributesDefinition:
+            case EventType::AttributesDefinition:
                 // TODO
                 break;
-            case StringDefinition: {
-                struct StringDefinition stringDefinition;
+            case EventType::StringDefinition: {
+                StringDefinition stringDefinition;
                 stream >> stringDefinition;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << stringDefinition;
                 addString(stringDefinition);
                 break;
             }
-            case InvalidType:
+            case EventType::InvalidType:
                 break;
         }
 
@@ -695,7 +695,7 @@ struct PerfParserPrivate
         PARSE_ERROR
     };
 
-    enum EventType {
+    enum class EventType {
         Sample,
         ThreadStart,
         ThreadEnd,
