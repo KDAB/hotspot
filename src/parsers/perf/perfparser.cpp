@@ -462,7 +462,8 @@ struct PerfParserPrivate
         }
 
         if (!stream.atEnd()) {
-            qCWarning(LOG_PERFPARSER) << "did not consume all bytes for event of type" << eventType;
+            qCWarning(LOG_PERFPARSER) << "did not consume all bytes for event of type" << eventType
+                                      << buffer.pos() << buffer.size();
             return false;
         }
 
