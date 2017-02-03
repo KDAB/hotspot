@@ -86,6 +86,35 @@ QDebug operator<<(QDebug stream, const StringId& stringId)
     return stream;
 }
 
+struct AttributesDefinition : Record
+{
+    qint32 nextAttributeId = 0;
+    quint32 type = 0;
+    quint64 config = 0;
+    StringId name;
+};
+
+QDataStream& operator>>(QDataStream& stream, AttributesDefinition& attributesDefinition)
+{
+    return stream >> static_cast<Record&>(attributesDefinition)
+                  >> attributesDefinition.nextAttributeId
+                  >> attributesDefinition.type
+                  >> attributesDefinition.config
+                  >> attributesDefinition.name;
+}
+
+QDebug operator<<(QDebug stream, const AttributesDefinition& attributesDefinition)
+{
+    stream.noquote().nospace() << "AttributesDefinition{"
+        << static_cast<const Record&>(attributesDefinition) << ", "
+        << "nextAttributeId=" << attributesDefinition.nextAttributeId << ", "
+        << "type=" << attributesDefinition.type << ", "
+        << "config=" << attributesDefinition.config << ", "
+        << "name=" << attributesDefinition.name << ", "
+        << "}";
+    return stream;
+}
+
 struct Command : Record
 {
     StringId comm;
@@ -312,6 +341,7 @@ struct SymbolData
 
 }
 
+Q_DECLARE_TYPEINFO(AttributesDefinition, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(LocationData, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(SymbolData, Q_MOVABLE_TYPE);
 
@@ -447,9 +477,13 @@ struct PerfParserPrivate
                 addSymbol(symbolDefinition);
                 break;
             }
-            case EventType::AttributesDefinition:
-                // TODO
+            case EventType::AttributesDefinition: {
+                AttributesDefinition attributesDefinition;
+                stream >> attributesDefinition;
+                qCDebug(LOG_PERFPARSER) << "parsed:" << attributesDefinition;
+                addAttributes(attributesDefinition);
                 break;
+            }
             case EventType::StringDefinition: {
                 StringDefinition stringDefinition;
                 stream >> stringDefinition;
@@ -488,6 +522,11 @@ struct PerfParserPrivate
             frame.parent = parent;
             setParents(&frame.children, &frame);
         }
+    }
+
+    void addAttributes(const AttributesDefinition& attributesDefinition)
+    {
+        attributes.push_back(attributesDefinition);
     }
 
     void addCommand(const Command& command)
@@ -714,6 +753,7 @@ struct PerfParserPrivate
     QDataStream stream;
     FrameData bottomUpResult;
     FrameData topDownResult;
+    QVector<AttributesDefinition> attributes;
     QVector<SymbolData> symbols;
     QVector<LocationData> locations;
     QVector<QString> strings;
