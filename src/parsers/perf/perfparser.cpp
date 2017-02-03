@@ -46,6 +46,28 @@ Q_LOGGING_CATEGORY(LOG_PERFPARSER, "hotspot.perfparser", QtWarningMsg)
 
 namespace {
 
+struct Record
+{
+    quint32 pid = 0;
+    quint32 tid = 0;
+    quint64 time = 0;
+};
+
+QDataStream& operator>>(QDataStream& stream, Record& record)
+{
+    return stream >> record.pid >> record.tid >> record.time;
+}
+
+QDebug operator<<(QDebug stream, const Record& record)
+{
+    stream.noquote().nospace() << "Record{"
+        << "pid=" << record.pid << ", "
+        << "tid=" << record.tid << ", "
+        << "time=" << record.time
+        << "}";
+    return stream;
+}
+
 struct StringId
 {
     qint32 id = -1;
@@ -64,25 +86,20 @@ QDebug operator<<(QDebug stream, const StringId& stringId)
     return stream;
 }
 
-struct Command
+struct Command : Record
 {
-    quint32 pid = 0;
-    quint32 tid = 0;
-    quint64 time = 0;
     StringId comm;
 };
 
 QDataStream& operator>>(QDataStream& stream, Command& command)
 {
-    return stream >> command.pid >> command.tid >> command.time >> command.comm;
+    return stream >> static_cast<Record&>(command) >> command.comm;
 }
 
 QDebug operator<<(QDebug stream, const Command& command)
 {
     stream.noquote().nospace() << "Command{"
-        << "pid=" << command.pid << ", "
-        << "tid=" << command.tid << ", "
-        << "time=" << command.time << ", "
+        << static_cast<const Record&>(command) << ", "
         << "comm=" << command.comm
         << "}";
     return stream;
@@ -224,11 +241,8 @@ QDebug operator<<(QDebug stream, const SymbolDefinition& symbolDefinition)
     return stream;
 }
 
-struct Sample
+struct Sample : Record
 {
-    quint32 pid = 0;
-    quint32 tid = 0;
-    quint64 time = 0;
     QVector<qint32> frames;
     quint8 guessedFrames;
     qint32 attributeId;
@@ -236,17 +250,14 @@ struct Sample
 
 QDataStream& operator>>(QDataStream& stream, Sample& sample)
 {
-    return stream >> sample.pid >> sample.tid
-        >> sample.time >> sample.frames >> sample.guessedFrames
-        >> sample.attributeId;
+    return stream >> static_cast<Record&>(sample)
+        >> sample.frames >> sample.guessedFrames >> sample.attributeId;
 }
 
 QDebug operator<<(QDebug stream, const Sample& sample)
 {
     stream.noquote().nospace() << "Sample{"
-        << "pid=" << sample.pid << ", "
-        << "tid=" << sample.tid << ", "
-        << "time=" << sample.time << ", "
+        << static_cast<const Record&>(sample) << ", "
         << "frames=" << sample.frames << ", "
         << "guessedFrames=" << sample.guessedFrames << ", "
         << "attributeId=" << sample.attributeId
