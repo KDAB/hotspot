@@ -312,6 +312,9 @@ struct SymbolData
 
 }
 
+Q_DECLARE_TYPEINFO(LocationData, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(SymbolData, Q_MOVABLE_TYPE);
+
 struct PerfParserPrivate
 {
     PerfParserPrivate()
@@ -720,9 +723,6 @@ struct PerfParserPrivate
     QSet<quint32> uniqueThreads;
     QSet<quint32> uniqueProcess;
 };
-
-Q_DECLARE_TYPEINFO(LocationData, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(SymbolData, Q_MOVABLE_TYPE);
 
 PerfParser::PerfParser(QObject* parent)
     : QObject(parent)
