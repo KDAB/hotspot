@@ -273,8 +273,8 @@ QDebug operator<<(QDebug stream, const SymbolDefinition& symbolDefinition)
 struct Sample : Record
 {
     QVector<qint32> frames;
-    quint8 guessedFrames;
-    qint32 attributeId;
+    quint8 guessedFrames = 0;
+    qint32 attributeId = 0;
 };
 
 QDataStream& operator>>(QDataStream& stream, Sample& sample)
