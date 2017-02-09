@@ -709,10 +709,8 @@ struct PerfParserPrivate
 
     void addCommand(const Command& command)
     {
-        // pid == 0 is "perf", which is not interesting to us
-        if (command.pid && summaryResult.command.isEmpty()) {
-            summaryResult.command = strings.value(command.comm.id);
-        }
+        // TODO: keep track of list of commands for filtering later on
+        Q_UNUSED(command);
     }
 
     void addLocation(const LocationDefinition& location)
@@ -912,7 +910,13 @@ struct PerfParserPrivate
 
     void setFeatures(const FeaturesDefinition& features)
     {
-        // TODO: add to summary
+        // first entry in cmdline is "perf" which could contain a path
+        // we only want to show the name without the path
+        auto args = features.cmdline;
+        args.removeFirst();
+        summaryResult.command = QLatin1String("perf ") + QString::fromUtf8(args.join(' '));
+
+        // TODO: add system info to summary page
     }
 
     enum State {
