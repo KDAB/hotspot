@@ -36,6 +36,7 @@ struct SummaryData
     quint32 processCount = 0;
     quint64 sampleCount = 0;
     QString command;
+    quint64 lostChunks = 0;
 };
 
 Q_DECLARE_METATYPE(SummaryData)

@@ -35,6 +35,7 @@
 
 #include <KRecursiveFilterProxyModel>
 #include <KStandardAction>
+#include <KLocalizedString>
 
 #include "aboutdialog.h"
 #include "flamegraph.h"
@@ -88,6 +89,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    ui->lostMessage->setVisible(false);
     ui->fileMenu->addAction(KStandardAction::open(this, &MainWindow::on_openFileButton_clicked, this));
     ui->fileMenu->addAction(KStandardAction::clear(this, &MainWindow::clear, this));
     ui->fileMenu->addAction(KStandardAction::close(this, &QMainWindow::close, this));
@@ -138,6 +140,15 @@ MainWindow::MainWindow(QWidget *parent) :
                 ui->processCountValue->setText(QString::number(data.processCount));
                 ui->sampleCountValue->setText(QString::number(data.sampleCount));
                 ui->commandValue->setText(data.command);
+                ui->lostChunksValue->setText(QString::number(data.lostChunks));
+                if (data.lostChunks > 0) {
+                    ui->lostMessage->setText(i18np("Lost one chunk - Check IO/CPU overload!",
+                                                   "Lost %1 chunks - Check IO/CPU overload!",
+                                                   data.lostChunks));
+                    ui->lostMessage->setVisible(true);
+                } else {
+                    ui->lostMessage->setVisible(false);
+                }
             });
 
     connect(m_parser, &PerfParser::parsingFinished,

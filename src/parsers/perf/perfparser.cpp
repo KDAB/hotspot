@@ -905,7 +905,7 @@ struct PerfParserPrivate
 
     void addLost(const LostDefinition& lost)
     {
-        // TODO: increment lost counter in summary, show warning when anything got lost
+        ++summaryResult.lostChunks;
     }
 
     void setFeatures(const FeaturesDefinition& features)

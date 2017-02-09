@@ -45,7 +45,7 @@
        <number>0</number>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="startPage">
        <property name="sizePolicy">
@@ -259,6 +259,19 @@
              <number>0</number>
             </property>
             <item>
+             <widget class="KMessageWidget" name="lostMessage">
+              <property name="toolTip">
+               <string>Too much data was generated during the profile and some events got lost. Try to reduce the event load or increase the memory caches.</string>
+              </property>
+              <property name="text">
+               <string notr="true">Lost messages</string>
+              </property>
+              <property name="messageType">
+               <enum>KMessageWidget::Warning</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QGroupBox" name="groupBox">
               <property name="title">
                <string>Summary</string>
@@ -285,28 +298,28 @@
                  </property>
                 </widget>
                </item>
-               <item row="4" column="0">
+               <item row="5" column="0">
                 <widget class="QLabel" name="processCountLabel">
                  <property name="text">
                   <string>Process Count:</string>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="1">
+               <item row="5" column="1">
                 <widget class="QLabel" name="processCountValue">
                  <property name="text">
                   <string/>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0">
+               <item row="6" column="0">
                 <widget class="QLabel" name="threadCountLabel">
                  <property name="text">
                   <string>Thread Count:</string>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
+               <item row="6" column="1">
                 <widget class="QLabel" name="threadCountValue">
                  <property name="text">
                   <string/>
@@ -329,6 +342,20 @@
                </item>
                <item row="3" column="1">
                 <widget class="QLabel" name="sampleCountValue">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="lostChunksLabel">
+                 <property name="text">
+                  <string>Lost Chunks:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QLabel" name="lostChunksValue">
                  <property name="text">
                   <string/>
                  </property>
@@ -493,7 +520,7 @@
      <x>0</x>
      <y>0</y>
      <width>745</width>
-     <height>27</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">
@@ -538,6 +565,11 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
+  <customwidget>
+   <class>KMessageWidget</class>
+   <extends>QFrame</extends>
+   <header>kmessagewidget.h</header>
+  </customwidget>
   <customwidget>
    <class>KFilterProxySearchLine</class>
    <extends>QWidget</extends>
