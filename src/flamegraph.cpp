@@ -183,7 +183,7 @@ namespace {
 /**
  * Generate a brush from the "mem" color space used in upstream flamegraph.pl
  */
-QBrush memBrush() [[maybe_unused]]
+Q_DECL_UNUSED QBrush memBrush()
 {
     // intern the brushes, to reuse them across items which can be thousands
     // otherwise we'd end up with dozens of allocations and higher memory consumption
