@@ -90,9 +90,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     ui->lostMessage->setVisible(false);
-    ui->fileMenu->addAction(KStandardAction::open(this, &MainWindow::on_openFileButton_clicked, this));
-    ui->fileMenu->addAction(KStandardAction::clear(this, &MainWindow::clear, this));
-    ui->fileMenu->addAction(KStandardAction::close(this, &QMainWindow::close, this));
+    ui->fileMenu->addAction(KStandardAction::open(this, SLOT(on_openFileButton_clicked), this));
+    ui->fileMenu->addAction(KStandardAction::clear(this, SLOT(clear), this));
+    ui->fileMenu->addAction(KStandardAction::close(this, SLOT(close), this));
     connect(ui->actionAbout_Qt, &QAction::triggered,
             qApp, &QApplication::aboutQt);
     connect(ui->actionAbout_KDAB, &QAction::triggered,
