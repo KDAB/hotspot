@@ -32,6 +32,7 @@
 
 #include <models/costmodel.h>
 #include <models/topproxy.h>
+#include <models/callercalleemodel.h>
 
 class TestModels : public QObject
 {
@@ -102,6 +103,14 @@ private slots:
             QVERIFY(index.isValid());
             QVERIFY(!proxy.rowCount(index));
         }
+    }
+
+    void testCallerCalleeModel()
+    {
+        CallerCalleeModel model;
+        ModelTest tester(&model);
+
+        model.setData(generateTree(5, 2));
     }
 };
 

@@ -503,6 +503,35 @@ struct SymbolData
     }
 };
 
+struct CallerCalleeLocation
+{
+    QString symbol;
+    QString binary;
+
+    bool operator<(const CallerCalleeLocation &location) const
+    {
+        return std::tie(symbol, binary) < std::tie(location.symbol, location.binary);
+    }
+};
+
+inline bool operator==(const CallerCalleeLocation &location1, const CallerCalleeLocation &location2)
+{
+    return location1.symbol == location2.symbol && location1.binary == location2.binary;
+}
+
+inline bool operator!=(const CallerCalleeLocation &location1, const CallerCalleeLocation &location2)
+{
+    return !(location1.symbol == location2.symbol && location1.binary == location2.binary);
+}
+
+inline uint qHash(const CallerCalleeLocation &key, uint seed = 0)
+{
+    Util::HashCombine hash;
+    seed = hash(seed, key.symbol);
+    seed = hash(seed, key.binary);
+    return seed;
+}
+
 }
 
 Q_DECLARE_TYPEINFO(AttributesDefinition, Q_MOVABLE_TYPE);
@@ -853,24 +882,43 @@ struct PerfParserPrivate
         FrameData::initializeParents(&topDownResult);
     }
 
+    static void buildCallerCalleeResult(const QVector<FrameData>& bottomUpData, FrameData* callerCalleeData)
+    {
+        for (const FrameData& row : bottomUpData) {
+            if (row.children.isEmpty()) {
+                // leaf node found, bubble up the parent chain to add cost for all frames
+                // to the caller/callee data. this is done top-down since we must not count
+                // symbols more than once in the caller-callee data
+                QSet<CallerCalleeLocation> recursionGuard;
+                auto node = &row;
+
+                while (node) {
+                    CallerCalleeLocation needle{node->symbol, node->binary};
+                    if (!recursionGuard.contains(needle)) { // aggregate caller-callee data
+                        auto it = std::lower_bound(callerCalleeData->children.begin(), callerCalleeData->children.end(), needle,
+                            [](const FrameData& frame, const auto needle) { return CallerCalleeLocation{frame.symbol, frame.binary} < needle; });
+
+                        if (it == callerCalleeData->children.end() || CallerCalleeLocation{it->symbol, it->binary} != needle) {
+                            it = callerCalleeData->children.insert(it, {node->symbol, node->binary, node->location, node->address, 0, 0, {}, nullptr});
+                        }
+                        it->inclusiveCost += 1;
+                        if (!node->parent) {
+                            it->selfCost += 1;
+                        }
+                        recursionGuard.insert(needle);
+                    }
+                    node = node->parent;
+                }
+            } else {
+                // recurse to find a leaf
+                buildCallerCalleeResult(row.children, callerCalleeData);
+            }
+        }
+    }
+
     void buildCallerCalleeResult()
     {
-        /* TODO: build a list of caller/callee data from the bottom up result
-         *
-         * This replicates the view known from e.g. kcachegrind
-         *
-         * - start at the first frame (i.e. bottom-up)
-         * - find an entry in the caller/callee list for this frame
-         * - if current frame is the first frame of the sample: include entry's
-         *   self cost by 1
-         * - increase entry's inclusive cost by 1 (for every frame always)
-         * - loop over the inlined frames, do the same as above
-         *
-         * NOTE: You must take recursion into account on a per-sample basis!
-         *       Do not increase the cost for any entry more than once.
-         *       E.g. build a QSet with location/symbols handled and use that
-         *       to prevent this issue.
-         */
+        buildCallerCalleeResult(bottomUpResult.children, &callerCalleeResult);
     }
 
     void addSampleToSummary(const Sample& sample)
@@ -947,6 +995,7 @@ struct PerfParserPrivate
     quint64 applicationEndTime = 0;
     QSet<quint32> uniqueThreads;
     QSet<quint32> uniqueProcess;
+    FrameData callerCalleeResult;
 };
 
 PerfParser::PerfParser(QObject* parent)
@@ -998,6 +1047,7 @@ void PerfParser::startParseFile(const QString& path)
                         emit bottomUpDataAvailable(d.bottomUpResult);
                         emit topDownDataAvailable(d.topDownResult);
                         emit summaryDataAvailable(d.summaryResult);
+                        emit callerCalleeDataAvailable(d.callerCalleeResult);
                         emit parsingFinished();
                     } else {
                         emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1.").arg(exitCode));

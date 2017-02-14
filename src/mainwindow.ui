@@ -239,7 +239,7 @@
         <item>
          <widget class="QTabWidget" name="resultsTabWidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>4</number>
           </property>
           <property name="documentMode">
            <bool>true</bool>
@@ -263,11 +263,8 @@
               <property name="toolTip">
                <string>Too much data was generated during the profile and some events got lost. Try to reduce the event load or increase the memory caches.</string>
               </property>
-              <property name="text">
+              <property name="text" stdset="0">
                <string notr="true">Lost messages</string>
-              </property>
-              <property name="messageType">
-               <enum>KMessageWidget::Warning</enum>
               </property>
              </widget>
             </item>
@@ -446,7 +443,7 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="KFilterProxySearchLine" name="bottomUpSearch"/>
+             <widget class="KFilterProxySearchLine" name="bottomUpSearch" native="true"/>
             </item>
             <item>
              <widget class="QTreeView" name="bottomUpTreeView"/>
@@ -471,7 +468,7 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="KFilterProxySearchLine" name="topDownSearch"/>
+             <widget class="KFilterProxySearchLine" name="topDownSearch" native="true"/>
             </item>
             <item>
              <widget class="QTreeView" name="topDownTreeView"/>
@@ -503,6 +500,16 @@
             </item>
            </layout>
           </widget>
+          <widget class="QWidget" name="callerCalleeTab">
+           <attribute name="title">
+            <string>Caller / Callee</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <widget class="QTableView" name="callerCalleeTableView"/>
+            </item>
+           </layout>
+          </widget>
          </widget>
         </item>
        </layout>
@@ -520,7 +527,7 @@
      <x>0</x>
      <y>0</y>
      <width>745</width>
-     <height>30</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">
@@ -569,6 +576,7 @@
    <class>KMessageWidget</class>
    <extends>QFrame</extends>
    <header>kmessagewidget.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>KFilterProxySearchLine</class>

@@ -27,6 +27,8 @@
 
 #pragma once
 
+#include <QtGlobal>
+
 class QString;
 
 namespace Util {
@@ -35,5 +37,14 @@ namespace Util {
  * Find a binary called @p name in this application's libexec directory.
  */
 QString findLibexecBinary(const QString& name);
+
+// HashCombine was taken from Qt's file qhashfunctions.h
+struct HashCombine {
+    typedef uint result_type;
+    template <typename T>
+    Q_DECL_CONSTEXPR result_type operator()(uint seed, const T &t) const Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
+    // combiner taken from N3876 / boost::hash_combine
+    { return seed ^ (qHash(t) + 0x9e3779b9 + (seed << 6) + (seed >> 2)) ; }
+};
 
 }
