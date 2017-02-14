@@ -1,5 +1,5 @@
 /*
-  perfparser.coo
+  perfparser.cpp
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
