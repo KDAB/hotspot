@@ -684,22 +684,12 @@ struct PerfParserPrivate
 
     void finalize()
     {
-        // don't set parent here for top items, those belong to the "root"
-        // which has a different address for every model
-        setParents(&bottomUpResult.children, nullptr);
+        FrameData::initializeParents(&bottomUpResult);
 
         calculateSummary();
 
         buildTopDownResult();
         buildCallerCalleeResult();
-    }
-
-    void setParents(QVector<FrameData>* children, const FrameData* parent)
-    {
-        for (auto& frame : *children) {
-            frame.parent = parent;
-            setParents(&frame.children, &frame);
-        }
     }
 
     void addAttributes(const AttributesDefinition& attributesDefinition)
@@ -860,7 +850,7 @@ struct PerfParserPrivate
     void buildTopDownResult()
     {
         buildTopDownResult(bottomUpResult.children, &topDownResult);
-        setParents(&topDownResult.children, nullptr);
+        FrameData::initializeParents(&topDownResult);
     }
 
     void buildCallerCalleeResult()

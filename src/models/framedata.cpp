@@ -1,9 +1,9 @@
 /*
-  framedata.h
+  framedata.cpp
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2016-2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -25,27 +25,23 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "framedata.h"
 
-#include <QString>
-#include <QVector>
-#include <QObject>
-
-struct FrameData
+namespace {
+void setParents(QVector<FrameData>* children, const FrameData* parent)
 {
-    // TODO: shared location class with dso, file, line, ...
-    QString symbol;
-    QString binary;
-    QString location;
-    QString address;
-    // TODO: abstract that away: there may be multiple costs per frame
-    quint32 selfCost = 0;
-    quint32 inclusiveCost = 0;
-    QVector<FrameData> children;
-    const FrameData* parent = nullptr;
+    for (auto& frame : *children) {
+        frame.parent = parent;
+        setParents(&frame.children, &frame);
+    }
+}
+}
 
-    static void initializeParents(FrameData* tree);
-};
-
-Q_DECLARE_METATYPE(FrameData)
-Q_DECLARE_TYPEINFO(FrameData, Q_MOVABLE_TYPE);
+void FrameData::initializeParents(FrameData* tree)
+{
+    // root has no parent
+    Q_ASSERT(tree->parent == nullptr);
+    // but neither do the top items have a parent. those belong to the "root" above
+    // which has a different address for every model since we use value semantics
+    setParents(&tree->children, nullptr);
+}

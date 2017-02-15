@@ -8,6 +8,7 @@ add_executable(hotspot
 
     models/costmodel.cpp
     models/topproxy.cpp
+    models/framedata.cpp
 
     mainwindow.cpp
     flamegraph.cpp
