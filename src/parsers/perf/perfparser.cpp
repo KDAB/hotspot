@@ -524,7 +524,7 @@ struct PerfParserPrivate
         const auto bytesAvailable = process.bytesAvailable();
         switch (state) {
             case HEADER: {
-                const auto magic = QLatin1String("QPERFSTREAM");
+                const auto magic = QByteArrayLiteral("QPERFSTREAM");
                 // + 1 to include the trailing \0
                 if (bytesAvailable >= magic.size() + 1) {
                     process.read(buffer.buffer().data(), magic.size() + 1);
@@ -541,7 +541,7 @@ struct PerfParserPrivate
             }
             case DATA_STREAM_VERSION: {
                 qint32 dataStreamVersion = 0;
-                if (bytesAvailable >= sizeof(dataStreamVersion)) {
+                if (bytesAvailable >= static_cast<qint64>(sizeof(dataStreamVersion))) {
                     process.read(buffer.buffer().data(), sizeof(dataStreamVersion));
                     dataStreamVersion = qFromLittleEndian(*reinterpret_cast<qint32*>(buffer.buffer().data()));
                     stream.setVersion(dataStreamVersion);
@@ -552,7 +552,7 @@ struct PerfParserPrivate
                 break;
             }
             case EVENT_HEADER:
-                if (bytesAvailable >= sizeof(eventSize)) {
+                if (bytesAvailable >= static_cast<qint64>((eventSize))) {
                     process.read(buffer.buffer().data(), sizeof(eventSize));
                     eventSize = qFromLittleEndian(*reinterpret_cast<quint32*>(buffer.buffer().data()));
                     qCDebug(LOG_PERFPARSER) << "next event size is:" << eventSize;
@@ -561,7 +561,7 @@ struct PerfParserPrivate
                 }
                 break;
             case EVENT:
-                if (bytesAvailable >= eventSize) {
+                if (bytesAvailable >= static_cast<qint64>(eventSize)) {
                     buffer.buffer().resize(eventSize);
                     process.read(buffer.buffer().data(), eventSize);
                     if (!parseEvent()) {
@@ -615,7 +615,7 @@ struct PerfParserPrivate
                 break;
             }
             case EventType::ThreadEnd: {
-                ThreadStart threadEnd;
+                ThreadEnd threadEnd;
                 stream >> threadEnd;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << threadEnd;
                 break;
@@ -893,7 +893,7 @@ struct PerfParserPrivate
         summaryResult.processCount = uniqueProcess.size();
     }
 
-    void addLost(const LostDefinition& lost)
+    void addLost(const LostDefinition& /*lost*/)
     {
         ++summaryResult.lostChunks;
     }

@@ -131,7 +131,8 @@ QVariant CostModel::data(const QModelIndex& index, int role) const
                 break;
         }
     } else if (role == FilterRole) {
-        return item->symbol + item->binary + item->location;
+        // TODO: optimize
+        return QString(item->symbol + item->binary + item->location);
     } else if (role == Qt::DisplayRole) {
         // TODO: show fractional cost
         switch (static_cast<Columns>(index.column())) {

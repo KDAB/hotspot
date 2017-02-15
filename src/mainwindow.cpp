@@ -57,7 +57,7 @@ QString formatTimeString(quint64 nanoseconds)
     quint64 milliseconds = (nanoseconds / 1000000) % 1000;
 
     auto format = [] (quint64 fragment, int precision = 2) -> QString {
-        return QString::number(fragment).rightJustified(precision, '0');
+        return QString::number(fragment).rightJustified(precision, QLatin1Char('0'));
     };
     auto optional = [format] (quint64 fragment) -> QString {
         return fragment > 0 ? format(fragment) + QLatin1Char(':') : QString();

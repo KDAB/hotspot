@@ -1,3 +1,8 @@
+# enable more pedantic compiler warnings
+include(KDEFrameworkCompilerSettings)
+# but allow signal/slot keywords
+remove_definitions(-DQT_NO_SIGNALS_SLOTS_KEYWORDS)
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(models)

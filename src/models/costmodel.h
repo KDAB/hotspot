@@ -63,6 +63,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     QVariant data(const QModelIndex& index, int role) const override;
 
+    using QAbstractItemModel::setData;
     void setData(const FrameData& data);
 
 private:

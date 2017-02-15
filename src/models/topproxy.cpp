@@ -42,7 +42,7 @@ int TopProxy::rowCount(const QModelIndex& parent) const
     return std::min(5, sourceModel()->rowCount(parent));
 }
 
-bool TopProxy::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
+bool TopProxy::filterAcceptsRow(int /*source_row*/, const QModelIndex& source_parent) const
 {
     if (source_parent.isValid()) {
         return false;
