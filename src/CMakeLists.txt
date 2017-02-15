@@ -1,14 +1,12 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+add_subdirectory(models)
+
 add_executable(hotspot
     main.cpp
     util.cpp
 
     parsers/perf/perfparser.cpp
-
-    models/costmodel.cpp
-    models/topproxy.cpp
-    models/framedata.cpp
 
     mainwindow.cpp
     flamegraph.cpp
@@ -29,6 +27,7 @@ target_link_libraries(hotspot
     KF5::ConfigWidgets
     KF5::ItemViews
     KF5::ItemModels
+    models
 )
 
 set_target_properties(hotspot

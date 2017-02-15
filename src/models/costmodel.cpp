@@ -36,7 +36,7 @@ CostModel::~CostModel() = default;
 
 int CostModel::rowCount(const QModelIndex& parent) const
 {
-    if (parent.column() > 1) {
+    if (parent.column() >= 1) {
         return 0;
     } else if (auto item = itemFromIndex(parent)) {
         return item->children.size();
