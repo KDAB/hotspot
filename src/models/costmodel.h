@@ -54,8 +54,8 @@ public:
         FilterRole
     };
 
-    int columnCount(const QModelIndex& parent) const override;
-    int rowCount(const QModelIndex& parent) const override;
+    int columnCount(const QModelIndex& parent = {}) const override;
+    int rowCount(const QModelIndex& parent = {}) const override;
 
     QModelIndex index(int row, int column, const QModelIndex& parent) const override;
     QModelIndex parent(const QModelIndex& child) const override;

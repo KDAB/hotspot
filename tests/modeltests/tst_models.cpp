@@ -29,7 +29,9 @@
 #include <QTest>
 
 #include "modeltest.h"
+
 #include <models/costmodel.h>
+#include <models/topproxy.h>
 
 class TestModels : public QObject
 {
@@ -80,6 +82,26 @@ private slots:
         ModelTest tester(&model);
 
         model.setData(generateTree(5, 2));
+    }
+
+    void testTopProxy()
+    {
+        CostModel model;
+        TopProxy proxy;
+        ModelTest tester(&proxy);
+
+        proxy.setSourceModel(&model);
+        QCOMPARE(proxy.rowCount(), model.rowCount());
+        QCOMPARE(proxy.columnCount(), 3);
+        QVERIFY(proxy.filterAcceptsColumn(CostModel::Symbol, {}));
+        QVERIFY(proxy.filterAcceptsColumn(CostModel::Binary, {}));
+        QVERIFY(proxy.filterAcceptsColumn(CostModel::SelfCost, {}));
+
+        for (auto i = 0, c = proxy.rowCount(); i < c; ++i) {
+            auto index = proxy.index(i, 0, {});
+            QVERIFY(index.isValid());
+            QVERIFY(!proxy.rowCount(index));
+        }
     }
 };
 
