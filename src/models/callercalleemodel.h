@@ -61,6 +61,7 @@ public:
                         int role = Qt::DisplayRole) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
+    using QAbstractTableModel::setData;
     void setData(const FrameData& data);
 private:
     FrameData m_root;
