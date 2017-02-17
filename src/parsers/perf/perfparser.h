@@ -50,6 +50,7 @@ signals:
     // TODO: caller/callee data
     // TODO: progress bar
     void summaryDataAvailable(const SummaryData& data);
+    void callerCalleeDataAvailable(const FrameData& data);
     void parsingFinished();
     void parsingFailed(const QString& errorMessage);
 };

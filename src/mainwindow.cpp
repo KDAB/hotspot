@@ -45,6 +45,7 @@
 #include "models/costmodel.h"
 #include "models/summarydata.h"
 #include "models/topproxy.h"
+#include "models/callercalleemodel.h"
 
 namespace {
 QString formatTimeString(quint64 nanoseconds)
@@ -119,6 +120,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->topHotspotsTableView->setSortingEnabled(false);
     ui->topHotspotsTableView->setModel(topHotspotsProxy);
 
+    auto callerCalleeCostModel = new CallerCalleeModel(this);
+    auto proxy = new QSortFilterProxyModel(this);
+    proxy->setSourceModel(callerCalleeCostModel);
+    ui->callerCalleeTableView->setSortingEnabled(true);
+    ui->callerCalleeTableView->setModel(proxy);
+
     setStyleSheet(QStringLiteral("QMainWindow { background: url(:/images/kdabproducts.png) top right no-repeat; }"));
 
     connect(m_parser, &PerfParser::bottomUpDataAvailable,
@@ -149,6 +156,12 @@ MainWindow::MainWindow(QWidget *parent) :
                 } else {
                     ui->lostMessage->setVisible(false);
                 }
+            });
+
+    connect(m_parser, &PerfParser::callerCalleeDataAvailable,
+            this, [this, callerCalleeCostModel] (const FrameData& data) {
+                callerCalleeCostModel->setData(data);
+                ui->callerCalleeTableView->sortByColumn(CallerCalleeModel::InclusiveCost);
             });
 
     connect(m_parser, &PerfParser::parsingFinished,
