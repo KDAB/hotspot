@@ -77,7 +77,6 @@ void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter,
 
     filter->setProxy(proxy);
 
-    view->setSortingEnabled(true);
     view->sortByColumn(CostModel::SelfCost);
     view->setModel(proxy);
 }

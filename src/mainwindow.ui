@@ -507,7 +507,17 @@
              </widget>
             </item>
             <item>
-             <widget class="QTreeView" name="bottomUpTreeView"/>
+             <widget class="QTreeView" name="bottomUpTreeView">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+              <property name="uniformRowHeights">
+               <bool>true</bool>
+              </property>
+              <property name="sortingEnabled">
+               <bool>true</bool>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -539,7 +549,17 @@
              </widget>
             </item>
             <item>
-             <widget class="QTreeView" name="topDownTreeView"/>
+             <widget class="QTreeView" name="topDownTreeView">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+              <property name="uniformRowHeights">
+               <bool>true</bool>
+              </property>
+              <property name="sortingEnabled">
+               <bool>true</bool>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
