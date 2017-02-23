@@ -37,6 +37,17 @@ struct SummaryData
     quint64 sampleCount = 0;
     QString command;
     quint64 lostChunks = 0;
+    QString hostName;
+    QString linuxKernelVersion;
+    QString perfVersion;
+    QString cpuDescription;
+    QString cpuId;
+    QString cpuArchitecture;
+    quint32 cpusOnline;
+    quint32 cpusAvailable;
+    QString cpuSiblingCores;
+    QString cpuSiblingThreads;
+    quint64 totalMemoryInKiB;
 };
 
 Q_DECLARE_METATYPE(SummaryData)

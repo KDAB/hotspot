@@ -811,8 +811,20 @@ struct PerfParserPrivate
         auto args = features.cmdline;
         args.removeFirst();
         summaryResult.command = QLatin1String("perf ") + QString::fromUtf8(args.join(' '));
-
-        // TODO: add system info to summary page
+        summaryResult.hostName = QString::fromUtf8(features.hostName);
+        summaryResult.linuxKernelVersion = QString::fromUtf8(features.osRelease);
+        summaryResult.perfVersion = QString::fromUtf8(features.version);
+        summaryResult.cpuDescription = QString::fromUtf8(features.cpuDesc);
+        summaryResult.cpuId = QString::fromUtf8(features.cpuId);
+        summaryResult.cpuArchitecture = QString::fromUtf8(features.arch);
+        summaryResult.cpusOnline = features.nrCpusOnline;
+        summaryResult.cpusAvailable = features.nrCpusAvailable;
+        auto formatCpuList = [](const QByteArrayList& list) -> QString {
+            return QString::fromUtf8('[' + list.join("], [") + ']');
+        };
+        summaryResult.cpuSiblingCores = formatCpuList(features.siblingCores);
+        summaryResult.cpuSiblingThreads = formatCpuList(features.siblingThreads);
+        summaryResult.totalMemoryInKiB = features.totalMem;
     }
 
     enum State {

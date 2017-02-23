@@ -36,6 +36,7 @@
 #include <KRecursiveFilterProxyModel>
 #include <KStandardAction>
 #include <KLocalizedString>
+#include <KFormat>
 
 #include "aboutdialog.h"
 #include "flamegraph.h"
@@ -222,6 +223,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(m_parser, &PerfParser::summaryDataAvailable,
             this, [this, bottomUpCostModel, topDownCostModel, callerCalleeCostModel, calleesModel, callersModel] (const SummaryData& data) {
+                KFormat format;
                 ui->appRunTimeValue->setText(formatTimeString(data.applicationRunningTime));
                 ui->threadCountValue->setText(QString::number(data.threadCount));
                 ui->processCountValue->setText(QString::number(data.processCount));
@@ -243,6 +245,17 @@ MainWindow::MainWindow(QWidget *parent) :
                 } else {
                     ui->lostMessage->setVisible(false);
                 }
+                ui->hostNameValue->setText(data.hostName);
+                ui->linuxKernelVersionValue->setText(data.linuxKernelVersion);
+                ui->perfVersionValue->setText(data.perfVersion);
+                ui->cpuDescriptionValue->setText(data.cpuDescription);
+                ui->cpuIdValue->setText(data.cpuId);
+                ui->cpuArchitectureValue->setText(data.cpuArchitecture);
+                ui->cpusOnlineValue->setText(QString::number(data.cpusOnline));
+                ui->cpusAvailableValue->setText(QString::number(data.cpusAvailable));
+                ui->cpuSiblingCoresValue->setText(data.cpuSiblingCores);
+                ui->cpuSiblingThreadsValue->setText(data.cpuSiblingThreads);
+                ui->totalMemoryValue->setText(format.formatByteSize(data.totalMemoryInKiB * 1024, 1, KFormat::MetricBinaryDialect));
             });
 
     for (int i = 0, c = ui->resultsTabWidget->count(); i < c; ++i) {
