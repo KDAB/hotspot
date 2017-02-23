@@ -31,14 +31,16 @@
 
 #include "hotspot-config.h"
 #include "mainwindow.h"
-#include "models/framedata.h"
+#include "models/data.h"
 #include "models/summarydata.h"
 
 int main(int argc, char** argv)
 {
     QApplication app(argc, argv);
-    qRegisterMetaType<FrameData>();
     qRegisterMetaType<SummaryData>();
+    qRegisterMetaType<Data::BottomUp>();
+    qRegisterMetaType<Data::TopDown>();
+    qRegisterMetaType<Data::CallerCallee>();
 
     app.setApplicationName(QStringLiteral("hotspot"));
     app.setApplicationVersion(QStringLiteral(HOTSPOT_VERSION_STRING));

@@ -1,7 +1,7 @@
 add_library(models STATIC
-    costmodel.cpp
+    treemodel.cpp
     topproxy.cpp
-    framedata.cpp
+    data.cpp
     callercalleemodel.cpp
 )
 

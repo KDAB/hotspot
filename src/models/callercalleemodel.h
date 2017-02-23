@@ -30,7 +30,7 @@
 #include <QVector>
 #include <QAbstractItemModel>
 
-#include "framedata.h"
+#include "data.h"
 
 class CallerCalleeModel : public QAbstractTableModel
 {
@@ -42,8 +42,6 @@ public:
     enum Columns {
         Symbol = 0,
         Binary,
-        Address,
-        Location,
         SelfCost,
         InclusiveCost,
         NUM_COLUMNS
@@ -62,7 +60,8 @@ public:
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
     using QAbstractTableModel::setData;
-    void setData(const FrameData& data);
+    void setData(const Data::CallerCallee& data);
+
 private:
-    FrameData m_root;
+    Data::CallerCallee m_data;
 };

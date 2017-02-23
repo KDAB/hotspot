@@ -37,7 +37,6 @@
 
 #include <ThreadWeaver/ThreadWeaver>
 
-#include <models/framedata.h>
 #include <models/summarydata.h>
 
 #include <util.h>
@@ -491,52 +490,10 @@ struct LocationData
     QString location;
     QString address;
 };
-
-struct SymbolData
-{
-    QString symbol;
-    QString binary;
-
-    bool isValid() const
-    {
-        return !symbol.isEmpty() || !binary.isEmpty();
-    }
-};
-
-struct CallerCalleeLocation
-{
-    QString symbol;
-    QString binary;
-
-    bool operator<(const CallerCalleeLocation &location) const
-    {
-        return std::tie(symbol, binary) < std::tie(location.symbol, location.binary);
-    }
-};
-
-inline bool operator==(const CallerCalleeLocation &location1, const CallerCalleeLocation &location2)
-{
-    return location1.symbol == location2.symbol && location1.binary == location2.binary;
-}
-
-inline bool operator!=(const CallerCalleeLocation &location1, const CallerCalleeLocation &location2)
-{
-    return !(location1.symbol == location2.symbol && location1.binary == location2.binary);
-}
-
-inline uint qHash(const CallerCalleeLocation &key, uint seed = 0)
-{
-    Util::HashCombine hash;
-    seed = hash(seed, key.symbol);
-    seed = hash(seed, key.binary);
-    return seed;
-}
-
 }
 
 Q_DECLARE_TYPEINFO(AttributesDefinition, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(LocationData, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(SymbolData, Q_MOVABLE_TYPE);
 
 struct PerfParserPrivate
 {
@@ -713,7 +670,7 @@ struct PerfParserPrivate
 
     void finalize()
     {
-        FrameData::initializeParents(&bottomUpResult);
+        Data::BottomUp::initializeParents(&bottomUpResult);
 
         calculateSummary();
 
@@ -762,38 +719,7 @@ struct PerfParserPrivate
         };
     }
 
-    static FrameData* addFrame(FrameData* parent,
-                               const QString& symbol, const QString& binary,
-                               const QString& location, const QString& address)
-    {
-        FrameData* ret = nullptr;
-
-        for (auto row = parent->children.data(), end = row + parent->children.size();
-             row != end; ++row)
-        {
-            // TODO: implement aggregation, i.e. to ignore location address
-            if (row->symbol == symbol && row->binary == binary
-                && row->location == location && row->address == address)
-            {
-                ret = row;
-                break;
-            }
-        }
-
-        if (!ret) {
-            FrameData frame;
-            frame.symbol = symbol;
-            frame.binary = binary;
-            frame.location = location;
-            frame.address = address;
-            parent->children.append(frame);
-            ret = &parent->children.last();
-        }
-
-        return ret;
-    }
-
-    FrameData* addFrame(FrameData* parent, qint32 id) const
+    Data::BottomUp* addFrame(Data::BottomUp* parent, qint32 id) const
     {
         bool skipNextFrame = false;
         while (id != -1) {
@@ -812,13 +738,8 @@ struct PerfParserPrivate
                 skipNextFrame = true;
             }
 
-            auto ret = addFrame(parent, symbol.symbol, symbol.binary,
-                                location.location, location.address);
-
-            ++ret->inclusiveCost;
-            if (parent == &bottomUpResult) {
-                ++ret->selfCost;
-            }
+            auto ret = parent->entryForSymbol(symbol);
+            ++ret->cost;
 
             parent = ret;
             id = location.parentLocationId;
@@ -841,84 +762,21 @@ struct PerfParserPrivate
 
     void addSampleToBottomUp(const Sample& sample)
     {
-        ++bottomUpResult.inclusiveCost;
+        ++bottomUpResult.cost;
         auto parent = &bottomUpResult;
         for (auto id : sample.frames) {
             parent = addFrame(parent, id);
         }
     }
 
-    static void buildTopDownResult(const QVector<FrameData>& bottomUpData, FrameData* topDownData)
-    {
-        foreach (const auto& row, bottomUpData) {
-            if (row.children.isEmpty()) {
-                // leaf node found, bubble up the parent chain to build a top-down tree
-                auto node = &row;
-                auto stack = topDownData;
-                while (node) {
-                    auto frame = addFrame(stack,
-                                          node->symbol, node->binary,
-                                          node->location, node->address);
-
-                    // always use the leaf node's cost and propagate that one up the chain
-                    // otherwise we'd count the cost of some nodes multiple times
-                    frame->inclusiveCost += row.inclusiveCost;
-                    if (node == &row) {
-                        frame->selfCost += 1;
-                    }
-                    stack = frame;
-                    node = node->parent;
-                }
-            } else {
-                // recurse to find a leaf
-                buildTopDownResult(row.children, topDownData);
-            }
-        }
-    }
-
     void buildTopDownResult()
     {
-        buildTopDownResult(bottomUpResult.children, &topDownResult);
-        FrameData::initializeParents(&topDownResult);
-    }
-
-    static void buildCallerCalleeResult(const QVector<FrameData>& bottomUpData, FrameData* callerCalleeData)
-    {
-        for (const FrameData& row : bottomUpData) {
-            if (row.children.isEmpty()) {
-                // leaf node found, bubble up the parent chain to add cost for all frames
-                // to the caller/callee data. this is done top-down since we must not count
-                // symbols more than once in the caller-callee data
-                QSet<CallerCalleeLocation> recursionGuard;
-                auto node = &row;
-
-                while (node) {
-                    CallerCalleeLocation needle{node->symbol, node->binary};
-                    if (!recursionGuard.contains(needle)) { // aggregate caller-callee data
-                        auto it = std::lower_bound(callerCalleeData->children.begin(), callerCalleeData->children.end(), needle,
-                            [](const FrameData& frame, const auto needle) { return CallerCalleeLocation{frame.symbol, frame.binary} < needle; });
-
-                        if (it == callerCalleeData->children.end() || CallerCalleeLocation{it->symbol, it->binary} != needle) {
-                            it = callerCalleeData->children.insert(it, {node->symbol, node->binary, node->location, node->address, 0, 0, {}, nullptr});
-                        }
-                        it->inclusiveCost += 1;
-                        if (!node->parent) {
-                            it->selfCost += 1;
-                        }
-                        recursionGuard.insert(needle);
-                    }
-                    node = node->parent;
-                }
-            } else {
-                // recurse to find a leaf
-                buildCallerCalleeResult(row.children, callerCalleeData);
-            }
-        }
+        topDownResult = Data::TopDown::fromBottomUp(bottomUpResult);
     }
 
     void buildCallerCalleeResult()
     {
-        buildCallerCalleeResult(bottomUpResult.children, &callerCalleeResult);
+        callerCalleeResult = Data::CallerCallee::fromBottomUpData(bottomUpResult);
     }
 
     void addSampleToSummary(const Sample& sample)
@@ -983,10 +841,8 @@ struct PerfParserPrivate
     quint32 eventSize = 0;
     QBuffer buffer;
     QDataStream stream;
-    FrameData bottomUpResult;
-    FrameData topDownResult;
     QVector<AttributesDefinition> attributes;
-    QVector<SymbolData> symbols;
+    QVector<Data::Symbol> symbols;
     QVector<LocationData> locations;
     QVector<QString> strings;
     QProcess process;
@@ -995,7 +851,9 @@ struct PerfParserPrivate
     quint64 applicationEndTime = 0;
     QSet<quint32> uniqueThreads;
     QSet<quint32> uniqueProcess;
-    FrameData callerCalleeResult;
+    Data::BottomUp bottomUpResult;
+    Data::TopDown topDownResult;
+    Data::CallerCallee callerCalleeResult;
 };
 
 PerfParser::PerfParser(QObject* parent)

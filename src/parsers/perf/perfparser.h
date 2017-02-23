@@ -30,8 +30,8 @@
 #include <QObject>
 #include <memory>
 
-struct PerfParserPrivate;
-struct FrameData;
+#include <models/data.h>
+
 struct SummaryData;
 
 // TODO: create a parser interface
@@ -45,12 +45,11 @@ public:
     void startParseFile(const QString& path);
 
 signals:
-    void bottomUpDataAvailable(const FrameData& data);
-    void topDownDataAvailable(const FrameData& data);
-    // TODO: caller/callee data
     // TODO: progress bar
     void summaryDataAvailable(const SummaryData& data);
-    void callerCalleeDataAvailable(const FrameData& data);
+    void bottomUpDataAvailable(const Data::BottomUp& data);
+    void topDownDataAvailable(const Data::TopDown& data);
+    void callerCalleeDataAvailable(const Data::CallerCallee& data);
     void parsingFinished();
     void parsingFailed(const QString& errorMessage);
 };

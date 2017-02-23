@@ -41,7 +41,7 @@ int CallerCalleeModel::columnCount(const QModelIndex& parent) const
 
 int CallerCalleeModel::rowCount(const QModelIndex& parent) const
 {
-    return parent.isValid() ? 0 : m_root.children.size();
+    return parent.isValid() ? 0 : m_data.entries.size();
 }
 
 QVariant CallerCalleeModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -61,10 +61,6 @@ QVariant CallerCalleeModel::headerData(int section, Qt::Orientation orientation,
             return tr("Symbol");
         case Binary:
             return tr("Binary");
-        case Location:
-            return tr("Location");
-        case Address:
-            return tr("Address");
         case SelfCost:
             return tr("Self Cost");
         case InclusiveCost:
@@ -83,44 +79,41 @@ QVariant CallerCalleeModel::data(const QModelIndex& index, int role) const
         return {};
     }
 
-    const auto& item = m_root.children.at(index.row());
+    // TODO: optimize this? i.e. introduce a QVector of data, use hash only during construction?
+    auto it = m_data.entries.begin();
+    std::advance(it, index.row());
+
+    const auto& symbol = it.key();
+    const auto& item = it.value();
 
     if (role == SortRole) {
         switch (static_cast<Columns>(index.column())) {
             case Symbol:
-                return item.symbol;
+                return symbol.symbol;
             case Binary:
-                return item.binary;
-            case Location:
-                return item.location;
-            case Address:
-                return item.address;
+                return symbol.binary;
             case SelfCost:
-                return item.selfCost;
+                return item.selfCost.samples;
             case InclusiveCost:
-                return item.inclusiveCost;
+                return item.inclusiveCost.samples;
             case NUM_COLUMNS:
                 // do nothing
                 break;
         }
     } else if (role == FilterRole) {
         // TODO: optimize this
-        return QString(item.symbol + item.binary + item.location);
+        return QString(symbol.symbol + symbol.binary);
     } else if (role == Qt::DisplayRole) {
         // TODO: show fractional cost
         switch (static_cast<Columns>(index.column())) {
             case Symbol:
-                return item.symbol;
+                return symbol.symbol;
             case Binary:
-                return item.binary;
-            case Location:
-                return item.location;
-            case Address:
-                return item.address;
+                return symbol.binary;
             case SelfCost:
-                return item.selfCost;
+                return item.selfCost.samples;
             case InclusiveCost:
-                return item.inclusiveCost;
+                return item.inclusiveCost.samples;
             case NUM_COLUMNS:
                 // do nothing
                 break;
@@ -132,9 +125,9 @@ QVariant CallerCalleeModel::data(const QModelIndex& index, int role) const
     return {};
 }
 
-void CallerCalleeModel::setData(const FrameData& data)
+void CallerCalleeModel::setData(const Data::CallerCallee& data)
 {
     beginResetModel();
-    m_root = data;
+    m_data = data;
     endResetModel();
 }

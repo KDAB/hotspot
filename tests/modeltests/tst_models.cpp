@@ -27,46 +27,107 @@
 
 #include <QObject>
 #include <QTest>
+#include <QDebug>
+#include <QTextStream>
 
 #include "modeltest.h"
 
-#include <models/costmodel.h>
+#include <models/data.h>
+#include <models/treemodel.h>
 #include <models/topproxy.h>
 #include <models/callercalleemodel.h>
+
+namespace {
+Data::BottomUp buildBottomUpTree(const QByteArray& stacks)
+{
+    Data::BottomUp root;
+    root.symbol = {"<root>", {}};
+    const auto& lines = stacks.split('\n');
+    for (const auto& line : lines) {
+        auto trimmed = line.trimmed();
+        if (trimmed.isEmpty()) {
+            continue;
+        }
+        const auto& frames = trimmed.split(';');
+        auto* parent = &root;
+        for (auto it = frames.rbegin(), end = frames.rend(); it != end; ++it) {
+            const auto& frame = *it;
+            const auto symbol = Data::Symbol{frame, {}};
+            auto node = parent->entryForSymbol(symbol);
+            ++node->cost;
+            parent = node;
+        }
+    }
+    Data::BottomUp::initializeParents(&root);
+    return root;
+}
+
+template<typename Data>
+QString printCost(const Data& node)
+{
+    return "s:" + QString::number(node.selfCost.samples)
+        + ",i:" + QString::number(node.inclusiveCost.samples);
+}
+
+QString printCost(const Data::BottomUp& node)
+{
+    return QString::number(node.cost.samples);
+}
+
+template<typename Tree>
+void printTree(const Tree& tree, QStringList* entries, int indentLevel)
+{
+    QString indent;
+    indent.fill(' ', indentLevel);
+    for (const auto& entry : tree.children) {
+        entries->push_back(indent + entry.symbol.symbol + '=' + printCost(entry));
+        printTree(entry, entries, indentLevel + 1);
+    }
+};
+
+template<typename Tree>
+QStringList printTree(const Tree& tree)
+{
+    QStringList list;
+    printTree(tree, &list, 0);
+    return list;
+};
+
+QStringList printMap(const Data::CallerCallee& map)
+{
+    QStringList list;
+    list.reserve(map.entries.size());
+    for (auto it = map.entries.begin(), end = map.entries.end(); it != end; ++it) {
+        list.push_back(it.key().symbol + '=' + printCost(it.value()));
+    }
+    list.sort();
+    return list;
+};
+
+Data::BottomUp generateTree1()
+{
+    return buildBottomUpTree(R"(
+        A;B;C
+        A;B;D
+        A;B;D
+        A;B;C;E
+        A;B;C;E;C
+        A;B;C;E;C;E
+        A;B;C;C
+        C
+        C
+    )");
+}
+
+}
 
 class TestModels : public QObject
 {
     Q_OBJECT
-private:
-    FrameData generateTree(int depth, int breadth, int& id)
-    {
-        FrameData tree;
-        tree.address = "addr" + QString::number(id);
-        tree.binary = "binary" + QString::number(id);
-        tree.symbol = "symbol" + QString::number(id);
-        tree.location = "location" + QString::number(id);
-        tree.selfCost = id;
-        if (depth > 0) {
-            tree.children.reserve(breadth);
-            for (int i = 0; i < breadth; ++i) {
-                tree.children << generateTree(depth - 1, breadth, ++id);
-            }
-        }
-        return tree;
-    }
-
-    FrameData generateTree(int depth, int breadth)
-    {
-        int id = 0;
-        auto tree = generateTree(depth, breadth, id);
-        FrameData::initializeParents(&tree);
-        return tree;
-    }
-
 private slots:
-    void testFrameDataParents()
+    void testTreeParents()
     {
-        auto tree = generateTree(2, 2);
+        const auto tree = generateTree1();
 
         QVERIFY(!tree.parent);
         for (const auto& firstLevel : tree.children) {
@@ -77,26 +138,80 @@ private slots:
         }
     }
 
-    void testCostModel()
+    void testBottomUpModel()
     {
-        CostModel model;
+        const auto tree = generateTree1();
+
+        const QStringList expectedTree = {
+            "C=5",
+            " B=1",
+            "  A=1",
+            " E=1",
+            "  C=1",
+            "   B=1",
+            "    A=1",
+            " C=1",
+            "  B=1",
+            "   A=1",
+            "D=2",
+            " B=2",
+            "  A=2",
+            "E=2",
+            " C=2",
+            "  B=1",
+            "   A=1",
+            "  E=1",
+            "   C=1",
+            "    B=1",
+            "     A=1"
+        };
+        QCOMPARE(printTree(tree), expectedTree);
+
+        BottomUpModel model;
         ModelTest tester(&model);
 
-        model.setData(generateTree(5, 2));
+        model.setData(tree);
+    }
+
+    void testTopDownModel()
+    {
+        const auto bottomUpTree = generateTree1();
+        const auto tree = Data::TopDown::fromBottomUp(bottomUpTree);
+
+        const QStringList expectedTree = {
+            "A=s:0,i:7",
+            " B=s:0,i:7",
+            "  C=s:1,i:5",
+            "   E=s:1,i:3",
+            "    C=s:1,i:2",
+            "     E=s:1,i:1",
+            "   C=s:1,i:1",
+            "  D=s:2,i:2",
+            "C=s:2,i:2"
+        };
+        QTextStream(stdout) << "Actual:\n" << printTree(tree).join("\n")
+                            << "\nExpected:\n" << expectedTree.join("\n") << "\n";
+        QEXPECT_FAIL("", "The top-down has wrong self costs, misses the top-most C entry", Continue);
+        QCOMPARE(printTree(tree), expectedTree);
+
+        TopDownModel model;
+        ModelTest tester(&model);
+
+        model.setData(tree);
     }
 
     void testTopProxy()
     {
-        CostModel model;
+        BottomUpModel model;
         TopProxy proxy;
         ModelTest tester(&proxy);
+
+        const auto data = generateTree1();
+        model.setData(data);
 
         proxy.setSourceModel(&model);
         QCOMPARE(proxy.rowCount(), model.rowCount());
         QCOMPARE(proxy.columnCount(), 3);
-        QVERIFY(proxy.filterAcceptsColumn(CostModel::Symbol, {}));
-        QVERIFY(proxy.filterAcceptsColumn(CostModel::Binary, {}));
-        QVERIFY(proxy.filterAcceptsColumn(CostModel::SelfCost, {}));
 
         for (auto i = 0, c = proxy.rowCount(); i < c; ++i) {
             auto index = proxy.index(i, 0, {});
@@ -107,10 +222,24 @@ private slots:
 
     void testCallerCalleeModel()
     {
+        const auto tree = generateTree1();
+
+        const auto map = Data::CallerCallee::fromBottomUpData(tree);
+        const QStringList expectedMap = {
+            "A=s:0,i:7",
+            "B=s:0,i:7",
+            "C=s:5,i:5",
+            "D=s:2,i:2",
+            "E=s:2,i:3",
+        };
+        QTextStream(stdout) << "Actual:\n" << printMap(map).join("\n")
+                            << "\nExpected:\n" << expectedMap.join("\n") << "\n";
+        QEXPECT_FAIL("", "The caller/callee map has wrong self costs", Continue);
+        QCOMPARE(printMap(map), expectedMap);
+
         CallerCalleeModel model;
         ModelTest tester(&model);
-
-        model.setData(generateTree(5, 2));
+        model.setData(map);
     }
 };
 

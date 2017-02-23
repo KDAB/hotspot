@@ -23,7 +23,7 @@
 #include <QWidget>
 #include <QVector>
 
-#include "models/framedata.h"
+#include <models/data.h>
 
 class QGraphicsScene;
 class QGraphicsView;
@@ -39,8 +39,8 @@ public:
     FlameGraph(QWidget* parent = nullptr, Qt::WindowFlags flags = 0);
     ~FlameGraph();
 
-    void setTopDownData(const FrameData& topDownData);
-    void setBottomUpData(const FrameData& bottomUpData);
+    void setTopDownData(const Data::TopDown& topDownData);
+    void setBottomUpData(const Data::BottomUp& bottomUpData);
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
@@ -56,8 +56,8 @@ private:
     void showData();
     void selectItem(FrameGraphicsItem* item);
 
-    FrameData m_topDownData;
-    FrameData m_bottomUpData;
+    Data::TopDown m_topDownData;
+    Data::BottomUp m_bottomUpData;
 
     QComboBox* m_costSource;
     QGraphicsScene* m_scene;

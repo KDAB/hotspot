@@ -42,8 +42,8 @@
 
 #include "parsers/perf/perfparser.h"
 
-#include "models/costmodel.h"
 #include "models/summarydata.h"
+#include "models/treemodel.h"
 #include "models/topproxy.h"
 #include "models/callercalleemodel.h"
 
@@ -67,17 +67,17 @@ QString formatTimeString(quint64 nanoseconds)
             + format(seconds) + QLatin1Char('.') + format(milliseconds, 3) + QLatin1Char('s');
 }
 
-void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter,
-                   CostModel* model)
+template<typename Model>
+void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, Model* model)
 {
     auto proxy = new KRecursiveFilterProxyModel(view);
-    proxy->setSortRole(CostModel::SortRole);
-    proxy->setFilterRole(CostModel::FilterRole);
+    proxy->setSortRole(Model::SortRole);
+    proxy->setFilterRole(Model::FilterRole);
     proxy->setSourceModel(model);
 
     filter->setProxy(proxy);
 
-    view->sortByColumn(CostModel::SelfCost);
+    view->sortByColumn(Model::InitialSortColumn);
     view->setModel(proxy);
 }
 }
@@ -103,15 +103,11 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->mainPageStack->setCurrentWidget(ui->startPage);
     ui->openFileButton->setFocus();
 
-    auto bottomUpCostModel = new CostModel(this);
-    setupTreeView(ui->bottomUpTreeView,  ui->bottomUpSearch,
-                  bottomUpCostModel);
-    // only the top rows have a self cost == inclusive cost in the bottom up view
-    ui->bottomUpTreeView->hideColumn(CostModel::SelfCost);
+    auto bottomUpCostModel = new BottomUpModel(this);
+    setupTreeView(ui->bottomUpTreeView,  ui->bottomUpSearch, bottomUpCostModel);
 
-    auto topDownCostModel = new CostModel(this);
-    setupTreeView(ui->topDownTreeView, ui->topDownSearch,
-                  topDownCostModel);
+    auto topDownCostModel = new TopDownModel(this);
+    setupTreeView(ui->topDownTreeView, ui->topDownSearch, topDownCostModel);
 
     auto topHotspotsProxy = new TopProxy(this);
     topHotspotsProxy->setSourceModel(bottomUpCostModel);
@@ -128,13 +124,13 @@ MainWindow::MainWindow(QWidget *parent) :
     setStyleSheet(QStringLiteral("QMainWindow { background: url(:/images/kdabproducts.png) top right no-repeat; }"));
 
     connect(m_parser, &PerfParser::bottomUpDataAvailable,
-            this, [this, bottomUpCostModel] (const FrameData& data) {
+            this, [this, bottomUpCostModel] (const Data::BottomUp& data) {
                 bottomUpCostModel->setData(data);
                 ui->flameGraph->setBottomUpData(data);
             });
 
     connect(m_parser, &PerfParser::topDownDataAvailable,
-            this, [this, topDownCostModel] (const FrameData& data) {
+            this, [this, topDownCostModel] (const Data::TopDown& data) {
                 topDownCostModel->setData(data);
                 ui->flameGraph->setTopDownData(data);
             });
@@ -158,7 +154,7 @@ MainWindow::MainWindow(QWidget *parent) :
             });
 
     connect(m_parser, &PerfParser::callerCalleeDataAvailable,
-            this, [this, callerCalleeCostModel] (const FrameData& data) {
+            this, [this, callerCalleeCostModel] (const Data::CallerCallee& data) {
                 callerCalleeCostModel->setData(data);
                 ui->callerCalleeTableView->sortByColumn(CallerCalleeModel::InclusiveCost);
             });

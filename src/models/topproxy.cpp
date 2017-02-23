@@ -19,7 +19,7 @@
 
 #include "topproxy.h"
 
-#include "costmodel.h"
+#include "treemodel.h"
 
 TopProxy::TopProxy(QObject* parent)
     : QSortFilterProxyModel(parent)
@@ -28,11 +28,6 @@ TopProxy::TopProxy(QObject* parent)
 }
 
 TopProxy::~TopProxy() = default;
-
-bool TopProxy::filterAcceptsColumn(int source_column, const QModelIndex& /*source_parent*/) const
-{
-    return source_column == CostModel::Symbol || source_column == CostModel::Binary || source_column == CostModel::SelfCost;
-}
 
 int TopProxy::rowCount(const QModelIndex& parent) const
 {

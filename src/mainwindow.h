@@ -31,13 +31,10 @@
 #include <QScopedPointer>
 #include <QString>
 
-#include "models/framedata.h"
-
 namespace Ui {
 class MainWindow;
 }
 
-class CostModel;
 class PerfParser;
 
 class MainWindow : public QMainWindow
@@ -59,6 +56,6 @@ private slots:
     void on_openFileButton_clicked();
 
 private:
-    Ui::MainWindow *ui;
+    QScopedPointer<Ui::MainWindow> ui;
     PerfParser* m_parser;
 };
