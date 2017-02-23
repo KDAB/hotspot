@@ -65,10 +65,17 @@ Cost buildTopDownResult(const BottomUp& bottomUpData, TopDown* topDownData)
     return totalCost;
 }
 
-void buildCallerCalleeResult(const BottomUp& data, CallerCallee* result)
+Cost buildCallerCalleeResult(const BottomUp& data, CallerCallee* result)
 {
+    Cost totalCost;
     for (const auto& row : data.children) {
-        if (row.children.isEmpty()) {
+        // recurse to find a leaf
+        const auto childCost = buildCallerCalleeResult(row, result);
+        if (childCost != row.cost) {
+            // this row is (partially) a leaf
+            Q_ASSERT(childCost < row.cost);
+            const auto cost = row.cost - childCost;
+
             // leaf node found, bubble up the parent chain to add cost for all frames
             // to the caller/callee data. this is done top-down since we must not count
             // symbols more than once in the caller-callee data
@@ -76,23 +83,28 @@ void buildCallerCalleeResult(const BottomUp& data, CallerCallee* result)
             auto node = &row;
             while (node) {
                 const auto& symbol = node->symbol;
+                const bool wasEncountered = recursionGuard.contains(symbol);
+                const bool isSelfCostNode = !node->parent;
                 // aggregate caller-callee data
-                if (!recursionGuard.contains(symbol)) {
+                if (!wasEncountered || isSelfCostNode) {
                     auto& entry = result->entries[symbol];
-                    ++entry.inclusiveCost;
-                    recursionGuard.insert(symbol);
-                    if (!node->parent) {
-                        ++entry.selfCost;
+                    if (!wasEncountered) {
+                        // only increment inclusive cost once for a given stack
+                        entry.inclusiveCost += cost;
+                        recursionGuard.insert(symbol);
+                    }
+                    if (isSelfCostNode) {
+                        // always increment the self cost
+                        entry.selfCost += cost;
                     }
                 }
 
                 node = node->parent;
             }
-        } else {
-            // recurse to find a leaf
-            buildCallerCalleeResult(row, result);
         }
+        totalCost += row.cost;
     }
+    return totalCost;
 }
 }
 

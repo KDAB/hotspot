@@ -227,13 +227,12 @@ private slots:
         const QStringList expectedMap = {
             "A=s:0,i:7",
             "B=s:0,i:7",
-            "C=s:5,i:5",
+            "C=s:5,i:7",
             "D=s:2,i:2",
             "E=s:2,i:3",
         };
         QTextStream(stdout) << "Actual:\n" << printMap(map).join("\n")
                             << "\nExpected:\n" << expectedMap.join("\n") << "\n";
-        QEXPECT_FAIL("", "The caller/callee map has wrong self costs", Continue);
         QCOMPARE(printMap(map), expectedMap);
 
         CallerCalleeModel model;
