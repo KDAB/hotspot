@@ -239,7 +239,7 @@
         <item>
          <widget class="QTabWidget" name="resultsTabWidget">
           <property name="currentIndex">
-           <number>4</number>
+           <number>0</number>
           </property>
           <property name="documentMode">
            <bool>true</bool>
@@ -263,7 +263,7 @@
               <property name="toolTip">
                <string>Too much data was generated during the profile and some events got lost. Try to reduce the event load or increase the memory caches.</string>
               </property>
-              <property name="text" stdset="0">
+              <property name="text">
                <string notr="true">Lost messages</string>
               </property>
              </widget>
@@ -293,6 +293,9 @@
                  <property name="text">
                   <string/>
                  </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
                 </widget>
                </item>
                <item row="5" column="0">
@@ -306,6 +309,9 @@
                 <widget class="QLabel" name="processCountValue">
                  <property name="text">
                   <string/>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -321,12 +327,18 @@
                  <property name="text">
                   <string/>
                  </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
                 </widget>
                </item>
                <item row="0" column="1">
                 <widget class="QLabel" name="commandValue">
                  <property name="text">
                   <string/>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -342,6 +354,9 @@
                  <property name="text">
                   <string/>
                  </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
                 </widget>
                </item>
                <item row="4" column="0">
@@ -355,6 +370,9 @@
                 <widget class="QLabel" name="lostChunksValue">
                  <property name="text">
                   <string/>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -443,7 +461,7 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="KFilterProxySearchLine" name="bottomUpSearch" native="true"/>
+             <widget class="KFilterProxySearchLine" name="bottomUpSearch"/>
             </item>
             <item>
              <widget class="QTreeView" name="bottomUpTreeView"/>
@@ -468,7 +486,7 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="KFilterProxySearchLine" name="topDownSearch" native="true"/>
+             <widget class="KFilterProxySearchLine" name="topDownSearch"/>
             </item>
             <item>
              <widget class="QTreeView" name="topDownTreeView"/>
@@ -527,7 +545,7 @@
      <x>0</x>
      <y>0</y>
      <width>745</width>
-     <height>25</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">
@@ -573,15 +591,15 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
+   <class>KFilterProxySearchLine</class>
+   <extends>QWidget</extends>
+   <header>kfilterproxysearchline.h</header>
+  </customwidget>
+  <customwidget>
    <class>KMessageWidget</class>
    <extends>QFrame</extends>
    <header>kmessagewidget.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>KFilterProxySearchLine</class>
-   <extends>QWidget</extends>
-   <header>kfilterproxysearchline.h</header>
   </customwidget>
   <customwidget>
    <class>FlameGraph</class>
