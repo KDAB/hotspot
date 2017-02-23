@@ -130,7 +130,31 @@ struct Cost
         samples += rhs.samples;
         return *this;
     }
+
+    Cost operator-(const Cost &rhs) const
+    {
+        Cost cost;
+        // TODO: signed differences?
+        Q_ASSERT(samples > rhs.samples);
+        cost.samples = samples - rhs.samples;
+        return cost;
+    }
 };
+
+inline bool operator==(const Cost& lhs, const Cost& rhs)
+{
+    return lhs.samples == rhs.samples;
+}
+
+inline bool operator!=(const Cost& lhs, const Cost& rhs)
+{
+    return !(lhs == rhs);
+}
+
+inline bool operator<(const Cost& lhs, const Cost& rhs)
+{
+    return lhs.samples < rhs.samples;
+}
 
 QDebug operator<<(QDebug stream, const Cost& cost);
 

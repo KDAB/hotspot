@@ -33,11 +33,18 @@
 using namespace Data;
 
 namespace {
-void buildTopDownResult(const BottomUp& bottomUpData, TopDown* topDownData)
+Cost buildTopDownResult(const BottomUp& bottomUpData, TopDown* topDownData)
 {
+    Cost totalCost;
     for (const auto& row : bottomUpData.children) {
-        if (row.children.isEmpty()) {
-            // leaf node found, bubble up the parent chain to build a top-down tree
+        // recurse and find the cost attributed to children
+        const auto childCost = buildTopDownResult(row, topDownData);
+        if (childCost != row.cost) {
+            // this row is (partially) a leaf
+            Q_ASSERT(childCost < row.cost);
+            const auto cost = row.cost - childCost;
+
+            // bubble up the parent chain to build a top-down tree
             auto node = &row;
             auto stack = topDownData;
             while (node) {
@@ -45,18 +52,17 @@ void buildTopDownResult(const BottomUp& bottomUpData, TopDown* topDownData)
 
                 // always use the leaf node's cost and propagate that one up the chain
                 // otherwise we'd count the cost of some nodes multiple times
-                frame->inclusiveCost += row.cost;
-                if (node == &row) {
-                    ++frame->selfCost;
+                frame->inclusiveCost += cost;
+                if (!node->parent) {
+                    frame->selfCost += cost;
                 }
                 stack = frame;
                 node = node->parent;
             }
-        } else {
-            // recurse to find a leaf
-            buildTopDownResult(row, topDownData);
         }
+        totalCost += row.cost;
     }
+    return totalCost;
 }
 
 void buildCallerCalleeResult(const BottomUp& data, CallerCallee* result)

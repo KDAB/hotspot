@@ -191,7 +191,6 @@ private slots:
         };
         QTextStream(stdout) << "Actual:\n" << printTree(tree).join("\n")
                             << "\nExpected:\n" << expectedTree.join("\n") << "\n";
-        QEXPECT_FAIL("", "The top-down has wrong self costs, misses the top-most C entry", Continue);
         QCOMPARE(printTree(tree), expectedTree);
 
         TopDownModel model;
