@@ -44,6 +44,8 @@ public:
         Binary,
         SelfCost,
         InclusiveCost,
+        Callers,
+        Callees,
         NUM_COLUMNS
     };
 

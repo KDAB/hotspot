@@ -247,6 +247,11 @@ struct CallerCalleeEntry
 {
     Cost selfCost;
     Cost inclusiveCost;
+
+    // callers, i.e. other symbols and locations that called this symbol
+    QHash<Symbol, Cost> callers;
+    // callees, i.e. symbols being called from this symbol
+    QHash<Symbol, Cost> callees;
 };
 
 QDebug operator<<(QDebug stream, const CallerCalleeEntry& entry);

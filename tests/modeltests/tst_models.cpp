@@ -99,8 +99,36 @@ QStringList printMap(const Data::CallerCallee& map)
     list.reserve(map.entries.size());
     for (auto it = map.entries.begin(), end = map.entries.end(); it != end; ++it) {
         list.push_back(it.key().symbol + '=' + printCost(it.value()));
+        QStringList subList;
+        for (auto callersIt = it->callers.begin(), callersEnd = it->callers.end();
+             callersIt != callersEnd; ++callersIt)
+        {
+            subList.push_back(it.key().symbol + '<' + callersIt.key().symbol + '='
+                                + QString::number(callersIt.value().samples));
+        }
+        for (auto calleesIt = it->callees.begin(), calleesEnd = it->callees.end();
+             calleesIt != calleesEnd; ++calleesIt)
+        {
+            subList.push_back(it.key().symbol + '>' + calleesIt.key().symbol + '='
+                                + QString::number(calleesIt.value().samples));
+        }
+        subList.sort();
+        list += subList;
     }
-    list.sort();
+    auto symbolSubString = [](const QString& string) -> QStringRef {
+        auto idx = string.indexOf('>');
+        if (idx == -1) {
+            idx = string.indexOf('<');
+        }
+        if (idx == -1) {
+            idx = string.indexOf('=');
+        }
+        return string.midRef(0, idx);
+    };
+    std::stable_sort(list.begin(), list.end(),
+                    [symbolSubString](const QString& lhs, const QString& rhs) {
+                        return symbolSubString(lhs) < symbolSubString(rhs);
+                    });
     return list;
 };
 
@@ -226,13 +254,25 @@ private slots:
         const auto map = Data::CallerCallee::fromBottomUpData(tree);
         const QStringList expectedMap = {
             "A=s:0,i:7",
+            "A>B=7",
             "B=s:0,i:7",
+            "B<A=7",
+            "B>C=5",
+            "B>D=2",
             "C=s:5,i:7",
+            "C<B=5",
+            "C<C=1",
+            "C<E=2",
+            "C>C=1",
+            "C>E=3",
             "D=s:2,i:2",
+            "D<B=2",
             "E=s:2,i:3",
+            "E<C=3",
+            "E>C=2",
         };
         QTextStream(stdout) << "Actual:\n" << printMap(map).join("\n")
-                            << "\nExpected:\n" << expectedMap.join("\n") << "\n";
+                            << "\n\nExpected:\n" << expectedMap.join("\n") << "\n";
         QCOMPARE(printMap(map), expectedMap);
 
         CallerCalleeModel model;

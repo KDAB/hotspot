@@ -65,6 +65,10 @@ QVariant CallerCalleeModel::headerData(int section, Qt::Orientation orientation,
             return tr("Self Cost");
         case InclusiveCost:
             return tr("Inclusive Cost");
+        case Callers:
+            return tr("Callers");
+        case Callees:
+            return tr("Callees");
         case NUM_COLUMNS:
             // fall-through
             break;
@@ -96,6 +100,10 @@ QVariant CallerCalleeModel::data(const QModelIndex& index, int role) const
                 return item.selfCost.samples;
             case InclusiveCost:
                 return item.inclusiveCost.samples;
+            case Callers:
+                return item.callers.size();
+            case Callees:
+                return item.callees.size();
             case NUM_COLUMNS:
                 // do nothing
                 break;
@@ -114,6 +122,10 @@ QVariant CallerCalleeModel::data(const QModelIndex& index, int role) const
                 return item.selfCost.samples;
             case InclusiveCost:
                 return item.inclusiveCost.samples;
+            case Callers:
+                return item.callers.size();
+            case Callees:
+                return item.callees.size();
             case NUM_COLUMNS:
                 // do nothing
                 break;

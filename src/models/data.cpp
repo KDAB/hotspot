@@ -81,25 +81,38 @@ Cost buildCallerCalleeResult(const BottomUp& data, CallerCallee* result)
             // symbols more than once in the caller-callee data
             QSet<Symbol> recursionGuard;
             auto node = &row;
+
+            QSet<QPair<Symbol, Symbol>> callerCalleeRecursionGuard;
+            Data::Symbol lastSymbol;
+            Data::CallerCalleeEntry* lastEntry = nullptr;
+
             while (node) {
                 const auto& symbol = node->symbol;
-                const bool wasEncountered = recursionGuard.contains(symbol);
-                const bool isSelfCostNode = !node->parent;
                 // aggregate caller-callee data
-                if (!wasEncountered || isSelfCostNode) {
-                    auto& entry = result->entries[symbol];
-                    if (!wasEncountered) {
-                        // only increment inclusive cost once for a given stack
-                        entry.inclusiveCost += cost;
-                        recursionGuard.insert(symbol);
-                    }
-                    if (isSelfCostNode) {
-                        // always increment the self cost
-                        entry.selfCost += cost;
+                auto& entry = result->entries[symbol];
+                if (!recursionGuard.contains(symbol)) {
+                    // only increment inclusive cost once for a given stack
+                    entry.inclusiveCost += cost;
+                    recursionGuard.insert(symbol);
+                }
+                if (!node->parent) {
+                    // always increment the self cost
+                    entry.selfCost += cost;
+                }
+                // add current entry as callee to last entry
+                // and last entry as caller to current entry
+                if (lastEntry) {
+                    const auto callerCalleePair = qMakePair(symbol, lastSymbol);
+                    if (!callerCalleeRecursionGuard.contains(callerCalleePair)) {
+                        lastEntry->callees[symbol] += cost;
+                        entry.callers[lastSymbol] += cost;
+                        callerCalleeRecursionGuard.insert(callerCalleePair);
                     }
                 }
 
                 node = node->parent;
+                lastSymbol = symbol;
+                lastEntry = &entry;
             }
         }
         totalCost += row.cost;
