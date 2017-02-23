@@ -179,6 +179,10 @@ MainWindow::MainWindow(QWidget *parent) :
                 ui->loadStack->setCurrentWidget(ui->openFilePage);
             });
 
+    for (int i = 0, c = ui->resultsTabWidget->count(); i < c; ++i) {
+        ui->resultsTabWidget->setTabToolTip(i, ui->resultsTabWidget->widget(i)->toolTip());
+    }
+
     clear();
 }
 
