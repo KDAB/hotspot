@@ -924,6 +924,6 @@ void PerfParser::startParseFile(const QString& path)
             emit parsingFailed(tr("Failed to start the hotspot-perfparser process"));
             return;
         }
-        d.process.waitForFinished();
+        d.process.waitForFinished(-1);
     });
 }
