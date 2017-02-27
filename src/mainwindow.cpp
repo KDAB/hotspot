@@ -79,6 +79,8 @@ void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, Model* model
 
     view->sortByColumn(Model::InitialSortColumn);
     view->setModel(proxy);
+    view->header()->setStretchLastSection(false);
+    view->header()->setSectionResizeMode(0, QHeaderView::Stretch);
 }
 
 template<typename Model>
