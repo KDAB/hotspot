@@ -28,35 +28,25 @@
 #include "callercalleemodel.h"
 
 CallerCalleeModel::CallerCalleeModel(QObject* parent)
-    : QAbstractTableModel(parent)
+    : HashModel(parent)
 {
 }
 
 CallerCalleeModel::~CallerCalleeModel() = default;
 
-int CallerCalleeModel::columnCount(const QModelIndex& parent) const
-{
-    return parent.isValid() ? 0 : NUM_COLUMNS;
-}
-
-int CallerCalleeModel::rowCount(const QModelIndex& parent) const
-{
-    return parent.isValid() ? 0 : m_data.entries.size();
-}
-
-QVariant CallerCalleeModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant CallerCalleeModel::headerCell(Columns column, int role)
 {
     if (role == Qt::InitialSortOrderRole) {
-        if (section == SelfCost || section == InclusiveCost)
+        if (column == SelfCost || column == InclusiveCost)
         {
             return Qt::DescendingOrder;
         }
     }
-    if (role != Qt::DisplayRole || orientation != Qt::Horizontal) {
+    if (role != Qt::DisplayRole) {
         return {};
     }
 
-    switch (static_cast<Columns>(section)) {
+    switch (column) {
         case Symbol:
             return tr("Symbol");
         case Binary:
@@ -69,77 +59,51 @@ QVariant CallerCalleeModel::headerData(int section, Qt::Orientation orientation,
             return tr("Callers");
         case Callees:
             return tr("Callees");
-        case NUM_COLUMNS:
-            // fall-through
-            break;
     }
 
     return {};
 }
 
-QVariant CallerCalleeModel::data(const QModelIndex& index, int role) const
+QVariant CallerCalleeModel::cell(Columns column, int role, const Data::Symbol& symbol,
+                                 const Data::CallerCalleeEntry& entry)
 {
-    if (!hasIndex(index.row(), index.column(), index.parent())) {
-        return {};
-    }
-
-    // TODO: optimize this? i.e. introduce a QVector of data, use hash only during construction?
-    auto it = m_data.entries.begin();
-    std::advance(it, index.row());
-
-    const auto& symbol = it.key();
-    const auto& item = it.value();
-
     if (role == SortRole) {
-        switch (static_cast<Columns>(index.column())) {
+        switch (column) {
             case Symbol:
                 return symbol.symbol;
             case Binary:
                 return symbol.binary;
             case SelfCost:
-                return item.selfCost.samples;
+                return entry.selfCost.samples;
             case InclusiveCost:
-                return item.inclusiveCost.samples;
+                return entry.inclusiveCost.samples;
             case Callers:
-                return item.callers.size();
+                return entry.callers.size();
             case Callees:
-                return item.callees.size();
-            case NUM_COLUMNS:
-                // do nothing
-                break;
+                return entry.callees.size();
         }
     } else if (role == FilterRole) {
         // TODO: optimize this
         return QString(symbol.symbol + symbol.binary);
     } else if (role == Qt::DisplayRole) {
         // TODO: show fractional cost
-        switch (static_cast<Columns>(index.column())) {
+        switch (column) {
             case Symbol:
                 return symbol.symbol;
             case Binary:
                 return symbol.binary;
             case SelfCost:
-                return item.selfCost.samples;
+                return entry.selfCost.samples;
             case InclusiveCost:
-                return item.inclusiveCost.samples;
+                return entry.inclusiveCost.samples;
             case Callers:
-                return item.callers.size();
+                return entry.callers.size();
             case Callees:
-                return item.callees.size();
-            case NUM_COLUMNS:
-                // do nothing
-                break;
+                return entry.callees.size();
         }
     }
 
     // TODO: tooltips
 
     return {};
-}
-
-void CallerCalleeModel::setData(const Data::CallerCallee& data)
-{
-    beginResetModel();
-    m_data = data;
-    endResetModel();
 }

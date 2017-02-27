@@ -154,7 +154,7 @@ MainWindow::MainWindow(QWidget *parent) :
             });
 
     connect(m_parser, &PerfParser::callerCalleeDataAvailable,
-            this, [this, callerCalleeCostModel] (const Data::CallerCallee& data) {
+            this, [this, callerCalleeCostModel] (const Data::CallerCalleeEntryMap& data) {
                 callerCalleeCostModel->setData(data);
                 ui->callerCalleeTableView->sortByColumn(CallerCalleeModel::InclusiveCost);
             });

@@ -776,7 +776,7 @@ struct PerfParserPrivate
 
     void buildCallerCalleeResult()
     {
-        callerCalleeResult = Data::CallerCallee::fromBottomUpData(bottomUpResult);
+        callerCalleeResult = Data::callerCalleesFromBottomUpData(bottomUpResult);
     }
 
     void addSampleToSummary(const Sample& sample)
@@ -853,7 +853,7 @@ struct PerfParserPrivate
     QSet<quint32> uniqueProcess;
     Data::BottomUp bottomUpResult;
     Data::TopDown topDownResult;
-    Data::CallerCallee callerCalleeResult;
+    Data::CallerCalleeEntryMap callerCalleeResult;
 };
 
 PerfParser::PerfParser(QObject* parent)

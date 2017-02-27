@@ -49,7 +49,7 @@ signals:
     void summaryDataAvailable(const SummaryData& data);
     void bottomUpDataAvailable(const Data::BottomUp& data);
     void topDownDataAvailable(const Data::TopDown& data);
-    void callerCalleeDataAvailable(const Data::CallerCallee& data);
+    void callerCalleeDataAvailable(const Data::CallerCalleeEntryMap& data);
     void parsingFinished();
     void parsingFailed(const QString& errorMessage);
 };

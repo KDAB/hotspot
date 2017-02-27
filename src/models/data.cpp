@@ -65,7 +65,7 @@ Cost buildTopDownResult(const BottomUp& bottomUpData, TopDown* topDownData)
     return totalCost;
 }
 
-Cost buildCallerCalleeResult(const BottomUp& data, CallerCallee* result)
+Cost buildCallerCalleeResult(const BottomUp& data, CallerCalleeEntryMap* result)
 {
     Cost totalCost;
     for (const auto& row : data.children) {
@@ -89,7 +89,7 @@ Cost buildCallerCalleeResult(const BottomUp& data, CallerCallee* result)
             while (node) {
                 const auto& symbol = node->symbol;
                 // aggregate caller-callee data
-                auto& entry = result->entries[symbol];
+                auto& entry = (*result)[symbol];
                 if (!recursionGuard.contains(symbol)) {
                     // only increment inclusive cost once for a given stack
                     entry.inclusiveCost += cost;
@@ -129,9 +129,9 @@ TopDown TopDown::fromBottomUp(const BottomUp& bottomUpData)
     return root;
 }
 
-CallerCallee CallerCallee::fromBottomUpData(const BottomUp& bottomUpData)
+CallerCalleeEntryMap Data::callerCalleesFromBottomUpData(const BottomUp& bottomUpData)
 {
-    CallerCallee results;
+    CallerCalleeEntryMap results;
     buildCallerCalleeResult(bottomUpData, &results);
     return results;
 }

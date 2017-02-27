@@ -243,25 +243,25 @@ struct TopDown : SymbolTree<TopDown>
     static TopDown fromBottomUp(const Data::BottomUp& bottomUpData);
 };
 
+using CalleeMap = QHash<Symbol, Cost>;
+using CallerMap = QHash<Symbol, Cost>;
+
 struct CallerCalleeEntry
 {
     Cost selfCost;
     Cost inclusiveCost;
 
     // callers, i.e. other symbols and locations that called this symbol
-    QHash<Symbol, Cost> callers;
+    CallerMap callers;
     // callees, i.e. symbols being called from this symbol
-    QHash<Symbol, Cost> callees;
+    CalleeMap callees;
 };
 
 QDebug operator<<(QDebug stream, const CallerCalleeEntry& entry);
 
-struct CallerCallee
-{
-    QHash<Symbol, CallerCalleeEntry> entries;
+using CallerCalleeEntryMap = QHash<Symbol, CallerCalleeEntry>;
 
-    static CallerCallee fromBottomUpData(const BottomUp& data);
-};
+CallerCalleeEntryMap callerCalleesFromBottomUpData(const BottomUp& data);
 
 }
 
@@ -282,6 +282,3 @@ Q_DECLARE_TYPEINFO(Data::Cost, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::CallerCalleeEntry)
 Q_DECLARE_TYPEINFO(Data::CallerCalleeEntry, Q_MOVABLE_TYPE);
-
-Q_DECLARE_METATYPE(Data::CallerCallee)
-Q_DECLARE_TYPEINFO(Data::CallerCallee, Q_MOVABLE_TYPE);

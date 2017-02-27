@@ -93,11 +93,11 @@ QStringList printTree(const Tree& tree)
     return list;
 };
 
-QStringList printMap(const Data::CallerCallee& map)
+QStringList printMap(const Data::CallerCalleeEntryMap& map)
 {
     QStringList list;
-    list.reserve(map.entries.size());
-    for (auto it = map.entries.begin(), end = map.entries.end(); it != end; ++it) {
+    list.reserve(map.size());
+    for (auto it = map.begin(), end = map.end(); it != end; ++it) {
         list.push_back(it.key().symbol + '=' + printCost(it.value()));
         QStringList subList;
         for (auto callersIt = it->callers.begin(), callersEnd = it->callers.end();
@@ -251,7 +251,7 @@ private slots:
     {
         const auto tree = generateTree1();
 
-        const auto map = Data::CallerCallee::fromBottomUpData(tree);
+        const auto map = Data::callerCalleesFromBottomUpData(tree);
         const QStringList expectedMap = {
             "A=s:0,i:7",
             "A>B=7",

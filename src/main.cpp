@@ -40,7 +40,7 @@ int main(int argc, char** argv)
     qRegisterMetaType<SummaryData>();
     qRegisterMetaType<Data::BottomUp>();
     qRegisterMetaType<Data::TopDown>();
-    qRegisterMetaType<Data::CallerCallee>();
+    qRegisterMetaType<Data::CallerCalleeEntryMap>("Data::CallerCalleeEntryMap");
 
     app.setApplicationName(QStringLiteral("hotspot"));
     app.setApplicationVersion(QStringLiteral(HOTSPOT_VERSION_STRING));

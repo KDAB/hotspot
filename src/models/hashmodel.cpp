@@ -1,10 +1,10 @@
 /*
-  callercalleemodel.h
+  hashmodel.cpp
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
-  Author: Nate Rogers <nate.rogers@kdab.com>
+  Copyright (C) 2016-2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
   accordance with Hotspot Commercial License Agreement provided with the Software.
@@ -25,39 +25,4 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
-
-#include <QVector>
-#include <QAbstractItemModel>
-
-#include "data.h"
 #include "hashmodel.h"
-
-class CallerCalleeModel : public HashModel<Data::CallerCalleeEntryMap, CallerCalleeModel>
-{
-    Q_OBJECT
-public:
-    explicit CallerCalleeModel(QObject* parent = nullptr);
-    ~CallerCalleeModel();
-
-    enum Columns {
-        Symbol = 0,
-        Binary,
-        SelfCost,
-        InclusiveCost,
-        Callers,
-        Callees,
-    };
-    enum {
-        NUM_COLUMNS = Callees + 1
-    };
-
-    enum Roles {
-        SortRole = Qt::UserRole,
-        FilterRole
-    };
-
-    static QVariant headerCell(Columns column, int role);
-    static QVariant cell(Columns column, int role, const Data::Symbol& symbol,
-                         const Data::CallerCalleeEntry& entry);
-};
