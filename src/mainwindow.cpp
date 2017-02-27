@@ -67,6 +67,12 @@ QString formatTimeString(quint64 nanoseconds)
             + format(seconds) + QLatin1Char('.') + format(milliseconds, 3) + QLatin1Char('s');
 }
 
+void stretchFirstColumn(QTreeView* view)
+{
+    view->header()->setStretchLastSection(false);
+    view->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+}
+
 template<typename Model>
 void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, Model* model)
 {
@@ -79,8 +85,7 @@ void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, Model* model
 
     view->sortByColumn(Model::InitialSortColumn);
     view->setModel(proxy);
-    view->header()->setStretchLastSection(false);
-    view->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    stretchFirstColumn(view);
 }
 
 template<typename Model>
@@ -93,8 +98,7 @@ Model* setupCallerOrCalleeView(QTreeView* view, QTreeView* callersCalleeView,
     proxy->setSourceModel(model);
     view->sortByColumn(Model::Cost);
     view->setModel(proxy);
-    view->header()->setStretchLastSection(false);
-    view->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    stretchFirstColumn(view);
 
     QObject::connect(view, &QTreeView::activated,
                      view, [=] (const QModelIndex& index) {
@@ -139,6 +143,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->topHotspotsTableView->setSortingEnabled(false);
     ui->topHotspotsTableView->setModel(topHotspotsProxy);
+    stretchFirstColumn(ui->topHotspotsTableView);
 
     auto callerCalleeCostModel = new CallerCalleeModel(this);
     auto callerCalleeProxy = new QSortFilterProxyModel(this);
