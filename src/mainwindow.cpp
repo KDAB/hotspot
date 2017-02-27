@@ -151,6 +151,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->callerCalleeFilter->setProxy(callerCalleeProxy);
     ui->callerCalleeTableView->setSortingEnabled(true);
     ui->callerCalleeTableView->setModel(callerCalleeProxy);
+    ui->callerCalleeTableView->hideColumn(CallerCalleeModel::Callers);
+    ui->callerCalleeTableView->hideColumn(CallerCalleeModel::Callees);
     stretchFirstColumn(ui->callerCalleeTableView);
 
     setStyleSheet(QStringLiteral("QMainWindow { background: url(:/images/kdabproducts.png) top right no-repeat; }"));
