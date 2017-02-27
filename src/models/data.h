@@ -243,8 +243,9 @@ struct TopDown : SymbolTree<TopDown>
     static TopDown fromBottomUp(const Data::BottomUp& bottomUpData);
 };
 
-using CalleeMap = QHash<Symbol, Cost>;
-using CallerMap = QHash<Symbol, Cost>;
+using SymbolCostMap = QHash<Symbol, Cost>;
+using CalleeMap = SymbolCostMap;
+using CallerMap = SymbolCostMap;
 
 struct CallerCalleeEntry
 {

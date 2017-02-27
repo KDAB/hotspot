@@ -278,6 +278,19 @@ private slots:
         CallerCalleeModel model;
         ModelTest tester(&model);
         model.setData(map);
+
+        for (const auto& entry : map) {
+            {
+                CallerModel model;
+                ModelTest tester(&model);
+                model.setData(entry.callers);
+            }
+            {
+                CalleeModel model;
+                ModelTest tester(&model);
+                model.setData(entry.callees);
+            }
+        }
     }
 };
 

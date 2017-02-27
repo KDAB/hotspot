@@ -101,9 +101,37 @@ QVariant CallerCalleeModel::cell(Columns column, int role, const Data::Symbol& s
             case Callees:
                 return entry.callees.size();
         }
+    } else if (role == CalleesRole) {
+        return QVariant::fromValue(entry.callees);
+    } else if (role == CallersRole) {
+        return QVariant::fromValue(entry.callers);
     }
 
     // TODO: tooltips
 
     return {};
+}
+
+CallerModel::CallerModel(QObject* parent)
+    : SymbolCostModelImpl(parent)
+{
+}
+
+CallerModel::~CallerModel() = default;
+
+QString CallerModel::symbolHeader()
+{
+    return tr("Caller");
+}
+
+CalleeModel::CalleeModel(QObject* parent)
+    : SymbolCostModelImpl(parent)
+{
+}
+
+CalleeModel::~CalleeModel() = default;
+
+QString CalleeModel::symbolHeader()
+{
+    return tr("Callee");
 }

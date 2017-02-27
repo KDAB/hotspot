@@ -174,6 +174,26 @@ MainWindow::MainWindow(QWidget *parent) :
                 ui->loadStack->setCurrentWidget(ui->openFilePage);
             });
 
+    auto calleesModel = new CalleeModel(this);
+    auto calleesProxy = new QSortFilterProxyModel(this);
+    calleesProxy->setSourceModel(calleesModel);
+    ui->calleesView->sortByColumn(CallerModel::Cost);
+    ui->calleesView->setModel(calleesProxy);
+
+    auto callersModel = new CallerModel(this);
+    auto callersProxy = new QSortFilterProxyModel(this);
+    callersProxy->setSourceModel(callersModel);
+    ui->callersView->sortByColumn(CallerModel::Cost);
+    ui->callersView->setModel(callersProxy);
+
+    connect(ui->callerCalleeTableView->selectionModel(), &QItemSelectionModel::currentRowChanged,
+            this, [calleesModel, callersModel] (const QModelIndex& current, const QModelIndex& /*previous*/) {
+                const auto callees = current.data(CallerCalleeModel::CalleesRole).value<Data::CalleeMap>();
+                calleesModel->setData(callees);
+                const auto callers = current.data(CallerCalleeModel::CallersRole).value<Data::CallerMap>();
+                callersModel->setData(callers);
+            });
+
     for (int i = 0, c = ui->resultsTabWidget->count(); i < c; ++i) {
         ui->resultsTabWidget->setTabToolTip(i, ui->resultsTabWidget->widget(i)->toolTip());
     }

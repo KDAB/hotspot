@@ -54,10 +54,111 @@ public:
 
     enum Roles {
         SortRole = Qt::UserRole,
-        FilterRole
+        FilterRole,
+        CalleesRole,
+        CallersRole
     };
 
     static QVariant headerCell(Columns column, int role);
     static QVariant cell(Columns column, int role, const Data::Symbol& symbol,
                          const Data::CallerCalleeEntry& entry);
+};
+
+template<typename ModelImpl>
+class SymbolCostModelImpl : public HashModel<Data::SymbolCostMap, ModelImpl>
+{
+public:
+    explicit SymbolCostModelImpl(QObject* parent = nullptr)
+        : HashModel<Data::SymbolCostMap, ModelImpl>(parent)
+    {
+    }
+
+    virtual ~SymbolCostModelImpl() = default;
+
+    enum Columns {
+        Symbol = 0,
+        Binary,
+        Cost
+    };
+    enum {
+        NUM_COLUMNS = Cost + 1
+    };
+
+    enum Roles {
+        SortRole = Qt::UserRole,
+        FilterRole,
+    };
+
+    static QVariant headerCell(Columns column, int role)
+    {
+        if (role == Qt::InitialSortOrderRole && column == Cost) {
+            return Qt::DescendingOrder;
+        }
+        if (role != Qt::DisplayRole) {
+            return {};
+        }
+
+        switch (column) {
+            case Symbol:
+                return ModelImpl::symbolHeader();
+            case Binary:
+                return QObject::tr("Binary");
+            case Cost:
+                return QObject::tr("Cost");
+        }
+
+        return {};
+    }
+
+    static QVariant cell(Columns column, int role, const Data::Symbol& symbol,
+                         const Data::Cost& cost)
+    {
+        if (role == SortRole) {
+            switch (column) {
+                case Symbol:
+                    return symbol.symbol;
+                case Binary:
+                    return symbol.binary;
+                case Cost:
+                    return cost.samples;
+            }
+        } else if (role == FilterRole) {
+            // TODO: optimize this
+            return QString(symbol.symbol + symbol.binary);
+        } else if (role == Qt::DisplayRole) {
+            // TODO: show fractional cost
+            switch (column) {
+                case Symbol:
+                    return symbol.symbol;
+                case Binary:
+                    return symbol.binary;
+                case Cost:
+                    return cost.samples;
+            }
+        }
+
+        // TODO: tooltips
+
+        return {};
+    }
+};
+
+class CallerModel : public SymbolCostModelImpl<CallerModel>
+{
+    Q_OBJECT
+public:
+    explicit CallerModel(QObject* parent = nullptr);
+    ~CallerModel();
+
+    static QString symbolHeader();
+};
+
+class CalleeModel : public SymbolCostModelImpl<CalleeModel>
+{
+    Q_OBJECT
+public:
+    explicit CalleeModel(QObject* parent = nullptr);
+    ~CalleeModel();
+
+    static QString symbolHeader();
 };
