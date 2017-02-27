@@ -80,6 +80,29 @@ void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, Model* model
     view->sortByColumn(Model::InitialSortColumn);
     view->setModel(proxy);
 }
+
+template<typename Model>
+Model* setupCallerOrCalleeView(QTreeView* view, QTreeView* callersCalleeView,
+                               CallerCalleeModel* callerCalleeModel,
+                               QSortFilterProxyModel* callerCalleeProxy)
+{
+    auto model = new Model(view);
+    auto proxy = new QSortFilterProxyModel(model);
+    proxy->setSourceModel(model);
+    view->sortByColumn(Model::Cost);
+    view->setModel(proxy);
+    view->header()->setStretchLastSection(false);
+    view->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+
+    QObject::connect(view, &QTreeView::activated,
+                     view, [=] (const QModelIndex& index) {
+                        const auto symbol = index.data(Model::SymbolRole).template value<Data::Symbol>();
+                        auto sourceIndex = callerCalleeModel->indexForKey(symbol);
+                        auto proxyIndex = callerCalleeProxy->mapFromSource(sourceIndex);
+                        callersCalleeView->setCurrentIndex(proxyIndex);
+                    });
+    return model;
+}
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -116,10 +139,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->topHotspotsTableView->setModel(topHotspotsProxy);
 
     auto callerCalleeCostModel = new CallerCalleeModel(this);
-    auto proxy = new QSortFilterProxyModel(this);
-    proxy->setSourceModel(callerCalleeCostModel);
+    auto callerCalleeProxy = new QSortFilterProxyModel(this);
+    callerCalleeProxy->setSourceModel(callerCalleeCostModel);
     ui->callerCalleeTableView->setSortingEnabled(true);
-    ui->callerCalleeTableView->setModel(proxy);
+    ui->callerCalleeTableView->setModel(callerCalleeProxy);
 
     setStyleSheet(QStringLiteral("QMainWindow { background: url(:/images/kdabproducts.png) top right no-repeat; }"));
 
@@ -176,17 +199,10 @@ MainWindow::MainWindow(QWidget *parent) :
                 ui->loadStack->setCurrentWidget(ui->openFilePage);
             });
 
-    auto calleesModel = new CalleeModel(this);
-    auto calleesProxy = new QSortFilterProxyModel(this);
-    calleesProxy->setSourceModel(calleesModel);
-    ui->calleesView->sortByColumn(CallerModel::Cost);
-    ui->calleesView->setModel(calleesProxy);
-
-    auto callersModel = new CallerModel(this);
-    auto callersProxy = new QSortFilterProxyModel(this);
-    callersProxy->setSourceModel(callersModel);
-    ui->callersView->sortByColumn(CallerModel::Cost);
-    ui->callersView->setModel(callersProxy);
+    auto calleesModel = setupCallerOrCalleeView<CalleeModel>(ui->calleesView, ui->callerCalleeTableView,
+                                                             callerCalleeCostModel, callerCalleeProxy);
+    auto callersModel = setupCallerOrCalleeView<CallerModel>(ui->callersView, ui->callerCalleeTableView,
+                                                             callerCalleeCostModel, callerCalleeProxy);
 
     connect(ui->callerCalleeTableView->selectionModel(), &QItemSelectionModel::currentRowChanged,
             this, [calleesModel, callersModel] (const QModelIndex& current, const QModelIndex& /*previous*/) {

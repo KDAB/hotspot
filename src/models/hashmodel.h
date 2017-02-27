@@ -83,6 +83,16 @@ public:
         endResetModel();
     }
 
+    QModelIndex indexForKey(const typename Rows::key_type& key, int column = 0) const
+    {
+        auto it = m_rows.find(key);
+        if (it == m_rows.end()) {
+            return {};
+        }
+        const int row = std::distance(m_rows.begin(), it);
+        return index(row, column);
+    }
+
 private:
     Rows m_rows;
 };

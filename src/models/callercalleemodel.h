@@ -87,6 +87,7 @@ public:
     enum Roles {
         SortRole = Qt::UserRole,
         FilterRole,
+        SymbolRole,
     };
 
     static QVariant headerCell(Columns column, int role)
@@ -135,6 +136,8 @@ public:
                 case Cost:
                     return cost.samples;
             }
+        } else if (role == SymbolRole) {
+            return QVariant::fromValue(symbol);
         }
 
         // TODO: tooltips
