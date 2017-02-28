@@ -66,6 +66,10 @@ public:
             return {};
         }
 
+        if (role == ModelImpl::TotalCostRole) {
+            return m_sampleCount;
+        }
+
         // TODO: optimize this? i.e. introduce a QVector of data, use hash only during construction?
         const auto& data = m_rows;
         auto it = data.begin();
@@ -83,6 +87,13 @@ public:
         endResetModel();
     }
 
+    void setSampleCount(quint64 data)
+    {
+        beginResetModel();
+        m_sampleCount = data;
+        endResetModel();
+    }
+
     QModelIndex indexForKey(const typename Rows::key_type& key, int column = 0) const
     {
         auto it = m_rows.find(key);
@@ -95,4 +106,5 @@ public:
 
 private:
     Rows m_rows;
+    quint64 m_sampleCount = 0;
 };
