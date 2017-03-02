@@ -54,6 +54,7 @@ public:
 
     enum Roles {
         SortRole = Qt::UserRole,
+        TotalCostRole,
         FilterRole,
         CalleesRole,
         CallersRole
@@ -86,8 +87,9 @@ public:
 
     enum Roles {
         SortRole = Qt::UserRole,
+        TotalCostRole,
         FilterRole,
-        SymbolRole,
+        SymbolRole
     };
 
     static QVariant headerCell(Columns column, int role)

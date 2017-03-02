@@ -43,6 +43,8 @@
 #include "parsers/perf/perfparser.h"
 
 #include "models/summarydata.h"
+#include "models/hashmodel.h"
+#include "models/costdelegate.h"
 #include "models/treemodel.h"
 #include "models/topproxy.h"
 #include "models/callercalleemodel.h"
@@ -132,11 +134,16 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->mainPageStack->setCurrentWidget(ui->startPage);
     ui->openFileButton->setFocus();
 
+    auto treeViewCostDelegate = new CostDelegate(AbstractTreeModel::SortRole, AbstractTreeModel::TotalCostRole, this);
+
     auto bottomUpCostModel = new BottomUpModel(this);
     setupTreeView(ui->bottomUpTreeView,  ui->bottomUpSearch, bottomUpCostModel);
+    ui->bottomUpTreeView->setItemDelegateForColumn(BottomUpModel::Cost, treeViewCostDelegate);
 
     auto topDownCostModel = new TopDownModel(this);
     setupTreeView(ui->topDownTreeView, ui->topDownSearch, topDownCostModel);
+    ui->topDownTreeView->setItemDelegateForColumn(TopDownModel::SelfCost, treeViewCostDelegate);
+    ui->topDownTreeView->setItemDelegateForColumn(TopDownModel::InclusiveCost, treeViewCostDelegate);
 
     auto topHotspotsProxy = new TopProxy(this);
     topHotspotsProxy->setSourceModel(bottomUpCostModel);
@@ -154,6 +161,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->callerCalleeTableView->hideColumn(CallerCalleeModel::Callers);
     ui->callerCalleeTableView->hideColumn(CallerCalleeModel::Callees);
     stretchFirstColumn(ui->callerCalleeTableView);
+    auto callerCalleeCostDelegate = new CostDelegate(CallerCalleeModel::SortRole, CallerCalleeModel::TotalCostRole, this);
+    ui->callerCalleeTableView->setItemDelegateForColumn(CallerCalleeModel::SelfCost, callerCalleeCostDelegate);
+    ui->callerCalleeTableView->setItemDelegateForColumn(CallerCalleeModel::InclusiveCost, callerCalleeCostDelegate);
 
     setStyleSheet(QStringLiteral("QMainWindow { background: url(:/images/kdabproducts.png) top right no-repeat; }"));
 
@@ -167,24 +177,6 @@ MainWindow::MainWindow(QWidget *parent) :
             this, [this, topDownCostModel] (const Data::TopDown& data) {
                 topDownCostModel->setData(data);
                 ui->flameGraph->setTopDownData(data);
-            });
-
-    connect(m_parser, &PerfParser::summaryDataAvailable,
-            this, [this] (const SummaryData& data) {
-                ui->appRunTimeValue->setText(formatTimeString(data.applicationRunningTime));
-                ui->threadCountValue->setText(QString::number(data.threadCount));
-                ui->processCountValue->setText(QString::number(data.processCount));
-                ui->sampleCountValue->setText(QString::number(data.sampleCount));
-                ui->commandValue->setText(data.command);
-                ui->lostChunksValue->setText(QString::number(data.lostChunks));
-                if (data.lostChunks > 0) {
-                    ui->lostMessage->setText(i18np("Lost one chunk - Check IO/CPU overload!",
-                                                   "Lost %1 chunks - Check IO/CPU overload!",
-                                                   data.lostChunks));
-                    ui->lostMessage->setVisible(true);
-                } else {
-                    ui->lostMessage->setVisible(false);
-                }
             });
 
     connect(m_parser, &PerfParser::callerCalleeDataAvailable,
@@ -212,8 +204,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     auto calleesModel = setupCallerOrCalleeView<CalleeModel>(ui->calleesView, ui->callerCalleeTableView,
                                                              callerCalleeCostModel, callerCalleeProxy);
+    auto calleeCostDelegate = new CostDelegate(CalleeModel::SortRole, CalleeModel::TotalCostRole, this);
+    ui->calleesView->setItemDelegateForColumn(CalleeModel::Cost, calleeCostDelegate);
+
     auto callersModel = setupCallerOrCalleeView<CallerModel>(ui->callersView, ui->callerCalleeTableView,
                                                              callerCalleeCostModel, callerCalleeProxy);
+    auto callerCostDelegate = new CostDelegate(CallerModel::SortRole, CallerModel::TotalCostRole, this);
+    ui->callersView->setItemDelegateForColumn(CallerModel::Cost, callerCostDelegate);
 
     connect(ui->callerCalleeTableView->selectionModel(), &QItemSelectionModel::currentRowChanged,
             this, [calleesModel, callersModel] (const QModelIndex& current, const QModelIndex& /*previous*/) {
@@ -221,6 +218,31 @@ MainWindow::MainWindow(QWidget *parent) :
                 calleesModel->setData(callees);
                 const auto callers = current.data(CallerCalleeModel::CallersRole).value<Data::CallerMap>();
                 callersModel->setData(callers);
+            });
+
+    connect(m_parser, &PerfParser::summaryDataAvailable,
+            this, [this, bottomUpCostModel, topDownCostModel, callerCalleeCostModel, calleesModel, callersModel] (const SummaryData& data) {
+                ui->appRunTimeValue->setText(formatTimeString(data.applicationRunningTime));
+                ui->threadCountValue->setText(QString::number(data.threadCount));
+                ui->processCountValue->setText(QString::number(data.processCount));
+                ui->sampleCountValue->setText(QString::number(data.sampleCount));
+
+                bottomUpCostModel->setSampleCount(data.sampleCount);
+                topDownCostModel->setSampleCount(data.sampleCount);
+                callerCalleeCostModel->setSampleCount(data.sampleCount);
+                calleesModel->setSampleCount(data.sampleCount);
+                callersModel->setSampleCount(data.sampleCount);
+
+                ui->commandValue->setText(data.command);
+                ui->lostChunksValue->setText(QString::number(data.lostChunks));
+                if (data.lostChunks > 0) {
+                    ui->lostMessage->setText(i18np("Lost one chunk - Check IO/CPU overload!",
+                                                   "Lost %1 chunks - Check IO/CPU overload!",
+                                                   data.lostChunks));
+                    ui->lostMessage->setVisible(true);
+                } else {
+                    ui->lostMessage->setVisible(false);
+                }
             });
 
     for (int i = 0, c = ui->resultsTabWidget->count(); i < c; ++i) {

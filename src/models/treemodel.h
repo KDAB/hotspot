@@ -40,6 +40,7 @@ public:
 
     enum Roles {
         SortRole = Qt::UserRole,
+        TotalCostRole,
         FilterRole
     };
 };
@@ -58,6 +59,13 @@ public:
     {
         beginResetModel();
         m_root = data;
+        endResetModel();
+    }
+
+    void setSampleCount(quint64 data)
+    {
+        beginResetModel();
+        m_sampleCount = data;
         endResetModel();
     }
 
@@ -133,6 +141,8 @@ public:
         } else if (role == SortRole) {
             // TODO: call ModelImpl::sortData once displayData does special costly stuff
             return ModelImpl::displayData(item, static_cast<typename ModelImpl::Columns>(index.column()));
+        } else if (role == TotalCostRole) {
+            return m_sampleCount;
         }
 
         // TODO: tooltips
@@ -172,6 +182,7 @@ private:
     }
 
     TreeData m_root;
+    quint64 m_sampleCount = 0;
 };
 
 class BottomUpModel : public TreeModel<Data::BottomUp, BottomUpModel>
