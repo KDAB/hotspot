@@ -267,9 +267,9 @@
                <property name="geometry">
                 <rect>
                  <x>0</x>
-                 <y>-90</y>
-                 <width>1102</width>
-                 <height>772</height>
+                 <y>0</y>
+                 <width>1121</width>
+                 <height>682</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_11">
@@ -290,170 +290,24 @@
                   </property>
                   <layout class="QFormLayout" name="formLayout_3">
                    <item row="0" column="0">
-                    <widget class="QLabel" name="commandLabel">
-                     <property name="text">
-                      <string>Command:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QLabel" name="commandValue">
+                    <widget class="QLabel" name="summaryLabel">
                      <property name="toolTip">
-                      <string>The command that was used to generate this profile.</string>
+                      <string notr="true"/>
+                     </property>
+                     <property name="statusTip">
+                      <string notr="true"/>
+                     </property>
+                     <property name="whatsThis">
+                      <string notr="true"/>
+                     </property>
+                     <property name="accessibleName">
+                      <string notr="true"/>
+                     </property>
+                     <property name="accessibleDescription">
+                      <string notr="true"/>
                      </property>
                      <property name="text">
-                      <string/>
-                     </property>
-                     <property name="wordWrap">
-                      <bool>true</bool>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="appRunTimeLabel">
-                     <property name="toolTip">
-                      <string>The time duration for which the application was profiled.</string>
-                     </property>
-                     <property name="text">
-                      <string>Application Run Time:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QLabel" name="appRunTimeValue">
-                     <property name="toolTip">
-                      <string>The time duration for which the application was profiled.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="wordWrap">
-                      <bool>true</bool>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="sampleCountLabel">
-                     <property name="toolTip">
-                      <string>The number of samples in the profile.</string>
-                     </property>
-                     <property name="text">
-                      <string>Sample Count:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QLabel" name="sampleCountValue">
-                     <property name="toolTip">
-                      <string>The number of samples in the profile.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="wordWrap">
-                      <bool>true</bool>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="0">
-                    <widget class="QLabel" name="lostChunksLabel">
-                     <property name="toolTip">
-                      <string>The number of lost chunks. If this value is larger than zero, you should increase the buffer sizes or reduce the event frequency.</string>
-                     </property>
-                     <property name="text">
-                      <string>Lost Chunks:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="1">
-                    <widget class="QLabel" name="lostChunksValue">
-                     <property name="toolTip">
-                      <string>The number of lost chunks. If this value is larger than zero, you should increase the buffer sizes or reduce the event frequency.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="wordWrap">
-                      <bool>true</bool>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="4" column="0">
-                    <widget class="QLabel" name="processCountLabel">
-                     <property name="toolTip">
-                      <string>The number of processes that have been encountered in the profile data.</string>
-                     </property>
-                     <property name="text">
-                      <string>Process Count:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="4" column="1">
-                    <widget class="QLabel" name="processCountValue">
-                     <property name="toolTip">
-                      <string>The number of processes that have been encountered in the profile data.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="wordWrap">
-                      <bool>true</bool>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="5" column="0">
-                    <widget class="QLabel" name="threadCountLabel">
-                     <property name="toolTip">
-                      <string>The number of threads found in the profile.</string>
-                     </property>
-                     <property name="text">
-                      <string>Thread Count:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="5" column="1">
-                    <widget class="QLabel" name="threadCountValue">
-                     <property name="toolTip">
-                      <string>The number of threads found in the profile.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="wordWrap">
-                      <bool>true</bool>
+                      <string notr="true">summary text</string>
                      </property>
                      <property name="textInteractionFlags">
                       <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
@@ -495,285 +349,24 @@
                   </property>
                   <layout class="QFormLayout" name="formLayout">
                    <item row="0" column="0">
-                    <widget class="QLabel" name="hostNameLabel">
+                    <widget class="QLabel" name="systemInfoLabel">
                      <property name="toolTip">
-                      <string>The host machine's computer name.</string>
+                      <string notr="true"/>
+                     </property>
+                     <property name="statusTip">
+                      <string notr="true"/>
+                     </property>
+                     <property name="whatsThis">
+                      <string notr="true"/>
+                     </property>
+                     <property name="accessibleName">
+                      <string notr="true"/>
+                     </property>
+                     <property name="accessibleDescription">
+                      <string notr="true"/>
                      </property>
                      <property name="text">
-                      <string>Host Name:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QLabel" name="hostNameValue">
-                     <property name="toolTip">
-                      <string>The host machine's computer name.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="linuxKernelVersionLabel">
-                     <property name="toolTip">
-                      <string>The host machine's Linux kernel version.</string>
-                     </property>
-                     <property name="text">
-                      <string>Linux Kernel Version:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QLabel" name="linuxKernelVersionValue">
-                     <property name="toolTip">
-                      <string>The host machine's Linux kernel version.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="perfVersionLabel">
-                     <property name="toolTip">
-                      <string>The host machine's Perf version.</string>
-                     </property>
-                     <property name="text">
-                      <string>Perf Version:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QLabel" name="perfVersionValue">
-                     <property name="toolTip">
-                      <string>The host machine's Perf version.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="0">
-                    <widget class="QLabel" name="cpuDescriptionLabel">
-                     <property name="toolTip">
-                      <string>The host machine's CPU description.</string>
-                     </property>
-                     <property name="text">
-                      <string>CPU Description:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="1">
-                    <widget class="QLabel" name="cpuDescriptionValue">
-                     <property name="toolTip">
-                      <string>The host machine's CPU description.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="4" column="0">
-                    <widget class="QLabel" name="cpuIdLabel">
-                     <property name="toolTip">
-                      <string>The host machine's CPU IDentification.</string>
-                     </property>
-                     <property name="text">
-                      <string>CPU ID:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="4" column="1">
-                    <widget class="QLabel" name="cpuIdValue">
-                     <property name="toolTip">
-                      <string>The host machine's CPU IDentification.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="5" column="0">
-                    <widget class="QLabel" name="cpuArchitectureLabel">
-                     <property name="toolTip">
-                      <string>The host machine's CPU Architecture.</string>
-                     </property>
-                     <property name="text">
-                      <string>CPU Architecture:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="5" column="1">
-                    <widget class="QLabel" name="cpuArchitectureValue">
-                     <property name="toolTip">
-                      <string>The host machine's CPU Architecture.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="6" column="0">
-                    <widget class="QLabel" name="cpusOnlineLabel">
-                     <property name="toolTip">
-                      <string>The number of CPUs that were online while recording the perf data.</string>
-                     </property>
-                     <property name="text">
-                      <string>CPUs Online:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="6" column="1">
-                    <widget class="QLabel" name="cpusOnlineValue">
-                     <property name="toolTip">
-                      <string>The number of CPUs that were online while recording the perf data.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="7" column="0">
-                    <widget class="QLabel" name="cpusAvailableLabel">
-                     <property name="toolTip">
-                      <string>The number of CPUs that were available while recording the perf data.</string>
-                     </property>
-                     <property name="text">
-                      <string>CPUs Available:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="7" column="1">
-                    <widget class="QLabel" name="cpusAvailableValue">
-                     <property name="toolTip">
-                      <string>The number of CPUs that were available while recording the perf data.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="8" column="0">
-                    <widget class="QLabel" name="cpuSiblingCoresLabel">
-                     <property name="toolTip">
-                      <string>The number of CPU sibling cores on the host machine.</string>
-                     </property>
-                     <property name="text">
-                      <string>CPU Sibling Cores:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="8" column="1">
-                    <widget class="QLabel" name="cpuSiblingCoresValue">
-                     <property name="toolTip">
-                      <string>The number of CPU sibling cores on the host machine.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="9" column="0">
-                    <widget class="QLabel" name="cpuSiblingThreadsLabel">
-                     <property name="toolTip">
-                      <string>The number of CPU sibling threads on the host machine.</string>
-                     </property>
-                     <property name="text">
-                      <string>CPU Sibling Threads:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="9" column="1">
-                    <widget class="QLabel" name="cpuSiblingThreadsValue">
-                     <property name="toolTip">
-                      <string>The number of CPU sibling threads on the host machine.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="10" column="0">
-                    <widget class="QLabel" name="totalMemoryLabel">
-                     <property name="toolTip">
-                      <string>The total amount of RAM on the host machine.</string>
-                     </property>
-                     <property name="text">
-                      <string>Total Memory:</string>
-                     </property>
-                     <property name="textInteractionFlags">
-                      <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="10" column="1">
-                    <widget class="QLabel" name="totalMemoryValue">
-                     <property name="toolTip">
-                      <string>The total amount of RAM on the host machine.</string>
-                     </property>
-                     <property name="text">
-                      <string/>
+                      <string notr="true">system info</string>
                      </property>
                      <property name="textInteractionFlags">
                       <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
@@ -997,11 +590,6 @@
      <height>25</height>
     </rect>
    </property>
-   <widget class="QMenu" name="fileMenu">
-    <property name="title">
-     <string>&amp;File</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="helpMenu">
     <property name="title">
      <string>&amp;Help</string>
@@ -1009,6 +597,11 @@
     <addaction name="actionAbout_Hotspot"/>
     <addaction name="actionAbout_KDAB"/>
     <addaction name="actionAbout_Qt"/>
+   </widget>
+   <widget class="QMenu" name="fileMenu">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
    </widget>
    <addaction name="fileMenu"/>
    <addaction name="helpMenu"/>
@@ -1040,11 +633,6 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>KFilterProxySearchLine</class>
-   <extends>QWidget</extends>
-   <header>kfilterproxysearchline.h</header>
-  </customwidget>
-  <customwidget>
    <class>KMessageWidget</class>
    <extends>QFrame</extends>
    <header>kmessagewidget.h</header>
@@ -1055,6 +643,11 @@
    <extends>QWidget</extends>
    <header>flamegraph.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>KFilterProxySearchLine</class>
+   <extends>QWidget</extends>
+   <header>kfilterproxysearchline.h</header>
   </customwidget>
  </customwidgets>
  <resources>
