@@ -223,11 +223,44 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(m_parser, &PerfParser::summaryDataAvailable,
             this, [this, bottomUpCostModel, topDownCostModel, callerCalleeCostModel, calleesModel, callersModel] (const SummaryData& data) {
-                KFormat format;
-                ui->appRunTimeValue->setText(formatTimeString(data.applicationRunningTime));
-                ui->threadCountValue->setText(QString::number(data.threadCount));
-                ui->processCountValue->setText(QString::number(data.processCount));
-                ui->sampleCountValue->setText(QString::number(data.sampleCount));
+                auto formatSummaryText = [] (const QString& description, const QString& value) -> QString {
+                    return QString(QLatin1String("<tr><td>") + description + QLatin1String(": </td><td>")
+                                   + value + QLatin1String("</td></tr>"));
+                };
+
+                QString summaryText;
+                {
+                    QTextStream stream(&summaryText);
+                    stream << "<qt><table>"
+                           << formatSummaryText(tr("Command"), data.command)
+                           << formatSummaryText(tr("Application Run Time"), formatTimeString(data.applicationRunningTime))
+                           << formatSummaryText(tr("Sample Count"), QString::number(data.sampleCount))
+                           << formatSummaryText(tr("Lost Chunks"), QString::number(data.lostChunks))
+                           << formatSummaryText(tr("Process Count"), QString::number(data.processCount))
+                           << formatSummaryText(tr("Thread Count"), QString::number(data.threadCount))
+                           << "</table></qt>";
+                }
+                ui->summaryLabel->setText(summaryText);
+
+                QString systemInfoText;
+                {
+                    KFormat format;
+                    QTextStream stream(&systemInfoText);
+                    stream << "<qt><table>"
+                           << formatSummaryText(tr("Host Name"), data.hostName)
+                           << formatSummaryText(tr("Linux Kernel Version"), data.linuxKernelVersion)
+                           << formatSummaryText(tr("Perf Version"), data.perfVersion)
+                           << formatSummaryText(tr("CPU Description"), data.cpuDescription)
+                           << formatSummaryText(tr("CPU ID"), data.cpuId)
+                           << formatSummaryText(tr("CPU Architecture"), data.cpuArchitecture)
+                           << formatSummaryText(tr("CPUs Online"), QString::number(data.cpusOnline))
+                           << formatSummaryText(tr("CPUs Available"), QString::number(data.cpusAvailable))
+                           << formatSummaryText(tr("CPU Sibling Cores"), data.cpuSiblingCores)
+                           << formatSummaryText(tr("CPU Sibling Threads"), data.cpuSiblingThreads)
+                           << formatSummaryText(tr("Total Memory"), format.formatByteSize(data.totalMemoryInKiB * 1024, 1, KFormat::MetricBinaryDialect))
+                           << "</table></qt>";
+                }
+                ui->systemInfoLabel->setText(systemInfoText);
 
                 bottomUpCostModel->setSampleCount(data.sampleCount);
                 topDownCostModel->setSampleCount(data.sampleCount);
@@ -235,8 +268,6 @@ MainWindow::MainWindow(QWidget *parent) :
                 calleesModel->setSampleCount(data.sampleCount);
                 callersModel->setSampleCount(data.sampleCount);
 
-                ui->commandValue->setText(data.command);
-                ui->lostChunksValue->setText(QString::number(data.lostChunks));
                 if (data.lostChunks > 0) {
                     ui->lostMessage->setText(i18np("Lost one chunk - Check IO/CPU overload!",
                                                    "Lost %1 chunks - Check IO/CPU overload!",
@@ -245,17 +276,6 @@ MainWindow::MainWindow(QWidget *parent) :
                 } else {
                     ui->lostMessage->setVisible(false);
                 }
-                ui->hostNameValue->setText(data.hostName);
-                ui->linuxKernelVersionValue->setText(data.linuxKernelVersion);
-                ui->perfVersionValue->setText(data.perfVersion);
-                ui->cpuDescriptionValue->setText(data.cpuDescription);
-                ui->cpuIdValue->setText(data.cpuId);
-                ui->cpuArchitectureValue->setText(data.cpuArchitecture);
-                ui->cpusOnlineValue->setText(QString::number(data.cpusOnline));
-                ui->cpusAvailableValue->setText(QString::number(data.cpusAvailable));
-                ui->cpuSiblingCoresValue->setText(data.cpuSiblingCores);
-                ui->cpuSiblingThreadsValue->setText(data.cpuSiblingThreads);
-                ui->totalMemoryValue->setText(format.formatByteSize(data.totalMemoryInKiB * 1024, 1, KFormat::MetricBinaryDialect));
             });
 
     for (int i = 0, c = ui->resultsTabWidget->count(); i < c; ++i) {
