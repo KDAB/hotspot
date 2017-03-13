@@ -92,9 +92,7 @@ void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, Model* model
 }
 
 template<typename Model>
-Model* setupCallerOrCalleeView(QTreeView* view, QTreeView* callersCalleeView,
-                               CallerCalleeModel* callerCalleeModel,
-                               QSortFilterProxyModel* callerCalleeProxy)
+Model* setupModelAndProxyForView(QTreeView* view)
 {
     auto model = new Model(view);
     auto proxy = new QSortFilterProxyModel(model);
@@ -105,6 +103,15 @@ Model* setupCallerOrCalleeView(QTreeView* view, QTreeView* callersCalleeView,
 
     auto costDelegate = new CostDelegate(Model::SortRole, Model::TotalCostRole, view);
     view->setItemDelegateForColumn(Model::Cost, costDelegate);
+    return model;
+}
+
+template<typename Model>
+Model* setupCallerOrCalleeView(QTreeView* view, QTreeView* callersCalleeView,
+                               CallerCalleeModel* callerCalleeModel,
+                               QSortFilterProxyModel* callerCalleeProxy)
+{
+    auto model = setupModelAndProxyForView<Model>(view);
 
     QObject::connect(view, &QTreeView::activated,
                      view, [=] (const QModelIndex& index) {
@@ -212,16 +219,7 @@ MainWindow::MainWindow(QWidget *parent) :
     auto callersModel = setupCallerOrCalleeView<CallerModel>(ui->callersView, ui->callerCalleeTableView,
                                                              callerCalleeCostModel, callerCalleeProxy);
 
-    auto sourceMapModel = new SourceMapModel(this);
-    {
-        auto proxy = new QSortFilterProxyModel(sourceMapModel);
-        proxy->setSourceModel(sourceMapModel);
-        ui->sourceMapView->sortByColumn(SourceMapModel::Cost);
-        ui->sourceMapView->setModel(proxy);
-        stretchFirstColumn(ui->sourceMapView);
-        auto sourceMapCostDelegate = new CostDelegate(SourceMapModel::SortRole, SourceMapModel::TotalCostRole, this);
-        ui->sourceMapView->setItemDelegateForColumn(SourceMapModel::Cost, sourceMapCostDelegate);
-    }
+    auto sourceMapModel = setupModelAndProxyForView<SourceMapModel>(ui->sourceMapView);
 
     connect(ui->callerCalleeTableView->selectionModel(), &QItemSelectionModel::currentRowChanged,
             this, [calleesModel, callersModel, sourceMapModel] (const QModelIndex& current, const QModelIndex& /*previous*/) {
