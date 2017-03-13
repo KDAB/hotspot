@@ -213,16 +213,29 @@ MainWindow::MainWindow(QWidget *parent) :
     auto callerCostDelegate = new CostDelegate(CallerModel::SortRole, CallerModel::TotalCostRole, this);
     ui->callersView->setItemDelegateForColumn(CallerModel::Cost, callerCostDelegate);
 
+    auto sourceMapModel = new SourceMapModel(this);
+    {
+        auto proxy = new QSortFilterProxyModel(sourceMapModel);
+        proxy->setSourceModel(sourceMapModel);
+        ui->sourceMapView->sortByColumn(SourceMapModel::Cost);
+        ui->sourceMapView->setModel(proxy);
+        stretchFirstColumn(ui->sourceMapView);
+        auto sourceMapCostDelegate = new CostDelegate(SourceMapModel::SortRole, SourceMapModel::TotalCostRole, this);
+        ui->sourceMapView->setItemDelegateForColumn(SourceMapModel::Cost, sourceMapCostDelegate);
+    }
+
     connect(ui->callerCalleeTableView->selectionModel(), &QItemSelectionModel::currentRowChanged,
-            this, [calleesModel, callersModel] (const QModelIndex& current, const QModelIndex& /*previous*/) {
+            this, [calleesModel, callersModel, sourceMapModel] (const QModelIndex& current, const QModelIndex& /*previous*/) {
                 const auto callees = current.data(CallerCalleeModel::CalleesRole).value<Data::CalleeMap>();
                 calleesModel->setData(callees);
                 const auto callers = current.data(CallerCalleeModel::CallersRole).value<Data::CallerMap>();
                 callersModel->setData(callers);
+                const auto sourceMap = current.data(CallerCalleeModel::SourceMapRole).value<Data::LocationCostMap>();
+                sourceMapModel->setData(sourceMap);
             });
 
     connect(m_parser, &PerfParser::summaryDataAvailable,
-            this, [this, bottomUpCostModel, topDownCostModel, callerCalleeCostModel, calleesModel, callersModel] (const SummaryData& data) {
+            this, [this, bottomUpCostModel, topDownCostModel, callerCalleeCostModel, calleesModel, callersModel, sourceMapModel] (const SummaryData& data) {
                 auto formatSummaryText = [] (const QString& description, const QString& value) -> QString {
                     return QString(QLatin1String("<tr><td>") + description + QLatin1String(": </td><td>")
                                    + value + QLatin1String("</td></tr>"));
@@ -267,6 +280,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 callerCalleeCostModel->setSampleCount(data.sampleCount);
                 calleesModel->setSampleCount(data.sampleCount);
                 callersModel->setSampleCount(data.sampleCount);
+                sourceMapModel->setSampleCount(data.sampleCount);
 
                 if (data.lostChunks > 0) {
                     ui->lostMessage->setText(i18np("Lost one chunk - Check IO/CPU overload!",

@@ -129,11 +129,9 @@ TopDown TopDown::fromBottomUp(const BottomUp& bottomUpData)
     return root;
 }
 
-CallerCalleeEntryMap Data::callerCalleesFromBottomUpData(const BottomUp& bottomUpData)
+void Data::callerCalleesFromBottomUpData(const BottomUp& bottomUpData, CallerCalleeEntryMap* results)
 {
-    CallerCalleeEntryMap results;
-    buildCallerCalleeResult(bottomUpData, &results);
-    return results;
+    buildCallerCalleeResult(bottomUpData, results);
 }
 
 QDebug Data::operator<<(QDebug stream, const Symbol& symbol)

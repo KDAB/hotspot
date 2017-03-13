@@ -251,7 +251,8 @@ private slots:
     {
         const auto tree = generateTree1();
 
-        const auto map = Data::callerCalleesFromBottomUpData(tree);
+        Data::CallerCalleeEntryMap map;
+        Data::callerCalleesFromBottomUpData(tree, &map);
         const QStringList expectedMap = {
             "A=s:0,i:7",
             "A>B=7",

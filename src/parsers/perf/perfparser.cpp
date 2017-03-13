@@ -715,7 +715,7 @@ struct PerfParserPrivate
         };
     }
 
-    Data::BottomUp* addFrame(Data::BottomUp* parent, qint32 id) const
+    Data::BottomUp* addFrame(Data::BottomUp* parent, qint32 id)
     {
         bool skipNextFrame = false;
         while (id != -1) {
@@ -736,6 +736,8 @@ struct PerfParserPrivate
 
             auto ret = parent->entryForSymbol(symbol);
             ++ret->cost;
+
+            ++callerCalleeResult[symbol].sourceMap[location.location.location];
 
             parent = ret;
             id = location.parentLocationId;
@@ -772,7 +774,7 @@ struct PerfParserPrivate
 
     void buildCallerCalleeResult()
     {
-        callerCalleeResult = Data::callerCalleesFromBottomUpData(bottomUpResult);
+        Data::callerCalleesFromBottomUpData(bottomUpResult, &callerCalleeResult);
     }
 
     void addSampleToSummary(const Sample& sample)

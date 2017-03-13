@@ -105,6 +105,8 @@ QVariant CallerCalleeModel::cell(Columns column, int role, const Data::Symbol& s
         return QVariant::fromValue(entry.callees);
     } else if (role == CallersRole) {
         return QVariant::fromValue(entry.callers);
+    } else if (role == SourceMapRole) {
+        return QVariant::fromValue(entry.sourceMap);
     }
 
     // TODO: tooltips
@@ -135,3 +137,10 @@ QString CalleeModel::symbolHeader()
 {
     return tr("Callee");
 }
+
+SourceMapModel::SourceMapModel(QObject* parent)
+    : LocationCostModelImpl(parent)
+{
+}
+
+SourceMapModel::~SourceMapModel() = default;

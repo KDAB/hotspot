@@ -57,7 +57,8 @@ public:
         TotalCostRole,
         FilterRole,
         CalleesRole,
-        CallersRole
+        CallersRole,
+        SourceMapRole,
     };
 
     static QVariant headerCell(Columns column, int role);
@@ -166,4 +167,87 @@ public:
     ~CalleeModel();
 
     static QString symbolHeader();
+};
+
+template<typename ModelImpl>
+class LocationCostModelImpl : public HashModel<Data::LocationCostMap, ModelImpl>
+{
+public:
+    explicit LocationCostModelImpl(QObject* parent = nullptr)
+        : HashModel<Data::LocationCostMap, ModelImpl>(parent)
+    {
+    }
+
+    virtual ~LocationCostModelImpl() = default;
+
+    enum Columns {
+        Location = 0,
+        Cost
+    };
+    enum {
+        NUM_COLUMNS = Cost + 1
+    };
+
+    enum Roles {
+        SortRole = Qt::UserRole,
+        TotalCostRole,
+        FilterRole,
+        LocationRole
+    };
+
+    static QVariant headerCell(Columns column, int role)
+    {
+        if (role == Qt::InitialSortOrderRole && column == Cost) {
+            return Qt::DescendingOrder;
+        }
+        if (role != Qt::DisplayRole) {
+            return {};
+        }
+
+        switch (column) {
+            case Location:
+                return QObject::tr("Location");
+            case Cost:
+                return QObject::tr("Cost");
+        }
+
+        return {};
+    }
+
+    static QVariant cell(Columns column, int role, const QString& location,
+                         const Data::Cost& cost)
+    {
+        if (role == SortRole) {
+            switch (column) {
+                case Location:
+                    return location;
+                case Cost:
+                    return cost.samples;
+            }
+        } else if (role == FilterRole) {
+            return location;
+        } else if (role == Qt::DisplayRole) {
+            // TODO: show fractional cost
+            switch (column) {
+                case Location:
+                    return location;
+                case Cost:
+                    return cost.samples;
+            }
+        } else if (role == LocationRole) {
+            return QVariant::fromValue(location);
+        }
+
+        // TODO: tooltips
+
+        return {};
+    }
+};
+
+class SourceMapModel : public LocationCostModelImpl<SourceMapModel>
+{
+    Q_OBJECT
+public:
+    explicit SourceMapModel(QObject* parent = nullptr);
+    ~SourceMapModel();
 };

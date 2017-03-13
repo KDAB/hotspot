@@ -565,6 +565,20 @@
                  <bool>true</bool>
                 </property>
                </widget>
+               <widget class="QTreeView" name="sourceMapView">
+                <property name="alternatingRowColors">
+                 <bool>true</bool>
+                </property>
+                <property name="rootIsDecorated">
+                 <bool>false</bool>
+                </property>
+                <property name="uniformRowHeights">
+                 <bool>true</bool>
+                </property>
+                <property name="sortingEnabled">
+                 <bool>true</bool>
+                </property>
+               </widget>
               </widget>
              </widget>
             </item>

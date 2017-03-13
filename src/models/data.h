@@ -244,6 +244,7 @@ struct TopDown : SymbolTree<TopDown>
 using SymbolCostMap = QHash<Symbol, Cost>;
 using CalleeMap = SymbolCostMap;
 using CallerMap = SymbolCostMap;
+using LocationCostMap = QHash<QString, Cost>;
 
 struct CallerCalleeEntry
 {
@@ -254,13 +255,15 @@ struct CallerCalleeEntry
     CallerMap callers;
     // callees, i.e. symbols being called from this symbol
     CalleeMap callees;
+    // source map for this symbol, i.e. locations mapped to associated costs
+    LocationCostMap sourceMap;
 };
 
 QDebug operator<<(QDebug stream, const CallerCalleeEntry& entry);
 
 using CallerCalleeEntryMap = QHash<Symbol, CallerCalleeEntry>;
 
-CallerCalleeEntryMap callerCalleesFromBottomUpData(const BottomUp& data);
+void callerCalleesFromBottomUpData(const BottomUp& data, CallerCalleeEntryMap* results);
 
 }
 
