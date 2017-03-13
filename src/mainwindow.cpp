@@ -103,6 +103,9 @@ Model* setupCallerOrCalleeView(QTreeView* view, QTreeView* callersCalleeView,
     view->setModel(proxy);
     stretchFirstColumn(view);
 
+    auto costDelegate = new CostDelegate(Model::SortRole, Model::TotalCostRole, view);
+    view->setItemDelegateForColumn(Model::Cost, costDelegate);
+
     QObject::connect(view, &QTreeView::activated,
                      view, [=] (const QModelIndex& index) {
                         const auto symbol = index.data(Model::SymbolRole).template value<Data::Symbol>();
@@ -205,13 +208,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     auto calleesModel = setupCallerOrCalleeView<CalleeModel>(ui->calleesView, ui->callerCalleeTableView,
                                                              callerCalleeCostModel, callerCalleeProxy);
-    auto calleeCostDelegate = new CostDelegate(CalleeModel::SortRole, CalleeModel::TotalCostRole, this);
-    ui->calleesView->setItemDelegateForColumn(CalleeModel::Cost, calleeCostDelegate);
 
     auto callersModel = setupCallerOrCalleeView<CallerModel>(ui->callersView, ui->callerCalleeTableView,
                                                              callerCalleeCostModel, callerCalleeProxy);
-    auto callerCostDelegate = new CostDelegate(CallerModel::SortRole, CallerModel::TotalCostRole, this);
-    ui->callersView->setItemDelegateForColumn(CallerModel::Cost, callerCostDelegate);
 
     auto sourceMapModel = new SourceMapModel(this);
     {
