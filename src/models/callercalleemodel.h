@@ -133,7 +133,7 @@ public:
             // TODO: show fractional cost
             switch (column) {
                 case Symbol:
-                    return symbol.symbol;
+                    return symbol.symbol.isEmpty() ? QObject::tr("??") : symbol.symbol;
                 case Binary:
                     return symbol.binary;
                 case Cost:
@@ -230,7 +230,7 @@ public:
             // TODO: show fractional cost
             switch (column) {
                 case Location:
-                    return location;
+                    return location.isEmpty() ? QObject::tr("??") : location;
                 case Cost:
                     return cost.samples;
             }

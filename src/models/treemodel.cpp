@@ -59,7 +59,7 @@ QVariant BottomUpModel::displayData(const Data::BottomUp* row, Columns column)
 {
     switch (column) {
     case Symbol:
-        return row->symbol.symbol;
+        return row->symbol.symbol.isEmpty() ? tr("??") : row->symbol.symbol;
     case Binary:
         return row->symbol.binary;
     case Cost:
@@ -96,7 +96,7 @@ QVariant TopDownModel::displayData(const Data::TopDown* row, Columns column)
 {
     switch (column) {
     case Symbol:
-        return row->symbol.symbol;
+        return row->symbol.symbol.isEmpty() ? tr("??") : row->symbol.symbol;
     case Binary:
         return row->symbol.binary;
     case InclusiveCost:

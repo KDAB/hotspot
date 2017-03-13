@@ -142,8 +142,10 @@ void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 
     const int height = rect().height();
 
+    const auto symbol = m_symbol.symbol.isEmpty() ? QObject::tr("??") : m_symbol.symbol;
+
     painter->drawText(margin + rect().x(), rect().y(), width, height, Qt::AlignVCenter | Qt::AlignLeft | Qt::TextSingleLine,
-                      option->fontMetrics.elidedText(m_symbol.symbol, Qt::ElideRight, width));
+                      option->fontMetrics.elidedText(symbol, Qt::ElideRight, width));
 }
 
 void FrameGraphicsItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
@@ -165,7 +167,8 @@ QString FrameGraphicsItem::description() const
         totalCost = item->cost();
     }
     const auto fraction = QString::number(double(m_cost)  * 100. / totalCost, 'g', 3);
-    const auto function = QString(QLatin1String("<span style='font-family:monospace'>") + m_symbol.symbol.toHtmlEscaped() + QLatin1String("</span>"));
+    const auto symbol = m_symbol.symbol.isEmpty() ? QObject::tr("??") : m_symbol.symbol;
+    const auto function = QString(QLatin1String("<span style='font-family:monospace'>") + symbol.toHtmlEscaped() + QLatin1String("</span>"));
     if (!parentItem()) {
         return function;
     }

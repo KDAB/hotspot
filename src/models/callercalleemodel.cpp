@@ -89,7 +89,7 @@ QVariant CallerCalleeModel::cell(Columns column, int role, const Data::Symbol& s
         // TODO: show fractional cost
         switch (column) {
             case Symbol:
-                return symbol.symbol;
+                return symbol.symbol.isEmpty() ? tr("??") : symbol.symbol;
             case Binary:
                 return symbol.binary;
             case SelfCost:
