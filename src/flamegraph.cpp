@@ -175,8 +175,8 @@ QString FrameGraphicsItem::description() const
 
     switch (m_costType) {
     case Samples:
-        tooltip = i18nc("%1: number of samples, %2: relative number, %3: function label",
-                        "%1 (%2%) samples in %3 and below.", m_cost, fraction, function);
+        tooltip = i18nc("%1: number of samples, %2: relative number, %3: function label, %4: binary",
+                        "%1 (%2%) samples in %3 (%4) and below.", m_cost, fraction, function, m_symbol.binary);
         break;
     }
 
