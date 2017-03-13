@@ -80,9 +80,7 @@ inline uint qHash(const Symbol& symbol, uint seed = 0)
 
 struct Location
 {
-    // TODO: quint64?
-    // hex address
-    QString address;
+    quint64 address;
     // file + line
     QString location;
 
