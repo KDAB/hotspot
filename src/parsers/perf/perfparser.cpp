@@ -418,7 +418,6 @@ QDebug operator<<(QDebug stream, const GroupDesc& groupDesc)
     return stream;
 }
 
-
 struct FeaturesDefinition
 {
     QByteArray hostName;
@@ -473,6 +472,37 @@ QDebug operator<<(QDebug stream, const FeaturesDefinition& featuresDefinition)
         << "numaTopology=" << featuresDefinition.numaTopology << ", "
         << "pmuMappings=" << featuresDefinition.pmuMappings << ", "
         << "groupDesc=" << featuresDefinition.groupDescs
+        << "}";
+    return stream;
+}
+
+struct Error
+{
+    enum Code {
+        BrokenDataFile = 1
+    };
+    Code code;
+    QString message;
+};
+
+QDataStream& operator>>(QDataStream& stream, Error::Code& code)
+{
+    int c = 0;
+    stream >> c;
+    code = static_cast<Error::Code>(c);
+    return stream;
+}
+
+QDataStream& operator>>(QDataStream& stream, Error& error)
+{
+    return stream >> error.code >> error.message;
+}
+
+QDebug operator<<(QDebug stream, const Error& error)
+{
+    stream.noquote().nospace() << "Error{"
+        << "code=" << error.code << ", "
+        << "message=" << error.message
         << "}";
     return stream;
 }
@@ -650,6 +680,13 @@ struct PerfParserPrivate
                 stream >> featuresDefinition;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << featuresDefinition;
                 setFeatures(featuresDefinition);
+                break;
+            }
+            case EventType::Error: {
+                Error error;
+                stream >> error;
+                qCDebug(LOG_PERFPARSER) << "parsed:" << error;
+                qWarning() << error.code << error.message;
                 break;
             }
             case EventType::InvalidType:
@@ -844,6 +881,7 @@ struct PerfParserPrivate
         StringDefinition,
         LostDefinition,
         FeaturesDefinition,
+        Error,
         InvalidType
     };
 
