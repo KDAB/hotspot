@@ -479,16 +479,13 @@ QDebug operator<<(QDebug stream, const FeaturesDefinition& featuresDefinition)
 
 struct LocationData
 {
-    LocationData(qint32 parentLocationId = -1, const QString& location = {},
-                 const QString& address = {})
+    LocationData(qint32 parentLocationId = -1, const Data::Location& location = {})
         : parentLocationId(parentLocationId)
         , location(location)
-        , address(address)
     { }
 
     qint32 parentLocationId = -1;
-    QString location;
-    QString address;
+    Data::Location location;
 };
 }
 
@@ -702,8 +699,7 @@ struct PerfParserPrivate
         }
         locations.push_back({
             location.location.parentLocationId,
-            locationString,
-            QString::number(location.location.address, 16)
+            {location.location.address, locationString}
         });
         symbols.push_back({});
     }
