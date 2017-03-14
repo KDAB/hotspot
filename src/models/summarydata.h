@@ -43,11 +43,11 @@ struct SummaryData
     QString cpuDescription;
     QString cpuId;
     QString cpuArchitecture;
-    quint32 cpusOnline;
-    quint32 cpusAvailable;
+    quint32 cpusOnline = 0;
+    quint32 cpusAvailable = 0;
     QString cpuSiblingCores;
     QString cpuSiblingThreads;
-    quint64 totalMemoryInKiB;
+    quint64 totalMemoryInKiB = 0;
 };
 
 Q_DECLARE_METATYPE(SummaryData)
