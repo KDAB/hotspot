@@ -35,7 +35,14 @@ namespace Ui {
 class MainWindow;
 }
 
+namespace Data {
+struct Symbol;
+}
+
 class PerfParser;
+class CallerCalleeModel;
+class QSortFilterProxyModel;
+class QTreeView;
 
 class MainWindow : public QMainWindow
 {
@@ -62,9 +69,16 @@ public slots:
 private slots:
     void on_openFileButton_clicked();
 
+    void customContextMenu(const QPoint &point, QTreeView* view, int symbolRole);
+    void onBottomUpContextMenu(const QPoint &pos);
+    void onTopDownContextMenu(const QPoint &pos);
+    void jumpToCallerCallee(const Data::Symbol &symbol);
+
 private:
     QScopedPointer<Ui::MainWindow> ui;
     PerfParser* m_parser;
+    CallerCalleeModel* m_callerCalleeCostModel;
+    QSortFilterProxyModel* m_callerCalleeProxy;
     QString m_sysroot;
     QString m_kallsyms;
     QString m_debugPaths;

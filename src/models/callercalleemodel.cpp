@@ -114,6 +114,16 @@ QVariant CallerCalleeModel::cell(Columns column, int role, const Data::Symbol& s
     return {};
 }
 
+QModelIndex CallerCalleeModel::indexForSymbol(const Data::Symbol& symbol)
+{
+    auto it = m_rows.find(symbol);
+    if (it == m_rows.end()) {
+        return {};
+    }
+    const int row = std::distance(m_rows.begin(), it);
+    return createIndex(row, 0);
+}
+
 CallerModel::CallerModel(QObject* parent)
     : SymbolCostModelImpl(parent)
 {

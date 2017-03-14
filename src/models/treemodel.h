@@ -41,7 +41,8 @@ public:
     enum Roles {
         SortRole = Qt::UserRole,
         TotalCostRole,
-        FilterRole
+        FilterRole,
+        SymbolRole
     };
 };
 
@@ -143,6 +144,8 @@ public:
             return ModelImpl::displayData(item, static_cast<typename ModelImpl::Columns>(index.column()));
         } else if (role == TotalCostRole) {
             return m_sampleCount;
+        } else if (role == SymbolRole) {
+            return QVariant::fromValue(item->symbol);
         }
 
         // TODO: tooltips

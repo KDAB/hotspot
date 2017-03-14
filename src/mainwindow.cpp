@@ -89,6 +89,8 @@ void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, Model* model
     view->sortByColumn(Model::InitialSortColumn);
     view->setModel(proxy);
     stretchFirstColumn(view);
+
+    view->setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
 template<typename Model>
@@ -150,11 +152,13 @@ MainWindow::MainWindow(QWidget *parent) :
     auto bottomUpCostModel = new BottomUpModel(this);
     setupTreeView(ui->bottomUpTreeView,  ui->bottomUpSearch, bottomUpCostModel);
     ui->bottomUpTreeView->setItemDelegateForColumn(BottomUpModel::Cost, treeViewCostDelegate);
+    connect(ui->bottomUpTreeView, &QTreeView::customContextMenuRequested, this, &MainWindow::onBottomUpContextMenu);
 
     auto topDownCostModel = new TopDownModel(this);
     setupTreeView(ui->topDownTreeView, ui->topDownSearch, topDownCostModel);
     ui->topDownTreeView->setItemDelegateForColumn(TopDownModel::SelfCost, treeViewCostDelegate);
     ui->topDownTreeView->setItemDelegateForColumn(TopDownModel::InclusiveCost, treeViewCostDelegate);
+    connect(ui->topDownTreeView, &QTreeView::customContextMenuRequested, this, &MainWindow::onTopDownContextMenu);
 
     auto topHotspotsProxy = new TopProxy(this);
     topHotspotsProxy->setSourceModel(bottomUpCostModel);
@@ -163,12 +167,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->topHotspotsTableView->setModel(topHotspotsProxy);
     stretchFirstColumn(ui->topHotspotsTableView);
 
-    auto callerCalleeCostModel = new CallerCalleeModel(this);
-    auto callerCalleeProxy = new QSortFilterProxyModel(this);
-    callerCalleeProxy->setSourceModel(callerCalleeCostModel);
-    ui->callerCalleeFilter->setProxy(callerCalleeProxy);
+    m_callerCalleeCostModel = new CallerCalleeModel(this);
+    m_callerCalleeProxy = new QSortFilterProxyModel(this);
+    m_callerCalleeProxy->setSourceModel(m_callerCalleeCostModel);
+    ui->callerCalleeFilter->setProxy(m_callerCalleeProxy);
     ui->callerCalleeTableView->setSortingEnabled(true);
-    ui->callerCalleeTableView->setModel(callerCalleeProxy);
+    ui->callerCalleeTableView->setModel(m_callerCalleeProxy);
     ui->callerCalleeTableView->hideColumn(CallerCalleeModel::Callers);
     ui->callerCalleeTableView->hideColumn(CallerCalleeModel::Callees);
     stretchFirstColumn(ui->callerCalleeTableView);
@@ -191,8 +195,8 @@ MainWindow::MainWindow(QWidget *parent) :
             });
 
     connect(m_parser, &PerfParser::callerCalleeDataAvailable,
-            this, [this, callerCalleeCostModel] (const Data::CallerCalleeEntryMap& data) {
-                callerCalleeCostModel->setData(data);
+            this, [this] (const Data::CallerCalleeEntryMap& data) {
+                m_callerCalleeCostModel->setData(data);
                 auto view = ui->callerCalleeTableView;
                 view->sortByColumn(CallerCalleeModel::InclusiveCost);
                 view->setCurrentIndex(view->model()->index(0, 0, {}));
@@ -214,10 +218,10 @@ MainWindow::MainWindow(QWidget *parent) :
             });
 
     auto calleesModel = setupCallerOrCalleeView<CalleeModel>(ui->calleesView, ui->callerCalleeTableView,
-                                                             callerCalleeCostModel, callerCalleeProxy);
+                                                             m_callerCalleeCostModel, m_callerCalleeProxy);
 
     auto callersModel = setupCallerOrCalleeView<CallerModel>(ui->callersView, ui->callerCalleeTableView,
-                                                             callerCalleeCostModel, callerCalleeProxy);
+                                                             m_callerCalleeCostModel, m_callerCalleeProxy);
 
     auto sourceMapModel = setupModelAndProxyForView<SourceMapModel>(ui->sourceMapView);
 
@@ -232,7 +236,7 @@ MainWindow::MainWindow(QWidget *parent) :
             });
 
     connect(m_parser, &PerfParser::summaryDataAvailable,
-            this, [this, bottomUpCostModel, topDownCostModel, callerCalleeCostModel, calleesModel, callersModel, sourceMapModel] (const SummaryData& data) {
+            this, [this, bottomUpCostModel, topDownCostModel, calleesModel, callersModel, sourceMapModel] (const SummaryData& data) {
                 auto formatSummaryText = [] (const QString& description, const QString& value) -> QString {
                     return QString(QLatin1String("<tr><td>") + description + QLatin1String(": </td><td>")
                                    + value + QLatin1String("</td></tr>"));
@@ -274,7 +278,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
                 bottomUpCostModel->setSampleCount(data.sampleCount);
                 topDownCostModel->setSampleCount(data.sampleCount);
-                callerCalleeCostModel->setSampleCount(data.sampleCount);
+                m_callerCalleeCostModel->setSampleCount(data.sampleCount);
                 calleesModel->setSampleCount(data.sampleCount);
                 callersModel->setSampleCount(data.sampleCount);
                 sourceMapModel->setSampleCount(data.sampleCount);
@@ -288,6 +292,8 @@ MainWindow::MainWindow(QWidget *parent) :
                     ui->lostMessage->setVisible(false);
                 }
             });
+
+    connect(ui->flameGraph, &FlameGraph::jumpToCallerCallee, this, &MainWindow::jumpToCallerCallee);
 
     for (int i = 0, c = ui->resultsTabWidget->count(); i < c; ++i) {
         ui->resultsTabWidget->setTabToolTip(i, ui->resultsTabWidget->widget(i)->toolTip());
@@ -397,4 +403,37 @@ void MainWindow::aboutHotspot()
 //     dialog.setWindowIcon(QPixmap(QStringLiteral("/images/hotspot_logo.png")));
     dialog.adjustSize();
     dialog.exec();
+}
+
+void MainWindow::customContextMenu(const QPoint &point, QTreeView* view, int symbolRole)
+{
+    const auto index = view->indexAt(point);
+    if (!index.isValid()) {
+        return;
+    }
+
+    QMenu contextMenu;
+    auto *viewCallerCallee = contextMenu.addAction(tr("View Caller/Callee"));
+    auto *action = contextMenu.exec(QCursor::pos());
+    if (action == viewCallerCallee) {
+        const auto symbol = index.data(symbolRole).value<Data::Symbol>();
+        jumpToCallerCallee(symbol);
+    }
+}
+
+void MainWindow::onBottomUpContextMenu(const QPoint &point)
+{
+    customContextMenu(point, ui->bottomUpTreeView, BottomUpModel::SymbolRole);
+}
+
+void MainWindow::onTopDownContextMenu(const QPoint &point)
+{
+    customContextMenu(point, ui->topDownTreeView, TopDownModel::SymbolRole);
+}
+
+void MainWindow::jumpToCallerCallee(const Data::Symbol &symbol)
+{
+    auto callerCalleeIndex = m_callerCalleeProxy->mapFromSource(m_callerCalleeCostModel->indexForSymbol(symbol));
+    ui->callerCalleeTableView->setCurrentIndex(callerCalleeIndex);
+    ui->resultsTabWidget->setCurrentWidget(ui->callerCalleeTab);
 }
