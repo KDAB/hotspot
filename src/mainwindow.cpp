@@ -318,6 +318,16 @@ void MainWindow::setExtraLibPaths(const QString& paths)
     m_extraLibPaths = paths;
 }
 
+void MainWindow::setAppPath(const QString& path)
+{
+    m_appPath = path;
+}
+
+void MainWindow::setArch(const QString& arch)
+{
+    m_arch = arch;
+}
+
 void MainWindow::on_openFileButton_clicked()
 {
     const auto fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::homePath(), tr("Data Files (*.data)"));
@@ -341,7 +351,8 @@ void MainWindow::openFile(const QString& path)
     ui->loadStack->setCurrentWidget(ui->parseProgressPage);
 
     // TODO: support input files of different types via plugins
-    m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths, m_extraLibPaths);
+    m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths,
+                             m_extraLibPaths, m_appPath, m_arch);
 }
 
 void MainWindow::aboutKDAB()

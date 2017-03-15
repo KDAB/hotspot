@@ -49,6 +49,8 @@ public:
     void setKallsyms(const QString& path);
     void setDebugPaths(const QString& paths);
     void setExtraLibPaths(const QString& paths);
+    void setAppPath(const QString& path);
+    void setArch(const QString& arch);
 
 public slots:
     void clear();
@@ -67,4 +69,6 @@ private:
     QString m_kallsyms;
     QString m_debugPaths;
     QString m_extraLibPaths;
+    QString m_appPath;
+    QString m_arch;
 };

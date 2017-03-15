@@ -74,6 +74,18 @@ int main(int argc, char** argv)
                                QLatin1String("paths"));
     parser.addOption(extraLibPaths);
 
+    QCommandLineOption appPath(QLatin1String("appPath"),
+                               QCoreApplication::translate(
+                                   "main", "Path to folder containing the application executable and libraries."),
+                               QLatin1String("path"));
+    parser.addOption(appPath);
+
+    QCommandLineOption arch(QLatin1String("arch"),
+                               QCoreApplication::translate(
+                                   "main", "Architecture to use for unwinding."),
+                               QLatin1String("path"));
+    parser.addOption(arch);
+
     parser.addPositionalArgument(QStringLiteral("files"),
         QCoreApplication::translate("main", "Optional input files to open on startup, i.e. perf.data files."),
                                  QStringLiteral("[files...]"));
@@ -92,6 +104,12 @@ int main(int argc, char** argv)
         }
         if (parser.isSet(extraLibPaths)) {
             window->setExtraLibPaths(parser.value(extraLibPaths));
+        }
+        if (parser.isSet(appPath)) {
+            window->setAppPath(parser.value(appPath));
+        }
+        if (parser.isSet(arch)) {
+            window->setArch(parser.value(arch));
         }
     };
 

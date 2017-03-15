@@ -913,7 +913,8 @@ PerfParser::~PerfParser() = default;
 
 void PerfParser::startParseFile(const QString& path, const QString& sysroot,
                                 const QString& kallsyms, const QString& debugPaths,
-                                const QString& extraLibPaths)
+                                const QString& extraLibPaths, const QString& appPath,
+                                const QString& arch)
 {
     QFileInfo info(path);
     if (!info.exists()) {
@@ -947,6 +948,12 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
     }
     if (!extraLibPaths.isEmpty()) {
         parserArgs += {QStringLiteral("--extra"), extraLibPaths};
+    }
+    if (!appPath.isEmpty()) {
+        parserArgs += {QStringLiteral("--app"), appPath};
+    }
+    if (!arch.isEmpty()) {
+        parserArgs += {QStringLiteral("--arch"), arch};
     }
 
     using namespace ThreadWeaver;

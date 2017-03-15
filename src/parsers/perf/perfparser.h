@@ -44,7 +44,8 @@ public:
 
     void startParseFile(const QString& path, const QString& sysroot,
                         const QString& kallsyms, const QString& debugPaths,
-                        const QString& extraLibPaths);
+                        const QString& extraLibPaths, const QString& appPath,
+                        const QString& arch);
 
 signals:
     // TODO: progress bar
