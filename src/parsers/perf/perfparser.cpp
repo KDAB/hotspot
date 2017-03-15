@@ -911,7 +911,9 @@ PerfParser::PerfParser(QObject* parent)
 
 PerfParser::~PerfParser() = default;
 
-void PerfParser::startParseFile(const QString& path)
+void PerfParser::startParseFile(const QString& path, const QString& sysroot,
+                                const QString& kallsyms, const QString& debugPaths,
+                                const QString& extraLibPaths)
 {
     QFileInfo info(path);
     if (!info.exists()) {
@@ -933,8 +935,22 @@ void PerfParser::startParseFile(const QString& path)
         return;
     }
 
+    QStringList parserArgs = {QStringLiteral("--input"), path};
+    if (!sysroot.isEmpty()) {
+        parserArgs += {QStringLiteral("--sysroot"), sysroot};
+    }
+    if (!kallsyms.isEmpty()) {
+        parserArgs += {QStringLiteral("--kallsyms"), kallsyms};
+    }
+    if (!debugPaths.isEmpty()) {
+        parserArgs += {QStringLiteral("--debug"), debugPaths};
+    }
+    if (!extraLibPaths.isEmpty()) {
+        parserArgs += {QStringLiteral("--extra"), extraLibPaths};
+    }
+
     using namespace ThreadWeaver;
-    stream() << make_job([path, parserBinary, this]() {
+    stream() << make_job([parserBinary, parserArgs, this]() {
         PerfParserPrivate d;
 
         connect(&d.process, &QProcess::readyRead,
@@ -967,7 +983,7 @@ void PerfParser::startParseFile(const QString& path)
                     emit parsingFailed(d.process.errorString());
                 });
 
-        d.process.start(parserBinary, {QStringLiteral("--input"), path});
+        d.process.start(parserBinary, parserArgs);
         if (!d.process.waitForStarted()) {
             emit parsingFailed(tr("Failed to start the hotspot-perfparser process"));
             return;

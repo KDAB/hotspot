@@ -45,6 +45,11 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    void setSysroot(const QString& path);
+    void setKallsyms(const QString& path);
+    void setDebugPaths(const QString& paths);
+    void setExtraLibPaths(const QString& paths);
+
 public slots:
     void clear();
     void openFile(const QString& path);
@@ -58,4 +63,8 @@ private slots:
 private:
     QScopedPointer<Ui::MainWindow> ui;
     PerfParser* m_parser;
+    QString m_sysroot;
+    QString m_kallsyms;
+    QString m_debugPaths;
+    QString m_extraLibPaths;
 };

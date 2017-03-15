@@ -42,7 +42,9 @@ public:
     PerfParser(QObject* parent = nullptr);
     ~PerfParser();
 
-    void startParseFile(const QString& path);
+    void startParseFile(const QString& path, const QString& sysroot,
+                        const QString& kallsyms, const QString& debugPaths,
+                        const QString& extraLibPaths);
 
 signals:
     // TODO: progress bar
