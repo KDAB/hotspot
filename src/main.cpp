@@ -80,15 +80,7 @@ int main(int argc, char** argv)
 
     parser.process(app);
 
-    for (const auto& file : parser.positionalArguments()) {
-        auto window = new MainWindow;
-        window->openFile(file);
-        window->show();
-    }
-
-    // show at least one mainwindow
-    if (parser.positionalArguments().isEmpty()) {
-        auto window = new MainWindow;
+    auto applyCliArgs = [&] (MainWindow *window) {
         if (parser.isSet(sysroot)) {
             window->setSysroot(parser.value(sysroot));
         }
@@ -101,6 +93,19 @@ int main(int argc, char** argv)
         if (parser.isSet(extraLibPaths)) {
             window->setExtraLibPaths(parser.value(extraLibPaths));
         }
+    };
+
+    for (const auto& file : parser.positionalArguments()) {
+        auto window = new MainWindow;
+        applyCliArgs(window);
+        window->openFile(file);
+        window->show();
+    }
+
+    // show at least one mainwindow
+    if (parser.positionalArguments().isEmpty()) {
+        auto window = new MainWindow;
+        applyCliArgs(window);
 
         // open perf.data in current CWD, if it exists
         // this brings hotspot closer to the behavior of "perf report"
