@@ -60,14 +60,14 @@ QString formatTimeString(quint64 nanoseconds)
     quint64 seconds = totalSeconds % 60;
     quint64 milliseconds = (nanoseconds / 1000000) % 1000;
 
-    auto format = [] (quint64 fragment, int precision = 2) -> QString {
+    auto format = [] (quint64 fragment, int precision) -> QString {
         return QString::number(fragment).rightJustified(precision, QLatin1Char('0'));
     };
     auto optional = [format] (quint64 fragment) -> QString {
-        return fragment > 0 ? format(fragment) + QLatin1Char(':') : QString();
+        return fragment > 0 ? format(fragment, 2) + QLatin1Char(':') : QString();
     };
     return optional(days) + optional(hours) + optional(minutes)
-            + format(seconds) + QLatin1Char('.') + format(milliseconds, 3) + QLatin1Char('s');
+            + format(seconds, 2) + QLatin1Char('.') + format(milliseconds, 3) + QLatin1Char('s');
 }
 
 void stretchFirstColumn(QTreeView* view)
