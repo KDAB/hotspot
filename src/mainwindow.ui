@@ -239,7 +239,7 @@
         <item>
          <widget class="QTabWidget" name="resultsTabWidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>4</number>
           </property>
           <property name="documentMode">
            <bool>true</bool>
@@ -617,8 +617,14 @@
      <string>&amp;File</string>
     </property>
    </widget>
+   <widget class="QMenu" name="settingsMenu">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+   </widget>
    <addaction name="fileMenu"/>
    <addaction name="helpMenu"/>
+   <addaction name="settingsMenu"/>
   </widget>
   <action name="actionAbout_Hotspot">
    <property name="text">
