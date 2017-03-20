@@ -44,6 +44,7 @@
 #include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QCursor>
+#include <QMenu>
 
 #include <ThreadWeaver/ThreadWeaver>
 #include <KLocalizedString>
@@ -447,6 +448,19 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
         updateTooltip();
     } else if (event->type() == QEvent::Hide) {
         setData(nullptr);
+    } else if (event->type() == QEvent::ContextMenu) {
+        QContextMenuEvent *contextEvent = static_cast<QContextMenuEvent*>(event);
+        auto item = static_cast<FrameGraphicsItem*>(m_view->itemAt(m_view->mapFromGlobal(contextEvent->globalPos())));
+        if (!item) {
+            return ret;
+        }
+
+        QMenu contextMenu;
+        auto *viewCallerCallee = contextMenu.addAction(tr("View Caller/Callee"));
+        QAction *action = contextMenu.exec(QCursor::pos());
+        if (action == viewCallerCallee) {
+            emit jumpToCallerCallee(item->symbol());
+        }
     }
     return ret;
 }

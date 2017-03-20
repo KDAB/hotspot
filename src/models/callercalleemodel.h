@@ -64,6 +64,7 @@ public:
     static QVariant headerCell(Columns column, int role);
     static QVariant cell(Columns column, int role, const Data::Symbol& symbol,
                          const Data::CallerCalleeEntry& entry);
+    QModelIndex indexForSymbol(const Data::Symbol& symbol);
 };
 
 template<typename ModelImpl>

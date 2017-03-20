@@ -104,7 +104,9 @@ public:
         return index(row, column);
     }
 
-private:
+protected:
     Rows m_rows;
+
+private:
     quint64 m_sampleCount = 0;
 };

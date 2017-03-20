@@ -56,6 +56,9 @@ protected:
 private slots:
     void setData(FrameGraphicsItem* rootItem);
 
+signals:
+    void jumpToCallerCallee(const Data::Symbol& symbol);
+
 private:
     void setTooltipItem(const FrameGraphicsItem* item);
     void updateTooltip();
