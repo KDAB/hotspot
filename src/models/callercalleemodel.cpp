@@ -114,7 +114,7 @@ QVariant CallerCalleeModel::cell(Columns column, int role, const Data::Symbol& s
     return {};
 }
 
-QModelIndex CallerCalleeModel::indexForSymbol(const Data::Symbol& symbol)
+QModelIndex CallerCalleeModel::indexForSymbol(const Data::Symbol& symbol) const
 {
     auto it = m_rows.find(symbol);
     if (it == m_rows.end()) {
