@@ -74,6 +74,12 @@ private slots:
     void onTopDownContextMenu(const QPoint &pos);
     void jumpToCallerCallee(const Data::Symbol &symbol);
 
+    void setupCodeNavigationMenu();
+    void navigateToCode(const QString &url, int lineNumber, int columnNumber);
+    void setCodeNavigationIDE(QAction *action);
+
+    void onSourceMapContextMenu(const QPoint &pos);
+
 private:
     QScopedPointer<Ui::MainWindow> ui;
     PerfParser* m_parser;

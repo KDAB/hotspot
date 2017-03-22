@@ -32,6 +32,10 @@
 #include <QFileDialog>
 #include <QSortFilterProxyModel>
 #include <QApplication>
+#include <QSettings>
+#include <QStandardPaths>
+#include <QProcess>
+#include <QInputDialog>
 
 #include <KRecursiveFilterProxyModel>
 #include <KStandardAction>
@@ -124,6 +128,31 @@ Model* setupCallerOrCalleeView(QTreeView* view, QTreeView* callersCalleeView,
                     });
     return model;
 }
+
+struct IdeSettings {
+    const char * const app;
+    const char * const args;
+    const char * const name;
+    const char * const icon;
+};
+
+static const IdeSettings ideSettings[] = {
+#if defined(Q_OS_WIN) || defined(Q_OS_OSX)
+    {"", "", "", ""} // Dummy content, because we can't have empty arrays.
+#else
+    { "kdevelop", "%f:%l:%c", QT_TRANSLATE_NOOP("MainWindow", "KDevelop"), "kdevelop" },
+    { "kate", "%f --line %l --column %c", QT_TRANSLATE_NOOP("MainWindow", "Kate"), "kate" },
+    { "kwrite", "%f --line %l --column %c", QT_TRANSLATE_NOOP("MainWindow", "KWrite"), nullptr },
+    { "gedit", "%f +%l:%c", QT_TRANSLATE_NOOP("MainWindow", "gedit"), nullptr },
+    { "gvim", "%f +%l", QT_TRANSLATE_NOOP("MainWindow", "gvim"), nullptr },
+    { "qtcreator", "%f", QT_TRANSLATE_NOOP("MainWindow", "Qt Creator"), nullptr }
+#endif
+};
+#if defined(Q_OS_WIN) || defined(Q_OS_OSX) // Remove this #if branch when adding real data to ideSettings for Windows/OSX.
+    static const int ideSettingsSize = 0;
+#else
+    static const int ideSettingsSize = sizeof(ideSettings) / sizeof(IdeSettings);
+#endif
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -224,6 +253,8 @@ MainWindow::MainWindow(QWidget *parent) :
                                                              m_callerCalleeCostModel, m_callerCalleeProxy);
 
     auto sourceMapModel = setupModelAndProxyForView<SourceMapModel>(ui->sourceMapView);
+    ui->sourceMapView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->sourceMapView, &QTreeView::customContextMenuRequested, this, &MainWindow::onSourceMapContextMenu);
 
     connect(ui->callerCalleeTableView->selectionModel(), &QItemSelectionModel::currentRowChanged,
             this, [calleesModel, callersModel, sourceMapModel] (const QModelIndex& current, const QModelIndex& /*previous*/) {
@@ -298,6 +329,8 @@ MainWindow::MainWindow(QWidget *parent) :
     for (int i = 0, c = ui->resultsTabWidget->count(); i < c; ++i) {
         ui->resultsTabWidget->setTabToolTip(i, ui->resultsTabWidget->widget(i)->toolTip());
     }
+
+    setupCodeNavigationMenu();
 
     clear();
 }
@@ -436,4 +469,145 @@ void MainWindow::jumpToCallerCallee(const Data::Symbol &symbol)
     auto callerCalleeIndex = m_callerCalleeProxy->mapFromSource(m_callerCalleeCostModel->indexForSymbol(symbol));
     ui->callerCalleeTableView->setCurrentIndex(callerCalleeIndex);
     ui->resultsTabWidget->setCurrentWidget(ui->callerCalleeTab);
+}
+
+void MainWindow::navigateToCode(const QString &filePath, int lineNumber, int columnNumber)
+{
+    QSettings settings(QStringLiteral("KDAB"), QStringLiteral("Hotspot"));
+    settings.beginGroup(QStringLiteral("CodeNavigation"));
+    const auto ideIdx = settings.value(QStringLiteral("IDE"), -1).toInt();
+
+    QString command;
+#if !defined(Q_OS_WIN) && !defined(Q_OS_OSX) // Remove this #if branch when adding real data to ideSettings for Windows/OSX.
+    if (ideIdx >= 0 && ideIdx < ideSettingsSize) {
+        command += QString::fromUtf8(ideSettings[ideIdx].app);
+        command += QString::fromUtf8(" ");
+        command += QString::fromUtf8(ideSettings[ideIdx].args);
+    } else
+#endif
+    if (ideIdx == -1) {
+        command = settings.value(QStringLiteral("CustomCommand")).toString();
+    } else {
+        QUrl::fromLocalFile(filePath);
+        return;
+    }
+
+    command.replace(QStringLiteral("%f"), filePath);
+    command.replace(QStringLiteral("%l"), QString::number(std::max(1, lineNumber)));
+    command.replace(QStringLiteral("%c"), QString::number(std::max(1, columnNumber)));
+
+    if (!command.isEmpty()) {
+        QProcess::startDetached(command);
+    }
+}
+
+void MainWindow::setCodeNavigationIDE(QAction *action)
+{
+    QSettings settings(QStringLiteral("KDAB"), QStringLiteral("Hotspot"));
+    settings.beginGroup(QStringLiteral("CodeNavigation"));
+
+    if (action->data() == -1) {
+        const auto customCmd = QInputDialog::getText(
+            this, tr("Custom Code Navigation"),
+            tr("Specify command to use for code navigation, '%f' will be replaced by the file name, '%l' by the line number and '%c' by the column number."),
+            QLineEdit::Normal, settings.value(QStringLiteral("CustomCommand")).toString()
+            );
+        if (!customCmd.isEmpty()) {
+            settings.setValue(QStringLiteral("CustomCommand"), customCmd);
+            settings.setValue(QStringLiteral("IDE"), -1);
+        }
+        return;
+    }
+
+    const auto defaultIde = action->data().toInt();
+    settings.setValue(QStringLiteral("IDE"), defaultIde);
+}
+
+void MainWindow::onSourceMapContextMenu(const QPoint &point)
+{
+    const auto index = ui->sourceMapView->indexAt(point);
+    if (!index.isValid()) {
+        return;
+    }
+    const auto sourceMap = index.data(SourceMapModel::LocationRole).value<QString>();
+    auto seperator = sourceMap.lastIndexOf(QLatin1Char(':'));
+    if (seperator <= 0) {
+        return;
+    }
+
+    auto showMenu = [this] (const QString& pathName, const QString& fileName, int lineNumber) -> bool {
+        if (QFileInfo::exists(pathName + fileName)) {
+            QMenu contextMenu;
+            auto *viewCallerCallee = contextMenu.addAction(tr("Open in editor"));
+            auto *action = contextMenu.exec(QCursor::pos());
+            if (action == viewCallerCallee) {
+                navigateToCode(pathName + fileName, lineNumber, 0);
+                return true;
+            }
+        }
+        return false;
+    };
+
+    QString fileName = sourceMap.left(seperator);
+    int lineNumber = sourceMap.mid(seperator+1).toInt();
+    if (!showMenu(m_sysroot, fileName, lineNumber)) {
+         showMenu(m_appPath, fileName, lineNumber);
+}
+}
+
+void MainWindow::setupCodeNavigationMenu()
+{
+    QSettings settings(QStringLiteral("KDAB"), QStringLiteral("Hotspot"));
+
+    // Code Navigation
+    QAction *configAction = new QAction(QIcon::fromTheme(QStringLiteral(
+                                        "applications-development")),
+                                        tr("Code Navigation"), this);
+    auto menu = new QMenu(this);
+    auto group = new QActionGroup(this);
+    group->setExclusive(true);
+
+    settings.beginGroup(QStringLiteral("CodeNavigation"));
+    const auto currentIdx = settings.value(QStringLiteral("IDE"), -1).toInt();
+
+    for (int i = 0; i < ideSettingsSize; ++i) {
+        auto action = new QAction(menu);
+        action->setText(tr(ideSettings[i].name));
+        if (ideSettings[i].icon)
+            action->setIcon(QIcon::fromTheme(QString::fromUtf8(ideSettings[i].icon)));
+        action->setCheckable(true);
+        action->setChecked(currentIdx == i);
+        action->setData(i);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) // It's not worth it to reimplement missing findExecutable for Qt4.
+        action->setEnabled(!QStandardPaths::findExecutable(QString::fromUtf8(ideSettings[i].app)).isEmpty());
+#endif
+        group->addAction(action);
+        menu->addAction(action);
+    }
+    menu->addSeparator();
+
+    QAction *action = new QAction(menu);
+    action->setText(tr("Custom..."));
+    action->setCheckable(true);
+    action->setChecked(currentIdx == -1);
+    action->setData(-1);
+    group->addAction(action);
+    menu->addAction(action);
+
+#if defined(Q_OS_WIN) || defined(Q_OS_OSX)
+    // This is a workaround for the cases, where we can't safely do assumptions
+    // about the install location of the IDE
+    action = new QAction(menu);
+    action->setText(tr("Automatic (No Line numbers)"));
+    action->setCheckable(true);
+    action->setChecked(currentIdx == -2);
+    action->setData(-2);
+    group->addAction(action);
+    menu->addAction(action);
+#endif
+
+    QObject::connect(group, &QActionGroup::triggered, this, &MainWindow::setCodeNavigationIDE);
+
+    configAction->setMenu(menu);
+    ui->settingsMenu->addMenu(menu);
 }
