@@ -714,6 +714,8 @@ struct PerfParserPrivate
 
     void addAttributes(const AttributesDefinition& attributesDefinition)
     {
+        const auto label = strings.value(attributesDefinition.name.id);
+        summaryResult.costs.push_back({label, 0});
         attributes.push_back(attributesDefinition);
     }
 
@@ -785,6 +787,12 @@ struct PerfParserPrivate
 
     void addSample(const Sample& sample)
     {
+        if (sample.attributeId < 0 || sample.attributeId >= summaryResult.costs.size()) {
+            qWarning() << "Unexpected attribute id:" << sample.attributeId
+                       << "Only know about" << summaryResult.costs.size() << "attributes so far";
+        } else {
+            ++summaryResult.costs[sample.attributeId].sampleCount;
+        }
         addSampleToBottomUp(sample);
         addSampleToSummary(sample);
     }

@@ -281,8 +281,12 @@ MainWindow::MainWindow(QWidget *parent) :
                            << formatSummaryText(tr("Run Time"), formatTimeString(data.applicationRunningTime))
                            << formatSummaryText(tr("Processes"), QString::number(data.processCount))
                            << formatSummaryText(tr("Threads"), QString::number(data.threadCount))
-                           << formatSummaryText(tr("Samples"), QString::number(data.sampleCount))
-                           << formatSummaryText(tr("Lost Chunks"), QString::number(data.lostChunks))
+                           << formatSummaryText(tr("Total Samples"), QString::number(data.sampleCount));
+                    const auto indent = QLatin1String("&nbsp;&nbsp;&nbsp;&nbsp;");
+                    for (const auto& costSummary : data.costs) {
+                        stream << formatSummaryText(indent + costSummary.label, QString::number(costSummary.sampleCount));
+                    }
+                    stream << formatSummaryText(tr("Lost Chunks"), QString::number(data.lostChunks))
                            << "</table></qt>";
                 }
                 ui->summaryLabel->setText(summaryText);
