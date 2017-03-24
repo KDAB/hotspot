@@ -18,8 +18,9 @@ STYLE_CMAKESTYLE_OFFSET 2
 
 #no need to check 3rdparty stuff
 SKIP /3rdparty/
+SKIP /modeltest\.
 #if you have a build subdir, skip it
 SKIP /build-
 
 #skip the borrowed code in the cmake subdir
-SKIP /cmake/ECMEnableSanitizers.cmake
+SKIP /cmake/ECMEnableSanitizers.cmake|/cmake/FindLibElf.cmake|/cmake/FindElfutils.cmake
