@@ -278,11 +278,11 @@ MainWindow::MainWindow(QWidget *parent) :
                     QTextStream stream(&summaryText);
                     stream << "<qt><table>"
                            << formatSummaryText(tr("Command"), data.command)
-                           << formatSummaryText(tr("Application Run Time"), formatTimeString(data.applicationRunningTime))
-                           << formatSummaryText(tr("Sample Count"), QString::number(data.sampleCount))
+                           << formatSummaryText(tr("Run Time"), formatTimeString(data.applicationRunningTime))
+                           << formatSummaryText(tr("Processes"), QString::number(data.processCount))
+                           << formatSummaryText(tr("Threads"), QString::number(data.threadCount))
+                           << formatSummaryText(tr("Samples"), QString::number(data.sampleCount))
                            << formatSummaryText(tr("Lost Chunks"), QString::number(data.lostChunks))
-                           << formatSummaryText(tr("Process Count"), QString::number(data.processCount))
-                           << formatSummaryText(tr("Thread Count"), QString::number(data.threadCount))
                            << "</table></qt>";
                 }
                 ui->summaryLabel->setText(summaryText);
