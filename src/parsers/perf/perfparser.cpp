@@ -796,12 +796,6 @@ struct PerfParserPrivate
 
     void addSample(const Sample& sample)
     {
-        if (sample.attributeId < 0 || sample.attributeId >= summaryResult.costs.size()) {
-            qWarning() << "Unexpected attribute id:" << sample.attributeId
-                       << "Only know about" << summaryResult.costs.size() << "attributes so far";
-        } else {
-            ++summaryResult.costs[sample.attributeId].sampleCount;
-        }
         addSampleToBottomUp(sample);
         addSampleToSummary(sample);
     }
@@ -843,6 +837,13 @@ struct PerfParserPrivate
         uniqueThreads.insert(sample.tid);
         uniqueProcess.insert(sample.pid);
         ++summaryResult.sampleCount;
+
+        if (sample.attributeId < 0 || sample.attributeId >= summaryResult.costs.size()) {
+            qWarning() << "Unexpected attribute id:" << sample.attributeId
+                       << "Only know about" << summaryResult.costs.size() << "attributes so far";
+        } else {
+            ++summaryResult.costs[sample.attributeId].sampleCount;
+        }
     }
 
     void calculateSummary()
