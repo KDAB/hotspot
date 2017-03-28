@@ -949,7 +949,10 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
         return;
     }
 
-    QStringList parserArgs = {QStringLiteral("--input"), path};
+    QStringList parserArgs = {
+        QStringLiteral("--input"), path,
+        QStringLiteral("--max-frames"), QStringLiteral("1024")
+    };
     if (!sysroot.isEmpty()) {
         parserArgs += {QStringLiteral("--sysroot"), sysroot};
     }
