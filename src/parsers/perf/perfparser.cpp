@@ -272,12 +272,15 @@ struct Sample : Record
     QVector<qint32> frames;
     quint8 guessedFrames = 0;
     qint32 attributeId = 0;
+    quint64 period = 0;
+    quint64 weight = 0;
 };
 
 QDataStream& operator>>(QDataStream& stream, Sample& sample)
 {
     return stream >> static_cast<Record&>(sample)
-        >> sample.frames >> sample.guessedFrames >> sample.attributeId;
+        >> sample.frames >> sample.guessedFrames >> sample.attributeId
+        >> sample.period >> sample.weight;
 }
 
 QDebug operator<<(QDebug stream, const Sample& sample)
@@ -286,7 +289,9 @@ QDebug operator<<(QDebug stream, const Sample& sample)
         << static_cast<const Record&>(sample) << ", "
         << "frames=" << sample.frames << ", "
         << "guessedFrames=" << sample.guessedFrames << ", "
-        << "attributeId=" << sample.attributeId
+        << "attributeId=" << sample.attributeId << ", "
+        << "period=" << sample.period << ", "
+        << "weight=" << sample.weight
         << "}";
     return stream;
 }
