@@ -759,7 +759,7 @@ struct PerfParserPrivate
         };
     }
 
-    Data::BottomUp* addFrame(Data::BottomUp* parent, qint32 id)
+    Data::BottomUp* addFrame(Data::BottomUp* parent, qint32 id, QSet<Data::Symbol>* recursionGuard)
     {
         bool skipNextFrame = false;
         while (id != -1) {
@@ -781,7 +781,11 @@ struct PerfParserPrivate
             auto ret = parent->entryForSymbol(symbol);
             ++ret->cost;
 
-            ++callerCalleeResult[symbol].sourceMap[location.location.location];
+            auto recursionIt = recursionGuard->find(symbol);
+            if (recursionIt == recursionGuard->end()) {
+                ++callerCalleeResult[symbol].sourceMap[location.location.location];
+                recursionGuard->insert(symbol);
+            }
 
             parent = ret;
             id = location.parentLocationId;
@@ -812,8 +816,9 @@ struct PerfParserPrivate
     {
         ++bottomUpResult.cost;
         auto parent = &bottomUpResult;
+        QSet<Data::Symbol> recursionGuard;
         for (auto id : sample.frames) {
-            parent = addFrame(parent, id);
+            parent = addFrame(parent, id, &recursionGuard);
         }
     }
 
