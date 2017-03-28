@@ -57,12 +57,6 @@
        <layout class="QVBoxLayout" name="verticalLayout_9">
         <item>
          <widget class="QLabel" name="hotspotLogo">
-          <property name="maximumSize">
-           <size>
-            <width>729</width>
-            <height>16777215</height>
-           </size>
-          </property>
           <property name="text">
            <string/>
           </property>
@@ -81,12 +75,6 @@
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>729</width>
-            <height>16777215</height>
-           </size>
           </property>
           <property name="text">
            <string>Welcome to Hotspot, the application performance profiler for Linux</string>
