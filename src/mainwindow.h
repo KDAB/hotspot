@@ -59,6 +59,9 @@ public:
     void setAppPath(const QString& path);
     void setArch(const QString& arch);
 
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
 public slots:
     void clear();
     void openFile(const QString& path);

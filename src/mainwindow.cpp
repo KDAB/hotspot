@@ -36,6 +36,7 @@
 #include <QStandardPaths>
 #include <QProcess>
 #include <QInputDialog>
+#include <QDesktopServices>
 
 #include <KRecursiveFilterProxyModel>
 #include <KStandardAction>
@@ -209,8 +210,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->callerCalleeTableView->setItemDelegateForColumn(CallerCalleeModel::SelfCost, callerCalleeCostDelegate);
     ui->callerCalleeTableView->setItemDelegateForColumn(CallerCalleeModel::InclusiveCost, callerCalleeCostDelegate);
 
-    setStyleSheet(QStringLiteral("QMainWindow { background: url(:/images/kdabproducts.png) top right no-repeat; }"));
-
     connect(m_parser, &PerfParser::bottomUpDataAvailable,
             this, [this, bottomUpCostModel] (const Data::BottomUp& data) {
                 bottomUpCostModel->setData(data);
@@ -337,6 +336,14 @@ MainWindow::MainWindow(QWidget *parent) :
     setupCodeNavigationMenu();
 
     clear();
+
+    auto kdabLabel = new QLabel(this);
+    kdabLabel->setPixmap(QPixmap(QStringLiteral(":/images/kdabproducts.png")));
+    kdabLabel->setMargin(5);
+    kdabLabel->setToolTip(tr("Hotspot is an R&D effort by KDAB - Software Experts in Qt, C++ and 3D / OpenGL."));
+    kdabLabel->installEventFilter(this);
+    kdabLabel->setCursor(QCursor(Qt::PointingHandCursor));
+    ui->menuBar->setCornerWidget(kdabLabel, Qt::TopRightCorner);
 }
 
 MainWindow::~MainWindow() = default;
@@ -376,6 +383,16 @@ void MainWindow::on_openFileButton_clicked()
     const auto fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::homePath(), tr("Data Files (*.data)"));
 
     openFile(fileName);
+}
+
+bool MainWindow::eventFilter(QObject* watched, QEvent* event)
+{
+    if (event->type() == QEvent::MouseButtonRelease && qobject_cast<QLabel*>(watched)) {
+        QDesktopServices::openUrl(QUrl(QStringLiteral("https://www.kdab.com")));
+        return true;
+    }
+
+    return QMainWindow::eventFilter(watched, event);
 }
 
 void MainWindow::clear()
