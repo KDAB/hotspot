@@ -422,7 +422,7 @@ void MainWindow::aboutKDAB()
     dialog.setTitle(trUtf8("Klarälvdalens Datakonsult AB (KDAB)"));
     dialog.setText(
         tr("<qt><p>Hotspot is supported and maintained by KDAB</p>"
-           "KDAB, the Qt experts, provide consulting and mentoring for developing "
+           "<p>KDAB, the Qt experts, provide consulting and mentoring for developing "
            "Qt applications from scratch and in porting from all popular and legacy "
            "frameworks to Qt. We continue to help develop parts of Qt and are one "
            "of the major contributors to the Qt Project. We can give advanced or "
@@ -442,7 +442,7 @@ void MainWindow::aboutHotspot()
     dialog.setTitle(tr("Hotspot - the Qt GUI for performance analysis"));
     dialog.setText(
         tr("<qt><p>Hotspot is supported and maintained by KDAB</p>"
-           "This project is a KDAB R&D effort to create a standalone GUI for performance data. "
+           "<p>This project is a KDAB R&D effort to create a standalone GUI for performance data. "
            "As the first goal, we want to provide a UI like KCachegrind around Linux perf. "
            "Looking ahead, we intend to support various other performance data formats "
            "under this umbrella.</p>"
