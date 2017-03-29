@@ -37,6 +37,7 @@
 #include <QProcess>
 #include <QInputDialog>
 #include <QDesktopServices>
+#include <QPainter>
 
 #include <KRecursiveFilterProxyModel>
 #include <KStandardAction>
@@ -344,6 +345,8 @@ MainWindow::MainWindow(QWidget *parent) :
     kdabLabel->installEventFilter(this);
     kdabLabel->setCursor(QCursor(Qt::PointingHandCursor));
     ui->menuBar->setCornerWidget(kdabLabel, Qt::TopRightCorner);
+
+    updateBackground();
 }
 
 MainWindow::~MainWindow() = default;
@@ -393,6 +396,43 @@ bool MainWindow::eventFilter(QObject* watched, QEvent* event)
     }
 
     return QMainWindow::eventFilter(watched, event);
+}
+
+void MainWindow::paintEvent(QPaintEvent* /*event*/)
+{
+    if (ui->mainPageStack->currentWidget() == ui->resultsPage) {
+        // our result pages are crowded and leave no space for the background
+        return;
+    }
+
+    QPainter painter(this);
+    const auto windowRect = rect();
+    auto backgroundRect = m_background.rect();
+    backgroundRect.moveBottomRight(windowRect.bottomRight());
+    painter.drawPixmap(backgroundRect, m_background);
+}
+
+void MainWindow::changeEvent(QEvent* event)
+{
+    QMainWindow::changeEvent(event);
+
+    if (event->type() == QEvent::PaletteChange) {
+        updateBackground();
+    }
+}
+
+void MainWindow::updateBackground()
+{
+    const auto background = palette().background().color();
+    const auto foreground = palette().foreground().color();
+
+    if (qGray(background.rgb()) < qGray(foreground.rgb())) {
+        // dark color scheme
+        m_background = QPixmap(QStringLiteral(":/images/background_dark.png"));
+    } else {
+        // bright color scheme
+        m_background = QPixmap(QStringLiteral(":/images/background_bright.png"));
+    }
 }
 
 void MainWindow::clear()
@@ -453,8 +493,7 @@ void MainWindow::aboutHotspot()
            "<li><a href=\"https://github.com/KDAB/hotspot/graphs/contributors\">Contributors</a></li>"
            "</ul><p>Patches welcome!</p></qt>"));
     dialog.setLogo(QStringLiteral(":/images/hotspot_logo.png"));
-    // TODO:
-//     dialog.setWindowIcon(QPixmap(QStringLiteral("/images/hotspot_logo.png")));
+    dialog.setWindowIcon(QPixmap(QStringLiteral("hotspot.png")));
     dialog.adjustSize();
     dialog.exec();
 }

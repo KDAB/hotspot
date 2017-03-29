@@ -4,5 +4,7 @@
         <file>images/kdabproducts.png</file>
         <file>images/kdablogo.png</file>
         <file>images/qtlogo.png</file>
+        <file>images/background_bright.png</file>
+        <file>images/background_dark.png</file>
     </qresource>
 </RCC>

@@ -61,6 +61,8 @@ public:
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
+    void paintEvent(QPaintEvent* event) override;
+    void changeEvent(QEvent* event) override;
 
 public slots:
     void clear();
@@ -84,6 +86,8 @@ private slots:
     void onSourceMapContextMenu(const QPoint &pos);
 
 private:
+    void updateBackground();
+
     QScopedPointer<Ui::MainWindow> ui;
     PerfParser* m_parser;
     CallerCalleeModel* m_callerCalleeCostModel;
@@ -94,4 +98,5 @@ private:
     QString m_extraLibPaths;
     QString m_appPath;
     QString m_arch;
+    QPixmap m_background;
 };
