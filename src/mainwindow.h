@@ -60,7 +60,6 @@ public:
     void setArch(const QString& arch);
 
 protected:
-    bool eventFilter(QObject* watched, QEvent* event) override;
     void paintEvent(QPaintEvent* event) override;
     void changeEvent(QEvent* event) override;
 
