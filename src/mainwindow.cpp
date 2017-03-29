@@ -32,7 +32,6 @@
 #include <QFileDialog>
 #include <QSortFilterProxyModel>
 #include <QApplication>
-#include <QSettings>
 #include <QStandardPaths>
 #include <QProcess>
 #include <QInputDialog>
@@ -42,6 +41,7 @@
 #include <KStandardAction>
 #include <KLocalizedString>
 #include <KFormat>
+#include <KConfigGroup>
 
 #include "aboutdialog.h"
 #include "flamegraph.h"
@@ -159,12 +159,16 @@ static const IdeSettings ideSettings[] = {
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    m_parser(new PerfParser(this))
+    m_parser(new PerfParser(this)),
+    m_config(KSharedConfig::openConfig())
 {
     ui->setupUi(this);
 
     ui->lostMessage->setVisible(false);
     ui->fileMenu->addAction(KStandardAction::open(this, SLOT(on_openFileButton_clicked()), this));
+    m_recentFilesAction = KStandardAction::openRecent(this, SLOT(openFile(QUrl)), this);
+    m_recentFilesAction->loadEntries(m_config->group("RecentFiles"));
+    ui->fileMenu->addAction(m_recentFilesAction);
     ui->fileMenu->addAction(KStandardAction::clear(this, SLOT(clear()), this));
     ui->fileMenu->addAction(KStandardAction::close(this, SLOT(close()), this));
     connect(ui->actionAbout_Qt, &QAction::triggered,
@@ -239,10 +243,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(m_parser, &PerfParser::parsingFailed,
             this, [this] (const QString& errorMessage) {
-                qWarning() << errorMessage;
-                ui->loadingResultsErrorLabel->setText(errorMessage);
-                ui->loadingResultsErrorLabel->show();
-                ui->loadStack->setCurrentWidget(ui->openFilePage);
+                showError(errorMessage);
             });
 
     auto calleesModel = setupCallerOrCalleeView<CalleeModel>(ui->calleesView, ui->callerCalleeTableView,
@@ -420,6 +421,14 @@ void MainWindow::updateBackground()
     }
 }
 
+void MainWindow::showError(const QString& errorMessage)
+{
+    qWarning() << errorMessage;
+    ui->loadingResultsErrorLabel->setText(errorMessage);
+    ui->loadingResultsErrorLabel->show();
+    ui->loadStack->setCurrentWidget(ui->openFilePage);
+}
+
 void MainWindow::clear()
 {
     setWindowTitle(tr("Hotspot"));
@@ -438,6 +447,19 @@ void MainWindow::openFile(const QString& path)
     // TODO: support input files of different types via plugins
     m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths,
                              m_extraLibPaths, m_appPath, m_arch);
+
+    m_recentFilesAction->addUrl(QUrl::fromLocalFile(path));
+    m_recentFilesAction->saveEntries(m_config->group("RecentFiles"));
+    m_config->sync();
+}
+
+void MainWindow::openFile(const QUrl& url)
+{
+    if (!url.isLocalFile()) {
+        showError(tr("Cannot open remote file %1.").arg(url.toString()));
+        return;
+    }
+    openFile(url.toLocalFile());
 }
 
 void MainWindow::aboutKDAB()
@@ -518,9 +540,8 @@ void MainWindow::jumpToCallerCallee(const Data::Symbol &symbol)
 
 void MainWindow::navigateToCode(const QString &filePath, int lineNumber, int columnNumber)
 {
-    QSettings settings(QStringLiteral("KDAB"), QStringLiteral("Hotspot"));
-    settings.beginGroup(QStringLiteral("CodeNavigation"));
-    const auto ideIdx = settings.value(QStringLiteral("IDE"), -1).toInt();
+    const auto settings = m_config->group("CodeNavigation");
+    const auto ideIdx = settings.readEntry("IDE", -1);
 
     QString command;
 #if !defined(Q_OS_WIN) && !defined(Q_OS_OSX) // Remove this #if branch when adding real data to ideSettings for Windows/OSX.
@@ -531,7 +552,7 @@ void MainWindow::navigateToCode(const QString &filePath, int lineNumber, int col
     } else
 #endif
     if (ideIdx == -1) {
-        command = settings.value(QStringLiteral("CustomCommand")).toString();
+        command = settings.readEntry("CustomCommand");
     } else {
         QUrl::fromLocalFile(filePath);
         return;
@@ -548,24 +569,23 @@ void MainWindow::navigateToCode(const QString &filePath, int lineNumber, int col
 
 void MainWindow::setCodeNavigationIDE(QAction *action)
 {
-    QSettings settings(QStringLiteral("KDAB"), QStringLiteral("Hotspot"));
-    settings.beginGroup(QStringLiteral("CodeNavigation"));
+    auto settings = m_config->group("CodeNavigation");
 
     if (action->data() == -1) {
         const auto customCmd = QInputDialog::getText(
             this, tr("Custom Code Navigation"),
             tr("Specify command to use for code navigation, '%f' will be replaced by the file name, '%l' by the line number and '%c' by the column number."),
-            QLineEdit::Normal, settings.value(QStringLiteral("CustomCommand")).toString()
+            QLineEdit::Normal, settings.readEntry("CustomCommand")
             );
         if (!customCmd.isEmpty()) {
-            settings.setValue(QStringLiteral("CustomCommand"), customCmd);
-            settings.setValue(QStringLiteral("IDE"), -1);
+            settings.writeEntry("CustomCommand", customCmd);
+            settings.writeEntry("IDE", -1);
         }
         return;
     }
 
     const auto defaultIde = action->data().toInt();
-    settings.setValue(QStringLiteral("IDE"), defaultIde);
+    settings.writeEntry("IDE", defaultIde);
 }
 
 void MainWindow::onSourceMapContextMenu(const QPoint &point)
@@ -602,8 +622,6 @@ void MainWindow::onSourceMapContextMenu(const QPoint &point)
 
 void MainWindow::setupCodeNavigationMenu()
 {
-    QSettings settings(QStringLiteral("KDAB"), QStringLiteral("Hotspot"));
-
     // Code Navigation
     QAction *configAction = new QAction(QIcon::fromTheme(QStringLiteral(
                                         "applications-development")),
@@ -612,8 +630,8 @@ void MainWindow::setupCodeNavigationMenu()
     auto group = new QActionGroup(this);
     group->setExclusive(true);
 
-    settings.beginGroup(QStringLiteral("CodeNavigation"));
-    const auto currentIdx = settings.value(QStringLiteral("IDE"), -1).toInt();
+    const auto settings = m_config->group("CodeNavigation");
+    const auto currentIdx = settings.readEntry("IDE", -1);
 
     for (int i = 0; i < ideSettingsSize; ++i) {
         auto action = new QAction(menu);

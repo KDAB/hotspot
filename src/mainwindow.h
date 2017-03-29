@@ -31,6 +31,8 @@
 #include <QScopedPointer>
 #include <QString>
 
+#include <KSharedConfig>
+
 namespace Ui {
 class MainWindow;
 }
@@ -43,6 +45,7 @@ class PerfParser;
 class CallerCalleeModel;
 class QSortFilterProxyModel;
 class QTreeView;
+class KRecentFilesAction;
 
 class MainWindow : public QMainWindow
 {
@@ -66,6 +69,7 @@ protected:
 public slots:
     void clear();
     void openFile(const QString& path);
+    void openFile(const QUrl& url);
 
     void aboutKDAB();
     void aboutHotspot();
@@ -85,6 +89,7 @@ private slots:
     void onSourceMapContextMenu(const QPoint &pos);
 
 private:
+    void showError(const QString& errorMessage);
     void updateBackground();
 
     QScopedPointer<Ui::MainWindow> ui;
@@ -98,4 +103,6 @@ private:
     QString m_appPath;
     QString m_arch;
     QPixmap m_background;
+    KRecentFilesAction* m_recentFilesAction = nullptr;
+    KSharedConfigPtr m_config;
 };
