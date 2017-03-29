@@ -440,7 +440,8 @@ void MainWindow::clear()
 
 void MainWindow::openFile(const QString& path)
 {
-    setWindowTitle(tr("%1 - Hotspot").arg(QFileInfo(path).fileName()));
+    QFileInfo file(path);
+    setWindowTitle(tr("%1 - Hotspot").arg(file.fileName()));
 
     ui->loadingResultsErrorLabel->hide();
     ui->mainPageStack->setCurrentWidget(ui->startPage);
@@ -450,7 +451,7 @@ void MainWindow::openFile(const QString& path)
     m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths,
                              m_extraLibPaths, m_appPath, m_arch);
 
-    m_recentFilesAction->addUrl(QUrl::fromLocalFile(path));
+    m_recentFilesAction->addUrl(QUrl::fromLocalFile(file.absoluteFilePath()));
     m_recentFilesAction->saveEntries(m_config->group("RecentFiles"));
     m_config->sync();
 }
