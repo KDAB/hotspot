@@ -169,15 +169,14 @@ QString FrameGraphicsItem::description() const
     }
     const auto fraction = QString::number(double(m_cost)  * 100. / totalCost, 'g', 3);
     const auto symbol = m_symbol.symbol.isEmpty() ? QObject::tr("??") : m_symbol.symbol;
-    const auto function = QString(QLatin1String("<span style='font-family:monospace'>") + symbol.toHtmlEscaped() + QLatin1String("</span>"));
     if (!parentItem()) {
-        return function;
+        return symbol;
     }
 
     switch (m_costType) {
     case Samples:
         tooltip = i18nc("%1: number of samples, %2: relative number, %3: function label, %4: binary",
-                        "%1 (%2%) samples in %3 (%4) and below.", m_cost, fraction, function, m_symbol.binary);
+                        "%1 (%2%) samples in %3 (%4) and below.", m_cost, fraction, symbol, m_symbol.binary);
         break;
     }
 
