@@ -37,6 +37,8 @@
 #include <QInputDialog>
 #include <QPainter>
 #include <QDesktopServices>
+#include <QWidgetAction>
+#include <QLineEdit>
 
 #include <KRecursiveFilterProxyModel>
 #include <KStandardAction>
@@ -336,6 +338,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     setupCodeNavigationMenu();
+    setupPathSettingsMenu();
 
     clear();
 
@@ -676,4 +679,47 @@ void MainWindow::setupCodeNavigationMenu()
 
     configAction->setMenu(menu);
     ui->settingsMenu->addMenu(menu);
+}
+
+void MainWindow::setupPathSettingsMenu()
+{
+    auto menu = new QMenu(this);
+    auto addPathAction = [menu] (const QString& label, QString* value,
+                                 const QString& placeHolder,
+                                 const QString& tooltip)
+    {
+        auto action = new QWidgetAction(menu);
+        auto container = new QWidget;
+        auto layout = new QHBoxLayout;
+        layout->addWidget(new QLabel(label));
+        auto lineEdit = new QLineEdit;
+        lineEdit->setPlaceholderText(placeHolder);
+        lineEdit->setText(*value);
+        connect(lineEdit, &QLineEdit::textChanged,
+                lineEdit, [value] (const QString& newValue) { *value = newValue; });
+        layout->addWidget(lineEdit);
+        container->setToolTip(tooltip);
+        container->setLayout(layout);
+        action->setDefaultWidget(container);
+        menu->addAction(action);
+    };
+    addPathAction(tr("Sysroot:"), &m_sysroot,
+                  tr("local machine"),
+                  tr("Path to the sysroot. Leave empty to use the local machine."));
+    addPathAction(tr("Application Path:"), &m_appPath,
+                  tr("auto-detect"),
+                  tr("Path to the application binary and library."));
+    addPathAction(tr("Extra Library Paths:"), &m_extraLibPaths,
+                  tr("empty"),
+                  tr("List of colon-separated paths that contain additional libraries."));
+    addPathAction(tr("Debug Paths:"), &m_debugPaths,
+                  tr("auto-detect"),
+                  tr("List of colon-separated paths that contain debug information."));
+    addPathAction(tr("Kallsyms:"), &m_kallsyms,
+                  tr("auto-detect"),
+                  tr("Path to the kernel symbol mapping."));
+    addPathAction(tr("Architecture:"), &m_arch,
+                  tr("auto-detect"),
+                  tr("System architecture, e.g. x86_64, arm, aarch64 etc."));
+    ui->pathSettings->setMenu(menu);
 }

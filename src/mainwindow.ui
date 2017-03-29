@@ -45,7 +45,7 @@
        <number>0</number>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="startPage">
        <property name="sizePolicy">
@@ -90,39 +90,84 @@
           </property>
           <widget class="QWidget" name="openFilePage">
            <layout class="QVBoxLayout" name="verticalLayout_10">
-            <item alignment="Qt::AlignHCenter">
-             <widget class="QPushButton" name="openFileButton">
-              <property name="minimumSize">
-               <size>
-                <width>150</width>
-                <height>30</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>150</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="toolTip">
-               <string>Open a perf.data file</string>
-              </property>
-              <property name="text">
-               <string>Open File</string>
-              </property>
-              <property name="icon">
-               <iconset theme="document-open">
-                <normaloff>.</normaloff>.</iconset>
-              </property>
-              <property name="iconSize">
-               <size>
-                <width>20</width>
-                <height>20</height>
-               </size>
-              </property>
-              <property name="flat">
-               <bool>false</bool>
-              </property>
+            <item>
+             <widget class="QWidget" name="widget_2" native="true">
+              <layout class="QHBoxLayout" name="horizontalLayout_2">
+               <item>
+                <spacer name="horizontalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QPushButton" name="openFileButton">
+                 <property name="minimumSize">
+                  <size>
+                   <width>150</width>
+                   <height>30</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>150</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="toolTip">
+                  <string>Open a perf.data file</string>
+                 </property>
+                 <property name="text">
+                  <string>Open File</string>
+                 </property>
+                 <property name="icon">
+                  <iconset theme="document-open">
+                   <normaloff>.</normaloff>.</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>20</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                 <property name="flat">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="pathSettings">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                 <property name="icon">
+                  <iconset theme="configure"/>
+                 </property>
+                 <property name="popupMode">
+                  <enum>QToolButton::MenuButtonPopup</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_4">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
              </widget>
             </item>
             <item>
@@ -243,8 +288,8 @@
                 <rect>
                  <x>0</x>
                  <y>0</y>
-                 <width>1121</width>
-                 <height>682</height>
+                 <width>181</width>
+                 <height>386</height>
                 </rect>
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_11">
@@ -253,7 +298,7 @@
                   <property name="toolTip">
                    <string>Too much data was generated during the profile and some events got lost. Try to reduce the event load or increase the memory caches.</string>
                   </property>
-                  <property name="text" stdset="0">
+                  <property name="text">
                    <string notr="true">Lost messages</string>
                   </property>
                  </widget>
@@ -384,7 +429,7 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="KFilterProxySearchLine" name="bottomUpSearch" native="true">
+             <widget class="KFilterProxySearchLine" name="bottomUpSearch">
               <property name="toolTip">
                <string>Filter the call graph tree.</string>
               </property>
@@ -426,7 +471,7 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="KFilterProxySearchLine" name="topDownSearch" native="true">
+             <widget class="KFilterProxySearchLine" name="topDownSearch">
               <property name="toolTip">
                <string>Filter the call graph tree.</string>
               </property>
@@ -493,7 +538,7 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="KFilterProxySearchLine" name="callerCalleeFilter" native="true"/>
+             <widget class="KFilterProxySearchLine" name="callerCalleeFilter"/>
             </item>
             <item>
              <widget class="QSplitter" name="splitter_2">
@@ -582,7 +627,7 @@
      <x>0</x>
      <y>0</y>
      <width>1123</width>
-     <height>25</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="helpMenu">
@@ -600,7 +645,7 @@
    </widget>
    <widget class="QMenu" name="settingsMenu">
     <property name="title">
-     <string>Settings</string>
+     <string>Setti&amp;ngs</string>
     </property>
    </widget>
    <addaction name="fileMenu"/>
@@ -609,7 +654,8 @@
   </widget>
   <action name="actionAbout_Hotspot">
    <property name="icon">
-    <iconset theme="hotspot"/>
+    <iconset theme="hotspot">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>About &amp;Hotspot</string>
@@ -637,6 +683,11 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
+   <class>KFilterProxySearchLine</class>
+   <extends>QWidget</extends>
+   <header>kfilterproxysearchline.h</header>
+  </customwidget>
+  <customwidget>
    <class>KMessageWidget</class>
    <extends>QFrame</extends>
    <header>kmessagewidget.h</header>
@@ -647,11 +698,6 @@
    <extends>QWidget</extends>
    <header>flamegraph.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>KFilterProxySearchLine</class>
-   <extends>QWidget</extends>
-   <header>kfilterproxysearchline.h</header>
   </customwidget>
  </customwidgets>
  <resources>
