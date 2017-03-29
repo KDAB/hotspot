@@ -619,6 +619,7 @@ struct PerfParserPrivate
         }
 
         switch (static_cast<EventType>(eventType)) {
+            case EventType::Sample43: // fall-through
             case EventType::Sample: {
                 Sample sample;
                 stream >> sample;
@@ -890,7 +891,7 @@ struct PerfParserPrivate
     };
 
     enum class EventType {
-        Sample,
+        Sample43, // backwards compatibility
         ThreadStart,
         ThreadEnd,
         Command,
@@ -901,6 +902,7 @@ struct PerfParserPrivate
         LostDefinition,
         FeaturesDefinition,
         Error,
+        Sample,
         InvalidType
     };
 
