@@ -809,6 +809,11 @@ struct PerfParserPrivate
 
     void addSampleToBottomUp(const Sample& sample)
     {
+        if (sample.attributeId != 0) {
+            // TODO: show costs from multiple event sources
+            return;
+        }
+
         ++bottomUpResult.cost;
         auto parent = &bottomUpResult;
         QSet<Data::Symbol> recursionGuard;
