@@ -442,6 +442,7 @@ void MainWindow::openFile(const QString& path)
     setWindowTitle(tr("%1 - Hotspot").arg(QFileInfo(path).fileName()));
 
     ui->loadingResultsErrorLabel->hide();
+    ui->mainPageStack->setCurrentWidget(ui->startPage);
     ui->loadStack->setCurrentWidget(ui->parseProgressPage);
 
     // TODO: support input files of different types via plugins
