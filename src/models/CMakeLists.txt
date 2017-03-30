@@ -4,6 +4,7 @@ add_library(models STATIC
     data.cpp
     callercalleemodel.cpp
     costdelegate.cpp
+    ../util.cpp
 )
 
 target_link_libraries(models

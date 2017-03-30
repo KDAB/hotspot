@@ -117,13 +117,17 @@ public:
 
     QVariant headerData(int section, Qt::Orientation orientation, int role) const final override
     {
-        if (role != Qt::DisplayRole || orientation != Qt::Horizontal
+        if ((role != Qt::DisplayRole && role != Qt::ToolTipRole) || orientation != Qt::Horizontal
             || section < 0 || section > ModelImpl::NUM_COLUMNS)
         {
             return {};
         }
 
-        return ModelImpl::headerTitle(static_cast<typename ModelImpl::Columns>(section));
+        if (role == Qt::ToolTipRole) {
+            return ModelImpl::headerToolTip(static_cast<typename ModelImpl::Columns>(section));
+        } else {
+            return ModelImpl::headerTitle(static_cast<typename ModelImpl::Columns>(section));
+        }
     }
 
     QVariant data(const QModelIndex& index, int role) const final override
@@ -146,6 +150,8 @@ public:
             return m_sampleCount;
         } else if (role == SymbolRole) {
             return QVariant::fromValue(item->symbol);
+        } else if (role == Qt::ToolTipRole) {
+            return ModelImpl::displayToolTip(item, m_sampleCount);
         }
 
         // TODO: tooltips
@@ -205,7 +211,9 @@ public:
     };
 
     static QString headerTitle(Columns column);
+    static QString headerToolTip(Columns column);
     static QVariant displayData(const Data::BottomUp* row, Columns column);
+    static QVariant displayToolTip(const Data::BottomUp* row, quint64 sampleCount);
 };
 
 class TopDownModel : public TreeModel<Data::TopDown, TopDownModel>
@@ -227,5 +235,7 @@ public:
     };
 
     static QString headerTitle(Columns column);
+    static QString headerToolTip(Columns column);
     static QVariant displayData(const Data::TopDown* row, Columns column);
+    static QVariant displayToolTip(const Data::TopDown* row, quint64 sampleCount);
 };

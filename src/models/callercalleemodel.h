@@ -63,7 +63,7 @@ public:
 
     static QVariant headerCell(Columns column, int role);
     static QVariant cell(Columns column, int role, const Data::Symbol& symbol,
-                         const Data::CallerCalleeEntry& entry);
+                         const Data::CallerCalleeEntry& entry, quint64 sampleCount);
     QModelIndex indexForSymbol(const Data::Symbol& symbol) const;
 };
 
@@ -99,24 +99,35 @@ public:
         if (role == Qt::InitialSortOrderRole && column == Cost) {
             return Qt::DescendingOrder;
         }
-        if (role != Qt::DisplayRole) {
+        if (role != Qt::DisplayRole && role != Qt::ToolTipRole) {
             return {};
         }
 
-        switch (column) {
-            case Symbol:
-                return ModelImpl::symbolHeader();
-            case Binary:
-                return QObject::tr("Binary");
-            case Cost:
-                return QObject::tr("Cost");
+        if (role == Qt::DisplayRole) {
+            switch (column) {
+                case Symbol:
+                    return ModelImpl::symbolHeader();
+                case Binary:
+                    return QObject::tr("Binary");
+                case Cost:
+                    return QObject::tr("Cost");
+            }
+        } else if (role == Qt::ToolTipRole) {
+            switch (column) {
+                case Symbol:
+                    return QObject::tr("The function name of the %1. May be empty when debug information is missing.").arg(ModelImpl::symbolHeader());
+                case Binary:
+                    return QObject::tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
+                case Cost:
+                    return QObject::tr("The symbol's inclusive cost, i.e. the number of samples attributed to this symbol, both directly and indirectly.");
+            }
         }
 
         return {};
     }
 
     static QVariant cell(Columns column, int role, const Data::Symbol& symbol,
-                         const Data::Cost& cost)
+                         const Data::Cost& cost, quint64 sampleCount)
     {
         if (role == SortRole) {
             switch (column) {
@@ -142,9 +153,12 @@ public:
             }
         } else if (role == SymbolRole) {
             return QVariant::fromValue(symbol);
+        } else if (role == Qt::ToolTipRole) {
+            QString toolTip = QObject::tr("%1 in %2\ncost: %3 out of %4 total samples (%5%)").arg(
+                     Util::formatString(symbol.symbol), Util::formatString(symbol.binary),
+                     Util::formatCost(cost.samples), Util::formatCost(sampleCount), Util::formatCostRelative(cost.samples, sampleCount));
+            return toolTip;
         }
-
-        // TODO: tooltips
 
         return {};
     }
@@ -201,22 +215,32 @@ public:
         if (role == Qt::InitialSortOrderRole && column == Cost) {
             return Qt::DescendingOrder;
         }
-        if (role != Qt::DisplayRole) {
+
+        if (role != Qt::DisplayRole && role != Qt::ToolTipRole) {
             return {};
         }
 
-        switch (column) {
-            case Location:
-                return QObject::tr("Location");
-            case Cost:
-                return QObject::tr("Cost");
+        if (role == Qt::DisplayRole) {
+            switch (column) {
+                case Location:
+                    return QObject::tr("Location");
+                case Cost:
+                    return QObject::tr("Cost");
+            }
+        } else if (role == Qt::ToolTipRole) {
+            switch (column) {
+                case Location:
+                    return QObject::tr("The source file name and line number where the cost was measured. May be empty when debug information is missing.");
+                case Cost:
+                    return QObject::tr("The number of samples directly attributed to this code location.");
+            }
         }
 
         return {};
     }
 
     static QVariant cell(Columns column, int role, const QString& location,
-                         const Data::Cost& cost)
+                         const Data::Cost& cost, quint64 sampleCount)
     {
         if (role == SortRole) {
             switch (column) {
@@ -237,9 +261,11 @@ public:
             }
         } else if (role == LocationRole) {
             return QVariant::fromValue(location);
+        } else if (role == Qt::ToolTipRole) {
+            QString toolTip = QObject::tr("%1\ncost: %2 out of %3 total samples (%4%)").arg(
+                     Util::formatString(location), Util::formatCost(cost.samples), Util::formatCost(sampleCount), Util::formatCostRelative(cost.samples, sampleCount));
+            return toolTip;
         }
-
-        // TODO: tooltips
 
         return {};
     }
