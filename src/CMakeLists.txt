@@ -1,7 +1,6 @@
 # enable more pedantic compiler warnings
 include(ECMInstallIcons)
 include(ECMAddAppIcon)
-include(KDEInstallDirs)
 
 include(KDEFrameworkCompilerSettings)
 # but allow signal/slot keywords

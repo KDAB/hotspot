@@ -28,10 +28,10 @@ target_link_libraries(hotspot-perfparser
 
 set_target_properties(hotspot-perfparser
     PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${LIBEXEC_INSTALL_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_LIBEXECDIR}"
 )
 
-install(TARGETS hotspot-perfparser RUNTIME DESTINATION ${LIBEXEC_INSTALL_DIR})
+install(TARGETS hotspot-perfparser RUNTIME DESTINATION ${KDE_INSTALL_LIBEXECDIR})
 
 ecm_add_test(
     perfparser/tests/auto/elfmap/tst_elfmap.cpp

@@ -38,15 +38,6 @@ set(HOTSPOT_SOVERSION "1.0.0")
 set(HOTSPOT_PLUGIN_VERSION "1.0")
 set(PROJECT_VERSION_STRING "${HOTSPOT_VERSION_STRING}")
 
-set(BIN_INSTALL_DIR "bin")
-set(LIB_SUFFIX "" CACHE STRING "Defines suffix of library directory name (32/64)")
-set(LIB_INSTALL_DIR "lib${LIB_SUFFIX}")
-set(LIBEXEC_INSTALL_DIR "${LIB_INSTALL_DIR}/hotspot/libexec")
-
-file(RELATIVE_PATH LIBEXEC_REL_PATH
-    "${CMAKE_INSTALL_PREFIX}/${BIN_INSTALL_DIR}"
-    "${CMAKE_INSTALL_PREFIX}/${LIBEXEC_INSTALL_DIR}")
-
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/hotspot-config.h.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/hotspot-config.h
@@ -79,6 +70,7 @@ include(KDECMakeSettings)
 include(ECMAddTests)
 include(ECMCoverageOption)
 include(ECMEnableSanitizers)
+include(KDEInstallDirs)
 
 add_subdirectory(3rdparty)
 
