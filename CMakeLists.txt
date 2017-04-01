@@ -38,12 +38,6 @@ set(HOTSPOT_SOVERSION "1.0.0")
 set(HOTSPOT_PLUGIN_VERSION "1.0")
 set(PROJECT_VERSION_STRING "${HOTSPOT_VERSION_STRING}")
 
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/hotspot-config.h.cmake
-  ${CMAKE_CURRENT_BINARY_DIR}/hotspot-config.h
-  @ONLY
-)
-
 include(FeatureSummary)
 
 find_package(Qt5 COMPONENTS Core Widgets Network Test REQUIRED)
@@ -71,6 +65,16 @@ include(KDECMakeSettings)
 include(ECMAddTests)
 include(ECMCoverageOption)
 include(ECMEnableSanitizers)
+
+file(RELATIVE_PATH LIBEXEC_REL_PATH
+   "${CMAKE_INSTALL_PREFIX}/${KDE_INSTALL_BINDIR}"
+   "${CMAKE_INSTALL_PREFIX}/${KDE_INSTALL_LIBEXECDIR}")
+
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/hotspot-config.h.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/hotspot-config.h
+  @ONLY
+)
 
 add_subdirectory(3rdparty)
 
