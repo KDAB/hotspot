@@ -66,11 +66,11 @@ endif()
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
+include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(ECMAddTests)
 include(ECMCoverageOption)
 include(ECMEnableSanitizers)
-include(KDEInstallDirs)
 
 add_subdirectory(3rdparty)
 
