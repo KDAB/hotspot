@@ -956,7 +956,10 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
         return;
     }
 
-    const auto parserBinary = Util::findLibexecBinary(QStringLiteral("hotspot-perfparser"));
+    auto parserBinary = QString::fromLocal8Bit(qgetenv("HOTSPOT_PERFPARSER"));
+    if (parserBinary.isEmpty()) {
+        parserBinary = Util::findLibexecBinary(QStringLiteral("hotspot-perfparser"));
+    }
     if (parserBinary.isEmpty()) {
         emit parsingFailed(tr("Failed to find hotspot-perfparser binary."));
         return;
