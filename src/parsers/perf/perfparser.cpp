@@ -535,6 +535,10 @@ struct PerfParserPrivate
         buffer.open(QIODevice::ReadOnly);
         stream.setDevice(&buffer);
         process.setProcessChannelMode(QProcess::ForwardedErrorChannel);
+
+        if (qEnvironmentVariableIntValue("HOTSPOT_GENERATE_SCRIPT_OUTPUT")) {
+            perfScriptOutput.reset(new QTextStream(stdout));
+        }
     }
 
     bool tryParse()
@@ -728,7 +732,7 @@ struct PerfParserPrivate
     void addCommand(const Command& command)
     {
         // TODO: keep track of list of commands for filtering later on
-        Q_UNUSED(command);
+        commands[command.pid] = strings.value(command.comm.id);
     }
 
     void addLocation(const LocationDefinition& location)
@@ -782,6 +786,13 @@ struct PerfParserPrivate
             auto ret = parent->entryForSymbol(symbol);
             ++ret->cost;
 
+            if (perfScriptOutput) {
+                *perfScriptOutput << '\t' << hex << qSetFieldWidth(16) << location.location.address
+                                  << qSetFieldWidth(0) << dec << ' '
+                                  << (symbol.symbol.isEmpty() ? QStringLiteral("[unknown]") : symbol.symbol)
+                                  << " (" << symbol.binary << ")\n";
+            }
+
             auto recursionIt = recursionGuard->find(symbol);
             if (recursionIt == recursionGuard->end()) {
                 ++callerCalleeResult[symbol].sourceMap[location.location.location];
@@ -814,11 +825,22 @@ struct PerfParserPrivate
             return;
         }
 
+        if (perfScriptOutput) {
+            *perfScriptOutput << commands.value(sample.pid) << '\t' << sample.pid << '\t'
+                              << qSetRealNumberPrecision(12)
+                              << static_cast<double>(sample.time) * 1.0E-9
+                              << ":\t" << sample.period << '\n';
+        }
+
         ++bottomUpResult.cost;
         auto parent = &bottomUpResult;
         QSet<Data::Symbol> recursionGuard;
         for (auto id : sample.frames) {
             parent = addFrame(parent, id, &recursionGuard);
+        }
+
+        if (perfScriptOutput) {
+            *perfScriptOutput << "\n";
         }
     }
 
@@ -928,6 +950,8 @@ struct PerfParserPrivate
     Data::BottomUp bottomUpResult;
     Data::TopDown topDownResult;
     Data::CallerCalleeEntryMap callerCalleeResult;
+    QHash<quint32, QString> commands;
+    QScopedPointer<QTextStream> perfScriptOutput;
 };
 
 PerfParser::PerfParser(QObject* parent)
