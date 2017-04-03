@@ -45,7 +45,6 @@
 #include <KLocalizedString>
 #include <KFormat>
 #include <KConfigGroup>
-#include <KRecentFilesAction>
 
 #include "aboutdialog.h"
 #include "flamegraph.h"
