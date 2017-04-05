@@ -1,6 +1,9 @@
+cmake_minimum_required(VERSION 3.1.0)
 project(hotspot CXX C)
 
-cmake_minimum_required(VERSION 3.1.0)
+if (POLICY CMP0063)
+    cmake_policy (SET CMP0063 NEW)
+endif (POLICY CMP0063)
 
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/perfparser/.git" )
     message( FATAL_ERROR
