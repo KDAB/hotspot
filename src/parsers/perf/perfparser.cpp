@@ -842,6 +842,7 @@ struct PerfParserPrivate
         bottomUpResult.costs.incrementTotal(sample.attributeId);
         auto parent = &bottomUpResult.root;
         QSet<Data::Symbol> recursionGuard;
+        recursionGuard.reserve(64);
         for (auto id : sample.frames) {
             parent = addFrame(parent, id, &recursionGuard, sample.attributeId);
         }
