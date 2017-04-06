@@ -1,3 +1,4 @@
 [submodule "3rdparty/perfparser"]
 	path = 3rdparty/perfparser
-	url = https://github.com/KDAB/perfparser.git
+#	url = https://github.com/KDAB/perfparser.git
+        url = git://code.qt.io/qt-creator/perfparser.git
