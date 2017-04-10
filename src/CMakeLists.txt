@@ -24,6 +24,7 @@ set(hotspot_SRCS
     util.cpp
 
     parsers/perf/perfparser.cpp
+    perfrecord.cpp
 
     mainwindow.cpp
     flamegraph.cpp
