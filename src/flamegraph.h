@@ -75,6 +75,7 @@ private:
     QGraphicsScene* m_scene;
     QGraphicsView* m_view;
     QLabel* m_displayLabel;
+    QLabel* m_searchResultsLabel;
     const FrameGraphicsItem* m_tooltipItem = nullptr;
     FrameGraphicsItem* m_rootItem = nullptr;
     QVector<FrameGraphicsItem*> m_selectionHistory;

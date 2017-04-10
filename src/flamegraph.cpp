@@ -57,6 +57,12 @@ enum CostType
 };
 Q_DECLARE_METATYPE(CostType)
 
+namespace {
+QString fraction(qint64 cost, qint64 totalCost)
+{
+    return QString::number(double(cost)  * 100. / totalCost, 'g', 3);
+}
+
 enum SearchMatchType
 {
     NoSearch,
@@ -64,6 +70,7 @@ enum SearchMatchType
     DirectMatch,
     ChildMatch
 };
+}
 class FrameGraphicsItem : public QGraphicsRectItem
 {
 public:
@@ -200,7 +207,6 @@ QString FrameGraphicsItem::description() const
         }
         totalCost = item->cost();
     }
-    const auto fraction = QString::number(double(m_cost)  * 100. / totalCost, 'g', 3);
     const auto symbol = m_symbol.symbol.isEmpty() ? QObject::tr("??") : m_symbol.symbol;
     if (!parentItem()) {
         return symbol;
@@ -209,7 +215,7 @@ QString FrameGraphicsItem::description() const
     switch (m_costType) {
     case Samples:
         tooltip = i18nc("%1: number of samples, %2: relative number, %3: function label, %4: binary",
-                        "%1 (%2%) samples in %3 (%4) and below.", m_cost, fraction, symbol, m_symbol.binary);
+                        "%1 (%2%) samples in %3 (%4) and below.", m_cost, fraction(m_cost, totalCost), symbol, m_symbol.binary);
         break;
     }
 
@@ -357,30 +363,38 @@ FrameGraphicsItem* parseData(const QVector<Data>& topDownData, CostType type,
     return rootItem;
 }
 
-SearchMatchType applySearch(FrameGraphicsItem* item, const QString& searchValue)
+struct SearchResults
 {
-    SearchMatchType match = NoMatch;
+    SearchMatchType matchType = NoMatch;
+    qint64 directCost = 0;
+};
+
+SearchResults applySearch(FrameGraphicsItem* item, const QString& searchValue)
+{
+    SearchResults result;
     if (searchValue.isEmpty()) {
-        match = NoSearch;
-    } else if (item->symbol().symbol.contains(searchValue, Qt::CaseInsensitive)) {
-        match = DirectMatch;
-    } else if (item->symbol().binary.contains(searchValue, Qt::CaseInsensitive)) {
-        match = DirectMatch;
+        result.matchType = NoSearch;
+    } else if (item->symbol().symbol.contains(searchValue, Qt::CaseInsensitive)
+                || item->symbol().binary.contains(searchValue, Qt::CaseInsensitive))
+    {
+        result.directCost += item->cost();
+        result.matchType = DirectMatch;
     }
 
     // recurse into the child items, we always need to update all items
     for (auto* child : item->childItems()) {
         auto* childFrame = static_cast<FrameGraphicsItem*>(child);
         auto childMatch = applySearch(childFrame, searchValue);
-        if (match != DirectMatch &&
-            (childMatch == DirectMatch || childMatch == ChildMatch))
+        if (result.matchType != DirectMatch &&
+            (childMatch.matchType == DirectMatch || childMatch.matchType == ChildMatch))
         {
-            match = ChildMatch;
+            result.matchType = ChildMatch;
+            result.directCost += childMatch.directCost;
         }
     }
 
-    item->setSearchMatchType(match);
-    return match;
+    item->setSearchMatchType(result.matchType);
+    return result;
 }
 
 }
@@ -391,6 +405,7 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     , m_scene(new QGraphicsScene(this))
     , m_view(new QGraphicsView(this))
     , m_displayLabel(new QLabel)
+    , m_searchResultsLabel(new QLabel)
 {
     qRegisterMetaType<FrameGraphicsItem*>();
 
@@ -450,9 +465,6 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     connect(searchInput, &QLineEdit::textChanged,
             this, &FlameGraph::setSearchValue);
 
-    m_displayLabel->setWordWrap(true);
-    m_displayLabel->setTextInteractionFlags(m_displayLabel->textInteractionFlags() | Qt::TextSelectableByMouse);
-
     auto controls = new QWidget(this);
     controls->setLayout(new QHBoxLayout);
     controls->layout()->addWidget(m_costSource);
@@ -461,10 +473,18 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     controls->layout()->addWidget(costThreshold);
     controls->layout()->addWidget(searchInput);
 
+    m_displayLabel->setWordWrap(true);
+    m_displayLabel->setTextInteractionFlags(m_displayLabel->textInteractionFlags() | Qt::TextSelectableByMouse);
+
+    m_searchResultsLabel->setWordWrap(true);
+    m_searchResultsLabel->setTextInteractionFlags(m_searchResultsLabel->textInteractionFlags() | Qt::TextSelectableByMouse);
+    m_searchResultsLabel->hide();
+
     setLayout(new QVBoxLayout);
     layout()->addWidget(controls);
     layout()->addWidget(m_view);
     layout()->addWidget(m_displayLabel);
+    layout()->addWidget(m_searchResultsLabel);
 
     {
         auto action = new QAction(tr("back"), this);
@@ -654,7 +674,17 @@ void FlameGraph::setSearchValue(const QString& value)
     if (!m_rootItem) {
         return;
     }
-    applySearch(m_rootItem, value);
+
+    auto match = applySearch(m_rootItem, value);
+
+    if (value.isEmpty()) {
+        m_searchResultsLabel->hide();
+    } else {
+        m_searchResultsLabel->setText(i18n("%1 (%2% of total of %3) samples matched by search.",
+                                           match.directCost, fraction(match.directCost, m_rootItem->cost()),
+                                           m_rootItem->cost()));
+        m_searchResultsLabel->show();
+    }
 }
 
 void FlameGraph::navigateBack()
