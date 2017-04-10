@@ -45,6 +45,7 @@
 #include <QDoubleSpinBox>
 #include <QCursor>
 #include <QMenu>
+#include <QLineEdit>
 
 #include <ThreadWeaver/ThreadWeaver>
 #include <KLocalizedString>
@@ -56,6 +57,13 @@ enum CostType
 };
 Q_DECLARE_METATYPE(CostType)
 
+enum SearchMatchType
+{
+    NoSearch,
+    NoMatch,
+    DirectMatch,
+    ChildMatch
+};
 class FrameGraphicsItem : public QGraphicsRectItem
 {
 public:
@@ -69,6 +77,7 @@ public:
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr) override;
 
     QString description() const;
+    void setSearchMatchType(SearchMatchType matchType);
 
 protected:
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
@@ -79,6 +88,7 @@ private:
     Data::Symbol m_symbol;
     CostType m_costType;
     bool m_isHovered;
+    SearchMatchType m_searchMatch = NoSearch;
 };
 
 Q_DECLARE_METATYPE(FrameGraphicsItem*)
@@ -116,11 +126,15 @@ Data::Symbol FrameGraphicsItem::symbol() const
 
 void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* /*widget*/)
 {
-    if (isSelected() || m_isHovered) {
+    if (isSelected() || m_isHovered || m_searchMatch == DirectMatch) {
         auto selectedColor = brush().color();
         selectedColor.setAlpha(255);
         painter->fillRect(rect(), selectedColor);
-    } else {
+    } else if (m_searchMatch == NoMatch) {
+        auto noMatchColor = brush().color();
+        noMatchColor.setAlpha(50);
+        painter->fillRect(rect(), noMatchColor);
+    } else { // default, when no search is running, or a sub-item is matched
         painter->fillRect(rect(), brush());
     }
 
@@ -145,14 +159,33 @@ void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 
     const auto symbol = m_symbol.symbol.isEmpty() ? QObject::tr("??") : m_symbol.symbol;
 
+    if (m_searchMatch == NoMatch) {
+        auto color = oldPen.color();
+        color.setAlpha(125);
+        pen.setColor(color);
+        painter->setPen(pen);
+    }
+
     painter->drawText(margin + rect().x(), rect().y(), width, height, Qt::AlignVCenter | Qt::AlignLeft | Qt::TextSingleLine,
                       option->fontMetrics.elidedText(symbol, Qt::ElideRight, width));
+
+    if (m_searchMatch == NoMatch) {
+        painter->setPen(oldPen);
+    }
 }
 
 void FrameGraphicsItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     QGraphicsRectItem::hoverEnterEvent(event);
     m_isHovered = true;
+    update();
+}
+
+void FrameGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+    QGraphicsRectItem::hoverLeaveEvent(event);
+    m_isHovered = false;
+    update();
 }
 
 QString FrameGraphicsItem::description() const
@@ -183,10 +216,12 @@ QString FrameGraphicsItem::description() const
     return tooltip;
 }
 
-void FrameGraphicsItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+void FrameGraphicsItem::setSearchMatchType(SearchMatchType matchType)
 {
-    QGraphicsRectItem::hoverLeaveEvent(event);
-    m_isHovered = false;
+    if (m_searchMatch != matchType) {
+        m_searchMatch = matchType;
+        update();
+    }
 }
 
 namespace {
@@ -322,6 +357,32 @@ FrameGraphicsItem* parseData(const QVector<Data>& topDownData, CostType type,
     return rootItem;
 }
 
+SearchMatchType applySearch(FrameGraphicsItem* item, const QString& searchValue)
+{
+    SearchMatchType match = NoMatch;
+    if (searchValue.isEmpty()) {
+        match = NoSearch;
+    } else if (item->symbol().symbol.contains(searchValue, Qt::CaseInsensitive)) {
+        match = DirectMatch;
+    } else if (item->symbol().binary.contains(searchValue, Qt::CaseInsensitive)) {
+        match = DirectMatch;
+    }
+
+    // recurse into the child items, we always need to update all items
+    for (auto* child : item->childItems()) {
+        auto* childFrame = static_cast<FrameGraphicsItem*>(child);
+        auto childMatch = applySearch(childFrame, searchValue);
+        if (match != DirectMatch &&
+            (childMatch == DirectMatch || childMatch == ChildMatch))
+        {
+            match = ChildMatch;
+        }
+    }
+
+    item->setSearchMatchType(match);
+    return match;
+}
+
 }
 
 FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
@@ -382,6 +443,13 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
                 showData();
             });
 
+    auto searchInput = new QLineEdit(this);
+    searchInput->setPlaceholderText(i18n("Search..."));
+    searchInput->setToolTip(i18n("<qt>Search the flame graph for a symbol.</qt>"));
+    searchInput->setClearButtonEnabled(true);
+    connect(searchInput, &QLineEdit::textChanged,
+            this, &FlameGraph::setSearchValue);
+
     m_displayLabel->setWordWrap(true);
     m_displayLabel->setTextInteractionFlags(m_displayLabel->textInteractionFlags() | Qt::TextSelectableByMouse);
 
@@ -391,6 +459,7 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     controls->layout()->addWidget(bottomUpCheckbox);
     controls->layout()->addWidget(collapseRecursionCheckbox);
     controls->layout()->addWidget(costThreshold);
+    controls->layout()->addWidget(searchInput);
 
     setLayout(new QVBoxLayout);
     layout()->addWidget(controls);
@@ -578,6 +647,14 @@ void FlameGraph::selectItem(FrameGraphicsItem* item)
     m_view->centerOn(item);
 
     setTooltipItem(item);
+}
+
+void FlameGraph::setSearchValue(const QString& value)
+{
+    if (!m_rootItem) {
+        return;
+    }
+    applySearch(m_rootItem, value);
 }
 
 void FlameGraph::navigateBack()

@@ -55,6 +55,7 @@ protected:
 
 private slots:
     void setData(FrameGraphicsItem* rootItem);
+    void setSearchValue(const QString& value);
 
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
