@@ -26,6 +26,7 @@
 */
 
 #include "callercalleemodel.h"
+#include "../util.h"
 
 CallerCalleeModel::CallerCalleeModel(QObject* parent)
     : HashModel(parent)
@@ -42,30 +43,45 @@ QVariant CallerCalleeModel::headerCell(Columns column, int role)
             return Qt::DescendingOrder;
         }
     }
-    if (role != Qt::DisplayRole) {
+    if (role != Qt::DisplayRole && role != Qt::ToolTipRole) {
         return {};
     }
 
-    switch (column) {
-        case Symbol:
-            return tr("Symbol");
-        case Binary:
-            return tr("Binary");
-        case SelfCost:
-            return tr("Self Cost");
-        case InclusiveCost:
-            return tr("Inclusive Cost");
-        case Callers:
-            return tr("Callers");
-        case Callees:
-            return tr("Callees");
+    if (role == Qt::DisplayRole) {
+        switch (column) {
+            case Symbol:
+                return tr("Symbol");
+            case Binary:
+                return tr("Binary");
+            case SelfCost:
+                return tr("Self Cost");
+            case InclusiveCost:
+                return tr("Inclusive Cost");
+            case Callers:
+                return tr("Callers");
+            case Callees:
+                return tr("Callees");
+        }
+    } else if (role == Qt::ToolTipRole) {
+        switch (column) {
+            case Symbol:
+                return tr("The symbol's function name. May be empty when debug information is missing.");
+            case Binary:
+                return tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
+            case SelfCost:
+                return tr("The number of samples directly attributed to this symbol.");
+            case InclusiveCost:
+                return tr("The number of samples attributed to this symbol, both directly and indirectly. This includes the costs of all functions called by this symbol plus its self cost.");
+            default:
+                break;
+        }
     }
 
     return {};
 }
 
 QVariant CallerCalleeModel::cell(Columns column, int role, const Data::Symbol& symbol,
-                                 const Data::CallerCalleeEntry& entry)
+                                 const Data::CallerCalleeEntry& entry, quint64 sampleCount)
 {
     if (role == SortRole) {
         switch (column) {
@@ -107,9 +123,13 @@ QVariant CallerCalleeModel::cell(Columns column, int role, const Data::Symbol& s
         return QVariant::fromValue(entry.callers);
     } else if (role == SourceMapRole) {
         return QVariant::fromValue(entry.sourceMap);
+    } else if (role == Qt::ToolTipRole) {
+        QString toolTip = tr("%1 in %2\nself cost: %3 out of %4 total samples (%5%)\ninclusive cost: %6 out of %7 total samples (%8%)").arg(
+                 Util::formatString(symbol.symbol), Util::formatString(symbol.binary),
+                 Util::formatCost(entry.selfCost.samples), Util::formatCost(sampleCount), Util::formatCostRelative(entry.selfCost.samples, sampleCount),
+                 Util::formatCost(entry.inclusiveCost.samples), Util::formatCost(sampleCount), Util::formatCostRelative(entry.inclusiveCost.samples, sampleCount));
+        return toolTip;
     }
-
-    // TODO: tooltips
 
     return {};
 }

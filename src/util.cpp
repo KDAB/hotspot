@@ -48,3 +48,18 @@ QString Util::findLibexecBinary(const QString& name)
     }
     return info.absoluteFilePath();
 }
+
+QString Util::formatString(const QString& input)
+{
+    return input.isEmpty() ? QObject::tr("??") : input;
+}
+
+QString Util::formatCost(quint32 cost)
+{
+    return QString::number(cost);
+}
+
+QString Util::formatCostRelative(quint32 selfCost, quint64 totalCost)
+{
+    return QString::number(double(selfCost) * 100. / totalCost, 'g', 3);
+}

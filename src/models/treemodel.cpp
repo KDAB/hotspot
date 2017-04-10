@@ -26,6 +26,7 @@
 */
 
 #include "treemodel.h"
+#include "../util.h"
 
 AbstractTreeModel::AbstractTreeModel(QObject* parent)
     : QAbstractItemModel(parent)
@@ -55,6 +56,20 @@ QString BottomUpModel::headerTitle(Columns column)
     return {};
 }
 
+QString BottomUpModel::headerToolTip(Columns column)
+{
+    switch (column) {
+    case Symbol:
+        return tr("The symbol's function name. May be empty when debug information is missing.");
+    case Binary:
+        return tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
+    case Cost:
+        return tr("The symbol's inclusive cost, i.e. the number of samples attributed to this symbol, both directly and indirectly.");
+    }
+    Q_UNREACHABLE();
+    return {};
+}
+
 QVariant BottomUpModel::displayData(const Data::BottomUp* row, Columns column)
 {
     switch (column) {
@@ -67,6 +82,14 @@ QVariant BottomUpModel::displayData(const Data::BottomUp* row, Columns column)
     }
     Q_UNREACHABLE();
     return {};
+}
+
+QVariant BottomUpModel::displayToolTip(const Data::BottomUp* row, quint64 sampleCount)
+{
+    QString toolTip = tr("%1 in %2\ncost: %3 out of %4 total samples (%5%)").arg(
+             Util::formatString(row->symbol.symbol), Util::formatString(row->symbol.binary),
+             Util::formatCost(row->cost.samples), Util::formatCost(sampleCount), Util::formatCostRelative(row->cost.samples, sampleCount));
+    return toolTip;
 }
 
 TopDownModel::TopDownModel(QObject* parent)
@@ -92,6 +115,22 @@ QString TopDownModel::headerTitle(Columns column)
     return {};
 }
 
+QString TopDownModel::headerToolTip(Columns column)
+{
+    switch (column) {
+    case Symbol:
+        return tr("The symbol's function name. May be empty when debug information is missing.");
+    case Binary:
+        return tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
+    case InclusiveCost:
+        return tr("The number of samples attributed to this symbol, both directly and indirectly. This includes the costs of all functions called by this symbol plus its self cost.");
+    case SelfCost:
+        return tr("The number of samples directly attributed to this symbol.");
+    }
+    Q_UNREACHABLE();
+    return {};
+}
+
 QVariant TopDownModel::displayData(const Data::TopDown* row, Columns column)
 {
     switch (column) {
@@ -106,4 +145,13 @@ QVariant TopDownModel::displayData(const Data::TopDown* row, Columns column)
     }
     Q_UNREACHABLE();
     return {};
+}
+
+QVariant TopDownModel::displayToolTip(const Data::TopDown* row, quint64 sampleCount)
+{
+    QString toolTip = tr("%1 in %2\nself cost: %3 out of %4 total samples (%5%)\ninclusive cost: %6 out of %7 total samples (%8%)").arg(
+             Util::formatString(row->symbol.symbol), Util::formatString(row->symbol.binary),
+             Util::formatCost(row->selfCost.samples), Util::formatCost(sampleCount), Util::formatCostRelative(row->selfCost.samples, sampleCount),
+             Util::formatCost(row->inclusiveCost.samples), Util::formatCost(sampleCount), Util::formatCostRelative(row->inclusiveCost.samples, sampleCount));
+    return toolTip;
 }

@@ -76,7 +76,7 @@ public:
         std::advance(it, index.row());
 
         const auto column = static_cast<typename ModelImpl::Columns>(index.column());
-        return ModelImpl::cell(column, role, it.key(), it.value());
+        return ModelImpl::cell(column, role, it.key(), it.value(), m_sampleCount);
     }
 
     using QAbstractTableModel::setData;
