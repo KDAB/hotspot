@@ -29,6 +29,7 @@
 
 #include <QAbstractTableModel>
 #include <QHash>
+#include <QVector>
 
 template<typename Rows, typename ModelImpl>
 class HashModel : public QAbstractTableModel
@@ -46,7 +47,7 @@ public:
 
     int rowCount(const QModelIndex &parent = {}) const final override
     {
-        return parent.isValid() ? 0 : m_rows.size();
+        return parent.isValid() ? 0 : m_keys.size();
     }
 
     QVariant headerData(int section, Qt::Orientation orientation = Qt::Horizontal,
@@ -70,20 +71,25 @@ public:
             return m_sampleCount;
         }
 
-        // TODO: optimize this? i.e. introduce a QVector of data, use hash only during construction?
-        const auto& data = m_rows;
-        auto it = data.begin();
-        std::advance(it, index.row());
+        const auto& key = m_keys.value(index.row());
+        const auto& value = m_values.value(index.row());
 
         const auto column = static_cast<typename ModelImpl::Columns>(index.column());
-        return ModelImpl::cell(column, role, it.key(), it.value(), m_sampleCount);
+        return ModelImpl::cell(column, role, key, value, m_sampleCount);
     }
 
     using QAbstractTableModel::setData;
     void setData(const Rows& rows)
     {
         beginResetModel();
-        m_rows = rows;
+        m_keys.reserve(rows.size());
+        m_values.reserve(rows.size());
+        m_keys.clear();
+        m_values.clear();
+        for (auto it = rows.constBegin(), end = rows.constEnd(); it != end; ++it) {
+            m_keys.push_back(it.key());
+            m_values.push_back(it.value());
+        }
         endResetModel();
     }
 
@@ -96,16 +102,17 @@ public:
 
     QModelIndex indexForKey(const typename Rows::key_type& key, int column = 0) const
     {
-        auto it = m_rows.find(key);
-        if (it == m_rows.end()) {
+        auto it = std::find(m_keys.begin(), m_keys.end(), key);
+        if (it == m_keys.end()) {
             return {};
         }
-        const int row = std::distance(m_rows.begin(), it);
+        const int row = std::distance(m_keys.begin(), it);
         return index(row, column);
     }
 
 protected:
-    Rows m_rows;
+    QVector<typename Rows::key_type> m_keys;
+    QVector<typename Rows::mapped_type> m_values;
 
 private:
     quint64 m_sampleCount = 0;

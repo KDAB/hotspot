@@ -136,12 +136,7 @@ QVariant CallerCalleeModel::cell(Columns column, int role, const Data::Symbol& s
 
 QModelIndex CallerCalleeModel::indexForSymbol(const Data::Symbol& symbol) const
 {
-    auto it = m_rows.find(symbol);
-    if (it == m_rows.end()) {
-        return {};
-    }
-    const int row = std::distance(m_rows.begin(), it);
-    return createIndex(row, 0);
+    return indexForKey(symbol);
 }
 
 CallerModel::CallerModel(QObject* parent)
