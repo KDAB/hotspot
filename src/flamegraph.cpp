@@ -549,6 +549,16 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
         if (action == viewCallerCallee) {
             emit jumpToCallerCallee(item->symbol());
         }
+    } else if (event->type() == QEvent::ToolTip) {
+        const auto& tooltip = m_displayLabel->toolTip();
+        if (tooltip.isEmpty()) {
+            QToolTip::hideText();
+        } else {
+            QToolTip::showText(QCursor::pos(), QLatin1String("<qt>")
+                + tooltip.toHtmlEscaped() + QLatin1String("</qt>"), this);
+        }
+        event->accept();
+        return true;
     }
     return ret;
 }
