@@ -147,13 +147,15 @@ void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 
     const QPen oldPen = painter->pen();
     auto pen = oldPen;
-    pen.setColor(brush().color());
-    if (isSelected()) {
-        pen.setWidth(2);
+    if (m_searchMatch != NoMatch) {
+        pen.setColor(brush().color());
+        if (isSelected()) {
+            pen.setWidth(2);
+        }
+        painter->setPen(pen);
+        painter->drawRect(rect());
+        painter->setPen(oldPen);
     }
-    painter->setPen(pen);
-    painter->drawRect(rect());
-    painter->setPen(oldPen);
 
     const int margin = 4;
     const int width = rect().width() - 2 * margin;
