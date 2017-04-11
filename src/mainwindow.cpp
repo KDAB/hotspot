@@ -39,6 +39,7 @@
 #include <QDesktopServices>
 #include <QWidgetAction>
 #include <QLineEdit>
+#include <QStringListModel>
 
 #include <KRecursiveFilterProxyModel>
 #include <KStandardAction>
@@ -169,7 +170,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     ui->lostMessage->setVisible(false);
-    ui->parserErrors->setVisible(false);
+    ui->parserErrorsBox->setVisible(false);
     ui->fileMenu->addAction(KStandardAction::open(this, SLOT(on_openFileButton_clicked()), this));
     m_recentFilesAction = KStandardAction::openRecent(this, SLOT(openFile(QUrl)), this);
     m_recentFilesAction->loadEntries(m_config->group("RecentFiles"));
@@ -271,8 +272,11 @@ MainWindow::MainWindow(QWidget *parent) :
                 sourceMapModel->setData(sourceMap);
             });
 
+    auto parserErrorsModel = new QStringListModel(this);
+    ui->parserErrorsView->setModel(parserErrorsModel);
+
     connect(m_parser, &PerfParser::summaryDataAvailable,
-            this, [this, bottomUpCostModel, topDownCostModel, calleesModel, callersModel, sourceMapModel] (const SummaryData& data) {
+            this, [this, bottomUpCostModel, topDownCostModel, calleesModel, callersModel, sourceMapModel, parserErrorsModel] (const SummaryData& data) {
                 auto formatSummaryText = [] (const QString& description, const QString& value) -> QString {
                     return QString(QLatin1String("<tr><td>") + description + QLatin1String(": </td><td>")
                                    + value + QLatin1String("</td></tr>"));
@@ -333,12 +337,10 @@ MainWindow::MainWindow(QWidget *parent) :
                 }
 
                 if (data.errors.isEmpty()) {
-                    ui->parserErrors->setVisible(false);
+                    ui->parserErrorsBox->setVisible(false);
                 } else {
-                    ui->parserErrors->setText(QLatin1String("<qt><ul><li>")
-                            + data.errors.join(QLatin1String("</li><li>"))
-                            + QLatin1String("</li></ul></qt>"));
-                    ui->parserErrors->setVisible(true);
+                    parserErrorsModel->setStringList(data.errors);
+                    ui->parserErrorsBox->setVisible(true);
                 }
             });
 

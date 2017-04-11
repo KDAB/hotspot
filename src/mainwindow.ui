@@ -307,19 +307,28 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="KMessageWidget" name="parserErrors">
+                 <widget class="QGroupBox" name="parserErrorsBox">
                   <property name="toolTip">
-                   <string>Parser errors can negatively influence the reliability of the hotspot data analysis.</string>
+                   <string>Errors occurred parsing the data input. You may need to change the search paths to resolve errors for missing ELF files.</string>
                   </property>
-                  <property name="text">
-                   <string notr="true">Parser Errors</string>
+                  <property name="title">
+                   <string>Parser Errors</string>
                   </property>
-                  <property name="wordWrap">
-                   <bool>true</bool>
-                  </property>
-                  <property name="messageType">
-                   <enum>KMessageWidget::Information</enum>
-                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_12">
+                   <item>
+                    <widget class="QTreeView" name="parserErrorsView">
+                     <property name="rootIsDecorated">
+                      <bool>false</bool>
+                     </property>
+                     <property name="uniformRowHeights">
+                      <bool>true</bool>
+                     </property>
+                     <property name="headerHidden">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </widget>
                 </item>
                 <item>
