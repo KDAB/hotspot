@@ -169,6 +169,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     ui->lostMessage->setVisible(false);
+    ui->parserErrors->setVisible(false);
     ui->fileMenu->addAction(KStandardAction::open(this, SLOT(on_openFileButton_clicked()), this));
     m_recentFilesAction = KStandardAction::openRecent(this, SLOT(openFile(QUrl)), this);
     m_recentFilesAction->loadEntries(m_config->group("RecentFiles"));
@@ -329,6 +330,15 @@ MainWindow::MainWindow(QWidget *parent) :
                     ui->lostMessage->setVisible(true);
                 } else {
                     ui->lostMessage->setVisible(false);
+                }
+
+                if (data.errors.isEmpty()) {
+                    ui->parserErrors->setVisible(false);
+                } else {
+                    ui->parserErrors->setText(QLatin1String("<qt><ul><li>")
+                            + data.errors.join(QLatin1String("</li><li>"))
+                            + QLatin1String("</li></ul></qt>"));
+                    ui->parserErrors->setVisible(true);
                 }
             });
 

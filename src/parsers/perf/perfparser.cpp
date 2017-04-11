@@ -484,7 +484,9 @@ QDebug operator<<(QDebug stream, const FeaturesDefinition& featuresDefinition)
 struct Error
 {
     enum Code {
-        BrokenDataFile = 1
+        BrokenDataFile = 1,
+        MissingElfFile = 2,
+        InvalidKallsyms = 3,
     };
     Code code;
     QString message;
@@ -696,7 +698,7 @@ struct PerfParserPrivate
                 Error error;
                 stream >> error;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << error;
-                qWarning() << error.code << error.message;
+                addError(error);
                 break;
             }
             case EventType::InvalidType:
@@ -907,6 +909,11 @@ struct PerfParserPrivate
         summaryResult.cpuSiblingCores = formatCpuList(features.siblingCores);
         summaryResult.cpuSiblingThreads = formatCpuList(features.siblingThreads);
         summaryResult.totalMemoryInKiB = features.totalMem;
+    }
+
+    void addError(const Error& error)
+    {
+        summaryResult.errors << error.message;
     }
 
     enum State {

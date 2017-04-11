@@ -29,6 +29,7 @@
 
 #include <QTypeInfo>
 #include <QVector>
+#include <QStringList>
 
 struct SummaryData
 {
@@ -57,6 +58,8 @@ struct SummaryData
         quint64 sampleCount = 0;
     };
     QVector<CostSummary> costs;
+
+    QStringList errors;
 };
 
 Q_DECLARE_METATYPE(SummaryData)
