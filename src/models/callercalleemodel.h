@@ -255,7 +255,13 @@ public:
             // TODO: show fractional cost
             switch (column) {
                 case Location:
-                    return location.isEmpty() ? QObject::tr("??") : location;
+                    if (location.isEmpty()) {
+                        return QObject::tr("??");
+                    } else {
+                        // only show the file name, not the full path
+                        auto slashIdx = location.lastIndexOf(QLatin1Char('/')) + 1;
+                        return location.mid(slashIdx);
+                    }
                 case Cost:
                     return cost.samples;
             }
