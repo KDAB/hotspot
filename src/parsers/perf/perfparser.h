@@ -55,4 +55,5 @@ signals:
     void callerCalleeDataAvailable(const Data::CallerCalleeEntryMap& data);
     void parsingFinished();
     void parsingFailed(const QString& errorMessage);
+    void progress(float progress);
 };

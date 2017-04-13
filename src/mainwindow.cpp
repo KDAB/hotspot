@@ -246,6 +246,15 @@ MainWindow::MainWindow(QWidget *parent) :
                 showError(errorMessage);
             });
 
+    connect(m_parser, &PerfParser::progress,
+            this, [this] (float percent) {
+                const int scale = 1000;
+                if (!ui->openFileProgressBar->maximum()) {
+                    ui->openFileProgressBar->setMaximum(scale);
+                }
+                ui->openFileProgressBar->setValue(static_cast<int>(percent * scale));
+            });
+
     auto calleesModel = setupModelAndProxyForView<CalleeModel>(ui->calleesView);
     auto callersModel = setupModelAndProxyForView<CallerModel>(ui->callersView);
     auto sourceMapModel = setupModelAndProxyForView<SourceMapModel>(ui->sourceMapView);
@@ -460,6 +469,9 @@ void MainWindow::openFile(const QString& path)
     ui->loadingResultsErrorLabel->hide();
     ui->mainPageStack->setCurrentWidget(ui->startPage);
     ui->loadStack->setCurrentWidget(ui->parseProgressPage);
+
+    // reset maximum to show throbber, we may not get progress notifications
+    ui->openFileProgressBar->setMaximum(0);
 
     // TODO: support input files of different types via plugins
     m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths,

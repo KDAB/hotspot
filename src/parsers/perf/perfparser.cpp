@@ -531,7 +531,8 @@ Q_DECLARE_TYPEINFO(LocationData, Q_MOVABLE_TYPE);
 
 struct PerfParserPrivate
 {
-    PerfParserPrivate()
+    PerfParserPrivate(std::function<void(float)> progressHandler)
+        : progressHandler(progressHandler)
     {
         buffer.buffer().reserve(1024);
         buffer.open(QIODevice::ReadOnly);
@@ -699,6 +700,13 @@ struct PerfParserPrivate
                 stream >> error;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << error;
                 addError(error);
+                break;
+            }
+            case EventType::Progress: {
+                float progress = 0;
+                stream >> progress;
+                qCDebug(LOG_PERFPARSER) << "parsed:" << progress;
+                progressHandler(progress);
                 break;
             }
             case EventType::InvalidType:
@@ -937,6 +945,7 @@ struct PerfParserPrivate
         FeaturesDefinition,
         Error,
         Sample,
+        Progress,
         InvalidType
     };
 
@@ -959,6 +968,7 @@ struct PerfParserPrivate
     Data::CallerCalleeEntryMap callerCalleeResult;
     QHash<quint32, QString> commands;
     QScopedPointer<QTextStream> perfScriptOutput;
+    std::function<void(float)> progressHandler;
 };
 
 PerfParser::PerfParser(QObject* parent)
@@ -1021,7 +1031,9 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
 
     using namespace ThreadWeaver;
     stream() << make_job([parserBinary, parserArgs, this]() {
-        PerfParserPrivate d;
+        PerfParserPrivate d([this](float percent) {
+            emit progress(percent);
+        });
 
         connect(&d.process, &QProcess::readyRead,
                 [&d] {
