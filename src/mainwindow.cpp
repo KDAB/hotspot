@@ -118,21 +118,15 @@ Model* setupModelAndProxyForView(QTreeView* view)
     return model;
 }
 
-template<typename Model>
-Model* setupCallerOrCalleeView(QTreeView* view, QTreeView* callersCalleeView,
-                               CallerCalleeModel* callerCalleeModel,
-                               QSortFilterProxyModel* callerCalleeProxy)
+template<typename Model, typename Handler>
+void connectCallerOrCalleeModel(QTreeView* view, CallerCalleeModel* callerCalleeCostModel, Handler handler)
 {
-    auto model = setupModelAndProxyForView<Model>(view);
-
     QObject::connect(view, &QTreeView::activated,
-                     view, [=] (const QModelIndex& index) {
+                     view, [callerCalleeCostModel, handler] (const QModelIndex& index) {
                         const auto symbol = index.data(Model::SymbolRole).template value<Data::Symbol>();
-                        auto sourceIndex = callerCalleeModel->indexForKey(symbol);
-                        auto proxyIndex = callerCalleeProxy->mapFromSource(sourceIndex);
-                        callersCalleeView->setCurrentIndex(proxyIndex);
+                        auto sourceIndex = callerCalleeCostModel->indexForKey(symbol);
+                        handler(sourceIndex);
                     });
-    return model;
 }
 
 struct IdeSettings {
@@ -252,24 +246,28 @@ MainWindow::MainWindow(QWidget *parent) :
                 showError(errorMessage);
             });
 
-    auto calleesModel = setupCallerOrCalleeView<CalleeModel>(ui->calleesView, ui->callerCalleeTableView,
-                                                             m_callerCalleeCostModel, m_callerCalleeProxy);
-
-    auto callersModel = setupCallerOrCalleeView<CallerModel>(ui->callersView, ui->callerCalleeTableView,
-                                                             m_callerCalleeCostModel, m_callerCalleeProxy);
-
+    auto calleesModel = setupModelAndProxyForView<CalleeModel>(ui->calleesView);
+    auto callersModel = setupModelAndProxyForView<CallerModel>(ui->callersView);
     auto sourceMapModel = setupModelAndProxyForView<SourceMapModel>(ui->sourceMapView);
+
+    auto selectCallerCaleeeIndex = [calleesModel, callersModel, sourceMapModel] (const QModelIndex& index)
+    {
+        const auto callees = index.data(CallerCalleeModel::CalleesRole).value<Data::CalleeMap>();
+        calleesModel->setData(callees);
+        const auto callers = index.data(CallerCalleeModel::CallersRole).value<Data::CallerMap>();
+        callersModel->setData(callers);
+        const auto sourceMap = index.data(CallerCalleeModel::SourceMapRole).value<Data::LocationCostMap>();
+        sourceMapModel->setData(sourceMap);
+    };
+    connectCallerOrCalleeModel<CalleeModel>(ui->calleesView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
+    connectCallerOrCalleeModel<CallerModel>(ui->callersView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
+
     ui->sourceMapView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->sourceMapView, &QTreeView::customContextMenuRequested, this, &MainWindow::onSourceMapContextMenu);
 
     connect(ui->callerCalleeTableView->selectionModel(), &QItemSelectionModel::currentRowChanged,
-            this, [calleesModel, callersModel, sourceMapModel] (const QModelIndex& current, const QModelIndex& /*previous*/) {
-                const auto callees = current.data(CallerCalleeModel::CalleesRole).value<Data::CalleeMap>();
-                calleesModel->setData(callees);
-                const auto callers = current.data(CallerCalleeModel::CallersRole).value<Data::CallerMap>();
-                callersModel->setData(callers);
-                const auto sourceMap = current.data(CallerCalleeModel::SourceMapRole).value<Data::LocationCostMap>();
-                sourceMapModel->setData(sourceMap);
+            this, [selectCallerCaleeeIndex] (const QModelIndex& current, const QModelIndex& /*previous*/) {
+                selectCallerCaleeeIndex(current);
             });
 
     auto parserErrorsModel = new QStringListModel(this);
