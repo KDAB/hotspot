@@ -10,17 +10,42 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(models)
 
-set(hotspot_ICONS
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/16-apps-hotspot.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/32-apps-hotspot.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/48-apps-hotspot.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/64-apps-hotspot.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/128-apps-hotspot.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/256-apps-hotspot.png
+set(hotspot_breeze_ICONS
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/breeze/16-apps-hotspot.svgz
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/breeze/22-apps-hotspot.svgz
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/breeze/32-apps-hotspot.svgz
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/breeze/48-apps-hotspot.svgz
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/breeze/64-apps-hotspot.svgz
 )
 
-ecm_install_icons(ICONS ${hotspot_ICONS}
-    DESTINATION ${ICON_INSTALL_DIR})
+# TODO: this is imo just a workaround, we shouldn't install it as hicolor
+ecm_install_icons(ICONS ${hotspot_breeze_ICONS}
+    DESTINATION ${ICON_INSTALL_DIR}
+    THEME hicolor)
+
+ecm_install_icons(ICONS ${hotspot_breeze_ICONS}
+    DESTINATION ${ICON_INSTALL_DIR}
+    THEME breeze)
+
+set(hotspot_breeze_dark_ICONS
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/breeze-dark/16-apps-hotspot.svgz
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/breeze-dark/22-apps-hotspot.svgz
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/breeze-dark/32-apps-hotspot.svgz
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/breeze-dark/48-apps-hotspot.svgz
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/breeze-dark/64-apps-hotspot.svgz
+)
+
+ecm_install_icons(ICONS ${hotspot_breeze_dark_ICONS}
+    DESTINATION ${ICON_INSTALL_DIR}
+    THEME breeze-dark)
+
+set(hotspot_oxygen_ICONS
+    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/oxygen/256-apps-hotspot.png
+)
+
+ecm_install_icons(ICONS ${hotspot_oxygen_ICONS}
+    DESTINATION ${ICON_INSTALL_DIR}
+    THEME oxygen)
 
 set(hotspot_SRCS
     main.cpp
@@ -41,7 +66,7 @@ set(hotspot_SRCS
 )
 
 ecm_add_app_icon(hotspot_SRCS ICONS
-    ${hotspot_ICONS})
+    ${hotspot_breeze_ICONS})
 
 add_executable(hotspot
     ${hotspot_SRCS}
