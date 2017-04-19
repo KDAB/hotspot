@@ -259,7 +259,7 @@ MainWindow::MainWindow(QWidget *parent) :
     auto callersModel = setupModelAndProxyForView<CallerModel>(ui->callersView);
     auto sourceMapModel = setupModelAndProxyForView<SourceMapModel>(ui->sourceMapView);
 
-    auto selectCallerCaleeeIndex = [calleesModel, callersModel, sourceMapModel] (const QModelIndex& index)
+    auto selectCallerCaleeeIndex = [calleesModel, callersModel, sourceMapModel, this] (const QModelIndex& index)
     {
         const auto callees = index.data(CallerCalleeModel::CalleesRole).value<Data::CalleeMap>();
         calleesModel->setData(callees);
@@ -267,6 +267,9 @@ MainWindow::MainWindow(QWidget *parent) :
         callersModel->setData(callers);
         const auto sourceMap = index.data(CallerCalleeModel::SourceMapRole).value<Data::LocationCostMap>();
         sourceMapModel->setData(sourceMap);
+        if (index.model() == m_callerCalleeCostModel) {
+            ui->callerCalleeTableView->setCurrentIndex(m_callerCalleeProxy->mapFromSource(index));
+        }
     };
     connectCallerOrCalleeModel<CalleeModel>(ui->calleesView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
     connectCallerOrCalleeModel<CallerModel>(ui->callersView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
@@ -276,7 +279,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->callerCalleeTableView->selectionModel(), &QItemSelectionModel::currentRowChanged,
             this, [selectCallerCaleeeIndex] (const QModelIndex& current, const QModelIndex& /*previous*/) {
-                selectCallerCaleeeIndex(current);
+                if (current.isValid()) {
+                    selectCallerCaleeeIndex(current);
+                }
             });
 
     auto parserErrorsModel = new QStringListModel(this);
