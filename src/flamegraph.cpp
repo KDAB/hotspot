@@ -460,11 +460,11 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
                 showData();
             });
 
-    auto searchInput = new QLineEdit(this);
-    searchInput->setPlaceholderText(i18n("Search..."));
-    searchInput->setToolTip(i18n("<qt>Search the flame graph for a symbol.</qt>"));
-    searchInput->setClearButtonEnabled(true);
-    connect(searchInput, &QLineEdit::textChanged,
+    m_searchInput = new QLineEdit(this);
+    m_searchInput->setPlaceholderText(i18n("Search..."));
+    m_searchInput->setToolTip(i18n("<qt>Search the flame graph for a symbol.</qt>"));
+    m_searchInput->setClearButtonEnabled(true);
+    connect(m_searchInput, &QLineEdit::textChanged,
             this, &FlameGraph::setSearchValue);
 
     auto controls = new QWidget(this);
@@ -473,7 +473,7 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     controls->layout()->addWidget(bottomUpCheckbox);
     controls->layout()->addWidget(collapseRecursionCheckbox);
     controls->layout()->addWidget(costThreshold);
-    controls->layout()->addWidget(searchInput);
+    controls->layout()->addWidget(m_searchInput);
 
     m_displayLabel->setWordWrap(true);
     m_displayLabel->setTextInteractionFlags(m_displayLabel->textInteractionFlags() | Qt::TextSelectableByMouse);
@@ -643,6 +643,10 @@ void FlameGraph::setData(FrameGraphicsItem* rootItem)
     // layouting needs a root item with a given height, the rest will be overwritten later
     rootItem->setRect(0, 0, 800, m_view->fontMetrics().height() + 4);
     m_scene->addItem(rootItem);
+
+    if (!m_searchInput->text().isEmpty()) {
+        setSearchValue(m_searchInput->text());
+    }
 
     if (isVisible()) {
         selectItem(m_rootItem);

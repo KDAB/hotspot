@@ -37,6 +37,7 @@ class QGraphicsScene;
 class QGraphicsView;
 class QComboBox;
 class QLabel;
+class QLineEdit;
 
 class FrameGraphicsItem;
 
@@ -76,6 +77,7 @@ private:
     QGraphicsView* m_view;
     QLabel* m_displayLabel;
     QLabel* m_searchResultsLabel;
+    QLineEdit* m_searchInput = nullptr;
     const FrameGraphicsItem* m_tooltipItem = nullptr;
     FrameGraphicsItem* m_rootItem = nullptr;
     QVector<FrameGraphicsItem*> m_selectionHistory;
