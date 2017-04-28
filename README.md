@@ -28,8 +28,7 @@ make
 ./bin/hotspot
 ```
 
-If you need help building this project for your platform, [contact us for help]
-(https://www.kdab.com/about/contact/).
+If you need help building this project for your platform, [contact us for help](https://www.kdab.com/about/contact/).
 
 ## Qt Creator
 
