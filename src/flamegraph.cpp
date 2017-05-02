@@ -164,10 +164,6 @@ void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
         return;
     }
 
-    const int height = rect().height();
-
-    const auto symbol = m_symbol.symbol.isEmpty() ? QObject::tr("??") : m_symbol.symbol;
-
     if (m_searchMatch == NoMatch) {
         auto color = oldPen.color();
         color.setAlpha(125);
@@ -175,6 +171,8 @@ void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
         painter->setPen(pen);
     }
 
+    const int height = rect().height();
+    const auto symbol = m_symbol.symbol.isEmpty() ? QObject::tr("??") : m_symbol.symbol;
     painter->drawText(margin + rect().x(), rect().y(), width, height, Qt::AlignVCenter | Qt::AlignLeft | Qt::TextSingleLine,
                       option->fontMetrics.elidedText(symbol, Qt::ElideRight, width));
 
