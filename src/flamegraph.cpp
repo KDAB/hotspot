@@ -620,8 +620,6 @@ void FlameGraph::updateTooltip()
     const auto text = m_tooltipItem ? m_tooltipItem->description() : QString();
     m_displayLabel->setToolTip(text);
     const auto metrics = m_displayLabel->fontMetrics();
-    // FIXME: the HTML text has tons of stuff that is not printed,
-    //        which lets the text get cut-off too soon...
     m_displayLabel->setText(metrics.elidedText(text, Qt::ElideRight, m_displayLabel->width()));
 }
 
