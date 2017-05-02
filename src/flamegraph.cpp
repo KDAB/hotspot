@@ -486,8 +486,11 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     layout()->addWidget(m_displayLabel);
     layout()->addWidget(m_searchResultsLabel);
 
-    addAction(KStandardAction::back(this, SLOT(navigateBack()), this));
-    addAction(KStandardAction::forward(this, SLOT(navigateForward()), this));
+    m_backAction = KStandardAction::back(this, SLOT(navigateBack()), this);
+    addAction(m_backAction);
+    m_forwardAction = KStandardAction::forward(this, SLOT(navigateForward()), this);
+    addAction(m_forwardAction);
+    updateNavigationActions();
 }
 
 FlameGraph::~FlameGraph() = default;
@@ -507,6 +510,7 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
                 }
                 m_selectedItem = m_selectionHistory.size();
                 m_selectionHistory.push_back(item);
+                updateNavigationActions();
             }
         }
     } else if (event->type() == QEvent::MouseMove) {
@@ -700,6 +704,7 @@ void FlameGraph::navigateBack()
     if (m_selectedItem > 0) {
         --m_selectedItem;
     }
+    updateNavigationActions();
     selectItem(m_selectionHistory.at(m_selectedItem));
 }
 
@@ -708,5 +713,12 @@ void FlameGraph::navigateForward()
     if ((m_selectedItem + 1) < m_selectionHistory.size()) {
         ++m_selectedItem;
     }
+    updateNavigationActions();
     selectItem(m_selectionHistory.at(m_selectedItem));
+}
+
+void FlameGraph::updateNavigationActions()
+{
+    m_backAction->setEnabled(m_selectedItem > 0);
+    m_forwardAction->setEnabled(m_selectedItem + 1 < m_selectionHistory.size());
 }
