@@ -421,7 +421,6 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     m_view->viewport()->installEventFilter(this);
     m_view->viewport()->setMouseTracking(true);
     m_view->setFont(QFont(QStringLiteral("monospace")));
-    m_view->setContextMenuPolicy(Qt::ActionsContextMenu);
 
     auto bottomUpCheckbox = new QCheckBox(i18n("Bottom-Down View"), this);
     bottomUpCheckbox->setToolTip(i18n("Enable the bottom-down flame graph view. When this is unchecked, the top-down view is enabled by default."));
@@ -541,14 +540,18 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
     } else if (event->type() == QEvent::ContextMenu) {
         QContextMenuEvent *contextEvent = static_cast<QContextMenuEvent*>(event);
         auto item = static_cast<FrameGraphicsItem*>(m_view->itemAt(m_view->mapFromGlobal(contextEvent->globalPos())));
-        if (!item) {
-            return ret;
-        }
 
         QMenu contextMenu;
-        auto *viewCallerCallee = contextMenu.addAction(tr("View Caller/Callee"));
+        QAction* viewCallerCallee = nullptr;
+        if (item) {
+            viewCallerCallee = contextMenu.addAction(tr("View Caller/Callee"));
+            contextMenu.addSeparator();
+        }
+        contextMenu.addActions(actions());
+
         QAction *action = contextMenu.exec(QCursor::pos());
-        if (action == viewCallerCallee) {
+
+        if (action && action == viewCallerCallee) {
             emit jumpToCallerCallee(item->symbol());
         }
     } else if (event->type() == QEvent::ToolTip) {
