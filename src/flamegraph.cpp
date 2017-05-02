@@ -50,6 +50,7 @@
 #include <ThreadWeaver/ThreadWeaver>
 #include <KLocalizedString>
 #include <KColorScheme>
+#include <KStandardAction>
 
 enum CostType
 {
@@ -485,20 +486,8 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     layout()->addWidget(m_displayLabel);
     layout()->addWidget(m_searchResultsLabel);
 
-    {
-        auto action = new QAction(tr("back"), this);
-        action->setShortcuts({QKeySequence::Back, Qt::Key_Backspace});
-        connect(action, &QAction::triggered,
-                this, &FlameGraph::navigateBack);
-        addAction(action);
-    }
-    {
-        auto action = new QAction(tr("forward"), this);
-        action->setShortcuts(QKeySequence::Forward);
-        connect(action, &QAction::triggered,
-                this, &FlameGraph::navigateForward);
-        addAction(action);
-    }
+    addAction(KStandardAction::back(this, SLOT(navigateBack()), this));
+    addAction(KStandardAction::forward(this, SLOT(navigateForward()), this));
 }
 
 FlameGraph::~FlameGraph() = default;

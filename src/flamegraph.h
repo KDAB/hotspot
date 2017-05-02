@@ -57,6 +57,8 @@ protected:
 private slots:
     void setData(FrameGraphicsItem* rootItem);
     void setSearchValue(const QString& value);
+    void navigateBack();
+    void navigateForward();
 
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
@@ -64,8 +66,6 @@ signals:
 private:
     void setTooltipItem(const FrameGraphicsItem* item);
     void updateTooltip();
-    void navigateBack();
-    void navigateForward();
     void showData();
     void selectItem(FrameGraphicsItem* item);
 
