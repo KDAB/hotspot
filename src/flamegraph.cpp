@@ -529,7 +529,9 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
         setTooltipItem(nullptr);
     } else if (event->type() == QEvent::Resize || event->type() == QEvent::Show) {
         if (!m_rootItem) {
-            showData();
+            if (!m_buildingScene) {
+                showData();
+            }
         } else {
             selectItem(m_selectionHistory.at(m_selectedItem));
         }
@@ -581,6 +583,7 @@ void FlameGraph::showData()
 {
     setData(nullptr);
 
+    m_buildingScene = true;
     using namespace ThreadWeaver;
     auto showBottomUpData = m_showBottomUpData;
     auto bottomUpData = m_bottomUpData.children;
@@ -625,6 +628,7 @@ void FlameGraph::updateTooltip()
 void FlameGraph::setData(FrameGraphicsItem* rootItem)
 {
     m_scene->clear();
+    m_buildingScene = false;
     m_tooltipItem = nullptr;
     m_rootItem = rootItem;
     m_selectionHistory.clear();
