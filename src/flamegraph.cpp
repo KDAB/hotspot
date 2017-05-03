@@ -528,8 +528,6 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
             selectItem(m_selectionHistory.at(m_selectedItem));
         }
         updateTooltip();
-    } else if (event->type() == QEvent::Hide) {
-        setData(nullptr);
     } else if (event->type() == QEvent::ContextMenu) {
         QContextMenuEvent *contextEvent = static_cast<QContextMenuEvent*>(event);
         auto item = static_cast<FrameGraphicsItem*>(m_view->itemAt(m_view->mapFromGlobal(contextEvent->globalPos())));
