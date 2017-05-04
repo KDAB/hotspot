@@ -54,6 +54,11 @@ struct SummaryData
     quint64 sampleCount = 0;
     struct CostSummary
     {
+        CostSummary() = default;
+        CostSummary(const QString &label, quint64 sampleCount)
+            : label(label), sampleCount(sampleCount)
+        {}
+
         QString label;
         quint64 sampleCount = 0;
     };
