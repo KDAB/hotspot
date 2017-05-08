@@ -534,7 +534,7 @@ void MainWindow::aboutHotspot()
            "<li><a href=\"https://github.com/KDAB/hotspot/graphs/contributors\">Contributors</a></li>"
            "</ul><p>Patches welcome!</p></qt>"));
     dialog.setLogo(QStringLiteral(":/images/hotspot_logo.png"));
-    dialog.setWindowIcon(QPixmap(QStringLiteral("hotspot.png")));
+    dialog.setWindowIcon(QIcon::fromTheme(QStringLiteral("hotspot")));
     dialog.adjustSize();
     dialog.exec();
 }
