@@ -199,6 +199,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->topHotspotsTableView->setSortingEnabled(false);
     ui->topHotspotsTableView->setModel(topHotspotsProxy);
+    auto topCostDelegate = new CostDelegate(BottomUpModel::SortRole, BottomUpModel::TotalCostRole,
+                                            ui->topHotspotsTableView);
+    ui->topHotspotsTableView->setItemDelegateForColumn(BottomUpModel::Cost, topCostDelegate);
     stretchFirstColumn(ui->topHotspotsTableView);
 
     m_callerCalleeCostModel = new CallerCalleeModel(this);
