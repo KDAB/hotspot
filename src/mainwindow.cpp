@@ -319,7 +319,7 @@ MainWindow::MainWindow(QWidget *parent) :
                 ui->summaryLabel->setText(summaryText);
 
                 QString systemInfoText;
-                {
+                if (!data.hostName.isEmpty()) {
                     KFormat format;
                     QTextStream stream(&systemInfoText);
                     stream << "<qt><table>"
@@ -336,6 +336,7 @@ MainWindow::MainWindow(QWidget *parent) :
                            << formatSummaryText(tr("Total Memory"), format.formatByteSize(data.totalMemoryInKiB * 1024, 1, KFormat::MetricBinaryDialect))
                            << "</table></qt>";
                 }
+                ui->systemInfoGroupBox->setVisible(!systemInfoText.isEmpty());
                 ui->systemInfoLabel->setText(systemInfoText);
 
                 if (data.lostChunks > 0) {
