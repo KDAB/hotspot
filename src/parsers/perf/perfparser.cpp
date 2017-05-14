@@ -724,7 +724,7 @@ struct PerfParserPrivate
 
     void finalize()
     {
-        Data::BottomUp::initializeParents(&bottomUpResult);
+        Data::BottomUp::initializeParents(&bottomUpResult.root);
 
         calculateSummary();
 
@@ -736,6 +736,7 @@ struct PerfParserPrivate
     {
         const auto label = strings.value(attributesDefinition.name.id);
         summaryResult.costs.push_back({label, 0});
+        bottomUpResult.costs.addType(attributesDefinition.id, label);
         attributes.push_back(attributesDefinition);
     }
 
@@ -774,7 +775,7 @@ struct PerfParserPrivate
         };
     }
 
-    Data::BottomUp* addFrame(Data::BottomUp* parent, qint32 id, QSet<Data::Symbol>* recursionGuard)
+    Data::BottomUp* addFrame(Data::BottomUp* parent, qint32 id, QSet<Data::Symbol>* recursionGuard, int type)
     {
         bool skipNextFrame = false;
         while (id != -1) {
@@ -793,8 +794,8 @@ struct PerfParserPrivate
                 skipNextFrame = true;
             }
 
-            auto ret = parent->entryForSymbol(symbol);
-            ++ret->cost;
+            auto ret = parent->entryForSymbol(symbol, &maxBottomUpId);
+            bottomUpResult.costs.increment(type, ret->id);
 
             if (perfScriptOutput) {
                 *perfScriptOutput << '\t' << hex << qSetFieldWidth(16) << location.location.address
@@ -805,7 +806,8 @@ struct PerfParserPrivate
 
             auto recursionIt = recursionGuard->find(symbol);
             if (recursionIt == recursionGuard->end()) {
-                ++callerCalleeResult[symbol].sourceMap[location.location.location];
+                auto& locationCost = callerCalleeResult.entry(symbol).source(location.location.location, bottomUpResult.costs.numTypes());
+                ++locationCost[type];
                 recursionGuard->insert(symbol);
             }
 
@@ -830,11 +832,6 @@ struct PerfParserPrivate
 
     void addSampleToBottomUp(const Sample& sample)
     {
-        if (sample.attributeId != 0) {
-            // TODO: show costs from multiple event sources
-            return;
-        }
-
         if (perfScriptOutput) {
             *perfScriptOutput << commands.value(sample.pid) << '\t' << sample.pid << '\t'
                               << qSetRealNumberPrecision(12)
@@ -842,11 +839,11 @@ struct PerfParserPrivate
                               << ":\t" << sample.period << '\n';
         }
 
-        ++bottomUpResult.cost;
-        auto parent = &bottomUpResult;
+        bottomUpResult.costs.incrementTotal(sample.attributeId);
+        auto parent = &bottomUpResult.root;
         QSet<Data::Symbol> recursionGuard;
         for (auto id : sample.frames) {
-            parent = addFrame(parent, id, &recursionGuard);
+            parent = addFrame(parent, id, &recursionGuard, sample.attributeId);
         }
 
         if (perfScriptOutput) {
@@ -856,7 +853,7 @@ struct PerfParserPrivate
 
     void buildTopDownResult()
     {
-        topDownResult = Data::TopDown::fromBottomUp(bottomUpResult);
+        topDownResult = Data::TopDownResults::fromBottomUp(bottomUpResult);
     }
 
     void buildCallerCalleeResult()
@@ -963,9 +960,10 @@ struct PerfParserPrivate
     quint64 applicationEndTime = 0;
     QSet<quint32> uniqueThreads;
     QSet<quint32> uniqueProcess;
-    Data::BottomUp bottomUpResult;
-    Data::TopDown topDownResult;
-    Data::CallerCalleeEntryMap callerCalleeResult;
+    quint32 maxBottomUpId = 0;
+    Data::BottomUpResults bottomUpResult;
+    Data::TopDownResults topDownResult;
+    Data::CallerCalleeResults callerCalleeResult;
     QHash<quint32, QString> commands;
     QScopedPointer<QTextStream> perfScriptOutput;
     std::function<void(float)> progressHandler;

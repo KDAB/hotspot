@@ -36,6 +36,7 @@
 #include "../util.h"
 
 #include <tuple>
+#include <valarray>
 
 namespace Data {
 struct Symbol
@@ -112,49 +113,113 @@ inline uint qHash(const Location& location, uint seed = 0)
     return seed;
 }
 
-struct Cost
+using ItemCost = std::valarray<qint64>;
+
+QDebug operator<<(QDebug stream, const ItemCost& cost);
+
+class Costs
 {
-    // TODO: abstract that away: there may be multiple costs per frame
-    quint32 samples = 0;
-
-    Cost& operator++()
+public:
+    void increment(int type, quint32 id)
     {
-        ++samples;
-        return *this;
+        add(type, id, 1);
     }
 
-    Cost& operator+=(const Cost &rhs)
+    void add(int type, quint32 id, qint64 delta)
     {
-        samples += rhs.samples;
-        return *this;
+        ensureSpaceAvailable(type, id);
+        m_costs[type][id] += delta;
     }
 
-    Cost operator-(const Cost &rhs) const
+    void incrementTotal(int type)
     {
-        Cost cost;
-        // TODO: signed differences?
-        Q_ASSERT(samples > rhs.samples);
-        cost.samples = samples - rhs.samples;
+        addTotalCost(type, 1);
+    }
+
+    void addTotalCost(int type, qint64 delta)
+    {
+        m_totalCosts[type] += delta;
+    }
+
+    int numTypes() const
+    {
+        return m_typeNames.size();
+    }
+
+    void addType(int type, const QString& name)
+    {
+        if (m_costs.size() <= type) {
+            m_costs.resize(type + 1);
+            m_typeNames.resize(type + 1);
+            m_totalCosts.resize(type + 1);
+        }
+        m_typeNames[type] = name;
+    }
+
+    QString typeName(int type) const
+    {
+        return m_typeNames[type];
+    }
+
+    qint64 cost(int type, quint32 id) const
+    {
+        if (static_cast<quint32>(m_costs[type].size()) > id) {
+            return m_costs[type][id];
+        } else {
+            return 0;
+        }
+    }
+
+    qint64 totalCost(int type) const
+    {
+        return m_totalCosts[type];
+    }
+
+    QVector<qint64> totalCosts() const
+    {
+        return m_totalCosts;
+    }
+
+    void setTotalCosts(const QVector<qint64>& totalCosts)
+    {
+        m_totalCosts = totalCosts;
+    }
+
+    ItemCost itemCost(quint32 id) const
+    {
+        ItemCost cost;
+        cost.resize(m_costs.size());
+        for (int i = 0, c = numTypes(); i < c; ++i) {
+            if (static_cast<quint32>(m_costs[i].size()) > id) {
+                cost[i] = m_costs[i][id];
+            } else {
+                cost[i] = 0;
+            }
+        }
         return cost;
     }
+
+    void add(quint32 id, const ItemCost& cost)
+    {
+        Q_ASSERT(cost.size() == static_cast<quint32>(m_costs.size()));
+        for (int i = 0, c = numTypes(); i < c; ++i) {
+            ensureSpaceAvailable(i, id);
+            m_costs[i][id] += cost[i];
+        }
+    }
+
+private:
+    void ensureSpaceAvailable(int type, quint32 id)
+    {
+        while (static_cast<quint32>(m_costs[type].size()) <= id) {
+            // don't use resize, we don't want to influence the internal auto-sizing
+            m_costs[type].push_back(0);
+        }
+    }
+    QVector<QString> m_typeNames;
+    QVector<QVector<qint64>> m_costs;
+    QVector<qint64> m_totalCosts;
 };
-
-inline bool operator==(const Cost& lhs, const Cost& rhs)
-{
-    return lhs.samples == rhs.samples;
-}
-
-inline bool operator!=(const Cost& lhs, const Cost& rhs)
-{
-    return !(lhs == rhs);
-}
-
-inline bool operator<(const Cost& lhs, const Cost& rhs)
-{
-    return lhs.samples < rhs.samples;
-}
-
-QDebug operator<<(QDebug stream, const Cost& cost);
 
 template<typename T>
 struct Tree
@@ -186,7 +251,7 @@ struct SymbolTree : Tree<Impl>
 {
     Symbol symbol;
 
-    Impl* entryForSymbol(const Symbol& symbol)
+    Impl* entryForSymbol(const Symbol& symbol, quint32* maxId)
     {
         Impl* ret = nullptr;
 
@@ -203,6 +268,8 @@ struct SymbolTree : Tree<Impl>
         if (!ret) {
             Impl frame;
             frame.symbol = symbol;
+            frame.id = *maxId;
+            *maxId += 1;
             children.append(frame);
             ret = &children.last();
         }
@@ -230,26 +297,64 @@ struct SymbolTree : Tree<Impl>
 
 struct BottomUp : SymbolTree<BottomUp>
 {
-    Cost cost;
+    quint32 id;
+};
+
+struct BottomUpResults
+{
+    BottomUp root;
+    Costs costs;
 };
 
 struct TopDown : SymbolTree<TopDown>
 {
-    Cost selfCost;
-    Cost inclusiveCost;
+    quint32 id;
 
-    static TopDown fromBottomUp(const Data::BottomUp& bottomUpData);
 };
 
-using SymbolCostMap = QHash<Symbol, Cost>;
+struct TopDownResults
+{
+    TopDown root;
+    Costs selfCosts;
+    Costs inclusiveCosts;
+    static TopDownResults fromBottomUp(const Data::BottomUpResults& bottomUpData);
+};
+
+using SymbolCostMap = QHash<Symbol, ItemCost>;
 using CalleeMap = SymbolCostMap;
 using CallerMap = SymbolCostMap;
-using LocationCostMap = QHash<QString, Cost>;
+using LocationCostMap = QHash<QString, ItemCost>;
 
 struct CallerCalleeEntry
 {
-    Cost selfCost;
-    Cost inclusiveCost;
+    quint32 id = 0;
+
+    ItemCost& source(const QString& location, int numTypes)
+    {
+        auto it = sourceMap.find(location);
+        if (it == sourceMap.end()) {
+            it = sourceMap.insert(location, ItemCost(numTypes));
+        }
+        return *it;
+    }
+
+    ItemCost& callee(const Symbol& symbol, int numTypes)
+    {
+        auto it = callees.find(symbol);
+        if (it == callees.end()) {
+            it = callees.insert(symbol, ItemCost(numTypes));
+        }
+        return *it;
+    }
+
+    ItemCost& caller(const Symbol& symbol, int numTypes)
+    {
+        auto it = callers.find(symbol);
+        if (it == callers.end()) {
+            it = callers.insert(symbol, ItemCost(numTypes));
+        }
+        return *it;
+    }
 
     // callers, i.e. other symbols and locations that called this symbol
     CallerMap callers;
@@ -262,8 +367,24 @@ struct CallerCalleeEntry
 QDebug operator<<(QDebug stream, const CallerCalleeEntry& entry);
 
 using CallerCalleeEntryMap = QHash<Symbol, CallerCalleeEntry>;
+struct CallerCalleeResults
+{
+    CallerCalleeEntryMap entries;
+    Costs selfCosts;
+    Costs inclusiveCosts;
 
-void callerCalleesFromBottomUpData(const BottomUp& data, CallerCalleeEntryMap* results);
+    CallerCalleeEntry& entry(const Symbol& symbol)
+    {
+        auto it = entries.find(symbol);
+        if (it == entries.end()) {
+            it = entries.insert(symbol, {});
+            it->id = entries.size() - 1;
+        }
+        return *it;
+    }
+};
+
+void callerCalleesFromBottomUpData(const BottomUpResults& data, CallerCalleeResults* results);
 
 }
 
@@ -276,11 +397,22 @@ Q_DECLARE_TYPEINFO(Data::Location, Q_MOVABLE_TYPE);
 Q_DECLARE_METATYPE(Data::BottomUp)
 Q_DECLARE_TYPEINFO(Data::BottomUp, Q_MOVABLE_TYPE);
 
+Q_DECLARE_METATYPE(Data::ItemCost)
+Q_DECLARE_METATYPE(Data::CallerMap)
+Q_DECLARE_METATYPE(Data::LocationCostMap)
+Q_DECLARE_METATYPE(Data::Costs)
+
 Q_DECLARE_METATYPE(Data::TopDown)
 Q_DECLARE_TYPEINFO(Data::TopDown, Q_MOVABLE_TYPE);
 
-Q_DECLARE_METATYPE(Data::Cost)
-Q_DECLARE_TYPEINFO(Data::Cost, Q_MOVABLE_TYPE);
-
 Q_DECLARE_METATYPE(Data::CallerCalleeEntry)
 Q_DECLARE_TYPEINFO(Data::CallerCalleeEntry, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::BottomUpResults)
+Q_DECLARE_TYPEINFO(Data::BottomUpResults, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::TopDownResults)
+Q_DECLARE_TYPEINFO(Data::TopDownResults, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::CallerCalleeResults)
+Q_DECLARE_TYPEINFO(Data::CallerCalleeResults, Q_MOVABLE_TYPE);

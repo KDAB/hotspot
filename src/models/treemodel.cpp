@@ -36,122 +36,172 @@ AbstractTreeModel::AbstractTreeModel(QObject* parent)
 AbstractTreeModel::~AbstractTreeModel() = default;
 
 BottomUpModel::BottomUpModel(QObject* parent)
-    : TreeModel(parent)
+    : CostTreeModel(parent)
 {
 }
 
 BottomUpModel::~BottomUpModel() = default;
 
-QString BottomUpModel::headerTitle(Columns column)
+QVariant BottomUpModel::headerColumnData(int column, int role) const
 {
-    switch (column) {
-    case Symbol:
-        return tr("Symbol");
-    case Binary:
-        return tr("Binary");
-    case Cost:
-        return tr("Cost");
+    if (role == Qt::DisplayRole) {
+        switch (column) {
+        case Symbol:
+            return tr("Symbol");
+        case Binary:
+            return tr("Binary");
+        }
+        return tr("%1 (incl.)").arg(m_results.costs.typeName(column - NUM_BASE_COLUMNS));
+    } else if (role == Qt::ToolTipRole) {
+        switch (column) {
+        case Symbol:
+            return tr("The symbol's function name. May be empty when debug information is missing.");
+        case Binary:
+            return tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
+        }
+
+        return tr("The symbol's inclusive cost of type \"%1\", i.e. the number of samples attributed to this symbol, both directly and indirectly.")
+                .arg(m_results.costs.typeName(column - NUM_BASE_COLUMNS));
+    } else {
+        return {};
     }
-    Q_UNREACHABLE();
-    return {};
 }
 
-QString BottomUpModel::headerToolTip(Columns column)
+QVariant BottomUpModel::rowData(const Data::BottomUp* row, int column, int role) const
 {
-    switch (column) {
-    case Symbol:
-        return tr("The symbol's function name. May be empty when debug information is missing.");
-    case Binary:
-        return tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
-    case Cost:
-        return tr("The symbol's inclusive cost, i.e. the number of samples attributed to this symbol, both directly and indirectly.");
+    if (role == Qt::DisplayRole || role == SortRole) {
+        switch (column) {
+        case Symbol:
+            return row->symbol.symbol.isEmpty() ? tr("??") : row->symbol.symbol;
+        case Binary:
+            return row->symbol.binary;
+        }
+        return m_results.costs.cost(column - NUM_BASE_COLUMNS, row->id);
+    } else if (role == TotalCostRole && column >= NUM_BASE_COLUMNS) {
+        return m_results.costs.totalCost(column - NUM_BASE_COLUMNS);
+    } else if (role == Qt::ToolTipRole) {
+        QString toolTip = tr("%1 in %2")
+                            .arg(Util::formatString(row->symbol.symbol), Util::formatString(row->symbol.binary))
+                        + QLatin1Char('\n');
+        for (int i = 0, c = m_results.costs.numTypes(); i < c; ++i) {
+            const auto cost = m_results.costs.cost(i, row->id);
+            const auto total = m_results.costs.totalCost(i);
+            toolTip += tr("%1: %2 out of %3 samples (%4%)")
+                        .arg(m_results.costs.typeName(i), Util::formatCost(cost), Util::formatCost(total),
+                             Util::formatCostRelative(cost, total))
+                    + QLatin1Char('\n');
+        }
+        return toolTip;
+    } else {
+        return {};
     }
-    Q_UNREACHABLE();
-    return {};
 }
 
-QVariant BottomUpModel::displayData(const Data::BottomUp* row, Columns column)
+int BottomUpModel::numColumns() const
 {
-    switch (column) {
-    case Symbol:
-        return row->symbol.symbol.isEmpty() ? tr("??") : row->symbol.symbol;
-    case Binary:
-        return row->symbol.binary;
-    case Cost:
-        return row->cost.samples;
-    }
-    Q_UNREACHABLE();
-    return {};
-}
-
-QVariant BottomUpModel::displayToolTip(const Data::BottomUp* row, quint64 sampleCount)
-{
-    QString toolTip = tr("%1 in %2\ncost: %3 out of %4 total samples (%5%)").arg(
-             Util::formatString(row->symbol.symbol), Util::formatString(row->symbol.binary),
-             Util::formatCost(row->cost.samples), Util::formatCost(sampleCount), Util::formatCostRelative(row->cost.samples, sampleCount));
-    return toolTip;
+    return NUM_BASE_COLUMNS + m_results.costs.numTypes();
 }
 
 TopDownModel::TopDownModel(QObject* parent)
-    : TreeModel(parent)
+    : CostTreeModel(parent)
 {
 }
 
 TopDownModel::~TopDownModel() = default;
 
-QString TopDownModel::headerTitle(Columns column)
+QVariant TopDownModel::headerColumnData(int column, int role) const
 {
-    switch (column) {
-    case Symbol:
-        return tr("Symbol");
-    case Binary:
-        return tr("Binary");
-    case InclusiveCost:
-        return tr("Inclusive Cost");
-    case SelfCost:
-        return tr("Self Cost");
+    if (role == Qt::DisplayRole) {
+        switch (column) {
+        case Symbol:
+            return tr("Symbol");
+        case Binary:
+            return tr("Binary");
+        }
+        column -= NUM_BASE_COLUMNS;
+        if (column < m_results.inclusiveCosts.numTypes()) {
+            return tr("%1 (incl.)").arg(m_results.inclusiveCosts.typeName(column));
+        }
+
+        column -= m_results.inclusiveCosts.numTypes();
+        return tr("%1 (self)").arg(m_results.selfCosts.typeName(column));
+    } else if (role == Qt::ToolTipRole) {
+        switch (column) {
+        case Symbol:
+            return tr("The symbol's function name. May be empty when debug information is missing.");
+        case Binary:
+            return tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
+        }
+        column -= NUM_BASE_COLUMNS;
+        if (column < m_results.inclusiveCosts.numTypes()) {
+            return tr("The symbol's inclusive cost of type \"%1\", i.e. the number of samples attributed to this symbol, "
+                      "both directly and indirectly. This includes the costs of all functions called by this symbol plus "
+                      "its self cost.")
+                    .arg(m_results.inclusiveCosts.typeName(column));
+        }
+
+        column -= m_results.inclusiveCosts.numTypes();
+        return tr("The symbol's self cost of type \"%1\", i.e. the number of samples directly attributed to this symbol. "
+                  "This excludes the costs of all functions called by this symbol.")
+                .arg(m_results.selfCosts.typeName(column));
+    } else {
+        return {};
     }
-    Q_UNREACHABLE();
-    return {};
 }
 
-QString TopDownModel::headerToolTip(Columns column)
+QVariant TopDownModel::rowData(const Data::TopDown* row, int column, int role) const
 {
-    switch (column) {
-    case Symbol:
-        return tr("The symbol's function name. May be empty when debug information is missing.");
-    case Binary:
-        return tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
-    case InclusiveCost:
-        return tr("The number of samples attributed to this symbol, both directly and indirectly. This includes the costs of all functions called by this symbol plus its self cost.");
-    case SelfCost:
-        return tr("The number of samples directly attributed to this symbol.");
+    if (role == Qt::DisplayRole || role == SortRole) {
+        switch (column) {
+        case Symbol:
+            return row->symbol.symbol.isEmpty() ? tr("??") : row->symbol.symbol;
+        case Binary:
+            return row->symbol.binary;
+        }
+
+        column -= NUM_BASE_COLUMNS;
+        if (column < m_results.inclusiveCosts.numTypes()) {
+            return m_results.inclusiveCosts.cost(column, row->id);
+        }
+
+        column -= m_results.inclusiveCosts.numTypes();
+        return m_results.selfCosts.cost(column, row->id);
+    } else if (role == TotalCostRole && column >= NUM_BASE_COLUMNS) {
+        column -= NUM_BASE_COLUMNS;
+        if (column < m_results.inclusiveCosts.numTypes()) {
+            return m_results.inclusiveCosts.totalCost(column);
+        }
+
+        column -= m_results.inclusiveCosts.numTypes();
+        return m_results.selfCosts.totalCost(column);
+    } else if (role == Qt::ToolTipRole) {
+        QString toolTip = tr("%1 in %2")
+                            .arg(Util::formatString(row->symbol.symbol), Util::formatString(row->symbol.binary))
+                        + QLatin1Char('\n');
+        Q_ASSERT(m_results.selfCosts.numTypes() == m_results.inclusiveCosts.numTypes());
+        for (int i = 0, c = m_results.inclusiveCosts.numTypes(); i < c; ++i) {
+            const auto selfCost = m_results.selfCosts.cost(i, row->id);
+            const auto selfTotal = m_results.selfCosts.totalCost(i);
+            toolTip += tr("%1 (self): %2 out of %3 samples (%4%)")
+                        .arg(m_results.selfCosts.typeName(i), Util::formatCost(selfCost), Util::formatCost(selfTotal),
+                             Util::formatCostRelative(selfCost, selfTotal))
+                    + QLatin1Char('\n');
+            const auto inclusiveCost = m_results.selfCosts.cost(i, row->id);
+            const auto inclusiveTotal = m_results.selfCosts.totalCost(i);
+            toolTip += tr("%1 (inclusive): %2 out of %3 samples (%4%)")
+                        .arg(m_results.inclusiveCosts.typeName(i), Util::formatCost(inclusiveCost), Util::formatCost(inclusiveTotal),
+                             Util::formatCostRelative(inclusiveCost, inclusiveTotal))
+                    + QLatin1Char('\n');
+        }
+        return toolTip;
+    } else {
+        return {};
     }
-    Q_UNREACHABLE();
-    return {};
 }
 
-QVariant TopDownModel::displayData(const Data::TopDown* row, Columns column)
+int TopDownModel::numColumns() const
 {
-    switch (column) {
-    case Symbol:
-        return row->symbol.symbol.isEmpty() ? tr("??") : row->symbol.symbol;
-    case Binary:
-        return row->symbol.binary;
-    case InclusiveCost:
-        return row->inclusiveCost.samples;
-    case SelfCost:
-        return row->selfCost.samples;
-    }
-    Q_UNREACHABLE();
-    return {};
-}
-
-QVariant TopDownModel::displayToolTip(const Data::TopDown* row, quint64 sampleCount)
-{
-    QString toolTip = tr("%1 in %2\nself cost: %3 out of %4 total samples (%5%)\ninclusive cost: %6 out of %7 total samples (%8%)").arg(
-             Util::formatString(row->symbol.symbol), Util::formatString(row->symbol.binary),
-             Util::formatCost(row->selfCost.samples), Util::formatCost(sampleCount), Util::formatCostRelative(row->selfCost.samples, sampleCount),
-             Util::formatCost(row->inclusiveCost.samples), Util::formatCost(sampleCount), Util::formatCostRelative(row->inclusiveCost.samples, sampleCount));
-    return toolTip;
+    return NUM_BASE_COLUMNS
+           + m_results.selfCosts.numTypes()
+           + m_results.inclusiveCosts.numTypes();
 }

@@ -42,7 +42,7 @@ public:
 
     int columnCount(const QModelIndex& parent = {}) const final override
     {
-        return parent.isValid() ? 0 : ModelImpl::NUM_COLUMNS;
+        return parent.isValid() ? 0 : numColumns();
     }
 
     int rowCount(const QModelIndex &parent = {}) const final override
@@ -53,12 +53,11 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation = Qt::Horizontal,
                         int role = Qt::DisplayRole) const final override
     {
-        if (section < 0 || section > ModelImpl::NUM_COLUMNS || orientation != Qt::Horizontal) {
+        if (section < 0 || section > numColumns() || orientation != Qt::Horizontal) {
             return {};
         }
 
-        const auto column = static_cast<typename ModelImpl::Columns>(section);
-        return ModelImpl::headerCell(column, role);
+        return headerCell(section, role);
     }
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const final override
@@ -67,37 +66,10 @@ public:
             return {};
         }
 
-        if (role == ModelImpl::TotalCostRole) {
-            return m_sampleCount;
-        }
-
         const auto& key = m_keys.value(index.row());
         const auto& value = m_values.value(index.row());
 
-        const auto column = static_cast<typename ModelImpl::Columns>(index.column());
-        return ModelImpl::cell(column, role, key, value, m_sampleCount);
-    }
-
-    using QAbstractTableModel::setData;
-    void setData(const Rows& rows)
-    {
-        beginResetModel();
-        m_keys.reserve(rows.size());
-        m_values.reserve(rows.size());
-        m_keys.clear();
-        m_values.clear();
-        for (auto it = rows.constBegin(), end = rows.constEnd(); it != end; ++it) {
-            m_keys.push_back(it.key());
-            m_values.push_back(it.value());
-        }
-        endResetModel();
-    }
-
-    void setSampleCount(quint64 data)
-    {
-        beginResetModel();
-        m_sampleCount = data;
-        endResetModel();
+        return cell(index.column(), role, key, value);
     }
 
     QModelIndex indexForKey(const typename Rows::key_type& key, int column = 0) const
@@ -111,9 +83,25 @@ public:
     }
 
 protected:
+    void setRows(const Rows& rows)
+    {
+        beginResetModel();
+        m_keys.reserve(rows.size());
+        m_values.reserve(rows.size());
+        m_keys.clear();
+        m_values.clear();
+        for (auto it = rows.constBegin(), end = rows.constEnd(); it != end; ++it) {
+            m_keys.push_back(it.key());
+            m_values.push_back(it.value());
+        }
+        endResetModel();
+    }
+
+    virtual QVariant headerCell(int column, int role) const = 0;
+    virtual QVariant cell(int column, int role, const typename Rows::key_type& key,
+                          const typename Rows::mapped_type& entry) const = 0;
+    virtual int numColumns() const = 0;
+
     QVector<typename Rows::key_type> m_keys;
     QVector<typename Rows::mapped_type> m_values;
-
-private:
-    quint64 m_sampleCount = 0;
 };

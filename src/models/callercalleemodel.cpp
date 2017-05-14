@@ -28,6 +28,8 @@
 #include "callercalleemodel.h"
 #include "../util.h"
 
+#include <QDebug>
+
 CallerCalleeModel::CallerCalleeModel(QObject* parent)
     : HashModel(parent)
 {
@@ -35,53 +37,50 @@ CallerCalleeModel::CallerCalleeModel(QObject* parent)
 
 CallerCalleeModel::~CallerCalleeModel() = default;
 
-QVariant CallerCalleeModel::headerCell(Columns column, int role)
+void CallerCalleeModel::setResults(const Data::CallerCalleeResults& results)
 {
-    if (role == Qt::InitialSortOrderRole) {
-        if (column == SelfCost || column == InclusiveCost)
-        {
-            return Qt::DescendingOrder;
-        }
-    }
-    if (role != Qt::DisplayRole && role != Qt::ToolTipRole) {
-        return {};
-    }
+    m_results = results;
+    setRows(results.entries);
+}
 
-    if (role == Qt::DisplayRole) {
+QVariant CallerCalleeModel::headerCell(int column, int role) const
+{
+    if (role == Qt::InitialSortOrderRole && column > Binary) {
+        return Qt::DescendingOrder;
+    } else if (role == Qt::DisplayRole) {
         switch (column) {
             case Symbol:
                 return tr("Symbol");
             case Binary:
                 return tr("Binary");
-            case SelfCost:
-                return tr("Self Cost");
-            case InclusiveCost:
-                return tr("Inclusive Cost");
-            case Callers:
-                return tr("Callers");
-            case Callees:
-                return tr("Callees");
         }
+        column -= NUM_BASE_COLUMNS;
+        if (column < m_results.selfCosts.numTypes()) {
+            return tr("%1 (self)").arg(m_results.selfCosts.typeName(column));
+        }
+        column -= m_results.selfCosts.numTypes();
+        return tr("%1 (incl.)").arg(m_results.inclusiveCosts.typeName(column));
     } else if (role == Qt::ToolTipRole) {
         switch (column) {
             case Symbol:
                 return tr("The symbol's function name. May be empty when debug information is missing.");
             case Binary:
                 return tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
-            case SelfCost:
-                return tr("The number of samples directly attributed to this symbol.");
-            case InclusiveCost:
-                return tr("The number of samples attributed to this symbol, both directly and indirectly. This includes the costs of all functions called by this symbol plus its self cost.");
-            default:
-                break;
         }
+
+        column -= 2;
+        if (column < m_results.selfCosts.numTypes()) {
+            return tr("The number of samples directly attributed to this symbol.");
+        }
+        column -= m_results.selfCosts.numTypes();
+        return tr("The number of samples attributed to this symbol, both directly and indirectly. This includes the costs of all functions called by this symbol plus its self cost.");
     }
 
     return {};
 }
 
-QVariant CallerCalleeModel::cell(Columns column, int role, const Data::Symbol& symbol,
-                                 const Data::CallerCalleeEntry& entry, quint64 sampleCount)
+QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbol,
+                                 const Data::CallerCalleeEntry& entry) const
 {
     if (role == SortRole) {
         switch (column) {
@@ -89,45 +88,66 @@ QVariant CallerCalleeModel::cell(Columns column, int role, const Data::Symbol& s
                 return symbol.symbol;
             case Binary:
                 return symbol.binary;
-            case SelfCost:
-                return entry.selfCost.samples;
-            case InclusiveCost:
-                return entry.inclusiveCost.samples;
-            case Callers:
-                return entry.callers.size();
-            case Callees:
-                return entry.callees.size();
         }
+        column -= NUM_BASE_COLUMNS;
+        if (column < m_results.selfCosts.numTypes()) {
+            return m_results.selfCosts.cost(column, entry.id);
+        }
+        column -= m_results.selfCosts.numTypes();
+        return m_results.inclusiveCosts.cost(column, entry.id);
+    } else if (role == TotalCostRole && column >= NUM_BASE_COLUMNS) {
+        column -= NUM_BASE_COLUMNS;
+        if (column < m_results.selfCosts.numTypes()) {
+            return m_results.selfCosts.totalCost(column);
+        }
+
+        column -= m_results.selfCosts.numTypes();
+        return m_results.inclusiveCosts.totalCost(column);
     } else if (role == FilterRole) {
         // TODO: optimize this
         return QString(symbol.symbol + symbol.binary);
     } else if (role == Qt::DisplayRole) {
-        // TODO: show fractional cost
         switch (column) {
             case Symbol:
                 return symbol.symbol.isEmpty() ? tr("??") : symbol.symbol;
             case Binary:
                 return symbol.binary;
-            case SelfCost:
-                return entry.selfCost.samples;
-            case InclusiveCost:
-                return entry.inclusiveCost.samples;
-            case Callers:
-                return entry.callers.size();
-            case Callees:
-                return entry.callees.size();
         }
+        column -= 2;
+        if (column < m_results.selfCosts.numTypes()) {
+            return m_results.selfCosts.cost(column, entry.id);
+        }
+        column -= m_results.selfCosts.numTypes();
+        return m_results.inclusiveCosts.cost(column, entry.id);
     } else if (role == CalleesRole) {
         return QVariant::fromValue(entry.callees);
     } else if (role == CallersRole) {
         return QVariant::fromValue(entry.callers);
     } else if (role == SourceMapRole) {
         return QVariant::fromValue(entry.sourceMap);
+    } else if (role == SelfCostsRole) {
+        return QVariant::fromValue(m_results.selfCosts);
+    } else if (role == InclusiveCostsRole) {
+        return QVariant::fromValue(m_results.inclusiveCosts);
     } else if (role == Qt::ToolTipRole) {
-        QString toolTip = tr("%1 in %2\nself cost: %3 out of %4 total samples (%5%)\ninclusive cost: %6 out of %7 total samples (%8%)").arg(
-                 Util::formatString(symbol.symbol), Util::formatString(symbol.binary),
-                 Util::formatCost(entry.selfCost.samples), Util::formatCost(sampleCount), Util::formatCostRelative(entry.selfCost.samples, sampleCount),
-                 Util::formatCost(entry.inclusiveCost.samples), Util::formatCost(sampleCount), Util::formatCostRelative(entry.inclusiveCost.samples, sampleCount));
+        QString toolTip = QObject::tr("%1 in %2")
+                            .arg(Util::formatString(symbol.symbol), Util::formatString(symbol.binary))
+                        + QLatin1Char('\n');
+        Q_ASSERT(m_results.selfCosts.numTypes() == m_results.inclusiveCosts.numTypes());
+        for (int i = 0, c = m_results.selfCosts.numTypes(); i < c; ++i) {
+            const auto selfCost = m_results.selfCosts.cost(i, entry.id);
+            const auto selfTotal = m_results.selfCosts.totalCost(i);
+            toolTip += QObject::tr("%1 (self): %2 out of %3 samples (%4%)")
+                        .arg(m_results.selfCosts.typeName(i), Util::formatCost(selfCost), Util::formatCost(selfTotal),
+                            Util::formatCostRelative(selfCost, selfTotal))
+                    + QLatin1Char('\n');
+            const auto inclusiveCost = m_results.inclusiveCosts.cost(i, entry.id);
+            const auto inclusiveTotal = m_results.inclusiveCosts.totalCost(i);
+            toolTip += QObject::tr("%1 (incl.): %2 out of %3 samples (%4%)")
+                        .arg(m_results.inclusiveCosts.typeName(i), Util::formatCost(inclusiveCost), Util::formatCost(inclusiveTotal),
+                            Util::formatCostRelative(inclusiveCost, inclusiveTotal))
+                    + QLatin1Char('\n');
+        }
         return toolTip;
     }
 
@@ -146,7 +166,7 @@ CallerModel::CallerModel(QObject* parent)
 
 CallerModel::~CallerModel() = default;
 
-QString CallerModel::symbolHeader()
+QString CallerModel::symbolHeader() const
 {
     return tr("Caller");
 }
@@ -158,7 +178,7 @@ CalleeModel::CalleeModel(QObject* parent)
 
 CalleeModel::~CalleeModel() = default;
 
-QString CalleeModel::symbolHeader()
+QString CalleeModel::symbolHeader() const
 {
     return tr("Callee");
 }
@@ -169,3 +189,10 @@ SourceMapModel::SourceMapModel(QObject* parent)
 }
 
 SourceMapModel::~SourceMapModel() = default;
+
+int CallerCalleeModel::numColumns() const
+{
+    return NUM_BASE_COLUMNS
+        + m_results.inclusiveCosts.numTypes()
+        + m_results.selfCosts.numTypes();
+}

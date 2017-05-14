@@ -33,48 +33,64 @@
 using namespace Data;
 
 namespace {
-Cost buildTopDownResult(const BottomUp& bottomUpData, TopDown* topDownData)
+
+ItemCost buildTopDownResult(const BottomUp& bottomUpData, const Costs& bottomUpCosts,
+                            TopDown* topDownData, Costs* inclusiveCosts, Costs* selfCosts,
+                            quint32* maxId)
 {
-    Cost totalCost;
+    ItemCost totalCost;
+    totalCost.resize(bottomUpCosts.numTypes(), 0);
     for (const auto& row : bottomUpData.children) {
         // recurse and find the cost attributed to children
-        const auto childCost = buildTopDownResult(row, topDownData);
-        if (childCost != row.cost) {
+        const auto childCost = buildTopDownResult(row, bottomUpCosts, topDownData,
+                                                  inclusiveCosts, selfCosts, maxId);
+        const auto rowCost = bottomUpCosts.itemCost(row.id);
+        const auto diff = rowCost - childCost;
+        if (diff.sum() != 0) {
             // this row is (partially) a leaf
-            Q_ASSERT(childCost < row.cost);
-            const auto cost = row.cost - childCost;
-
             // bubble up the parent chain to build a top-down tree
             auto node = &row;
             auto stack = topDownData;
             while (node) {
-                auto frame = stack->entryForSymbol(node->symbol);
+                auto frame = stack->entryForSymbol(node->symbol, maxId);
 
                 // always use the leaf node's cost and propagate that one up the chain
                 // otherwise we'd count the cost of some nodes multiple times
-                frame->inclusiveCost += cost;
+                inclusiveCosts->add(frame->id, diff);
                 if (!node->parent) {
-                    frame->selfCost += cost;
+                    selfCosts->add(frame->id, diff);
                 }
                 stack = frame;
                 node = node->parent;
             }
         }
-        totalCost += row.cost;
+        totalCost += rowCost;
     }
     return totalCost;
 }
 
-Cost buildCallerCalleeResult(const BottomUp& data, CallerCalleeEntryMap* result)
+void add(ItemCost& lhs, const ItemCost& rhs)
 {
-    Cost totalCost;
+    if (!lhs.size()) {
+        lhs = rhs;
+    } else {
+        Q_ASSERT(lhs.size() == rhs.size());
+        lhs += rhs;
+    }
+}
+
+ItemCost buildCallerCalleeResult(const BottomUp& data, const Costs& bottomUpCosts,
+                                 CallerCalleeResults* results)
+{
+    ItemCost totalCost;
+    totalCost.resize(bottomUpCosts.numTypes(), 0);
     for (const auto& row : data.children) {
         // recurse to find a leaf
-        const auto childCost = buildCallerCalleeResult(row, result);
-        if (childCost != row.cost) {
+        const auto childCost = buildCallerCalleeResult(row, bottomUpCosts, results);
+        const auto rowCost = bottomUpCosts.itemCost(row.id);
+        const auto diff = rowCost - childCost;
+        if (diff.sum() != 0) {
             // this row is (partially) a leaf
-            Q_ASSERT(childCost < row.cost);
-            const auto cost = row.cost - childCost;
 
             // leaf node found, bubble up the parent chain to add cost for all frames
             // to the caller/callee data. this is done top-down since we must not count
@@ -89,23 +105,24 @@ Cost buildCallerCalleeResult(const BottomUp& data, CallerCalleeEntryMap* result)
             while (node) {
                 const auto& symbol = node->symbol;
                 // aggregate caller-callee data
-                auto& entry = (*result)[symbol];
+                auto& entry = results->entry(symbol);
+
                 if (!recursionGuard.contains(symbol)) {
                     // only increment inclusive cost once for a given stack
-                    entry.inclusiveCost += cost;
+                    results->inclusiveCosts.add(entry.id, diff);
                     recursionGuard.insert(symbol);
                 }
                 if (!node->parent) {
                     // always increment the self cost
-                    entry.selfCost += cost;
+                    results->selfCosts.add(entry.id, diff);
                 }
                 // add current entry as callee to last entry
                 // and last entry as caller to current entry
                 if (lastEntry) {
                     const auto callerCalleePair = qMakePair(symbol, lastSymbol);
                     if (!callerCalleeRecursionGuard.contains(callerCalleePair)) {
-                        lastEntry->callees[symbol] += cost;
-                        entry.callers[lastSymbol] += cost;
+                        add(lastEntry->callee(symbol, bottomUpCosts.numTypes()), diff);
+                        add(entry.caller(lastSymbol, bottomUpCosts.numTypes()), diff);
                         callerCalleeRecursionGuard.insert(callerCalleePair);
                     }
                 }
@@ -115,23 +132,38 @@ Cost buildCallerCalleeResult(const BottomUp& data, CallerCalleeEntryMap* result)
                 lastEntry = &entry;
             }
         }
-        totalCost += row.cost;
+        totalCost += rowCost;
     }
     return totalCost;
 }
 }
 
-TopDown TopDown::fromBottomUp(const BottomUp& bottomUpData)
+TopDownResults TopDownResults::fromBottomUp(const BottomUpResults& bottomUpData)
 {
-    TopDown root;
-    buildTopDownResult(bottomUpData, &root);
-    TopDown::initializeParents(&root);
-    return root;
+    TopDownResults results;
+    for (int i = 0, s = bottomUpData.costs.numTypes(); i < s; ++i) {
+        results.selfCosts.addType(i, bottomUpData.costs.typeName(i));
+        results.selfCosts.setTotalCosts(bottomUpData.costs.totalCosts());
+        results.inclusiveCosts.addType(i, bottomUpData.costs.typeName(i));
+        results.inclusiveCosts.setTotalCosts(bottomUpData.costs.totalCosts());
+    }
+    quint32 maxId = 0;
+    buildTopDownResult(bottomUpData.root, bottomUpData.costs,
+                       &results.root, &results.inclusiveCosts,
+                       &results.selfCosts, &maxId);
+    TopDown::initializeParents(&results.root);
+    return results;
 }
 
-void Data::callerCalleesFromBottomUpData(const BottomUp& bottomUpData, CallerCalleeEntryMap* results)
+void Data::callerCalleesFromBottomUpData(const BottomUpResults& bottomUpData, CallerCalleeResults* results)
 {
-    buildCallerCalleeResult(bottomUpData, results);
+    for (int i = 0, s = bottomUpData.costs.numTypes(); i < s; ++i) {
+        results->selfCosts.addType(i, bottomUpData.costs.typeName(i));
+        results->selfCosts.setTotalCosts(bottomUpData.costs.totalCosts());
+        results->inclusiveCosts.addType(i, bottomUpData.costs.typeName(i));
+        results->inclusiveCosts.setTotalCosts(bottomUpData.costs.totalCosts());
+    }
+    buildCallerCalleeResult(bottomUpData.root, bottomUpData.costs, results);
 }
 
 QDebug Data::operator<<(QDebug stream, const Symbol& symbol)
@@ -152,14 +184,16 @@ QDebug Data::operator<<(QDebug stream, const Location& location)
     return stream.resetFormat().space();
 }
 
-QDebug Data::operator<<(QDebug stream, const Cost& cost)
+QDebug Data::operator<<(QDebug stream, const ItemCost& cost)
 {
-    stream.noquote().nospace() << "Cost{"
-        << "samples=" << cost.samples
-        << "}";
+    stream.noquote().nospace() << "ItemCost(" << cost.size() << "){";
+    for (auto c : cost) {
+        stream << c << ",";
+    }
+    stream << "}";
     return stream.resetFormat().space();
 }
-
+/*
 QDebug Data::operator<<(QDebug stream, const CallerCalleeEntry& entry)
 {
     stream.noquote().nospace() << "CallerCalleeEntry{"
@@ -167,4 +201,4 @@ QDebug Data::operator<<(QDebug stream, const CallerCalleeEntry& entry)
         << "inclusiveCost=" << entry.inclusiveCost
         << "}";
     return stream.resetFormat().space();
-}
+}*/

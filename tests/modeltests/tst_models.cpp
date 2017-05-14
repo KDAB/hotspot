@@ -38,79 +38,88 @@
 #include <models/callercalleemodel.h>
 
 namespace {
-Data::BottomUp buildBottomUpTree(const QByteArray& stacks)
+Data::BottomUpResults buildBottomUpTree(const QByteArray& stacks)
 {
-    Data::BottomUp root;
-    root.symbol = {"<root>", {}};
+    Data::BottomUpResults ret;
+    ret.costs.addType(0, "samples");
+    ret.root.symbol = {"<root>", {}};
     const auto& lines = stacks.split('\n');
+    QHash<quint32, Data::Symbol> ids;
+    quint32 maxId = 0;
     for (const auto& line : lines) {
         auto trimmed = line.trimmed();
         if (trimmed.isEmpty()) {
             continue;
         }
         const auto& frames = trimmed.split(';');
-        auto* parent = &root;
+        auto* parent = &ret.root;
         for (auto it = frames.rbegin(), end = frames.rend(); it != end; ++it) {
             const auto& frame = *it;
             const auto symbol = Data::Symbol{frame, {}};
-            auto node = parent->entryForSymbol(symbol);
-            ++node->cost;
+            auto node = parent->entryForSymbol(symbol, &maxId);
+            Q_ASSERT(!ids.contains(node->id) || ids[node->id] == symbol);
+            ids[node->id] = symbol;
+            ret.costs.increment(0, node->id);
             parent = node;
         }
+        ret.costs.incrementTotal(0);
     }
-    Data::BottomUp::initializeParents(&root);
-    return root;
+    Data::BottomUp::initializeParents(&ret.root);
+    return ret;
 }
 
-template<typename Data>
-QString printCost(const Data& node)
+template<typename Data, typename Results>
+QString printCost(const Data& node, const Results& results)
 {
-    return "s:" + QString::number(node.selfCost.samples)
-        + ",i:" + QString::number(node.inclusiveCost.samples);
+    return "s:" + QString::number(results.selfCosts.cost(0, node.id))
+        + ",i:" + QString::number(results.inclusiveCosts.cost(0, node.id));
 }
 
-QString printCost(const Data::BottomUp& node)
+QString printCost(const Data::BottomUp& node, const Data::BottomUpResults& results)
 {
-    return QString::number(node.cost.samples);
+    return QString::number(results.costs.cost(0, node.id));
 }
 
-template<typename Tree>
-void printTree(const Tree& tree, QStringList* entries, int indentLevel)
+template<typename Tree, typename Results>
+void printTree(const Tree& tree, const Results& results, QStringList* entries, int indentLevel)
 {
     QString indent;
     indent.fill(' ', indentLevel);
     for (const auto& entry : tree.children) {
-        entries->push_back(indent + entry.symbol.symbol + '=' + printCost(entry));
-        printTree(entry, entries, indentLevel + 1);
+        entries->push_back(indent + entry.symbol.symbol + '=' + printCost(entry, results));
+        printTree(entry, results, entries, indentLevel + 1);
     }
 };
 
-template<typename Tree>
-QStringList printTree(const Tree& tree)
+template<typename Results>
+QStringList printTree(const Results& results)
 {
     QStringList list;
-    printTree(tree, &list, 0);
+    printTree(results.root, results, &list, 0);
     return list;
 };
 
-QStringList printMap(const Data::CallerCalleeEntryMap& map)
+QStringList printMap(const Data::CallerCalleeResults& results)
 {
     QStringList list;
-    list.reserve(map.size());
-    for (auto it = map.begin(), end = map.end(); it != end; ++it) {
-        list.push_back(it.key().symbol + '=' + printCost(it.value()));
+    list.reserve(results.entries.size());
+    QSet<quint32> ids;
+    for (auto it = results.entries.begin(), end = results.entries.end(); it != end; ++it) {
+        Q_ASSERT(!ids.contains(it->id));
+        ids.insert(it->id);
+        list.push_back(it.key().symbol + '=' + printCost(it.value(), results));
         QStringList subList;
         for (auto callersIt = it->callers.begin(), callersEnd = it->callers.end();
              callersIt != callersEnd; ++callersIt)
         {
             subList.push_back(it.key().symbol + '<' + callersIt.key().symbol + '='
-                                + QString::number(callersIt.value().samples));
+                                + QString::number(callersIt.value()[0]));
         }
         for (auto calleesIt = it->callees.begin(), calleesEnd = it->callees.end();
              calleesIt != calleesEnd; ++calleesIt)
         {
             subList.push_back(it.key().symbol + '>' + calleesIt.key().symbol + '='
-                                + QString::number(calleesIt.value().samples));
+                                + QString::number(calleesIt.value()[0]));
         }
         subList.sort();
         list += subList;
@@ -132,7 +141,54 @@ QStringList printMap(const Data::CallerCalleeEntryMap& map)
     return list;
 };
 
-Data::BottomUp generateTree1()
+QStringList printCallerCalleeModel(const CallerCalleeModel& model)
+{
+    QStringList list;
+    list.reserve(model.rowCount());
+    for (int i = 0, c = model.rowCount(); i < c; ++i) {
+        auto symbolIndex = model.index(i, CallerCalleeModel::Symbol);
+        const auto symbol = symbolIndex.data().toString();
+        const auto& selfCostIndex = model.index(i, CallerCalleeModel::Binary + 1);
+        const auto& inclusiveCostIndex = model.index(i, CallerCalleeModel::Binary + 2);
+        list.push_back(symbol
+                        + "=s:" + selfCostIndex.data().toString()
+                        + ",i:" + inclusiveCostIndex.data().toString());
+        QStringList subList;
+        const auto& callers = symbolIndex.data(CallerCalleeModel::CallersRole).value<Data::CallerMap>();
+        for (auto callersIt = callers.begin(), callersEnd = callers.end();
+             callersIt != callersEnd; ++callersIt)
+        {
+            subList.push_back(symbol + '<' + callersIt.key().symbol + '='
+                                + QString::number(callersIt.value()[0]));
+        }
+        const auto& callees = symbolIndex.data(CallerCalleeModel::CalleesRole).value<Data::CalleeMap>();
+        for (auto calleesIt = callees.begin(), calleesEnd = callees.end();
+             calleesIt != calleesEnd; ++calleesIt)
+        {
+            subList.push_back(symbol + '>' + calleesIt.key().symbol + '='
+                                + QString::number(calleesIt.value()[0]));
+        }
+        subList.sort();
+        list += subList;
+    }
+    auto symbolSubString = [](const QString& string) -> QStringRef {
+        auto idx = string.indexOf('>');
+        if (idx == -1) {
+            idx = string.indexOf('<');
+        }
+        if (idx == -1) {
+            idx = string.indexOf('=');
+        }
+        return string.midRef(0, idx);
+    };
+    std::stable_sort(list.begin(), list.end(),
+                    [symbolSubString](const QString& lhs, const QString& rhs) {
+                        return symbolSubString(lhs) < symbolSubString(rhs);
+                    });
+    return list;
+};
+
+Data::BottomUpResults generateTree1()
 {
     return buildBottomUpTree(R"(
         A;B;C
@@ -157,8 +213,8 @@ private slots:
     {
         const auto tree = generateTree1();
 
-        QVERIFY(!tree.parent);
-        for (const auto& firstLevel : tree.children) {
+        QVERIFY(!tree.root.parent);
+        for (const auto& firstLevel : tree.root.children) {
             QVERIFY(!firstLevel.parent);
             for (const auto& secondLevel : firstLevel.children) {
                 QCOMPARE(secondLevel.parent, &firstLevel);
@@ -169,6 +225,8 @@ private slots:
     void testBottomUpModel()
     {
         const auto tree = generateTree1();
+
+        QCOMPARE(tree.costs.totalCost(0), qint64(9));
 
         const QStringList expectedTree = {
             "C=5",
@@ -204,7 +262,9 @@ private slots:
     void testTopDownModel()
     {
         const auto bottomUpTree = generateTree1();
-        const auto tree = Data::TopDown::fromBottomUp(bottomUpTree);
+        const auto tree = Data::TopDownResults::fromBottomUp(bottomUpTree);
+        QCOMPARE(tree.inclusiveCosts.totalCost(0), qint64(9));
+        QCOMPARE(tree.selfCosts.totalCost(0), qint64(9));
 
         const QStringList expectedTree = {
             "A=s:0,i:7",
@@ -251,8 +311,8 @@ private slots:
     {
         const auto tree = generateTree1();
 
-        Data::CallerCalleeEntryMap map;
-        Data::callerCalleesFromBottomUpData(tree, &map);
+        Data::CallerCalleeResults results;
+        Data::callerCalleesFromBottomUpData(tree, &results);
         const QStringList expectedMap = {
             "A=s:0,i:7",
             "A>B=7",
@@ -272,24 +332,31 @@ private slots:
             "E<C=3",
             "E>C=2",
         };
-        QTextStream(stdout) << "Actual:\n" << printMap(map).join("\n")
+        QTextStream(stdout) << "Actual:\n" << printMap(results).join("\n")
                             << "\n\nExpected:\n" << expectedMap.join("\n") << "\n";
-        QCOMPARE(printMap(map), expectedMap);
+        QCOMPARE(printMap(results), expectedMap);
 
         CallerCalleeModel model;
         ModelTest tester(&model);
-        model.setData(map);
+        model.setResults(results);
+        QTextStream(stdout) << "\nActual Model:\n" << printCallerCalleeModel(model).join("\n") << "\n";
+        QCOMPARE(printCallerCalleeModel(model), expectedMap);
 
-        for (const auto& entry : map) {
+        for (const auto& entry : results.entries) {
             {
                 CallerModel model;
                 ModelTest tester(&model);
-                model.setData(entry.callers);
+                model.setResults(entry.callers, results.selfCosts);
             }
             {
                 CalleeModel model;
                 ModelTest tester(&model);
-                model.setData(entry.callees);
+                model.setResults(entry.callees, results.selfCosts);
+            }
+            {
+                SourceMapModel model;
+                ModelTest tester(&model);
+                model.setResults(entry.sourceMap, results.selfCosts);
             }
         }
     }

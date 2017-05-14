@@ -50,9 +50,9 @@ public:
 signals:
     // TODO: progress bar
     void summaryDataAvailable(const SummaryData& data);
-    void bottomUpDataAvailable(const Data::BottomUp& data);
-    void topDownDataAvailable(const Data::TopDown& data);
-    void callerCalleeDataAvailable(const Data::CallerCalleeEntryMap& data);
+    void bottomUpDataAvailable(const Data::BottomUpResults& data);
+    void topDownDataAvailable(const Data::TopDownResults& data);
+    void callerCalleeDataAvailable(const Data::CallerCalleeResults& data);
     void parsingFinished();
     void parsingFailed(const QString& errorMessage);
     void progress(float progress);

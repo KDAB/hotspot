@@ -42,6 +42,9 @@ int main(int argc, char** argv)
     qRegisterMetaType<Data::BottomUp>();
     qRegisterMetaType<Data::TopDown>();
     qRegisterMetaType<Data::CallerCalleeEntryMap>("Data::CallerCalleeEntryMap");
+    qRegisterMetaType<Data::BottomUpResults>();
+    qRegisterMetaType<Data::TopDownResults>();
+    qRegisterMetaType<Data::CallerCalleeResults>();
 
     app.setApplicationName(QStringLiteral("hotspot"));
     app.setApplicationVersion(QStringLiteral(HOTSPOT_VERSION_STRING));

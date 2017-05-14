@@ -48,8 +48,8 @@ public:
     FlameGraph(QWidget* parent = nullptr, Qt::WindowFlags flags = 0);
     ~FlameGraph();
 
-    void setTopDownData(const Data::TopDown& topDownData);
-    void setBottomUpData(const Data::BottomUp& bottomUpData);
+    void setTopDownData(const Data::TopDownResults& topDownData);
+    void setBottomUpData(const Data::BottomUpResults& bottomUpData);
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
@@ -70,8 +70,8 @@ private:
     void selectItem(FrameGraphicsItem* item);
     void updateNavigationActions();
 
-    Data::TopDown m_topDownData;
-    Data::BottomUp m_bottomUpData;
+    Data::TopDownResults m_topDownData;
+    Data::BottomUpResults m_bottomUpData;
 
     QComboBox* m_costSource;
     QGraphicsScene* m_scene;

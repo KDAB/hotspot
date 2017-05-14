@@ -46,29 +46,15 @@ public:
     };
 };
 
-template<typename TreeData, class ModelImpl>
+template<typename TreeNode_t, class ModelImpl>
 class TreeModel : public AbstractTreeModel
 {
 public:
+    using TreeNode = TreeNode_t;
     TreeModel(QObject* parent = nullptr)
         : AbstractTreeModel(parent)
     {}
     ~TreeModel() = default;
-
-    using AbstractTreeModel::setData;
-    void setData(const TreeData& data)
-    {
-        beginResetModel();
-        m_root = data;
-        endResetModel();
-    }
-
-    void setSampleCount(quint64 data)
-    {
-        beginResetModel();
-        m_sampleCount = data;
-        endResetModel();
-    }
 
     int rowCount(const QModelIndex& parent = {}) const final override
     {
@@ -84,7 +70,7 @@ public:
     int columnCount(const QModelIndex& parent = {}) const final override
     {
         if (!parent.isValid() || parent.column() == 0) {
-            return ModelImpl::NUM_COLUMNS;
+            return numColumns();
         } else {
             return 0;
         }
@@ -92,7 +78,7 @@ public:
 
     QModelIndex index(int row, int column, const QModelIndex& parent = {}) const final override
     {
-        if (row < 0 || column < 0 || column >= ModelImpl::NUM_COLUMNS) {
+        if (row < 0 || column < 0 || column >= numColumns()) {
             return {};
         }
 
@@ -117,55 +103,39 @@ public:
 
     QVariant headerData(int section, Qt::Orientation orientation, int role) const final override
     {
-        if ((role != Qt::DisplayRole && role != Qt::ToolTipRole) || orientation != Qt::Horizontal
-            || section < 0 || section > ModelImpl::NUM_COLUMNS)
-        {
+        if (orientation != Qt::Horizontal || section < 0 || section >= numColumns()) {
             return {};
         }
 
-        if (role == Qt::ToolTipRole) {
-            return ModelImpl::headerToolTip(static_cast<typename ModelImpl::Columns>(section));
-        } else {
-            return ModelImpl::headerTitle(static_cast<typename ModelImpl::Columns>(section));
-        }
+        return headerColumnData(section, role);
     }
 
     QVariant data(const QModelIndex& index, int role) const final override
     {
         const auto* item = itemFromIndex(index);
-        if (!item || item == &m_root) {
+        if (!item || item == rootItem()) {
             return {};
         }
 
         if (role == FilterRole) {
             // TODO: optimize
             return QString(item->symbol.symbol + item->symbol.binary);
-        } else if (role == Qt::DisplayRole) {
-            // TODO: show fractional cost
-            return ModelImpl::displayData(item, static_cast<typename ModelImpl::Columns>(index.column()));
-        } else if (role == SortRole) {
-            // TODO: call ModelImpl::sortData once displayData does special costly stuff
-            return ModelImpl::displayData(item, static_cast<typename ModelImpl::Columns>(index.column()));
-        } else if (role == TotalCostRole) {
-            return m_sampleCount;
         } else if (role == SymbolRole) {
             return QVariant::fromValue(item->symbol);
-        } else if (role == Qt::ToolTipRole) {
-            return ModelImpl::displayToolTip(item, m_sampleCount);
+        } else {
+            return rowData(item, index.column(), role);
         }
-
-        // TODO: tooltips
 
         return {};
     }
 
 private:
-    const TreeData* itemFromIndex(const QModelIndex& index) const
+    const TreeNode* itemFromIndex(const QModelIndex& index) const
     {
-        if (!index.isValid() || index.column() >= ModelImpl::NUM_COLUMNS) {
-            return &m_root;
+        if (!index.isValid() || index.column() >= numColumns()) {
+            return rootItem();
         } else {
-            auto parent = reinterpret_cast<const TreeData*>(index.internalPointer());
+            auto parent = reinterpret_cast<const TreeNode*>(index.internalPointer());
             if (index.row() >= parent->children.size()) {
                 return nullptr;
             }
@@ -173,28 +143,59 @@ private:
         }
     }
 
-    QModelIndex indexFromItem(const TreeData* item, int column) const
+    QModelIndex indexFromItem(const TreeNode* item, int column) const
     {
-        if (!item || column < 0 || column >= ModelImpl::NUM_COLUMNS) {
+        if (!item || column < 0 || column >= numColumns()) {
             return {};
         }
 
         const auto* parentItem = item->parent;
         if (!parentItem) {
-            parentItem = &m_root;
+            parentItem = rootItem();
         }
         Q_ASSERT(parentItem->children.constData() <= item);
         Q_ASSERT(parentItem->children.constData() + parentItem->children.size() > item);
         const int row = std::distance(parentItem->children.constData(), item);
 
-        return createIndex(row, column, const_cast<TreeData*>(parentItem));
+        return createIndex(row, column, const_cast<TreeNode*>(parentItem));
     }
 
-    TreeData m_root;
+    virtual const TreeNode* rootItem() const = 0;
+    virtual int numColumns() const = 0;
+    virtual QVariant headerColumnData(int column, int role) const = 0;
+    virtual QVariant rowData(const TreeNode* item, int column, int role) const = 0;
+
     quint64 m_sampleCount = 0;
 };
 
-class BottomUpModel : public TreeModel<Data::BottomUp, BottomUpModel>
+template<typename Results, typename ModelImpl>
+class CostTreeModel : public TreeModel<decltype(Results::root), ModelImpl>
+{
+public:
+    using Base = TreeModel<decltype(Results::root), ModelImpl>;
+    CostTreeModel(QObject* parent = nullptr)
+        : Base(parent)
+    {}
+    ~CostTreeModel() = default;
+
+    using Base::setData;
+    void setData(const Results& data)
+    {
+        QAbstractItemModel::beginResetModel();
+        m_results = data;
+        QAbstractItemModel::endResetModel();
+    }
+
+protected:
+    const typename Base::TreeNode* rootItem() const final override
+    {
+        return &m_results.root;
+    }
+
+    Results m_results;
+};
+
+class BottomUpModel : public CostTreeModel<Data::BottomUpResults, BottomUpModel>
 {
     Q_OBJECT
 public:
@@ -203,20 +204,18 @@ public:
     enum Columns {
         Symbol = 0,
         Binary,
-        Cost,
     };
     enum {
-        NUM_COLUMNS = Cost + 1,
-        InitialSortColumn = Cost
+        NUM_BASE_COLUMNS = Binary + 1,
+        InitialSortColumn = Binary + 1 // the first cost column
     };
 
-    static QString headerTitle(Columns column);
-    static QString headerToolTip(Columns column);
-    static QVariant displayData(const Data::BottomUp* row, Columns column);
-    static QVariant displayToolTip(const Data::BottomUp* row, quint64 sampleCount);
+    QVariant headerColumnData(int column, int role) const final override;
+    QVariant rowData(const Data::BottomUp* row, int column, int role) const final override;
+    int numColumns() const final override;
 };
 
-class TopDownModel : public TreeModel<Data::TopDown, TopDownModel>
+class TopDownModel : public CostTreeModel<Data::TopDownResults, TopDownModel>
 {
     Q_OBJECT
 public:
@@ -226,16 +225,13 @@ public:
     enum Columns {
         Symbol = 0,
         Binary,
-        SelfCost,
-        InclusiveCost
     };
     enum {
-        NUM_COLUMNS = InclusiveCost + 1,
-        InitialSortColumn = InclusiveCost
+        NUM_BASE_COLUMNS = Binary + 1,
+        InitialSortColumn = Binary + 1 // the first cost column
     };
 
-    static QString headerTitle(Columns column);
-    static QString headerToolTip(Columns column);
-    static QVariant displayData(const Data::TopDown* row, Columns column);
-    static QVariant displayToolTip(const Data::TopDown* row, quint64 sampleCount);
+    QVariant headerColumnData(int column, int role) const final override;
+    QVariant rowData(const Data::TopDown* row, int column, int role) const final override;
+    int numColumns() const final override;
 };

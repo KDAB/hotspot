@@ -104,17 +104,28 @@ void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, Model* model
 }
 
 template<typename Model>
+void setupCostDelegate(Model* model, QTreeView* view)
+{
+    auto costDelegate = new CostDelegate(Model::SortRole, Model::TotalCostRole, view);
+    QObject::connect(model, &QAbstractItemModel::modelReset,
+                     costDelegate, [costDelegate, model, view]() {
+                        for (int i = Model::NUM_BASE_COLUMNS, c = model->columnCount(); i < c; ++i) {
+                            view->setItemDelegateForColumn(i, costDelegate);
+                        }
+                    });
+}
+
+template<typename Model>
 Model* setupModelAndProxyForView(QTreeView* view)
 {
     auto model = new Model(view);
     auto proxy = new QSortFilterProxyModel(model);
     proxy->setSourceModel(model);
-    view->sortByColumn(Model::Cost);
+    view->sortByColumn(Model::InitialSortColumn);
     view->setModel(proxy);
     stretchFirstColumn(view);
+    setupCostDelegate(model, view);
 
-    auto costDelegate = new CostDelegate(Model::SortRole, Model::TotalCostRole, view);
-    view->setItemDelegateForColumn(Model::Cost, costDelegate);
     return model;
 }
 
@@ -181,17 +192,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->mainPageStack->setCurrentWidget(ui->startPage);
     ui->openFileButton->setFocus();
 
-    auto treeViewCostDelegate = new CostDelegate(AbstractTreeModel::SortRole, AbstractTreeModel::TotalCostRole, this);
-
     auto bottomUpCostModel = new BottomUpModel(this);
     setupTreeView(ui->bottomUpTreeView,  ui->bottomUpSearch, bottomUpCostModel);
-    ui->bottomUpTreeView->setItemDelegateForColumn(BottomUpModel::Cost, treeViewCostDelegate);
+    setupCostDelegate(bottomUpCostModel, ui->bottomUpTreeView);
     connect(ui->bottomUpTreeView, &QTreeView::customContextMenuRequested, this, &MainWindow::onBottomUpContextMenu);
 
     auto topDownCostModel = new TopDownModel(this);
     setupTreeView(ui->topDownTreeView, ui->topDownSearch, topDownCostModel);
-    ui->topDownTreeView->setItemDelegateForColumn(TopDownModel::SelfCost, treeViewCostDelegate);
-    ui->topDownTreeView->setItemDelegateForColumn(TopDownModel::InclusiveCost, treeViewCostDelegate);
+    setupCostDelegate(topDownCostModel, ui->topDownTreeView);
     connect(ui->topDownTreeView, &QTreeView::customContextMenuRequested, this, &MainWindow::onTopDownContextMenu);
 
     auto topHotspotsProxy = new TopProxy(this);
@@ -199,9 +207,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->topHotspotsTableView->setSortingEnabled(false);
     ui->topHotspotsTableView->setModel(topHotspotsProxy);
-    auto topCostDelegate = new CostDelegate(BottomUpModel::SortRole, BottomUpModel::TotalCostRole,
-                                            ui->topHotspotsTableView);
-    ui->topHotspotsTableView->setItemDelegateForColumn(BottomUpModel::Cost, topCostDelegate);
+    setupCostDelegate(bottomUpCostModel, ui->topHotspotsTableView);
     stretchFirstColumn(ui->topHotspotsTableView);
 
     m_callerCalleeCostModel = new CallerCalleeModel(this);
@@ -210,30 +216,26 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->callerCalleeFilter->setProxy(m_callerCalleeProxy);
     ui->callerCalleeTableView->setSortingEnabled(true);
     ui->callerCalleeTableView->setModel(m_callerCalleeProxy);
-    ui->callerCalleeTableView->hideColumn(CallerCalleeModel::Callers);
-    ui->callerCalleeTableView->hideColumn(CallerCalleeModel::Callees);
     stretchFirstColumn(ui->callerCalleeTableView);
-    auto callerCalleeCostDelegate = new CostDelegate(CallerCalleeModel::SortRole, CallerCalleeModel::TotalCostRole, this);
-    ui->callerCalleeTableView->setItemDelegateForColumn(CallerCalleeModel::SelfCost, callerCalleeCostDelegate);
-    ui->callerCalleeTableView->setItemDelegateForColumn(CallerCalleeModel::InclusiveCost, callerCalleeCostDelegate);
+    setupCostDelegate(m_callerCalleeCostModel, ui->callerCalleeTableView);
 
     connect(m_parser, &PerfParser::bottomUpDataAvailable,
-            this, [this, bottomUpCostModel] (const Data::BottomUp& data) {
+            this, [this, bottomUpCostModel] (const Data::BottomUpResults& data) {
                 bottomUpCostModel->setData(data);
                 ui->flameGraph->setBottomUpData(data);
             });
 
     connect(m_parser, &PerfParser::topDownDataAvailable,
-            this, [this, topDownCostModel] (const Data::TopDown& data) {
+            this, [this, topDownCostModel] (const Data::TopDownResults& data) {
                 topDownCostModel->setData(data);
                 ui->flameGraph->setTopDownData(data);
             });
 
     connect(m_parser, &PerfParser::callerCalleeDataAvailable,
-            this, [this] (const Data::CallerCalleeEntryMap& data) {
-                m_callerCalleeCostModel->setData(data);
+            this, [this] (const Data::CallerCalleeResults& data) {
+                m_callerCalleeCostModel->setResults(data);
                 auto view = ui->callerCalleeTableView;
-                view->sortByColumn(CallerCalleeModel::InclusiveCost);
+                view->sortByColumn(CallerCalleeModel::InitialSortColumn);
                 view->setCurrentIndex(view->model()->index(0, 0, {}));
             });
 
@@ -264,12 +266,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     auto selectCallerCaleeeIndex = [calleesModel, callersModel, sourceMapModel, this] (const QModelIndex& index)
     {
+        const auto costs = index.data(CallerCalleeModel::SelfCostsRole).value<Data::Costs>();
         const auto callees = index.data(CallerCalleeModel::CalleesRole).value<Data::CalleeMap>();
-        calleesModel->setData(callees);
+        calleesModel->setResults(callees, costs);
         const auto callers = index.data(CallerCalleeModel::CallersRole).value<Data::CallerMap>();
-        callersModel->setData(callers);
+        callersModel->setResults(callers, costs);
         const auto sourceMap = index.data(CallerCalleeModel::SourceMapRole).value<Data::LocationCostMap>();
-        sourceMapModel->setData(sourceMap);
+        sourceMapModel->setResults(sourceMap, costs);
         if (index.model() == m_callerCalleeCostModel) {
             ui->callerCalleeTableView->setCurrentIndex(m_callerCalleeProxy->mapFromSource(index));
         }
@@ -291,7 +294,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->parserErrorsView->setModel(parserErrorsModel);
 
     connect(m_parser, &PerfParser::summaryDataAvailable,
-            this, [this, bottomUpCostModel, topDownCostModel, calleesModel, callersModel, sourceMapModel, parserErrorsModel] (const SummaryData& data) {
+            this, [this, bottomUpCostModel, topDownCostModel, parserErrorsModel] (const SummaryData& data) {
                 auto formatSummaryText = [] (const QString& description, const QString& value) -> QString {
                     return QString(QLatin1String("<tr><td>") + description + QLatin1String(": </td><td>")
                                    + value + QLatin1String("</td></tr>"));
@@ -334,13 +337,6 @@ MainWindow::MainWindow(QWidget *parent) :
                            << "</table></qt>";
                 }
                 ui->systemInfoLabel->setText(systemInfoText);
-
-                bottomUpCostModel->setSampleCount(data.sampleCount);
-                topDownCostModel->setSampleCount(data.sampleCount);
-                m_callerCalleeCostModel->setSampleCount(data.sampleCount);
-                calleesModel->setSampleCount(data.sampleCount);
-                callersModel->setSampleCount(data.sampleCount);
-                sourceMapModel->setSampleCount(data.sampleCount);
 
                 if (data.lostChunks > 0) {
                     ui->lostMessage->setText(i18np("Lost one chunk - Check IO/CPU overload!",
@@ -631,6 +627,7 @@ void MainWindow::onSourceMapContextMenu(const QPoint &point)
     if (!index.isValid()) {
         return;
     }
+
     const auto sourceMap = index.data(SourceMapModel::LocationRole).value<QString>();
     auto seperator = sourceMap.lastIndexOf(QLatin1Char(':'));
     if (seperator <= 0) {
@@ -654,7 +651,7 @@ void MainWindow::onSourceMapContextMenu(const QPoint &point)
     int lineNumber = sourceMap.mid(seperator+1).toInt();
     if (!showMenu(m_sysroot, fileName, lineNumber)) {
          showMenu(m_appPath, fileName, lineNumber);
-}
+    }
 }
 
 void MainWindow::setupCodeNavigationMenu()
