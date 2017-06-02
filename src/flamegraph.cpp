@@ -622,7 +622,8 @@ void FlameGraph::selectItem(FrameGraphicsItem* item)
 
     // scale item and its parents to the maximum available width
     // also hide all siblings of the parent items
-    const auto rootWidth = m_view->viewport()->width() - 40;
+    const auto padding = 10;
+    const auto rootWidth = m_view->viewport()->width() - padding * 2;
     auto parent = item;
     while (parent) {
         auto rect = parent->rect();
