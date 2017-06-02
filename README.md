@@ -7,6 +7,19 @@ GUI for performance data. As the first goal, we want to provide a UI like
 KCachegrind around Linux perf. Looking ahead, we intend to support various other
 performance data formats under this umbrella.
 
+## Table of Contents
+
+   * [Hotspot](#hotspot)
+      * [Screenshots](#screenshots)
+      * [Dependencies](#dependencies)
+      * [Building](#building)
+      * [Using](#using)
+         * [Embedded Systems](#embedded-systems)
+      * [Known Issues](#known-issues)
+         * [Broken Backtraces](#broken-backtraces)
+         * [Missing Features](#missing-features)
+      * [Qt Creator](#qt-creator)
+
 ## Screenshots
 
 Here are some screenshots showing some of the hotspot features in action:
