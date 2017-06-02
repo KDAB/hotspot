@@ -126,6 +126,13 @@ notably, unwinding will fail when:
 - you are using clang to compile your code
   - sadly, it seems like clang is producing garbage DWARF information that elfutils fails to interpret, see also: https://github.com/KDAB/hotspot/issues/51
   - thankfully, this should only affect inline frames and file/line information. nevertheless, this is a big limitation and significantly decreases the usability of hotspot (and perf, for that matter)
+- your call stacks are too deep
+  - by default, `perf record` only copies a part of the stack to the data file. This can lead to issues with very deep call stacks, which will be cut off at some point.
+    This issue will break the top-down call trees in hotspot, as visualized in the Top-Down view or the Flame Graph. To fix this, you can try to increase the stack dump size, i.e.:
+
+        perf record --call-graph dwarf,32768
+
+    Note that this can dramatically increase the size of the `perf.data` files - use it with care. Also have a look at `man perf record`.
 
 ### Missing Features
 
