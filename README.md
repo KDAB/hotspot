@@ -17,7 +17,7 @@ As of now, you will need the following dependencies to build this project:
 - libelf
 - libelfutils
 
-## Building and running
+## Building
 
 ```
 git clone git@github.com:KDAB/hotspot.git
@@ -25,12 +25,84 @@ mkdir build-hotspot
 cd build-hotspot
 cmake ../hotspot
 make
+# now you can run hotspot from the build folder:
 ./bin/hotspot
+# or `make install` it and launch it from your $PATH
 ```
 
 If you need help building this project for your platform, [contact us for help](https://www.kdab.com/about/contact/).
 
+## Using
+
+First of all, record some data with `perf`. To get backtraces, you will need to enable the dwarf callgraph mode:
+
+```
+perf record --call-graph dwarf <your application>
+...
+[ perf record: Woken up 58 times to write data ]
+[ perf record: Captured and wrote 14.874 MB perf.data (1865 samples) ]
+```
+
+Now, if you have hotspot available on the same machine, all you need to do is launch it.
+It will automatically open the `perf.data` file in the current directory (similar to `perf report`).
+Alternatively, you can specify the path to the data file on the console:
+
+```
+hotspot /path/to/perf.data
+```
+
+### Embedded Systems
+
+If you are recording on an embedded system, you will want to analyze the data on your
+development machine with hotspot. To do so, make sure your sysroot contains the debug
+information required for unwinding (see below). Then record the data on your embedded
+system:
+
+```
+embedded$ perf record --call-graph dwarf <your application>
+...
+[ perf record: Woken up 58 times to write data ]
+[ perf record: Captured and wrote 14.874 MB perf.data (1865 samples) ]
+embedded$ cp /proc/kallsyms /tmp/kallsyms # make pseudo-file a real file
+```
+
+It's OK if your embedded machine is using a different platform than your host. On your
+host, do the following steps then to analyze the data:
+
+```
+host$ scp embedded:perf.data embedded:/tmp/kallsyms .
+host$ hotspot --sysroot /path/to/sysroot --kallsyms kallsyms \
+              perf.data
+```
+
+If you manually deployed an application from a path outside your sysroot, do this instead:
+
+```
+host$ hotspot --sysroot /path/to/sysroot --kallsyms kallsyms --appPath /path/to/app \
+              perf.data
+```
+
+If your application is also using libraries outside your sysroot and the appPath, do this:
+
+```
+host$ hotspot --sysroot /path/to/sysroot --kallsyms kallsyms --appPath /path/to/app \
+              --extraLibPaths /path/to/lib1:/path/to/lib2:... \
+              perf.data
+```
+
+And, worst-case, if you also use split debug files in non-standard locations, do this:
+
+```
+host$ hotspot --sysroot /path/to/sysroot --kallsyms kallsyms --appPath /path/to/app \
+              --extraLibPaths /path/to/lib1:/path/to/lib2:... \
+              --debugPaths /path/to/debug1:/path/to/debug2:... \
+              perf.data
+```
+
 ## Known Issues
+
+If anything breaks in the above and the output is less usable then `perf report`, please [report an issue on GitHub](https://github.com/KDAB/hotspot/issues).
+That said, there are some known issues that people may trip over:
 
 ### Broken Backtraces
 
