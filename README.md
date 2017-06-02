@@ -7,6 +7,20 @@ GUI for performance data. As the first goal, we want to provide a UI like
 KCachegrind around Linux perf. Looking ahead, we intend to support various other
 performance data formats under this umbrella.
 
+## Screenshots
+
+Here are some screenshots showing some of the hotspot features in action:
+
+![hotspot summary page](screenshots/summary.png?raw=true "hotspot summary page")
+
+![hotspot FlameGraph page](screenshots/flamegraph.png?raw=true "hotspot FlameGraph page")
+
+![hotspot caller-callee page](screenshots/caller-callee.png?raw=true "hotspot caller-callee page")
+
+![hotspot bottom-up page](screenshots/bottom-up.png?raw=true "hotspot bottom-up page")
+
+![hotspot top-down page](screenshots/top-down.png?raw=true "hotspot top-down page")
+
 ## Dependencies
 
 As of now, you will need the following dependencies to build this project:
