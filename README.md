@@ -1,6 +1,6 @@
 # Hotspot
 
-<img align="right" src="src/images/hotspot_logo.png">
+<img align="right" width="10%" src="src/images/hotspot_logo.png">
 
 The Qt GUI for performance analysis.
 
