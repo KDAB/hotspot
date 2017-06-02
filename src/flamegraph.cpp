@@ -291,6 +291,9 @@ void toGraphicsItems(const Data::Costs& costs, int type, const QVector<Tree>& da
 {
     foreach (const auto& row, data) {
         if (collapseRecursion && !row.symbol.symbol.isEmpty() && row.symbol == parent->symbol()) {
+            if (costs.cost(type, row.id) > costThreshold) {
+                toGraphicsItems(costs, type, row.children, parent, costThreshold, collapseRecursion);
+            }
             continue;
         }
         auto item = findItemBySymbol(parent->childItems(), row.symbol);
