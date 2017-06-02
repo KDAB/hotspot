@@ -50,7 +50,7 @@ int main(int argc, char** argv)
     app.setApplicationVersion(QStringLiteral(HOTSPOT_VERSION_STRING));
 
     QCommandLineParser parser;
-    parser.setApplicationDescription(QStringLiteral("Qt GUI for performance analysis."));
+    parser.setApplicationDescription(QStringLiteral("Linux perf GUI for performance analysis."));
     parser.addHelpOption();
     parser.addVersionOption();
 
