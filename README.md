@@ -1,5 +1,7 @@
 # Hotspot
 
+<img align="right" src="src/images/hotspot_logo.png">
+
 The Qt GUI for performance analysis.
 
 This project is a [KDAB](http://www.kdab.com) R&D effort to create a standalone
