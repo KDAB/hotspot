@@ -48,7 +48,6 @@ public:
                         const QString& arch);
 
 signals:
-    // TODO: progress bar
     void summaryDataAvailable(const SummaryData& data);
     void bottomUpDataAvailable(const Data::BottomUpResults& data);
     void topDownDataAvailable(const Data::TopDownResults& data);
