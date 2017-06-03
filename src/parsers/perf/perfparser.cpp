@@ -743,7 +743,7 @@ struct PerfParserPrivate
     void addCommand(const Command& command)
     {
         // TODO: keep track of list of commands for filtering later on
-        commands[command.pid] = strings.value(command.comm.id);
+        commands[command.pid][command.tid] = strings.value(command.comm.id);
     }
 
     void addLocation(const LocationDefinition& location)
@@ -833,7 +833,7 @@ struct PerfParserPrivate
     void addSampleToBottomUp(const Sample& sample)
     {
         if (perfScriptOutput) {
-            *perfScriptOutput << commands.value(sample.pid) << '\t' << sample.pid << '\t'
+            *perfScriptOutput << commands.value(sample.pid).value(sample.pid) << '\t' << sample.pid << '\t'
                               << qSetRealNumberPrecision(12)
                               << static_cast<double>(sample.time) * 1.0E-9
                               << ":\t" << sample.period << '\n';
@@ -964,7 +964,7 @@ struct PerfParserPrivate
     Data::BottomUpResults bottomUpResult;
     Data::TopDownResults topDownResult;
     Data::CallerCalleeResults callerCalleeResult;
-    QHash<quint32, QString> commands;
+    QHash<quint32, QHash<quint32, QString>> commands;
     QScopedPointer<QTextStream> perfScriptOutput;
     std::function<void(float)> progressHandler;
 };
