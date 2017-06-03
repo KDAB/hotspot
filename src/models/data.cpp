@@ -193,3 +193,15 @@ QDebug Data::operator<<(QDebug stream, const ItemCost& cost)
     stream << "}";
     return stream.resetFormat().space();
 }
+
+Data::ThreadEvents* Data::EventResults::findThread(qint32 pid, qint32 tid)
+{
+    for (int i = threads.size() - 1; i >= 0; --i) {
+        auto& thread = threads[i];
+        if (thread.pid == pid && thread.tid == tid) {
+            return &thread;
+        }
+    }
+
+    return nullptr;
+}

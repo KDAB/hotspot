@@ -50,7 +50,7 @@ int main(int argc, char** argv)
     qRegisterMetaType<Data::BottomUpResults>();
     qRegisterMetaType<Data::TopDownResults>();
     qRegisterMetaType<Data::CallerCalleeResults>();
-
+    qRegisterMetaType<Data::EventResults>();
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("Linux perf GUI for performance analysis."));

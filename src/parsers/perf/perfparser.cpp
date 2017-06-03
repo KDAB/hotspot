@@ -138,46 +138,36 @@ QDebug operator<<(QDebug stream, const Command& command)
     return stream;
 }
 
-struct ThreadStart
+struct ThreadStart : Record
 {
-    quint32 childPid = 0;
-    quint32 childTid = 0;
-    quint64 time = 0;
 };
 
 QDataStream& operator>>(QDataStream& stream, ThreadStart& threadStart)
 {
-    return stream >> threadStart.childPid >> threadStart.childTid >> threadStart.time;
+    return stream >> static_cast<Record&>(threadStart);
 }
 
 QDebug operator<<(QDebug stream, const ThreadStart& threadStart)
 {
     stream.noquote().nospace() << "ThreadStart{"
-        << "childPid=" << threadStart.childPid << ", "
-        << "childTid=" << threadStart.childTid << ", "
-        << "time=" << threadStart.time
+        << static_cast<const Record&>(threadStart)
         << "}";
     return stream;
 }
 
-struct ThreadEnd
+struct ThreadEnd : Record
 {
-    quint32 childPid = 0;
-    quint32 childTid = 0;
-    quint64 time = 0;
 };
 
 QDataStream& operator>>(QDataStream& stream, ThreadEnd& threadEnd)
 {
-    return stream >> threadEnd.childPid >> threadEnd.childTid >> threadEnd.time;
+    return stream >> static_cast<Record&>(threadEnd);
 }
 
 QDebug operator<<(QDebug stream, const ThreadEnd& threadEnd)
 {
     stream.noquote().nospace() << "ThreadEnd{"
-        << "childPid=" << threadEnd.childPid << ", "
-        << "childTid=" << threadEnd.childTid << ", "
-        << "time=" << threadEnd.time
+        << static_cast<const Record&>(threadEnd)
         << "}";
     return stream;
 }
@@ -651,12 +641,14 @@ struct PerfParserPrivate
                 ThreadStart threadStart;
                 stream >> threadStart;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << threadStart;
+                addThread(threadStart)->timeStart = threadStart.time;
                 break;
             }
             case EventType::ThreadEnd: {
                 ThreadEnd threadEnd;
                 stream >> threadEnd;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << threadEnd;
+                addThreadEnd(threadEnd);
                 break;
             }
             case EventType::Command: {
@@ -743,6 +735,21 @@ struct PerfParserPrivate
 
         buildTopDownResult();
         buildCallerCalleeResult();
+
+        auto emptyThreadIt = std::remove_if(eventResult.threads.begin(),
+                                            eventResult.threads.end(),
+                                            [](const Data::ThreadEvents& thread) {
+                                                return thread.events.isEmpty();
+                                            });
+        eventResult.threads.erase(emptyThreadIt, eventResult.threads.end());
+
+        for (auto& thread : eventResult.threads) {
+            thread.timeStart = std::max(thread.timeStart, applicationStartTime);
+            thread.timeEnd = std::min(thread.timeEnd, applicationEndTime);
+            if (thread.name.isEmpty()) {
+                thread.name = PerfParser::tr("#%1").arg(thread.tid);
+            }
+        }
     }
 
     void addAttributes(const AttributesDefinition& attributesDefinition)
@@ -751,12 +758,39 @@ struct PerfParserPrivate
         summaryResult.costs.push_back({label, 0, 0});
         bottomUpResult.costs.addType(attributesDefinition.id, label);
         attributes.push_back(attributesDefinition);
+        eventResult.eventTypes.push_back(label);
+    }
+
+    Data::ThreadEvents* addThread(const Record& record)
+    {
+        Data::ThreadEvents thread;
+        thread.pid = record.pid;
+        thread.tid = record.tid;
+        thread.timeStart = applicationStartTime;
+        thread.name = commands.value(thread.pid)
+                              .value(thread.tid);
+        eventResult.threads.push_back(thread);
+        return &eventResult.threads.last();
+    }
+
+    void addThreadEnd(const ThreadEnd& threadEnd)
+    {
+        auto* thread = eventResult.findThread(threadEnd.pid, threadEnd.tid);
+        if (thread) {
+            thread->timeEnd = threadEnd.time;
+        }
     }
 
     void addCommand(const Command& command)
     {
-        // TODO: keep track of list of commands for filtering later on
-        commands[command.pid][command.tid] = strings.value(command.comm.id);
+        const auto& comm = strings.value(command.comm.id);
+        // check if this changes the name of a current thread
+        auto* thread = eventResult.findThread(command.pid, command.tid);
+        if (thread) {
+            thread->name = comm;
+        }
+        // and remember the command, maybe a future ThreadStart event references it
+        commands[command.pid][command.tid] = comm;
     }
 
     void addLocation(const LocationDefinition& location)
@@ -836,6 +870,16 @@ struct PerfParserPrivate
 
     void addSample(const Sample& sample)
     {
+        Data::Event event;
+        event.time = sample.time;
+        event.cost = sample.period;
+        event.type = sample.attributeId;
+        auto* thread = eventResult.findThread(sample.pid, sample.tid);
+        if (!thread) {
+            thread = addThread(sample);
+        }
+        thread->events.push_back(event);
+
         addSampleToBottomUp(sample);
         addSampleToSummary(sample);
     }
@@ -987,7 +1031,8 @@ struct PerfParserPrivate
     Data::BottomUpResults bottomUpResult;
     Data::TopDownResults topDownResult;
     Data::CallerCalleeResults callerCalleeResult;
-    QHash<quint32, QHash<quint32, QString>> commands;
+    Data::EventResults eventResult;
+    QHash<qint32, QHash<qint32, QString>> commands;
     QScopedPointer<QTextStream> perfScriptOutput;
     std::function<void(float)> progressHandler;
     QSet<qint32> reportedMissingDebugInfoModules;
@@ -1086,6 +1131,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
                             emit topDownDataAvailable(d.topDownResult);
                             emit summaryDataAvailable(d.summaryResult);
                             emit callerCalleeDataAvailable(d.callerCalleeResult);
+                            emit eventsAvailable(d.eventResult);
                             emit parsingFinished();
                             break;
                         case TcpSocketError:

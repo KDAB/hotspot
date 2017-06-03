@@ -36,6 +36,9 @@
 #include "resultsflamegraphpage.h"
 #include "resultscallercalleepage.h"
 
+#include "models/eventmodel.h"
+#include "models/timelinedelegate.h"
+
 ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ResultsPage)
@@ -48,7 +51,7 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     ui->setupUi(this);
 
     ui->resultsTabWidget->setFocus();
-    ui->resultsTabWidget->addTab(m_resultsSummaryPage, tr("Summary"));
+    const int summaryTabIndex = ui->resultsTabWidget->addTab(m_resultsSummaryPage, tr("Summary"));
     ui->resultsTabWidget->addTab(m_resultsBottomUpPage, tr("Bottom Up"));
     ui->resultsTabWidget->addTab(m_resultsTopDownPage, tr("Top Down"));
     ui->resultsTabWidget->addTab(m_resultsFlameGraphPage, tr("Flame Graph"));
@@ -58,6 +61,22 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     for (int i = 0, c = ui->resultsTabWidget->count(); i < c; ++i) {
         ui->resultsTabWidget->setTabToolTip(i, ui->resultsTabWidget->widget(i)->toolTip());
     }
+
+    auto* eventModel = new EventModel(this);
+    ui->timeLineView->setModel(eventModel);
+
+    auto* timeLineDelegate = new TimeLineDelegate(this);
+    ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, timeLineDelegate);
+    connect(parser, &PerfParser::eventsAvailable,
+            this, [eventModel] (const Data::EventResults& data) {
+                eventModel->setData(data);
+            });
+    ui->timeLineView->hide();
+
+    connect(ui->resultsTabWidget, &QTabWidget::currentChanged,
+            this, [this, summaryTabIndex](int index) {
+                ui->timeLineView->setVisible(index != summaryTabIndex);
+            });
 
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode,
             this, &ResultsPage::onNavigateToCode);

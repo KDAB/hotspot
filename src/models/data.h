@@ -37,6 +37,7 @@
 
 #include <tuple>
 #include <valarray>
+#include <limits>
 
 namespace Data {
 struct Symbol
@@ -394,6 +395,35 @@ struct CallerCalleeResults
 
 void callerCalleesFromBottomUpData(const BottomUpResults& data, CallerCalleeResults* results);
 
+struct Event
+{
+    quint64 time = 0;
+    quint64 cost = 0;
+    qint32 type = -1;
+//     qint32 stackId = -1; TODO
+};
+
+using Events = QVector<Event>;
+
+struct ThreadEvents
+{
+    qint32 pid = 0;
+    qint32 tid = 0;
+    quint64 timeStart = 0;
+    quint64 timeEnd = std::numeric_limits<quint64>::max();
+    Events events;
+    QString name;
+};
+
+struct EventResults
+{
+    QVector<ThreadEvents> threads;
+    QVector<QString> eventTypes;
+    // TODO: remember stacks, to be able to rebuild the tree after filtering
+
+    ThreadEvents* findThread(qint32 pid, qint32 tid);
+};
+
 }
 
 Q_DECLARE_METATYPE(Data::Symbol)
@@ -424,3 +454,12 @@ Q_DECLARE_TYPEINFO(Data::TopDownResults, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::CallerCalleeResults)
 Q_DECLARE_TYPEINFO(Data::CallerCalleeResults, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::Event)
+Q_DECLARE_TYPEINFO(Data::Event, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::ThreadEvents)
+Q_DECLARE_TYPEINFO(Data::ThreadEvents, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::EventResults)
+Q_DECLARE_TYPEINFO(Data::EventResults, Q_MOVABLE_TYPE);

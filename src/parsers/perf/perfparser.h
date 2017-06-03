@@ -52,6 +52,7 @@ signals:
     void bottomUpDataAvailable(const Data::BottomUpResults& data);
     void topDownDataAvailable(const Data::TopDownResults& data);
     void callerCalleeDataAvailable(const Data::CallerCalleeResults& data);
+    void eventsAvailable(const Data::EventResults& events);
     void parsingFinished();
     void parsingFailed(const QString& errorMessage);
     void progress(float progress);

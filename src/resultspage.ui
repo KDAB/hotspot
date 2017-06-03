@@ -6,11 +6,11 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>135</width>
-    <height>4</height>
+    <width>400</width>
+    <height>207</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_5">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -24,13 +24,29 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QTabWidget" name="resultsTabWidget">
-     <property name="currentIndex">
-      <number>-1</number>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
-     <property name="documentMode">
-      <bool>true</bool>
-     </property>
+     <widget class="QTabWidget" name="resultsTabWidget">
+      <property name="currentIndex">
+       <number>-1</number>
+      </property>
+      <property name="documentMode">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QTreeView" name="timeLineView">
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+      <property name="rootIsDecorated">
+       <bool>false</bool>
+      </property>
+      <property name="uniformRowHeights">
+       <bool>true</bool>
+      </property>
+     </widget>
     </widget>
    </item>
   </layout>
