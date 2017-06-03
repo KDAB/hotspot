@@ -193,12 +193,3 @@ QDebug Data::operator<<(QDebug stream, const ItemCost& cost)
     stream << "}";
     return stream.resetFormat().space();
 }
-/*
-QDebug Data::operator<<(QDebug stream, const CallerCalleeEntry& entry)
-{
-    stream.noquote().nospace() << "CallerCalleeEntry{"
-        << "selfCost=" << entry.selfCost << ", "
-        << "inclusiveCost=" << entry.inclusiveCost
-        << "}";
-    return stream.resetFormat().space();
-}*/

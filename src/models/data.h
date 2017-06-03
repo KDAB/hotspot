@@ -364,8 +364,6 @@ struct CallerCalleeEntry
     LocationCostMap sourceMap;
 };
 
-QDebug operator<<(QDebug stream, const CallerCalleeEntry& entry);
-
 using CallerCalleeEntryMap = QHash<Symbol, CallerCalleeEntry>;
 struct CallerCalleeResults
 {
