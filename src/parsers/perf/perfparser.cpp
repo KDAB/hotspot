@@ -1044,15 +1044,43 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
                 [&d, this] (int exitCode, QProcess::ExitStatus exitStatus) {
                     qCDebug(LOG_PERFPARSER) << exitCode << exitStatus;
 
-                    if (exitCode == EXIT_SUCCESS) {
-                        d.finalize();
-                        emit bottomUpDataAvailable(d.bottomUpResult);
-                        emit topDownDataAvailable(d.topDownResult);
-                        emit summaryDataAvailable(d.summaryResult);
-                        emit callerCalleeDataAvailable(d.callerCalleeResult);
-                        emit parsingFinished();
-                    } else {
-                        emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1.").arg(exitCode));
+                    enum ErrorCodes {
+                        NoError,
+                        TcpSocketError,
+                        CannotOpen,
+                        BadMagic,
+                        HeaderError,
+                        DataError,
+                        MissingData,
+                        InvalidOption
+                    };
+                    switch (exitCode) {
+                        case NoError:
+                            d.finalize();
+                            emit bottomUpDataAvailable(d.bottomUpResult);
+                            emit topDownDataAvailable(d.topDownResult);
+                            emit summaryDataAvailable(d.summaryResult);
+                            emit callerCalleeDataAvailable(d.callerCalleeResult);
+                            emit parsingFinished();
+                            break;
+                        case TcpSocketError:
+                            emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1 (TCP socket error).").arg(exitCode));
+                            break;
+                        case CannotOpen:
+                            emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1 (file could not be opened).").arg(exitCode));
+                            break;
+                        case BadMagic:
+                        case HeaderError:
+                        case DataError:
+                        case MissingData:
+                            emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1 (invalid perf data file).").arg(exitCode));
+                            break;
+                        case InvalidOption:
+                            emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1 (invalid option).").arg(exitCode));
+                            break;
+                        default:
+                            emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1.").arg(exitCode));
+                            break;
                     }
                 });
 
