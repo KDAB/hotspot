@@ -766,9 +766,9 @@ struct PerfParserPrivate
 
     void addSymbol(const SymbolDefinition& symbol)
     {
-        // TODO: do we need to handle pid/tid here?
-        // TODO: store binary, isKernel information
+        // empty symbol was added in addLocation already
         Q_ASSERT(symbols.size() > symbol.id);
+        // TODO: isKernel information
         symbols[symbol.id] = {
             strings.value(symbol.symbol.name.id),
             strings.value(symbol.symbol.binary.id)
