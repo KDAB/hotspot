@@ -769,10 +769,13 @@ struct PerfParserPrivate
         // empty symbol was added in addLocation already
         Q_ASSERT(symbols.size() > symbol.id);
         // TODO: isKernel information
-        symbols[symbol.id] = {
-            strings.value(symbol.symbol.name.id),
-            strings.value(symbol.symbol.binary.id)
-        };
+        const auto symbolString = strings.value(symbol.symbol.name.id);
+        const auto binaryString = strings.value(symbol.symbol.binary.id);
+        symbols[symbol.id] = {symbolString, binaryString};
+        if (symbolString.isEmpty() && !reportedMissingDebugInfoModules.contains(symbol.symbol.binary.id)) {
+            reportedMissingDebugInfoModules.insert(symbol.symbol.binary.id);
+            summaryResult.errors << PerfParser::tr("Module \"%1\" is missing (some) debug symbols.").arg(binaryString);
+        }
     }
 
     Data::BottomUp* addFrame(Data::BottomUp* parent, qint32 id, QSet<Data::Symbol>* recursionGuard, int type)
@@ -967,6 +970,7 @@ struct PerfParserPrivate
     QHash<quint32, QHash<quint32, QString>> commands;
     QScopedPointer<QTextStream> perfScriptOutput;
     std::function<void(float)> progressHandler;
+    QSet<qint32> reportedMissingDebugInfoModules;
 };
 
 PerfParser::PerfParser(QObject* parent)
