@@ -837,8 +837,10 @@ struct PerfParserPrivate
     {
         if (perfScriptOutput) {
             *perfScriptOutput << commands.value(sample.pid).value(sample.pid) << '\t' << sample.pid << '\t'
-                              << qSetRealNumberPrecision(12)
-                              << static_cast<double>(sample.time) * 1.0E-9
+                              << sample.time / 1000000000 << '.'
+                              << qSetFieldWidth(9) << qSetPadChar(QLatin1Char('0'))
+                              << sample.time % 1000000000
+                              << qSetFieldWidth(0)
                               << ":\t" << sample.period << '\n';
         }
 
