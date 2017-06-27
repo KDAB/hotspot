@@ -921,7 +921,10 @@ struct PerfParserPrivate
 
     void addError(const Error& error)
     {
-        summaryResult.errors << error.message;
+        if (!encounteredErrors.contains(error.message)) {
+            summaryResult.errors << error.message;
+            encounteredErrors.insert(error.message);
+        }
     }
 
     enum State {
@@ -971,6 +974,7 @@ struct PerfParserPrivate
     QScopedPointer<QTextStream> perfScriptOutput;
     std::function<void(float)> progressHandler;
     QSet<qint32> reportedMissingDebugInfoModules;
+    QSet<QString> encounteredErrors;
 };
 
 PerfParser::PerfParser(QObject* parent)
