@@ -264,7 +264,7 @@ public:
             if (column == Location) {
                 return location;
             }
-            return costs[column - 1];
+            return costs[column - NUM_BASE_COLUMNS];
         } else if (role == TotalCostRole && column >= NUM_BASE_COLUMNS) {
             return m_costs.totalCost(column - NUM_BASE_COLUMNS);
         } else if (role == FilterRole) {
