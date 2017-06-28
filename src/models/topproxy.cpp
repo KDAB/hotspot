@@ -33,6 +33,7 @@ TopProxy::TopProxy(QObject* parent)
     : QSortFilterProxyModel(parent)
 {
     sort(2, Qt::DescendingOrder);
+    setSortRole(AbstractTreeModel::SortRole);
 }
 
 TopProxy::~TopProxy() = default;
