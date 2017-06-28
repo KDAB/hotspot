@@ -340,6 +340,7 @@ SearchResults applySearch(FrameGraphicsItem* item, const QString& searchValue)
     if (searchValue.isEmpty()) {
         result.matchType = NoSearch;
     } else if (item->symbol().symbol.contains(searchValue, Qt::CaseInsensitive)
+                || (searchValue == QLatin1String("??") && item->symbol().symbol.isEmpty())
                 || item->symbol().binary.contains(searchValue, Qt::CaseInsensitive))
     {
         result.directCost += item->cost();
