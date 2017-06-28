@@ -76,7 +76,11 @@ QVariant BottomUpModel::rowData(const Data::BottomUp* row, int column, int role)
         case Binary:
             return row->symbol.binary;
         }
-        return m_results.costs.cost(column - NUM_BASE_COLUMNS, row->id);
+        if (role == SortRole) {
+            return m_results.costs.cost(column - NUM_BASE_COLUMNS, row->id);
+        }
+        return Util::formatCostRelative(m_results.costs.cost(column - NUM_BASE_COLUMNS, row->id),
+                                        m_results.costs.totalCost(column - NUM_BASE_COLUMNS), true);
     } else if (role == TotalCostRole && column >= NUM_BASE_COLUMNS) {
         return m_results.costs.totalCost(column - NUM_BASE_COLUMNS);
     } else if (role == Qt::ToolTipRole) {
@@ -161,11 +165,19 @@ QVariant TopDownModel::rowData(const Data::TopDown* row, int column, int role) c
 
         column -= NUM_BASE_COLUMNS;
         if (column < m_results.inclusiveCosts.numTypes()) {
-            return m_results.inclusiveCosts.cost(column, row->id);
+            if (role == SortRole) {
+                return m_results.inclusiveCosts.cost(column, row->id);
+            }
+            return Util::formatCostRelative(m_results.inclusiveCosts.cost(column, row->id),
+                                            m_results.inclusiveCosts.totalCost(column), true);
         }
 
         column -= m_results.inclusiveCosts.numTypes();
-        return m_results.selfCosts.cost(column, row->id);
+        if (role == SortRole) {
+            return m_results.selfCosts.cost(column, row->id);
+        }
+        return Util::formatCostRelative(m_results.selfCosts.cost(column, row->id),
+                                        m_results.selfCosts.totalCost(column), true);
     } else if (role == TotalCostRole && column >= NUM_BASE_COLUMNS) {
         column -= NUM_BASE_COLUMNS;
         if (column < m_results.inclusiveCosts.numTypes()) {

@@ -153,7 +153,8 @@ public:
                 case Binary:
                     return symbol.binary;
             }
-            return costs[column - NUM_BASE_COLUMNS];
+            return Util::formatCostRelative(costs[column - NUM_BASE_COLUMNS],
+                                            m_costs.totalCost(column - NUM_BASE_COLUMNS), true);
         } else if (role == SymbolRole) {
             return QVariant::fromValue(symbol);
         } else if (role == Qt::ToolTipRole) {
@@ -278,7 +279,8 @@ public:
                 auto slashIdx = location.lastIndexOf(QLatin1Char('/')) + 1;
                 return location.mid(slashIdx);
             }
-            return costs[column - NUM_BASE_COLUMNS];
+            return Util::formatCostRelative(costs[column - NUM_BASE_COLUMNS],
+                                            m_costs.totalCost(column - NUM_BASE_COLUMNS), true);
         } else if (role == LocationRole) {
             return QVariant::fromValue(location);
         } else if (role == Qt::ToolTipRole) {

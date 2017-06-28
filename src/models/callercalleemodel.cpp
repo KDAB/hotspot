@@ -91,10 +91,18 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
         }
         column -= NUM_BASE_COLUMNS;
         if (column < m_results.selfCosts.numTypes()) {
-            return m_results.selfCosts.cost(column, entry.id);
+            if (role == SortRole) {
+                return m_results.selfCosts.cost(column, entry.id);
+            }
+            return Util::formatCostRelative(m_results.selfCosts.cost(column, entry.id),
+                                            m_results.selfCosts.totalCost(column));
         }
         column -= m_results.selfCosts.numTypes();
-        return m_results.inclusiveCosts.cost(column, entry.id);
+        if (role == SortRole) {
+            return m_results.inclusiveCosts.cost(column, entry.id);
+        }
+        return Util::formatCostRelative(m_results.inclusiveCosts.cost(column, entry.id),
+                                        m_results.inclusiveCosts.totalCost(column), true);
     } else if (role == TotalCostRole && column >= NUM_BASE_COLUMNS) {
         column -= NUM_BASE_COLUMNS;
         if (column < m_results.selfCosts.numTypes()) {
