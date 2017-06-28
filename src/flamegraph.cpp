@@ -198,8 +198,8 @@ QString FrameGraphicsItem::description() const
         return symbol;
     }
 
-    return i18nc("%1: number of samples, %2: relative number, %3: function label, %4: binary",
-        "%1 (%2%) samples in %3 (%4) and below.", m_cost, fraction(m_cost, totalCost), symbol, m_symbol.binary);
+    return i18nc("%1: aggregated sample costs, %2: relative number, %3: function label, %4: binary",
+        "%1 (%2%) aggregated sample costs in %3 (%4) and below.", m_cost, fraction(m_cost, totalCost), symbol, m_symbol.binary);
 }
 
 void FrameGraphicsItem::setSearchMatchType(SearchMatchType matchType)
@@ -319,7 +319,7 @@ FrameGraphicsItem* parseData(const Data::Costs& costs, int type, const QVector<T
     KColorScheme scheme(QPalette::Active);
     const QPen pen(scheme.foreground().color());
 
-    QString label = i18n("%1 samples in total", totalCost);
+    QString label = i18n("%1 aggregated sample costs in total", totalCost);
     auto rootItem = new FrameGraphicsItem(totalCost, {label, {}});
     rootItem->setBrush(scheme.background());
     rootItem->setPen(pen);
@@ -536,7 +536,7 @@ void FlameGraph::setBottomUpData(const Data::BottomUpResults& bottomUpData)
     for (int i = 0, c = bottomUpData.costs.numTypes(); i < c; ++i) {
         const auto& typeName = bottomUpData.costs.typeName(i);
         m_costSource->addItem(typeName, QVariant::fromValue(i));
-        m_costSource->setItemData(i, i18n("Show a flame graph over the number of %1 samples triggered by functions in your code.", typeName),
+        m_costSource->setItemData(i, i18n("Show a flame graph over the aggregated %1 sample costs.", typeName),
                                   Qt::ToolTipRole);
     }
     connect(m_costSource, static_cast<void (QComboBox::*) (int)>(&QComboBox::currentIndexChanged),
@@ -661,7 +661,7 @@ void FlameGraph::setSearchValue(const QString& value)
     if (value.isEmpty()) {
         m_searchResultsLabel->hide();
     } else {
-        m_searchResultsLabel->setText(i18n("%1 (%2% of total of %3) samples matched by search.",
+        m_searchResultsLabel->setText(i18n("%1 (%2% of total of %3) aggregated costs matched by search.",
                                            match.directCost, fraction(match.directCost, m_rootItem->cost()),
                                            m_rootItem->cost()));
         m_searchResultsLabel->show();

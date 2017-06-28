@@ -48,7 +48,7 @@ struct HashCombine {
 };
 
 QString formatString(const QString& input);
-QString formatCost(quint32 cost);
-QString formatCostRelative(quint32 selfCost, quint64 totalCost);
+QString formatCost(quint64 cost);
+QString formatCostRelative(quint64 selfCost, quint64 totalCost);
 
 }

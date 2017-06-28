@@ -54,12 +54,12 @@ QString Util::formatString(const QString& input)
     return input.isEmpty() ? QObject::tr("??") : input;
 }
 
-QString Util::formatCost(quint32 cost)
+QString Util::formatCost(quint64 cost)
 {
     return QString::number(cost);
 }
 
-QString Util::formatCostRelative(quint32 selfCost, quint64 totalCost)
+QString Util::formatCostRelative(quint64 selfCost, quint64 totalCost)
 {
     return QString::number(double(selfCost) * 100. / totalCost, 'g', 3);
 }

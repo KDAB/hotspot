@@ -55,12 +55,13 @@ struct SummaryData
     struct CostSummary
     {
         CostSummary() = default;
-        CostSummary(const QString &label, quint64 sampleCount)
-            : label(label), sampleCount(sampleCount)
+        CostSummary(const QString &label, quint64 sampleCount, quint64 totalPeriod)
+            : label(label), sampleCount(sampleCount), totalPeriod(totalPeriod)
         {}
 
         QString label;
         quint64 sampleCount = 0;
+        quint64 totalPeriod = 0;
     };
     QVector<CostSummary> costs;
 

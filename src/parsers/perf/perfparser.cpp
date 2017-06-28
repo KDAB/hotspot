@@ -735,7 +735,7 @@ struct PerfParserPrivate
     void addAttributes(const AttributesDefinition& attributesDefinition)
     {
         const auto label = strings.value(attributesDefinition.name.id);
-        summaryResult.costs.push_back({label, 0});
+        summaryResult.costs.push_back({label, 0, 0});
         bottomUpResult.costs.addType(attributesDefinition.id, label);
         attributes.push_back(attributesDefinition);
     }
@@ -778,7 +778,7 @@ struct PerfParserPrivate
         }
     }
 
-    Data::BottomUp* addFrame(Data::BottomUp* parent, qint32 id, QSet<Data::Symbol>* recursionGuard, int type)
+    Data::BottomUp* addFrame(Data::BottomUp* parent, qint32 id, QSet<Data::Symbol>* recursionGuard, int type, quint64 period)
     {
         bool skipNextFrame = false;
         while (id != -1) {
@@ -798,7 +798,7 @@ struct PerfParserPrivate
             }
 
             auto ret = parent->entryForSymbol(symbol, &maxBottomUpId);
-            bottomUpResult.costs.increment(type, ret->id);
+            bottomUpResult.costs.add(type, ret->id, period);
 
             if (perfScriptOutput) {
                 *perfScriptOutput << '\t' << hex << qSetFieldWidth(16) << location.location.address
@@ -810,7 +810,7 @@ struct PerfParserPrivate
             auto recursionIt = recursionGuard->find(symbol);
             if (recursionIt == recursionGuard->end()) {
                 auto& locationCost = callerCalleeResult.entry(symbol).source(location.location.location, bottomUpResult.costs.numTypes());
-                ++locationCost[type];
+                locationCost[type] += period;
                 recursionGuard->insert(symbol);
             }
 
@@ -844,11 +844,11 @@ struct PerfParserPrivate
                               << ":\t" << sample.period << '\n';
         }
 
-        bottomUpResult.costs.incrementTotal(sample.attributeId);
+        bottomUpResult.costs.addTotalCost(sample.attributeId, sample.period);
         auto parent = &bottomUpResult.root;
         QSet<Data::Symbol> recursionGuard;
         for (auto id : sample.frames) {
-            parent = addFrame(parent, id, &recursionGuard, sample.attributeId);
+            parent = addFrame(parent, id, &recursionGuard, sample.attributeId, sample.period);
         }
 
         if (perfScriptOutput) {

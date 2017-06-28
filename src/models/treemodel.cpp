@@ -60,7 +60,7 @@ QVariant BottomUpModel::headerColumnData(int column, int role) const
             return tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
         }
 
-        return tr("The symbol's inclusive cost of type \"%1\", i.e. the number of samples attributed to this symbol, both directly and indirectly.")
+        return tr("The symbol's inclusive cost of type \"%1\", i.e. the aggregated sample costs attributed to this symbol, both directly and indirectly.")
                 .arg(m_results.costs.typeName(column - NUM_BASE_COLUMNS));
     } else {
         return {};
@@ -86,7 +86,7 @@ QVariant BottomUpModel::rowData(const Data::BottomUp* row, int column, int role)
         for (int i = 0, c = m_results.costs.numTypes(); i < c; ++i) {
             const auto cost = m_results.costs.cost(i, row->id);
             const auto total = m_results.costs.totalCost(i);
-            toolTip += tr("%1: %2 out of %3 samples (%4%)")
+            toolTip += tr("%1: %2 out of %3 total (%4%)")
                         .arg(m_results.costs.typeName(i), Util::formatCost(cost), Util::formatCost(total),
                              Util::formatCostRelative(cost, total))
                     + QLatin1Char('\n');
@@ -134,14 +134,14 @@ QVariant TopDownModel::headerColumnData(int column, int role) const
         }
         column -= NUM_BASE_COLUMNS;
         if (column < m_results.inclusiveCosts.numTypes()) {
-            return tr("The symbol's inclusive cost of type \"%1\", i.e. the number of samples attributed to this symbol, "
+            return tr("The symbol's inclusive cost of type \"%1\", i.e. the aggregated sample costs attributed to this symbol, "
                       "both directly and indirectly. This includes the costs of all functions called by this symbol plus "
                       "its self cost.")
                     .arg(m_results.inclusiveCosts.typeName(column));
         }
 
         column -= m_results.inclusiveCosts.numTypes();
-        return tr("The symbol's self cost of type \"%1\", i.e. the number of samples directly attributed to this symbol. "
+        return tr("The symbol's self cost of type \"%1\", i.e. the aggregated sample costs directly attributed to this symbol. "
                   "This excludes the costs of all functions called by this symbol.")
                 .arg(m_results.selfCosts.typeName(column));
     } else {
@@ -182,13 +182,13 @@ QVariant TopDownModel::rowData(const Data::TopDown* row, int column, int role) c
         for (int i = 0, c = m_results.inclusiveCosts.numTypes(); i < c; ++i) {
             const auto selfCost = m_results.selfCosts.cost(i, row->id);
             const auto selfTotal = m_results.selfCosts.totalCost(i);
-            toolTip += tr("%1 (self): %2 out of %3 samples (%4%)")
+            toolTip += tr("%1 (self): %2 out of %3 total (%4%)")
                         .arg(m_results.selfCosts.typeName(i), Util::formatCost(selfCost), Util::formatCost(selfTotal),
                              Util::formatCostRelative(selfCost, selfTotal))
                     + QLatin1Char('\n');
             const auto inclusiveCost = m_results.selfCosts.cost(i, row->id);
             const auto inclusiveTotal = m_results.selfCosts.totalCost(i);
-            toolTip += tr("%1 (inclusive): %2 out of %3 samples (%4%)")
+            toolTip += tr("%1 (inclusive): %2 out of %3 total (%4%)")
                         .arg(m_results.inclusiveCosts.typeName(i), Util::formatCost(inclusiveCost), Util::formatCost(inclusiveTotal),
                              Util::formatCostRelative(inclusiveCost, inclusiveTotal))
                     + QLatin1Char('\n');

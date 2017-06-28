@@ -124,7 +124,7 @@ public:
                 case Binary:
                     return QObject::tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
             }
-            return QObject::tr("The symbol's inclusive cost, i.e. the number of samples attributed to this symbol, both directly and indirectly.");
+            return QObject::tr("The symbol's inclusive cost, i.e. the aggregated sample costs attributed to this symbol, both directly and indirectly.");
         }
 
         return {};
@@ -164,7 +164,7 @@ public:
             for (int i = 0, c = m_costs.numTypes(); i < c; ++i) {
                 const auto cost = costs[i];
                 const auto total = m_costs.totalCost(i);
-                toolTip += QObject::tr("%1: %2 out of %3 samples (%4%)")
+                toolTip += QObject::tr("%1: %2 out of %3 total (%4%)")
                             .arg(m_costs.typeName(i), Util::formatCost(cost), Util::formatCost(total),
                                 Util::formatCostRelative(cost, total))
                         + QLatin1Char('\n');
@@ -251,7 +251,7 @@ public:
             if (column == Location) {
                 return QObject::tr("The source file name and line number where the cost was measured. May be empty when debug information is missing.");
             }
-            return QObject::tr("The number of samples directly attributed to this code location.");
+            return QObject::tr("The aggregated sample costs directly attributed to this code location.");
         }
 
         return {};
@@ -287,7 +287,7 @@ public:
             for (int i = 0, c = m_costs.numTypes(); i < c; ++i) {
                 const auto cost = costs[i];
                 const auto total = m_costs.totalCost(i);
-                toolTip += QObject::tr("%1: %2 out of %3 samples (%4%)")
+                toolTip += QObject::tr("%1: %2 out of %3 total (%4%)")
                             .arg(m_costs.typeName(i), Util::formatCost(cost), Util::formatCost(total),
                                 Util::formatCostRelative(cost, total))
                         + QLatin1Char('\n');

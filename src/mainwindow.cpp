@@ -311,7 +311,11 @@ MainWindow::MainWindow(QWidget *parent) :
                            << formatSummaryText(tr("Total Samples"), QString::number(data.sampleCount));
                     const auto indent = QLatin1String("&nbsp;&nbsp;&nbsp;&nbsp;");
                     for (const auto& costSummary : data.costs) {
-                        stream << formatSummaryText(indent + costSummary.label, QString::number(costSummary.sampleCount));
+                        stream << formatSummaryText(indent + costSummary.label,
+                                                    tr("%1 (%2 samples, %3 of total)")
+                                                        .arg(costSummary.totalPeriod)
+                                                        .arg(costSummary.sampleCount)
+                                                        .arg(Util::formatCostRelative(costSummary.sampleCount, data.sampleCount)));
                     }
                     stream << formatSummaryText(tr("Lost Chunks"), QString::number(data.lostChunks))
                            << "</table></qt>";

@@ -70,10 +70,10 @@ QVariant CallerCalleeModel::headerCell(int column, int role) const
 
         column -= 2;
         if (column < m_results.selfCosts.numTypes()) {
-            return tr("The number of samples directly attributed to this symbol.");
+            return tr("The aggregated sample costs directly attributed to this symbol.");
         }
         column -= m_results.selfCosts.numTypes();
-        return tr("The number of samples attributed to this symbol, both directly and indirectly. This includes the costs of all functions called by this symbol plus its self cost.");
+        return tr("The aggregated sample costs attributed to this symbol, both directly and indirectly. This includes the costs of all functions called by this symbol plus its self cost.");
     }
 
     return {};
@@ -137,13 +137,13 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
         for (int i = 0, c = m_results.selfCosts.numTypes(); i < c; ++i) {
             const auto selfCost = m_results.selfCosts.cost(i, entry.id);
             const auto selfTotal = m_results.selfCosts.totalCost(i);
-            toolTip += QObject::tr("%1 (self): %2 out of %3 samples (%4%)")
+            toolTip += QObject::tr("%1 (self): %2 out of %3 total (%4%)")
                         .arg(m_results.selfCosts.typeName(i), Util::formatCost(selfCost), Util::formatCost(selfTotal),
                             Util::formatCostRelative(selfCost, selfTotal))
                     + QLatin1Char('\n');
             const auto inclusiveCost = m_results.inclusiveCosts.cost(i, entry.id);
             const auto inclusiveTotal = m_results.inclusiveCosts.totalCost(i);
-            toolTip += QObject::tr("%1 (incl.): %2 out of %3 samples (%4%)")
+            toolTip += QObject::tr("%1 (incl.): %2 out of %3 total (%4%)")
                         .arg(m_results.inclusiveCosts.typeName(i), Util::formatCost(inclusiveCost), Util::formatCost(inclusiveTotal),
                             Util::formatCostRelative(inclusiveCost, inclusiveTotal))
                     + QLatin1Char('\n');
