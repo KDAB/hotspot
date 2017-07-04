@@ -882,7 +882,9 @@ struct PerfParserPrivate
             qWarning() << "Unexpected attribute id:" << sample.attributeId
                        << "Only know about" << summaryResult.costs.size() << "attributes so far";
         } else {
-            ++summaryResult.costs[sample.attributeId].sampleCount;
+            auto& costSummary = summaryResult.costs[sample.attributeId];
+            ++costSummary.sampleCount;
+            costSummary.totalPeriod += sample.period;
         }
     }
 
