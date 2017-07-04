@@ -123,10 +123,12 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
         }
         column -= 2;
         if (column < m_results.selfCosts.numTypes()) {
-            return m_results.selfCosts.cost(column, entry.id);
+            return Util::formatCostRelative(m_results.selfCosts.cost(column, entry.id),
+                                            m_results.selfCosts.totalCost(column), true);
         }
         column -= m_results.selfCosts.numTypes();
-        return m_results.inclusiveCosts.cost(column, entry.id);
+        return Util::formatCostRelative(m_results.inclusiveCosts.cost(column, entry.id),
+                                        m_results.inclusiveCosts.totalCost(column), true);
     } else if (role == CalleesRole) {
         return QVariant::fromValue(entry.callees);
     } else if (role == CallersRole) {
