@@ -91,6 +91,8 @@ struct AttributesDefinition
     quint32 type = 0;
     quint64 config = 0;
     StringId name;
+    bool usesFrequency = false;
+    quint64 frequencyOrPeriod = 0;
 };
 
 QDataStream& operator>>(QDataStream& stream, AttributesDefinition& attributesDefinition)
@@ -98,7 +100,9 @@ QDataStream& operator>>(QDataStream& stream, AttributesDefinition& attributesDef
     return stream >> attributesDefinition.id
                   >> attributesDefinition.type
                   >> attributesDefinition.config
-                  >> attributesDefinition.name;
+                  >> attributesDefinition.name
+                  >> attributesDefinition.usesFrequency
+                  >> attributesDefinition.frequencyOrPeriod;
 }
 
 QDebug operator<<(QDebug stream, const AttributesDefinition& attributesDefinition)
@@ -107,7 +111,9 @@ QDebug operator<<(QDebug stream, const AttributesDefinition& attributesDefinitio
         << "id=" << attributesDefinition.id << ", "
         << "type=" << attributesDefinition.type << ", "
         << "config=" << attributesDefinition.config << ", "
-        << "name=" << attributesDefinition.name
+        << "name=" << attributesDefinition.name << ", "
+        << "usesFrequency=" << attributesDefinition.usesFrequency << ", "
+        << "frequencyOrPeriod=" << attributesDefinition.frequencyOrPeriod
         << "}";
     return stream;
 }
@@ -631,6 +637,12 @@ struct PerfParserPrivate
                 Sample sample;
                 stream >> sample;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << sample;
+                if (!sample.period) {
+                    const auto& attribute = attributes.value(sample.attributeId);
+                    if (!attribute.usesFrequency) {
+                        sample.period = attribute.frequencyOrPeriod;
+                    }
+                }
                 addSample(sample);
                 break;
             }
