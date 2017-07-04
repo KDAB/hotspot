@@ -312,7 +312,7 @@ MainWindow::MainWindow(QWidget *parent) :
                     const auto indent = QLatin1String("&nbsp;&nbsp;&nbsp;&nbsp;");
                     for (const auto& costSummary : data.costs) {
                         stream << formatSummaryText(indent + costSummary.label,
-                                                    tr("%1 (%2 samples, %3 of total)")
+                                                    tr("%1 (%2 samples, %3% of total)")
                                                         .arg(costSummary.totalPeriod)
                                                         .arg(costSummary.sampleCount)
                                                         .arg(Util::formatCostRelative(costSummary.sampleCount, data.sampleCount)));
