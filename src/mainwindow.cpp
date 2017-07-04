@@ -213,6 +213,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_callerCalleeCostModel = new CallerCalleeModel(this);
     m_callerCalleeProxy = new QSortFilterProxyModel(this);
     m_callerCalleeProxy->setSourceModel(m_callerCalleeCostModel);
+    m_callerCalleeProxy->setSortRole(CallerCalleeModel::SortRole);
     ui->callerCalleeFilter->setProxy(m_callerCalleeProxy);
     ui->callerCalleeTableView->setSortingEnabled(true);
     ui->callerCalleeTableView->setModel(m_callerCalleeProxy);
