@@ -36,6 +36,11 @@
 
 int main(int argc, char** argv)
 {
+    QCoreApplication::setOrganizationName(QStringLiteral("KDAB"));
+    QCoreApplication::setOrganizationDomain(QStringLiteral("kdab.com"));
+    QCoreApplication::setApplicationName(QStringLiteral("hotspot"));
+    QCoreApplication::setApplicationVersion(QStringLiteral(HOTSPOT_VERSION_STRING));
+
     QApplication app(argc, argv);
     app.setWindowIcon(QIcon::fromTheme(QStringLiteral("hotspot"), app.windowIcon()));
     qRegisterMetaType<SummaryData>();
@@ -46,8 +51,6 @@ int main(int argc, char** argv)
     qRegisterMetaType<Data::TopDownResults>();
     qRegisterMetaType<Data::CallerCalleeResults>();
 
-    app.setApplicationName(QStringLiteral("hotspot"));
-    app.setApplicationVersion(QStringLiteral(HOTSPOT_VERSION_STRING));
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("Linux perf GUI for performance analysis."));
