@@ -259,7 +259,15 @@ void layoutItems(FrameGraphicsItem *parent)
     const qreal y = pos.y() - h - y_margin;
     qreal x = pos.x();
 
-    foreach (auto child, parent->childItems()) {
+    auto children = parent->childItems();
+    // sort to get reproducible graphs
+    std::sort(children.begin(), children.end(),
+              [](const QGraphicsItem* lhs, const QGraphicsItem* rhs) {
+                  return static_cast<const FrameGraphicsItem*>(lhs)->symbol()
+                       < static_cast<const FrameGraphicsItem*>(rhs)->symbol();
+              });
+
+    foreach (auto child, children) {
         auto frameChild = static_cast<FrameGraphicsItem*>(child);
         const qreal w = maxWidth * double(frameChild->cost()) / parent->cost();
         frameChild->setVisible(w > 1);
