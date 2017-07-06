@@ -55,10 +55,7 @@ As of now, you will need the following dependencies to build this project:
 ## Building
 
 ```
-git clone git@github.com:KDAB/hotspot.git
-cd hotspot
-git submodule update --init --recursive
-cd ..
+git clone --recurse-submodules git@github.com:KDAB/hotspot.git
 mkdir build-hotspot
 cd build-hotspot
 cmake ../hotspot
