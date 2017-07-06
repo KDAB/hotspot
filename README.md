@@ -61,10 +61,7 @@ apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev li
 ## Building
 
 ```
-git clone git@github.com:KDAB/hotspot.git
-cd hotspot
-git submodule update --init --recursive
-cd ..
+git clone --recurse-submodules git@github.com:KDAB/hotspot.git
 mkdir build-hotspot
 cd build-hotspot
 cmake ../hotspot
