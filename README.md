@@ -43,6 +43,14 @@ As of now, you will need the following dependencies to build this project:
 - Qt 5.6.0 or higher
 - libelf
 - libelfutils
+- extra-cmake-modules
+- KDE Frameworks 5 (packages are usually called libkf5-*-devel):
+  - threadweaver
+  - i18n
+  - configwidgets
+  - coreaddons
+  - itemviews
+  - itemmodels
 
 ### On Debian/Ubuntu
 
