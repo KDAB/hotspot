@@ -677,8 +677,8 @@
     </property>
    </widget>
    <addaction name="fileMenu"/>
-   <addaction name="helpMenu"/>
    <addaction name="settingsMenu"/>
+   <addaction name="helpMenu"/>
   </widget>
   <action name="actionAbout_Hotspot">
    <property name="icon">
