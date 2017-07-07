@@ -128,7 +128,7 @@ host$ hotspot --sysroot /path/to/sysroot --kallsyms kallsyms --appPath /path/to/
 
 ## Known Issues
 
-If anything breaks in the above and the output is less usable then `perf report`, please [report an issue on GitHub](https://github.com/KDAB/hotspot/issues).
+If anything breaks in the above and the output is less usable than `perf report`, please [report an issue on GitHub](https://github.com/KDAB/hotspot/issues).
 That said, there are some known issues that people may trip over:
 
 ### Broken Backtraces
