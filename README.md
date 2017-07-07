@@ -44,6 +44,12 @@ As of now, you will need the following dependencies to build this project:
 - libelf
 - libelfutils
 
+### On Debian/Ubuntu
+
+```
+apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libelf-dev libdw-dev cmake
+```
+
 ## Building
 
 ```
