@@ -38,8 +38,9 @@
 #include <ThreadWeaver/ThreadWeaver>
 
 #include <models/summarydata.h>
-
 #include <util.h>
+
+#include <functional>
 
 Q_LOGGING_CATEGORY(LOG_PERFPARSER, "hotspot.perfparser", QtWarningMsg)
 
