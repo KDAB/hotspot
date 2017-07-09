@@ -29,6 +29,7 @@
 
 #include <QObject>
 #include <memory>
+#include <functional>
 
 #include <models/data.h>
 
