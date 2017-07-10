@@ -198,8 +198,8 @@ QVariant TopDownModel::rowData(const Data::TopDown* row, int column, int role) c
                         .arg(m_results.selfCosts.typeName(i), Util::formatCost(selfCost), Util::formatCost(selfTotal),
                              Util::formatCostRelative(selfCost, selfTotal))
                     + QLatin1Char('\n');
-            const auto inclusiveCost = m_results.selfCosts.cost(i, row->id);
-            const auto inclusiveTotal = m_results.selfCosts.totalCost(i);
+            const auto inclusiveCost = m_results.inclusiveCosts.cost(i, row->id);
+            const auto inclusiveTotal = m_results.inclusiveCosts.totalCost(i);
             toolTip += tr("%1 (inclusive): %2 out of %3 total (%4%)")
                         .arg(m_results.inclusiveCosts.typeName(i), Util::formatCost(inclusiveCost), Util::formatCost(inclusiveTotal),
                              Util::formatCostRelative(inclusiveCost, inclusiveTotal))
