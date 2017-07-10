@@ -121,6 +121,7 @@ Model* setupModelAndProxyForView(QTreeView* view)
     auto model = new Model(view);
     auto proxy = new QSortFilterProxyModel(model);
     proxy->setSourceModel(model);
+    proxy->setSortRole(Model::SortRole);
     view->sortByColumn(Model::InitialSortColumn);
     view->setModel(proxy);
     stretchFirstColumn(view);
