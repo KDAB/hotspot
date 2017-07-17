@@ -1,0 +1,10 @@
+sudo: required
+
+services:
+  - docker
+
+install:
+  - docker build -t hotspot .
+
+script:
+  - docker run -v $TRAVIS_BUILD_DIR:/hotspot hotspot /bin/sh -c "cd hotspot && mkdir build-hotspot && cd build-hotspot && cmake .. && make"
