@@ -52,6 +52,7 @@ As of now, you will need the following dependencies to build this project:
   - coreaddons
   - itemviews
   - itemmodels
+- gettext
 
 ### On Debian/Ubuntu
 
