@@ -43,6 +43,7 @@ As of now, you will need the following dependencies to build this project:
 - Qt 5.6.0 or higher
 - libelf
 - libelfutils
+- gettext
 - extra-cmake-modules
 - KDE Frameworks 5 (packages are usually called libkf5-*-devel):
   - threadweaver
@@ -55,7 +56,7 @@ As of now, you will need the following dependencies to build this project:
 ### On Debian/Ubuntu
 
 ```
-apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libelf-dev libdw-dev cmake extra-cmake-modules
+apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libelf-dev libdw-dev cmake extra-cmake-modules gettext
 ```
 
 ### On Fedora
