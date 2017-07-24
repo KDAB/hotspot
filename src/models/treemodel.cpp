@@ -192,18 +192,17 @@ QVariant TopDownModel::rowData(const Data::TopDown* row, int column, int role) c
                         + QLatin1Char('\n');
         Q_ASSERT(m_results.selfCosts.numTypes() == m_results.inclusiveCosts.numTypes());
         for (int i = 0, c = m_results.inclusiveCosts.numTypes(); i < c; ++i) {
-            const auto selfCost = m_results.selfCosts.cost(i, row->id);
-            const auto selfTotal = m_results.selfCosts.totalCost(i);
-            toolTip += tr("%1 (self): %2 out of %3 total (%4%)")
-                        .arg(m_results.selfCosts.typeName(i), Util::formatCost(selfCost), Util::formatCost(selfTotal),
-                             Util::formatCostRelative(selfCost, selfTotal))
-                    + QLatin1Char('\n');
-            const auto inclusiveCost = m_results.selfCosts.cost(i, row->id);
-            const auto inclusiveTotal = m_results.selfCosts.totalCost(i);
-            toolTip += tr("%1 (inclusive): %2 out of %3 total (%4%)")
-                        .arg(m_results.inclusiveCosts.typeName(i), Util::formatCost(inclusiveCost), Util::formatCost(inclusiveTotal),
-                             Util::formatCostRelative(inclusiveCost, inclusiveTotal))
-                    + QLatin1Char('\n');
+            auto extendTooltip = [&toolTip, i, row](const auto& costs, const QString& formatting) {
+                const auto currentCost = costs.cost(i, row->id);
+                const auto totalCost = costs.totalCost(i);
+                toolTip += formatting
+                            .arg(costs.typeName(i), Util::formatCost(currentCost), Util::formatCost(totalCost),
+                                 Util::formatCostRelative(currentCost, totalCost))
+                        + QLatin1Char('\n');
+            };
+
+            extendTooltip(m_results.selfCosts, tr("%1 (self): %2 out of %3 total (%4%)"));
+            extendTooltip(m_results.inclusiveCosts, tr("%1 (inclusive): %2 out of %3 total (%4%)"));
         }
         return toolTip;
     } else {
