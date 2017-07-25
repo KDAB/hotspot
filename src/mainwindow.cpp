@@ -27,125 +27,33 @@
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "startpage.h"
+#include "recordpage.h"
+#include "resultspage.h"
 
-#include <QDebug>
 #include <QFileDialog>
-#include <QSortFilterProxyModel>
 #include <QApplication>
+#include <QStackedWidget>
+#include <QVBoxLayout>
+
 #include <QStandardPaths>
 #include <QProcess>
 #include <QInputDialog>
-#include <QPainter>
 #include <QDesktopServices>
 #include <QWidgetAction>
 #include <QLineEdit>
-#include <QStringListModel>
+#include <QLabel>
 
-#include <KRecursiveFilterProxyModel>
 #include <KStandardAction>
-#include <KLocalizedString>
-#include <KFormat>
 #include <KConfigGroup>
 #include <KRecentFilesAction>
-#include <KUrlRequester>
-#include <Solid/Device>
-#include <Solid/Processor>
-#include <KShell>
 
 #include "aboutdialog.h"
 #include "flamegraph.h"
 
 #include "parsers/perf/perfparser.h"
-#include "perfrecord.h"
-
-#include "models/summarydata.h"
-#include "models/hashmodel.h"
-#include "models/costdelegate.h"
-#include "models/treemodel.h"
-#include "models/topproxy.h"
-#include "models/callercalleemodel.h"
 
 namespace {
-QString formatTimeString(quint64 nanoseconds)
-{
-    quint64 totalSeconds = nanoseconds / 1000000000;
-    quint64 days = totalSeconds / 60 / 60 / 24;
-    quint64 hours = (totalSeconds / 60 / 60) % 24;
-    quint64 minutes = (totalSeconds / 60) % 60;
-    quint64 seconds = totalSeconds % 60;
-    quint64 milliseconds = (nanoseconds / 1000000) % 1000;
-
-    auto format = [] (quint64 fragment, int precision) -> QString {
-        return QString::number(fragment).rightJustified(precision, QLatin1Char('0'));
-    };
-    auto optional = [format] (quint64 fragment) -> QString {
-        return fragment > 0 ? format(fragment, 2) + QLatin1Char(':') : QString();
-    };
-    return optional(days) + optional(hours) + optional(minutes)
-            + format(seconds, 2) + QLatin1Char('.') + format(milliseconds, 3) + QLatin1Char('s');
-}
-
-void stretchFirstColumn(QTreeView* view)
-{
-    view->header()->setStretchLastSection(false);
-    view->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-}
-
-template<typename Model>
-void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, Model* model)
-{
-    auto proxy = new KRecursiveFilterProxyModel(view);
-    proxy->setSortRole(Model::SortRole);
-    proxy->setFilterRole(Model::FilterRole);
-    proxy->setSourceModel(model);
-
-    filter->setProxy(proxy);
-
-    view->sortByColumn(Model::InitialSortColumn);
-    view->setModel(proxy);
-    stretchFirstColumn(view);
-
-    view->setContextMenuPolicy(Qt::CustomContextMenu);
-}
-
-template<typename Model>
-void setupCostDelegate(Model* model, QTreeView* view)
-{
-    auto costDelegate = new CostDelegate(Model::SortRole, Model::TotalCostRole, view);
-    QObject::connect(model, &QAbstractItemModel::modelReset,
-                     costDelegate, [costDelegate, model, view]() {
-                        for (int i = Model::NUM_BASE_COLUMNS, c = model->columnCount(); i < c; ++i) {
-                            view->setItemDelegateForColumn(i, costDelegate);
-                        }
-                    });
-}
-
-template<typename Model>
-Model* setupModelAndProxyForView(QTreeView* view)
-{
-    auto model = new Model(view);
-    auto proxy = new QSortFilterProxyModel(model);
-    proxy->setSourceModel(model);
-    proxy->setSortRole(Model::SortRole);
-    view->sortByColumn(Model::InitialSortColumn);
-    view->setModel(proxy);
-    stretchFirstColumn(view);
-    setupCostDelegate(model, view);
-
-    return model;
-}
-
-template<typename Model, typename Handler>
-void connectCallerOrCalleeModel(QTreeView* view, CallerCalleeModel* callerCalleeCostModel, Handler handler)
-{
-    QObject::connect(view, &QTreeView::activated,
-                     view, [callerCalleeCostModel, handler] (const QModelIndex& index) {
-                        const auto symbol = index.data(Model::SymbolRole).template value<Data::Symbol>();
-                        auto sourceIndex = callerCalleeCostModel->indexForKey(symbol);
-                        handler(sourceIndex);
-                    });
-}
-
 struct IdeSettings {
     const char * const app;
     const char * const args;
@@ -170,36 +78,6 @@ static const IdeSettings ideSettings[] = {
 #else
     static const int ideSettingsSize = sizeof(ideSettings) / sizeof(IdeSettings);
 #endif
-
-bool isIntel()
-{
-    const auto list = Solid::Device::listFromType(Solid::DeviceInterface::Processor, QString());
-    Solid::Device device = list[0];
-    if(list.empty() || !device.is<Solid::Processor>()) {
-        return false;
-    }
-    const auto *processor= device.as<Solid::Processor>();
-    const auto instructionSets = processor->instructionSets();
-
-    return instructionSets.testFlag(Solid::Processor::IntelMmx) ||
-           instructionSets.testFlag(Solid::Processor::IntelSse) ||
-           instructionSets.testFlag(Solid::Processor::IntelSse2) ||
-           instructionSets.testFlag(Solid::Processor::IntelSse3) ||
-           instructionSets.testFlag(Solid::Processor::IntelSsse3) ||
-           instructionSets.testFlag(Solid::Processor::IntelSse4) ||
-           instructionSets.testFlag(Solid::Processor::IntelSse41) ||
-           instructionSets.testFlag(Solid::Processor::IntelSse42);
-}
-
-void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns)
-{
-    for (int i = 0; i < costs.numTypes(); ++i) {
-        if (!costs.totalCost(i)) {
-            view->hideColumn(numBaseColumns + i);
-        }
-    }
-}
-
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -207,20 +85,45 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     m_parser(new PerfParser(this)),
     m_config(KSharedConfig::openConfig()),
-    m_perfRecord(new PerfRecord(this))
+    m_pageStack(new QStackedWidget(this)),
+    m_startPage(new StartPage(this)),
+    m_recordPage(new RecordPage(this)),
+    m_resultsPage(new ResultsPage(m_parser, this))
 {
     ui->setupUi(this);
 
-    ui->lostMessage->setVisible(false);
-    ui->parserErrorsBox->setVisible(false);
+    m_pageStack->addWidget(m_startPage);
+    m_pageStack->addWidget(m_resultsPage);
+    m_pageStack->addWidget(m_recordPage);
+
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->addWidget(m_pageStack);
+    centralWidget()->setLayout(layout);
+
+    connect(m_startPage, &StartPage::openFileButtonClicked, this, &MainWindow::onOpenFileButtonClicked);
+    connect(m_startPage, &StartPage::recordButtonClicked, this, &MainWindow::onRecordButtonClicked);
+    connect(m_parser, &PerfParser::progress, m_startPage, &StartPage::onParseFileProgress);
+    connect(this, &MainWindow::openFileError, m_startPage, &StartPage::onOpenFileError);
+    connect(m_recordPage, &RecordPage::homeButtonClicked, this, &MainWindow::onHomeButtonClicked);
+    connect(m_recordPage, SIGNAL(openFile(QString)), this, SLOT(openFile(QString)));
+
+    connect(m_parser, &PerfParser::parsingFinished,
+            this, [this] () {
+                m_pageStack->setCurrentWidget(m_resultsPage);
+            });
+    connect(m_parser, &PerfParser::parsingFailed,
+            this, [this] (const QString& errorMessage) {
+                emit openFileError(errorMessage);
+            });
 
     auto *recordDataAction = new QAction(this);
     recordDataAction->setText(QStringLiteral("&Record Data"));
     recordDataAction->setIcon(QIcon::fromTheme(QStringLiteral("media-record")));
     recordDataAction->setShortcut(Qt::CTRL + Qt::Key_R);
     ui->fileMenu->addAction(recordDataAction);
-    connect(recordDataAction, &QAction::triggered, this, &MainWindow::onRecordDataButtonClicked);
+    connect(recordDataAction, &QAction::triggered, this, &MainWindow::onRecordButtonClicked);
 
+    connect(m_resultsPage, &ResultsPage::navigateToCode, this, &MainWindow::navigateToCode);
     ui->fileMenu->addAction(KStandardAction::open(this, SLOT(onOpenFileButtonClicked()), this));
     m_recentFilesAction = KStandardAction::openRecent(this, SLOT(openFile(QUrl)), this);
     m_recentFilesAction->loadEntries(m_config->group("RecentFiles"));
@@ -234,252 +137,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionAbout_Hotspot, &QAction::triggered,
             this, &MainWindow::aboutHotspot);
 
-    ui->mainPageStack->setCurrentWidget(ui->startPage);
-    ui->openFileButton->setFocus();
-    ui->applicationName->setMode(KFile::File | KFile::ExistingOnly | KFile::LocalOnly);
-    ui->workingDirectory->setMode(KFile::Directory | KFile::LocalOnly);
-    ui->workingDirectory->setText(QDir::currentPath());
-    ui->applicationRecordErrorMessage->hide();
-    ui->applicationRecordErrorMessage->setCloseButtonVisible(false);
-    ui->applicationRecordErrorMessage->setWordWrap(true);
-    ui->applicationRecordErrorMessage->setMessageType(KMessageWidget::Error);
-    ui->outputFile->setText(QDir::currentPath() + QDir::separator() + QStringLiteral("perf.data"));
-    ui->outputFile->setMode(KFile::File | KFile::LocalOnly);
-    connect(ui->openFileButton, &QPushButton::clicked, this, &MainWindow::onOpenFileButtonClicked);
-    connect(ui->recordDataButton, &QPushButton::clicked, this, &MainWindow::onRecordDataButtonClicked);
-    connect(ui->homeButton, &QPushButton::clicked, this, &MainWindow::onHomeButtonClicked);
-    connect(ui->applicationName, &KUrlRequester::textChanged, this, &MainWindow::onApplicationNameChanged);
-    connect(ui->startRecordingButton, &QPushButton::toggled, this, &MainWindow::onStartRecordingButtonClicked);
-    connect(ui->workingDirectory, &KUrlRequester::textChanged, this, &MainWindow::onWorkingDirectoryNameChanged);
-    connect(ui->viewPerfRecordResultsButton, &QPushButton::clicked, this, &MainWindow::onViewPerfRecordResultsButtonClicked);
-    connect(ui->outputFile, &KUrlRequester::textChanged, this, &MainWindow::onOutputFileNameChanged);
-    connect(ui->outputFile, static_cast<void (KUrlRequester::*)(const QString&)>(&KUrlRequester::returnPressed),
-            this, &MainWindow::onOutputFileNameSelected);
-    connect(ui->outputFile, &KUrlRequester::urlSelected, this, &MainWindow::onOutputFileUrlChanged);
-
-    ui->recordTypeComboBox->addItem(tr("Launch Application"), QVariant::fromValue(LaunchApplication));
-    ui->callGraphComboBox->addItem(tr("None"), QVariant::fromValue(QString()));
-    ui->callGraphComboBox->addItem(tr("DWARF"), QVariant::fromValue(QStringLiteral("dwarf")));
-    ui->callGraphComboBox->addItem(tr("Frame Pointer"), QVariant::fromValue(QStringLiteral("fp")));
-    if (isIntel()) {
-        ui->callGraphComboBox->addItem(tr("Last Branch Record"), QVariant::fromValue(QStringLiteral("lbr")));
-    }
-    ui->callGraphComboBox->setCurrentIndex(1);
-
-    auto bottomUpCostModel = new BottomUpModel(this);
-    setupTreeView(ui->bottomUpTreeView,  ui->bottomUpSearch, bottomUpCostModel);
-    setupCostDelegate(bottomUpCostModel, ui->bottomUpTreeView);
-    connect(ui->bottomUpTreeView, &QTreeView::customContextMenuRequested, this, &MainWindow::onBottomUpContextMenu);
-
-    auto topDownCostModel = new TopDownModel(this);
-    setupTreeView(ui->topDownTreeView, ui->topDownSearch, topDownCostModel);
-    setupCostDelegate(topDownCostModel, ui->topDownTreeView);
-    connect(ui->topDownTreeView, &QTreeView::customContextMenuRequested, this, &MainWindow::onTopDownContextMenu);
-
-    auto topHotspotsProxy = new TopProxy(this);
-    topHotspotsProxy->setSourceModel(bottomUpCostModel);
-
-    ui->topHotspotsTableView->setSortingEnabled(false);
-    ui->topHotspotsTableView->setModel(topHotspotsProxy);
-    setupCostDelegate(bottomUpCostModel, ui->topHotspotsTableView);
-    stretchFirstColumn(ui->topHotspotsTableView);
-
-    m_callerCalleeCostModel = new CallerCalleeModel(this);
-    m_callerCalleeProxy = new QSortFilterProxyModel(this);
-    m_callerCalleeProxy->setSourceModel(m_callerCalleeCostModel);
-    m_callerCalleeProxy->setSortRole(CallerCalleeModel::SortRole);
-    ui->callerCalleeFilter->setProxy(m_callerCalleeProxy);
-    ui->callerCalleeTableView->setSortingEnabled(true);
-    ui->callerCalleeTableView->setModel(m_callerCalleeProxy);
-    stretchFirstColumn(ui->callerCalleeTableView);
-    setupCostDelegate(m_callerCalleeCostModel, ui->callerCalleeTableView);
-
-    connect(m_parser, &PerfParser::bottomUpDataAvailable,
-            this, [this, bottomUpCostModel] (const Data::BottomUpResults& data) {
-                bottomUpCostModel->setData(data);
-                ui->flameGraph->setBottomUpData(data);
-                hideEmptyColumns(data.costs, ui->bottomUpTreeView, BottomUpModel::NUM_BASE_COLUMNS);
-                hideEmptyColumns(data.costs, ui->topHotspotsTableView, BottomUpModel::NUM_BASE_COLUMNS);
-            });
-
-    connect(m_parser, &PerfParser::topDownDataAvailable,
-            this, [this, topDownCostModel] (const Data::TopDownResults& data) {
-                topDownCostModel->setData(data);
-                ui->flameGraph->setTopDownData(data);
-                hideEmptyColumns(data.inclusiveCosts, ui->topDownTreeView, TopDownModel::NUM_BASE_COLUMNS);
-                hideEmptyColumns(data.selfCosts, ui->topDownTreeView, TopDownModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes());
-            });
-
-    connect(m_parser, &PerfParser::callerCalleeDataAvailable,
-            this, [this] (const Data::CallerCalleeResults& data) {
-                m_callerCalleeCostModel->setResults(data);
-                hideEmptyColumns(data.inclusiveCosts, ui->callerCalleeTableView, CallerCalleeModel::NUM_BASE_COLUMNS);
-                hideEmptyColumns(data.selfCosts, ui->callerCalleeTableView, CallerCalleeModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes());
-                auto view = ui->callerCalleeTableView;
-                view->sortByColumn(CallerCalleeModel::InitialSortColumn);
-                view->setCurrentIndex(view->model()->index(0, 0, {}));
-                hideEmptyColumns(data.inclusiveCosts, ui->callersView, CallerModel::NUM_BASE_COLUMNS);
-                hideEmptyColumns(data.inclusiveCosts, ui->calleesView, CalleeModel::NUM_BASE_COLUMNS);
-                hideEmptyColumns(data.inclusiveCosts, ui->sourceMapView, SourceMapModel::NUM_BASE_COLUMNS);
-            });
-
-    connect(m_parser, &PerfParser::parsingFinished,
-            this, [this] () {
-                ui->mainPageStack->setCurrentWidget(ui->resultsPage);
-                ui->resultsTabWidget->setCurrentWidget(ui->summaryTab);
-                ui->resultsTabWidget->setFocus();
-            });
-
-    connect(m_parser, &PerfParser::parsingFailed,
-            this, [this] (const QString& errorMessage) {
-                showError(errorMessage);
-            });
-
-    connect(m_parser, &PerfParser::progress,
-            this, [this] (float percent) {
-                const int scale = 1000;
-                if (!ui->openFileProgressBar->maximum()) {
-                    ui->openFileProgressBar->setMaximum(scale);
-                }
-                ui->openFileProgressBar->setValue(static_cast<int>(percent * scale));
-            });
-
-    auto calleesModel = setupModelAndProxyForView<CalleeModel>(ui->calleesView);
-    auto callersModel = setupModelAndProxyForView<CallerModel>(ui->callersView);
-    auto sourceMapModel = setupModelAndProxyForView<SourceMapModel>(ui->sourceMapView);
-
-    auto selectCallerCaleeeIndex = [calleesModel, callersModel, sourceMapModel, this] (const QModelIndex& index)
-    {
-        const auto costs = index.data(CallerCalleeModel::SelfCostsRole).value<Data::Costs>();
-        const auto callees = index.data(CallerCalleeModel::CalleesRole).value<Data::CalleeMap>();
-        calleesModel->setResults(callees, costs);
-        const auto callers = index.data(CallerCalleeModel::CallersRole).value<Data::CallerMap>();
-        callersModel->setResults(callers, costs);
-        const auto sourceMap = index.data(CallerCalleeModel::SourceMapRole).value<Data::LocationCostMap>();
-        sourceMapModel->setResults(sourceMap, costs);
-        if (index.model() == m_callerCalleeCostModel) {
-            ui->callerCalleeTableView->setCurrentIndex(m_callerCalleeProxy->mapFromSource(index));
-        }
-    };
-    connectCallerOrCalleeModel<CalleeModel>(ui->calleesView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
-    connectCallerOrCalleeModel<CallerModel>(ui->callersView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
-
-    ui->sourceMapView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->sourceMapView, &QTreeView::customContextMenuRequested, this, &MainWindow::onSourceMapContextMenu);
-
-    connect(ui->callerCalleeTableView->selectionModel(), &QItemSelectionModel::currentRowChanged,
-            this, [selectCallerCaleeeIndex] (const QModelIndex& current, const QModelIndex& /*previous*/) {
-                if (current.isValid()) {
-                    selectCallerCaleeeIndex(current);
-                }
-            });
-
-    auto parserErrorsModel = new QStringListModel(this);
-    ui->parserErrorsView->setModel(parserErrorsModel);
-
-    connect(m_parser, &PerfParser::summaryDataAvailable,
-            this, [this, bottomUpCostModel, topDownCostModel, parserErrorsModel] (const SummaryData& data) {
-                auto formatSummaryText = [] (const QString& description, const QString& value) -> QString {
-                    return QString(QLatin1String("<tr><td>") + description + QLatin1String(": </td><td>")
-                                   + value + QLatin1String("</td></tr>"));
-                };
-
-                QString summaryText;
-                {
-                    QTextStream stream(&summaryText);
-                    stream << "<qt><table>"
-                           << formatSummaryText(tr("Command"), data.command)
-                           << formatSummaryText(tr("Run Time"), formatTimeString(data.applicationRunningTime))
-                           << formatSummaryText(tr("Processes"), QString::number(data.processCount))
-                           << formatSummaryText(tr("Threads"), QString::number(data.threadCount))
-                           << formatSummaryText(tr("Total Samples"), QString::number(data.sampleCount));
-                    const auto indent = QLatin1String("&nbsp;&nbsp;&nbsp;&nbsp;");
-                    for (const auto& costSummary : data.costs) {
-                        stream << formatSummaryText(indent + costSummary.label,
-                                                    tr("%1 (%2 samples, %3% of total)")
-                                                        .arg(costSummary.totalPeriod)
-                                                        .arg(costSummary.sampleCount)
-                                                        .arg(Util::formatCostRelative(costSummary.sampleCount, data.sampleCount)));
-                    }
-                    stream << formatSummaryText(tr("Lost Chunks"), QString::number(data.lostChunks))
-                           << "</table></qt>";
-                }
-                ui->summaryLabel->setText(summaryText);
-
-                QString systemInfoText;
-                if (!data.hostName.isEmpty()) {
-                    KFormat format;
-                    QTextStream stream(&systemInfoText);
-                    stream << "<qt><table>"
-                           << formatSummaryText(tr("Host Name"), data.hostName)
-                           << formatSummaryText(tr("Linux Kernel Version"), data.linuxKernelVersion)
-                           << formatSummaryText(tr("Perf Version"), data.perfVersion)
-                           << formatSummaryText(tr("CPU Description"), data.cpuDescription)
-                           << formatSummaryText(tr("CPU ID"), data.cpuId)
-                           << formatSummaryText(tr("CPU Architecture"), data.cpuArchitecture)
-                           << formatSummaryText(tr("CPUs Online"), QString::number(data.cpusOnline))
-                           << formatSummaryText(tr("CPUs Available"), QString::number(data.cpusAvailable))
-                           << formatSummaryText(tr("CPU Sibling Cores"), data.cpuSiblingCores)
-                           << formatSummaryText(tr("CPU Sibling Threads"), data.cpuSiblingThreads)
-                           << formatSummaryText(tr("Total Memory"), format.formatByteSize(data.totalMemoryInKiB * 1024, 1, KFormat::MetricBinaryDialect))
-                           << "</table></qt>";
-                }
-                ui->systemInfoGroupBox->setVisible(!systemInfoText.isEmpty());
-                ui->systemInfoLabel->setText(systemInfoText);
-
-                if (data.lostChunks > 0) {
-                    ui->lostMessage->setText(i18np("Lost one chunk - Check IO/CPU overload!",
-                                                   "Lost %1 chunks - Check IO/CPU overload!",
-                                                   data.lostChunks));
-                    ui->lostMessage->setVisible(true);
-                } else {
-                    ui->lostMessage->setVisible(false);
-                }
-
-                if (data.errors.isEmpty()) {
-                    ui->parserErrorsBox->setVisible(false);
-                } else {
-                    parserErrorsModel->setStringList(data.errors);
-                    ui->parserErrorsBox->setVisible(true);
-                }
-            });
-
-    connect(ui->flameGraph, &FlameGraph::jumpToCallerCallee, this, &MainWindow::jumpToCallerCallee);
-
-    for (int i = 0, c = ui->resultsTabWidget->count(); i < c; ++i) {
-        ui->resultsTabWidget->setTabToolTip(i, ui->resultsTabWidget->widget(i)->toolTip());
-    }
-
-    connect(m_perfRecord, &PerfRecord::recordingFinished,
-            this, [this] (const QString& fileLocation) {
-                ui->startRecordingButton->setChecked(false);
-                ui->applicationRecordErrorMessage->hide();
-                m_resultsFile = fileLocation;
-                ui->viewPerfRecordResultsButton->setEnabled(true);
-    });
-
-    connect(m_perfRecord, &PerfRecord::recordingFailed,
-            this, [this] (const QString& errorMessage) {
-                ui->startRecordingButton->setChecked(false);
-                ui->applicationRecordErrorMessage->setText(errorMessage);
-                ui->applicationRecordErrorMessage->show();
-                ui->viewPerfRecordResultsButton->setEnabled(false);
-
-    });
-
-    connect(m_perfRecord, &PerfRecord::recordingOutput,
-            this, [this] (const QString& outputMessage) {
-                ui->perfResultsTextEdit->insertPlainText(outputMessage);
-                ui->perfResultsTextEdit->show();
-                ui->perfResultsLabel->show();
-    });
-
     setupCodeNavigationMenu();
     setupPathSettingsMenu();
 
     clear();
-
-    updateBackground();
 }
 
 MainWindow::~MainWindow() = default;
@@ -487,6 +148,7 @@ MainWindow::~MainWindow() = default;
 void MainWindow::setSysroot(const QString& path)
 {
     m_sysroot = path;
+    m_resultsPage->setSysroot(path);
 }
 
 void MainWindow::setKallsyms(const QString& path)
@@ -507,6 +169,7 @@ void MainWindow::setExtraLibPaths(const QString& paths)
 void MainWindow::setAppPath(const QString& path)
 {
     m_appPath = path;
+    m_resultsPage->setAppPath(path);
 }
 
 void MainWindow::setArch(const QString& arch)
@@ -525,192 +188,34 @@ void MainWindow::onOpenFileButtonClicked()
     openFile(fileName);
 }
 
-void MainWindow::onRecordDataButtonClicked()
-{
-    ui->mainPageStack->setCurrentWidget(ui->recordDataPage);
-}
-
 void MainWindow::onHomeButtonClicked()
 {
-    ui->mainPageStack->setCurrentWidget(ui->startPage);
+    clear();
+    m_pageStack->setCurrentWidget(m_startPage);
 }
 
-void MainWindow::onStartRecordingButtonClicked(bool checked)
+void MainWindow::onRecordButtonClicked()
 {
-    if (checked) {
-        ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-stop")));
-        ui->startRecordingButton->setText(tr("Stop Recording"));
-        ui->perfResultsTextEdit->clear();
-        ui->perfResultsTextEdit->hide();
-        ui->perfResultsLabel->hide();
-
-        QStringList perfOptions;
-        const auto callGraphOption = ui->callGraphComboBox->currentData().toString();
-
-        if (!callGraphOption.isEmpty()) {
-            perfOptions << QStringLiteral("--call-graph") << callGraphOption;
-        }
-
-        if (!ui->eventTypeBox->text().isEmpty()) {
-            perfOptions << QStringLiteral("--event") << ui->eventTypeBox->text();
-        }
-
-        m_perfRecord->record(perfOptions, ui->outputFile->text(), ui->applicationName->text(),
-                             KShell::splitArgs(ui->applicationParametersBox->text()),
-                             ui->workingDirectory->text());
-    } else {
-        ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
-        ui->startRecordingButton->setText(tr("Start Recording"));
-        m_perfRecord->stopRecording();
-    }
-}
-
-void MainWindow::onApplicationNameChanged(const QString& filePath)
-{
-    QFileInfo application(filePath);
-
-    if (!application.exists()) {
-        ui->applicationRecordErrorMessage->setText(tr("Application file cannot be found: %1").arg(filePath));
-    } else if (!application.isFile()) {
-        ui->applicationRecordErrorMessage->setText(tr("Application file is not valid: %1").arg(filePath));
-    } else if (!application.isExecutable()) {
-        ui->applicationRecordErrorMessage->setText(tr("Application file is not executable: %1").arg(filePath));
-    } else {
-        if (ui->workingDirectory->text().isEmpty()) {
-            ui->workingDirectory->setPlaceholderText(QFileInfo(filePath).path());
-        }
-        ui->applicationRecordErrorMessage->hide();
-        return;
-    }
-    ui->applicationRecordErrorMessage->show();
-}
-
-void MainWindow::onWorkingDirectoryNameChanged(const QString& folderPath)
-{
-    QFileInfo folder(folderPath);
-
-    if (!folder.exists()) {
-        ui->applicationRecordErrorMessage->setText(tr("Working directory folder cannot be found: %1").arg(folderPath));
-    } else if (!folder.isDir()) {
-        ui->applicationRecordErrorMessage->setText(tr("Working directory folder is not valid: %1").arg(folderPath));
-    } else if (!folder.isWritable()) {
-        ui->applicationRecordErrorMessage->setText(tr("Working directory folder is not writable: %1").arg(folderPath));
-    } else {
-        ui->applicationRecordErrorMessage->hide();
-        return;
-    }
-    ui->applicationRecordErrorMessage->show();
-}
-
-void MainWindow::onViewPerfRecordResultsButtonClicked()
-{
-    openFile(m_resultsFile);
-}
-void MainWindow::onOutputFileNameChanged(const QString& filePath)
-{
-    const auto perfDataExtension = QStringLiteral(".data");
-
-    QFileInfo file(filePath);
-    QFileInfo folder(file.absolutePath());
-
-    if (!folder.exists()) {
-        ui->applicationRecordErrorMessage->setText(tr("Output file directory folder cannot be found: %1").arg(folder.path()));
-    } else if (!folder.isDir()) {
-        ui->applicationRecordErrorMessage->setText(tr("Output file directory folder is not valid: %1").arg(folder.path()));
-    } else if (!folder.isWritable()) {
-        ui->applicationRecordErrorMessage->setText(tr("Output file directory folder is not writable: %1").arg(folder.path()));
-    } else if (!file.absoluteFilePath().endsWith(perfDataExtension)) {
-        ui->applicationRecordErrorMessage->setText(tr("Output file must end with %1").arg(perfDataExtension));
-    } else {
-        ui->applicationRecordErrorMessage->hide();
-        return;
-    }
-    ui->applicationRecordErrorMessage->show();
-}
-
-void MainWindow::onOutputFileNameSelected(const QString& filePath)
-{
-    const auto perfDataExtension = QStringLiteral(".data");
-
-    if (!filePath.endsWith(perfDataExtension)) {
-        ui->outputFile->setText(filePath + perfDataExtension);
-    }
-}
-
-void MainWindow::onOutputFileUrlChanged(const QUrl& fileUrl)
-{
-    onOutputFileNameSelected(fileUrl.toLocalFile());
-}
-
-void MainWindow::paintEvent(QPaintEvent* /*event*/)
-{
-    if (ui->mainPageStack->currentWidget() == ui->resultsPage) {
-        // our result pages are crowded and leave no space for the background
-        return;
-    }
-
-    QPainter painter(this);
-    const auto windowRect = rect();
-    auto backgroundRect = m_background.rect();
-    backgroundRect.moveBottomRight(windowRect.bottomRight());
-    painter.drawPixmap(backgroundRect, m_background);
-}
-
-void MainWindow::changeEvent(QEvent* event)
-{
-    QMainWindow::changeEvent(event);
-
-    if (event->type() == QEvent::PaletteChange) {
-        updateBackground();
-    }
-}
-
-void MainWindow::updateBackground()
-{
-    const auto background = palette().background().color();
-    const auto foreground = palette().foreground().color();
-
-    if (qGray(background.rgb()) < qGray(foreground.rgb())) {
-        // dark color scheme
-        m_background = QPixmap(QStringLiteral(":/images/background_dark.png"));
-    } else {
-        // bright color scheme
-        m_background = QPixmap(QStringLiteral(":/images/background_bright.png"));
-    }
-}
-
-void MainWindow::showError(const QString& errorMessage)
-{
-    qWarning() << errorMessage;
-    ui->loadingResultsErrorLabel->setText(errorMessage);
-    ui->loadingResultsErrorLabel->show();
-    ui->loadStack->setCurrentWidget(ui->openFilePage);
+    m_recordPage->showRecordPage();
+    m_pageStack->setCurrentWidget(m_recordPage);
 }
 
 void MainWindow::clear()
 {
-    setWindowTitle(tr("Hotspot"));
-    ui->loadingResultsErrorLabel->hide();
-    ui->mainPageStack->setCurrentWidget(ui->startPage);
-    ui->loadStack->setCurrentWidget(ui->openFilePage);
-    ui->viewPerfRecordResultsButton->setEnabled(false);
-    ui->perfResultsTextEdit->clear();
-    ui->perfResultsTextEdit->hide();
-    ui->perfResultsLabel->hide();
-    m_resultsFile.clear();
+    m_startPage->showStartPage();
+    m_pageStack->setCurrentWidget(m_startPage);
+    m_recordPage->showRecordPage();
+    m_resultsPage->selectSummaryTab();
 }
+
 
 void MainWindow::openFile(const QString& path)
 {
     QFileInfo file(path);
     setWindowTitle(tr("%1 - Hotspot").arg(file.fileName()));
 
-    ui->loadingResultsErrorLabel->hide();
-    ui->mainPageStack->setCurrentWidget(ui->startPage);
-    ui->loadStack->setCurrentWidget(ui->parseProgressPage);
-
-    // reset maximum to show throbber, we may not get progress notifications
-    ui->openFileProgressBar->setMaximum(0);
+    m_startPage->showParseFileProgress();
+    m_pageStack->setCurrentWidget(m_startPage);
 
     // TODO: support input files of different types via plugins
     m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths,
@@ -724,12 +229,11 @@ void MainWindow::openFile(const QString& path)
 void MainWindow::openFile(const QUrl& url)
 {
     if (!url.isLocalFile()) {
-        showError(tr("Cannot open remote file %1.").arg(url.toString()));
+        emit openFileError(tr("Cannot open remote file %1.").arg(url.toString()));
         return;
     }
     openFile(url.toLocalFile());
 }
-
 void MainWindow::aboutKDAB()
 {
     AboutDialog dialog(this);
@@ -773,120 +277,61 @@ void MainWindow::aboutHotspot()
     dialog.exec();
 }
 
-void MainWindow::customContextMenu(const QPoint &point, QTreeView* view, int symbolRole)
+void MainWindow::setupPathSettingsMenu()
 {
-    const auto index = view->indexAt(point);
-    if (!index.isValid()) {
-        return;
-    }
-
-    QMenu contextMenu;
-    auto *viewCallerCallee = contextMenu.addAction(tr("View Caller/Callee"));
-    auto *action = contextMenu.exec(QCursor::pos());
-    if (action == viewCallerCallee) {
-        const auto symbol = index.data(symbolRole).value<Data::Symbol>();
-        jumpToCallerCallee(symbol);
-    }
-}
-
-void MainWindow::onBottomUpContextMenu(const QPoint &point)
-{
-    customContextMenu(point, ui->bottomUpTreeView, BottomUpModel::SymbolRole);
-}
-
-void MainWindow::onTopDownContextMenu(const QPoint &point)
-{
-    customContextMenu(point, ui->topDownTreeView, TopDownModel::SymbolRole);
-}
-
-void MainWindow::jumpToCallerCallee(const Data::Symbol &symbol)
-{
-    auto callerCalleeIndex = m_callerCalleeProxy->mapFromSource(m_callerCalleeCostModel->indexForSymbol(symbol));
-    ui->callerCalleeTableView->setCurrentIndex(callerCalleeIndex);
-    ui->resultsTabWidget->setCurrentWidget(ui->callerCalleeTab);
-}
-
-void MainWindow::navigateToCode(const QString &filePath, int lineNumber, int columnNumber)
-{
-    const auto settings = m_config->group("CodeNavigation");
-    const auto ideIdx = settings.readEntry("IDE", -1);
-
-    QString command;
-#if !defined(Q_OS_WIN) && !defined(Q_OS_OSX) // Remove this #if branch when adding real data to ideSettings for Windows/OSX.
-    if (ideIdx >= 0 && ideIdx < ideSettingsSize) {
-        command += QString::fromUtf8(ideSettings[ideIdx].app);
-        command += QString::fromUtf8(" ");
-        command += QString::fromUtf8(ideSettings[ideIdx].args);
-    } else
-#endif
-    if (ideIdx == -1) {
-        command = settings.readEntry("CustomCommand");
-    }
-
-    if (!command.isEmpty()) {
-        command.replace(QStringLiteral("%f"), filePath);
-        command.replace(QStringLiteral("%l"), QString::number(std::max(1, lineNumber)));
-        command.replace(QStringLiteral("%c"), QString::number(std::max(1, columnNumber)));
-
-        QProcess::startDetached(command);
-    } else {
-        QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
-        return;
-    }
-}
-
-void MainWindow::setCodeNavigationIDE(QAction *action)
-{
-    auto settings = m_config->group("CodeNavigation");
-
-    if (action->data() == -1) {
-        const auto customCmd = QInputDialog::getText(
-            this, tr("Custom Code Navigation"),
-            tr("Specify command to use for code navigation, '%f' will be replaced by the file name, '%l' by the line number and '%c' by the column number."),
-            QLineEdit::Normal, settings.readEntry("CustomCommand")
-            );
-        if (!customCmd.isEmpty()) {
-            settings.writeEntry("CustomCommand", customCmd);
-            settings.writeEntry("IDE", -1);
-        }
-        return;
-    }
-
-    const auto defaultIde = action->data().toInt();
-    settings.writeEntry("IDE", defaultIde);
-}
-
-void MainWindow::onSourceMapContextMenu(const QPoint &point)
-{
-    const auto index = ui->sourceMapView->indexAt(point);
-    if (!index.isValid()) {
-        return;
-    }
-
-    const auto sourceMap = index.data(SourceMapModel::LocationRole).value<QString>();
-    auto seperator = sourceMap.lastIndexOf(QLatin1Char(':'));
-    if (seperator <= 0) {
-        return;
-    }
-
-    auto showMenu = [this] (const QString& pathName, const QString& fileName, int lineNumber) -> bool {
-        if (QFileInfo::exists(pathName + fileName)) {
-            QMenu contextMenu;
-            auto *viewCallerCallee = contextMenu.addAction(tr("Open in editor"));
-            auto *action = contextMenu.exec(QCursor::pos());
-            if (action == viewCallerCallee) {
-                navigateToCode(pathName + fileName, lineNumber, 0);
-                return true;
-            }
-        }
-        return false;
+    auto menu = new QMenu(this);
+    auto addPathAction = [menu] (const QString& label,
+                                 std::function<void(const QString& newValue)> setPath,
+                                 QString* value,
+                                 const QString& placeHolder,
+                                 const QString& tooltip)
+    {
+        auto action = new QWidgetAction(menu);
+        auto container = new QWidget;
+        auto layout = new QHBoxLayout;
+        layout->addWidget(new QLabel(label));
+        auto lineEdit = new QLineEdit;
+        lineEdit->setPlaceholderText(placeHolder);
+        lineEdit->setText(*value);
+        connect(lineEdit, &QLineEdit::textChanged,
+                lineEdit, [setPath] (const QString& newValue) { setPath(newValue); });
+        layout->addWidget(lineEdit);
+        container->setToolTip(tooltip);
+        container->setLayout(layout);
+        action->setDefaultWidget(container);
+        menu->addAction(action);
     };
-
-    QString fileName = sourceMap.left(seperator);
-    int lineNumber = sourceMap.mid(seperator+1).toInt();
-    if (!showMenu(m_sysroot, fileName, lineNumber)) {
-         showMenu(m_appPath, fileName, lineNumber);
-    }
+    addPathAction(tr("Sysroot:"),
+                  [this] (const QString& newValue) { setSysroot(newValue); },
+                  &m_sysroot,
+                  tr("local machine"),
+                  tr("Path to the sysroot. Leave empty to use the local machine."));
+    addPathAction(tr("Application Path:"),
+                  [this] (const QString& newValue) { setAppPath(newValue); },
+                  &m_appPath,
+                  tr("auto-detect"),
+                  tr("Path to the application binary and library."));
+    addPathAction(tr("Extra Library Paths:"),
+                  [this] (const QString& newValue) { setExtraLibPaths(newValue); },
+                  &m_extraLibPaths,
+                  tr("empty"),
+                  tr("List of colon-separated paths that contain additional libraries."));
+    addPathAction(tr("Debug Paths:"),
+                  [this] (const QString& newValue) { setDebugPaths(newValue); },
+                  &m_debugPaths,
+                  tr("auto-detect"),
+                  tr("List of colon-separated paths that contain debug information."));
+    addPathAction(tr("Kallsyms:"),
+                  [this] (const QString& newValue) { setKallsyms(newValue); },
+                  &m_kallsyms,
+                  tr("auto-detect"),
+                  tr("Path to the kernel symbol mapping."));
+    addPathAction(tr("Architecture:"),
+                  [this] (const QString& newValue) { setArch(newValue); },
+                  &m_arch,
+                  tr("auto-detect"),
+                  tr("System architecture, e.g. x86_64, arm, aarch64 etc."));
+    m_startPage->setPathSettingsMenu(menu);
 }
 
 void MainWindow::setupCodeNavigationMenu()
@@ -944,45 +389,52 @@ void MainWindow::setupCodeNavigationMenu()
     ui->settingsMenu->addMenu(menu);
 }
 
-void MainWindow::setupPathSettingsMenu()
+void MainWindow::setCodeNavigationIDE(QAction *action)
 {
-    auto menu = new QMenu(this);
-    auto addPathAction = [menu] (const QString& label, QString* value,
-                                 const QString& placeHolder,
-                                 const QString& tooltip)
-    {
-        auto action = new QWidgetAction(menu);
-        auto container = new QWidget;
-        auto layout = new QHBoxLayout;
-        layout->addWidget(new QLabel(label));
-        auto lineEdit = new QLineEdit;
-        lineEdit->setPlaceholderText(placeHolder);
-        lineEdit->setText(*value);
-        connect(lineEdit, &QLineEdit::textChanged,
-                lineEdit, [value] (const QString& newValue) { *value = newValue; });
-        layout->addWidget(lineEdit);
-        container->setToolTip(tooltip);
-        container->setLayout(layout);
-        action->setDefaultWidget(container);
-        menu->addAction(action);
-    };
-    addPathAction(tr("Sysroot:"), &m_sysroot,
-                  tr("local machine"),
-                  tr("Path to the sysroot. Leave empty to use the local machine."));
-    addPathAction(tr("Application Path:"), &m_appPath,
-                  tr("auto-detect"),
-                  tr("Path to the application binary and library."));
-    addPathAction(tr("Extra Library Paths:"), &m_extraLibPaths,
-                  tr("empty"),
-                  tr("List of colon-separated paths that contain additional libraries."));
-    addPathAction(tr("Debug Paths:"), &m_debugPaths,
-                  tr("auto-detect"),
-                  tr("List of colon-separated paths that contain debug information."));
-    addPathAction(tr("Kallsyms:"), &m_kallsyms,
-                  tr("auto-detect"),
-                  tr("Path to the kernel symbol mapping."));
-    addPathAction(tr("Architecture:"), &m_arch,
-                  tr("auto-detect"),
-                  tr("System architecture, e.g. x86_64, arm, aarch64 etc."));
-    ui->pathSettings->setMenu(menu);
+    auto settings = m_config->group("CodeNavigation");
+
+    if (action->data() == -1) {
+        const auto customCmd = QInputDialog::getText(
+            this, tr("Custom Code Navigation"),
+            tr("Specify command to use for code navigation, '%f' will be replaced by the file name, '%l' by the line number and '%c' by the column number."),
+            QLineEdit::Normal, settings.readEntry("CustomCommand")
+            );
+        if (!customCmd.isEmpty()) {
+            settings.writeEntry("CustomCommand", customCmd);
+            settings.writeEntry("IDE", -1);
+        }
+        return;
+    }
+
+    const auto defaultIde = action->data().toInt();
+    settings.writeEntry("IDE", defaultIde);
+}
+
+void MainWindow::navigateToCode(const QString &filePath, int lineNumber, int columnNumber)
+{
+    const auto settings = m_config->group("CodeNavigation");
+    const auto ideIdx = settings.readEntry("IDE", -1);
+
+    QString command;
+#if !defined(Q_OS_WIN) && !defined(Q_OS_OSX) // Remove this #if branch when adding real data to ideSettings for Windows/OSX.
+    if (ideIdx >= 0 && ideIdx < ideSettingsSize) {
+        command += QString::fromUtf8(ideSettings[ideIdx].app);
+        command += QString::fromUtf8(" ");
+        command += QString::fromUtf8(ideSettings[ideIdx].args);
+    } else
+#endif
+    if (ideIdx == -1) {
+        command = settings.readEntry("CustomCommand");
+    }
+
+    if (!command.isEmpty()) {
+        command.replace(QStringLiteral("%f"), filePath);
+        command.replace(QStringLiteral("%l"), QString::number(std::max(1, lineNumber)));
+        command.replace(QStringLiteral("%c"), QString::number(std::max(1, columnNumber)));
+
+        QProcess::startDetached(command);
+    } else {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
+        return;
+    }
 }

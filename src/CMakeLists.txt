@@ -29,10 +29,26 @@ set(hotspot_SRCS
     mainwindow.cpp
     flamegraph.cpp
     aboutdialog.cpp
+    startpage.cpp
+    recordpage.cpp
+    resultspage.cpp
+    resultssummarypage.cpp
+    resultstopdownpage.cpp
+    resultsbottomuppage.cpp
+    resultsflamegraphpage.cpp
+    resultscallercalleepage.cpp
 
     # ui files:
     mainwindow.ui
     aboutdialog.ui
+    startpage.ui
+    recordpage.ui
+    resultspage.ui
+    resultssummarypage.ui
+    resultstopdownpage.ui
+    resultsbottomuppage.ui
+    resultsflamegraphpage.ui
+    resultscallercalleepage.ui
 
     # resources:
     resources.qrc
