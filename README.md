@@ -64,6 +64,11 @@ apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev li
 dnf install cmake gcc gcc-c++ qt5 qt5-devel extra-cmake-modules elfutils-devel kf5-threadweaver-devel kf5-ki18n-devel kf5-kconfigwidgets-devel kf5-kitemviews-devel kf5-kitemmodels-devel
 ```
 
+### Arch Linux
+```
+pacman -Sy cmake gcc extra-cmake-modules threadweaver ki18n kconfigwidgets kitemviews kitemmodels libelf gettext qt5-base
+```
+
 ## Building
 
 ```
