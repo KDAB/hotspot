@@ -63,6 +63,8 @@ if(Qt5_FOUND AND ECM_FOUND)
         CoreAddons
         ItemViews
         ItemModels
+        KIO
+        Solid
         REQUIRED
     )
 endif()

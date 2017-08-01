@@ -54,6 +54,11 @@ target_link_libraries(hotspot
     KF5::ConfigWidgets
     KF5::ItemViews
     KF5::ItemModels
+    KF5::KIOCore
+    KF5::KIOFileWidgets
+    KF5::KIOWidgets
+    KF5::KIONTLM
+    KF5::Solid
     models
 )
 
