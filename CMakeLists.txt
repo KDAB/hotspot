@@ -49,7 +49,7 @@ set(PROJECT_VERSION_STRING "${HOTSPOT_VERSION_STRING}")
 
 include(FeatureSummary)
 
-find_package(Qt5 COMPONENTS Core Widgets Network Test REQUIRED)
+find_package(Qt5 5.6 COMPONENTS Core Widgets Network Test REQUIRED)
 find_package(LibElf REQUIRED)
 find_package(Elfutils REQUIRED) # TODO: make optional, use internal copy
 find_package(ECM 1.0.0 NO_MODULE REQUIRED)
