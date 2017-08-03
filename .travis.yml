@@ -1,0 +1,39 @@
+language: cpp
+compiler: gcc
+sudo: require
+dist: trusty
+
+before_install:
+  - sudo add-apt-repository ppa:beineri/opt-qt59-trusty -y
+  - sudo apt-get update -qq
+    
+install: 
+  - sudo apt-get -y install qt59base qt59x11extras elfutils libelf-dev libdw-dev libasm-dev
+  - source /opt/qt*/bin/qt*-env.sh
+  - git clone git://anongit.kde.org/extra-cmake-modules
+  - cd extra-cmake-modules
+  - mkdir build
+  - cd build
+  - cmake .. # or run : cmake -DCMAKE_INSTALL_PREFIX=/usr .. &&
+  - make
+  - sudo make install
+  - cd ../..
+  - # Precompiled KF5
+  - wget -c "https://github.com/chigraph/precompiled-kf5-linux/releases/download/precompiled/kf5-gcc6-linux64-release.tar.xz"
+  - tar xf kf5-gcc6-linux64-release.tar.xz
+  - sudo cp -Rf root/kf5-release/* /opt/qt*/
+
+script:
+  - mkdir build
+  - cd build
+  - cmake .. -DCMAKE_INSTALL_PREFIX=/usr
+  - make -j$(nproc)
+  - make DESTDIR=appdir install ; find appdir/
+  - mkdir -p appdir/usr/share/applications/ # FIXME: Do in CMakeLists.txt
+  - cp ../hotspot.desktop appdir/usr/share/applications/ # FIXME: Do in CMakeLists.txt
+  - wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" 
+  - chmod a+x linuxdeployqt*.AppImage
+  - unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
+  - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs
+  - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage 
+  - curl --upload-file ./Hotspot-*.AppImage https://transfer.sh/Hotspot-git.$(git rev-parse --short HEAD)-x86_64.AppImage
