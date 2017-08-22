@@ -549,6 +549,9 @@ void FlameGraph::setBottomUpData(const Data::BottomUpResults& bottomUpData)
     disconnect(m_costSource, 0, this, 0);
     m_costSource->clear();
     for (int i = 0, c = bottomUpData.costs.numTypes(); i < c; ++i) {
+        if (!bottomUpData.costs.totalCost(i)) {
+            continue;
+        }
         const auto& typeName = bottomUpData.costs.typeName(i);
         m_costSource->addItem(typeName, QVariant::fromValue(i));
         m_costSource->setItemData(i, i18n("Show a flame graph over the aggregated %1 sample costs.", typeName),

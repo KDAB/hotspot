@@ -190,6 +190,16 @@ bool isIntel()
            instructionSets.testFlag(Solid::Processor::IntelSse41) ||
            instructionSets.testFlag(Solid::Processor::IntelSse42);
 }
+
+void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns)
+{
+    for (int i = 0; i < costs.numTypes(); ++i) {
+        if (!costs.totalCost(i)) {
+            view->hideColumn(numBaseColumns + i);
+        }
+    }
+}
+
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -288,20 +298,29 @@ MainWindow::MainWindow(QWidget *parent) :
             this, [this, bottomUpCostModel] (const Data::BottomUpResults& data) {
                 bottomUpCostModel->setData(data);
                 ui->flameGraph->setBottomUpData(data);
+                hideEmptyColumns(data.costs, ui->bottomUpTreeView, BottomUpModel::NUM_BASE_COLUMNS);
+                hideEmptyColumns(data.costs, ui->topHotspotsTableView, BottomUpModel::NUM_BASE_COLUMNS);
             });
 
     connect(m_parser, &PerfParser::topDownDataAvailable,
             this, [this, topDownCostModel] (const Data::TopDownResults& data) {
                 topDownCostModel->setData(data);
                 ui->flameGraph->setTopDownData(data);
+                hideEmptyColumns(data.inclusiveCosts, ui->topDownTreeView, TopDownModel::NUM_BASE_COLUMNS);
+                hideEmptyColumns(data.selfCosts, ui->topDownTreeView, TopDownModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes());
             });
 
     connect(m_parser, &PerfParser::callerCalleeDataAvailable,
             this, [this] (const Data::CallerCalleeResults& data) {
                 m_callerCalleeCostModel->setResults(data);
+                hideEmptyColumns(data.inclusiveCosts, ui->callerCalleeTableView, CallerCalleeModel::NUM_BASE_COLUMNS);
+                hideEmptyColumns(data.selfCosts, ui->callerCalleeTableView, CallerCalleeModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes());
                 auto view = ui->callerCalleeTableView;
                 view->sortByColumn(CallerCalleeModel::InitialSortColumn);
                 view->setCurrentIndex(view->model()->index(0, 0, {}));
+                hideEmptyColumns(data.inclusiveCosts, ui->callersView, CallerModel::NUM_BASE_COLUMNS);
+                hideEmptyColumns(data.inclusiveCosts, ui->calleesView, CalleeModel::NUM_BASE_COLUMNS);
+                hideEmptyColumns(data.inclusiveCosts, ui->sourceMapView, SourceMapModel::NUM_BASE_COLUMNS);
             });
 
     connect(m_parser, &PerfParser::parsingFinished,
