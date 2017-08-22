@@ -28,8 +28,10 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QProcess>
-#include <csignal>
 #include <QDir>
+#include <QStandardPaths>
+
+#include <csignal>
 
 #include "perfrecord.h"
 
@@ -53,6 +55,11 @@ void PerfRecord::record(const QStringList &perfOptions, const QString &outputPat
     m_perfRecordProcess->setProcessChannelMode(QProcess::MergedChannels);
 
     QFileInfo exeFileInfo(exePath);
+
+    if (!exeFileInfo.exists()) {
+        exeFileInfo.setFile(QStandardPaths::findExecutable(exePath));
+    }
+
     if (!exeFileInfo.exists()) {
         emit recordingFailed(tr("File '%1' does not exist.").arg(exePath));
         return;
@@ -118,7 +125,7 @@ void PerfRecord::record(const QStringList &perfOptions, const QString &outputPat
         m_outputPath
     };
     perfCommand += perfOptions;
-    perfCommand += exePath;
+    perfCommand += exeFileInfo.absoluteFilePath();
     perfCommand += exeOptions;
 
     if (!workingDirectory.isEmpty()) {

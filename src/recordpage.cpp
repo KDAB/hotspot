@@ -26,7 +26,7 @@
 */
 
 #include <QDebug>
-#include <QPainter>
+#include <QStandardPaths>
 
 #include <KUrlRequester>
 #include <Solid/Device>
@@ -167,6 +167,10 @@ void RecordPage::onApplicationNameChanged(const QString& filePath)
     QFileInfo application(filePath);
 
     if (!application.exists()) {
+        application.setFile(QStandardPaths::findExecutable(filePath));
+    }
+
+    if (!application.exists()) {
         ui->applicationRecordErrorMessage->setText(tr("Application file cannot be found: %1").arg(filePath));
     } else if (!application.isFile()) {
         ui->applicationRecordErrorMessage->setText(tr("Application file is not valid: %1").arg(filePath));
@@ -174,7 +178,7 @@ void RecordPage::onApplicationNameChanged(const QString& filePath)
         ui->applicationRecordErrorMessage->setText(tr("Application file is not executable: %1").arg(filePath));
     } else {
         if (ui->workingDirectory->text().isEmpty()) {
-            ui->workingDirectory->setPlaceholderText(QFileInfo(filePath).path());
+            ui->workingDirectory->setPlaceholderText(application.path());
         }
         ui->applicationRecordErrorMessage->hide();
         return;
@@ -203,6 +207,7 @@ void RecordPage::onViewPerfRecordResultsButtonClicked()
 {
     emit openFile(m_resultsFile);
 }
+
 void RecordPage::onOutputFileNameChanged(const QString& filePath)
 {
     const auto perfDataExtension = QStringLiteral(".data");
