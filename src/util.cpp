@@ -61,6 +61,10 @@ QString Util::formatCost(quint64 cost)
 
 QString Util::formatCostRelative(quint64 selfCost, quint64 totalCost, bool addPercentSign)
 {
+    if (!totalCost) {
+        return QString();
+    }
+
     auto ret = QString::number(double(selfCost) * 100. / totalCost, 'g', 3);
     if (addPercentSign) {
         ret.append(QLatin1Char('%'));
