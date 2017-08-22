@@ -226,14 +226,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->mainPageStack->setCurrentWidget(ui->startPage);
     ui->openFileButton->setFocus();
-    ui->workingDirectory->setMode(KFile::Directory);
+    ui->applicationName->setMode(KFile::File | KFile::ExistingOnly | KFile::LocalOnly);
+    ui->workingDirectory->setMode(KFile::Directory | KFile::LocalOnly);
     ui->workingDirectory->setText(QDir::currentPath());
     ui->applicationRecordErrorMessage->hide();
     ui->applicationRecordErrorMessage->setCloseButtonVisible(false);
     ui->applicationRecordErrorMessage->setWordWrap(true);
     ui->applicationRecordErrorMessage->setMessageType(KMessageWidget::Error);
     ui->outputFile->setText(QDir::currentPath() + QDir::separator() + QStringLiteral("perf.data"));
-    ui->outputFile->setMode(KFile::File);
+    ui->outputFile->setMode(KFile::File | KFile::LocalOnly);
     connect(ui->openFileButton, &QPushButton::clicked, this, &MainWindow::onOpenFileButtonClicked);
     connect(ui->recordDataButton, &QPushButton::clicked, this, &MainWindow::onRecordDataButtonClicked);
     connect(ui->homeButton, &QPushButton::clicked, this, &MainWindow::onHomeButtonClicked);
