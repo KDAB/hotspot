@@ -50,6 +50,7 @@ void PerfRecord::record(const QStringList &perfOptions, const QString &outputPat
     m_perfRecordProcess->kill();
     m_perfRecordProcess->deleteLater();
     m_perfRecordProcess = new QProcess(this);
+    m_perfRecordProcess->setProcessChannelMode(QProcess::MergedChannels);
 
     QFileInfo exeFileInfo(exePath);
     if (!exeFileInfo.exists()) {
@@ -101,15 +102,9 @@ void PerfRecord::record(const QStringList &perfOptions, const QString &outputPat
                 emit recordingFailed(m_perfRecordProcess->errorString());
             });
 
-    connect(m_perfRecordProcess, &QProcess::readyReadStandardOutput,
+    connect(m_perfRecordProcess, &QProcess::readyRead,
             [this] () {
-                QString output = QString::fromUtf8(m_perfRecordProcess->readAllStandardOutput());
-                emit recordingOutput(output);
-            });
-
-    connect(m_perfRecordProcess, &QProcess::readyReadStandardError,
-            [this] () {
-                QString output = QString::fromUtf8(m_perfRecordProcess->readAllStandardError());
+                QString output = QString::fromUtf8(m_perfRecordProcess->readAll());
                 emit recordingOutput(output);
             });
 
