@@ -71,3 +71,22 @@ QString Util::formatCostRelative(quint64 selfCost, quint64 totalCost, bool addPe
     }
     return ret;
 }
+
+QString Util::formatTimeString(quint64 nanoseconds)
+{
+    quint64 totalSeconds = nanoseconds / 1000000000;
+    quint64 days = totalSeconds / 60 / 60 / 24;
+    quint64 hours = (totalSeconds / 60 / 60) % 24;
+    quint64 minutes = (totalSeconds / 60) % 60;
+    quint64 seconds = totalSeconds % 60;
+    quint64 milliseconds = (nanoseconds / 1000000) % 1000;
+
+    auto format = [] (quint64 fragment, int precision) -> QString {
+        return QString::number(fragment).rightJustified(precision, QLatin1Char('0'));
+    };
+    auto optional = [format] (quint64 fragment) -> QString {
+        return fragment > 0 ? format(fragment, 2) + QLatin1Char(':') : QString();
+    };
+    return optional(days) + optional(hours) + optional(minutes)
+            + format(seconds, 2) + QLatin1Char('.') + format(milliseconds, 3) + QLatin1Char('s');
+}
