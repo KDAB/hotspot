@@ -192,7 +192,7 @@ QVariant TopDownModel::rowData(const Data::TopDown* row, int column, int role) c
                         + QLatin1Char('\n');
         Q_ASSERT(m_results.selfCosts.numTypes() == m_results.inclusiveCosts.numTypes());
         for (int i = 0, c = m_results.inclusiveCosts.numTypes(); i < c; ++i) {
-            auto extendTooltip = [&toolTip, i, row](const auto& costs, const QString& formatting) {
+            auto extendTooltip = [&toolTip, i, row](const Data::Costs& costs, const QString& formatting) {
                 const auto currentCost = costs.cost(i, row->id);
                 const auto totalCost = costs.totalCost(i);
                 toolTip += formatting

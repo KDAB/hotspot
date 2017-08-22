@@ -39,7 +39,7 @@ Here are some screenshots showing some of the hotspot features in action:
 As of now, you will need the following dependencies to build this project:
 
 - CMake 3.1.0 or higher
-- any C++14 enabled compiler
+- any C++11 enabled compiler
 - Qt 5.6.0 or higher
 - libelf
 - libelfutils
