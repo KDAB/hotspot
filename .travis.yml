@@ -26,7 +26,7 @@ install:
 script:
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_CXX_FLAGS=-std=c++11
+  - cmake .. -DCMAKE_INSTALL_PREFIX=/usr
   - make -j$(nproc)
   - make DESTDIR=appdir install ; find appdir/
   - mkdir -p appdir/usr/share/applications/ # FIXME: Do in CMakeLists.txt
