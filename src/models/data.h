@@ -41,6 +41,11 @@
 namespace Data {
 struct Symbol
 {
+    Symbol(const QString& symbol = {}, const QString& binary = {})
+        : symbol(symbol)
+        , binary(binary)
+    {}
+
     // function name
     QString symbol;
     // dso / executable name
@@ -81,7 +86,12 @@ inline uint qHash(const Symbol& symbol, uint seed = 0)
 
 struct Location
 {
-    quint64 address;
+    Location(quint64 address = 0, const QString& location = {})
+        : address(address)
+        , location(location)
+    {}
+
+    quint64 address = 0;
     // file + line
     QString location;
 
