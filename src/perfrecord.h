@@ -38,15 +38,18 @@ public:
     PerfRecord(QObject* parent = nullptr);
     ~PerfRecord();
 
-    void record(const QStringList &perfOptions, const QString &outputPath,
-                const QString &exePath, const QStringList &exeOptions);
+    void record(const QStringList &perfOptions, const QString &outputPath, const QString &exePath,
+                const QStringList &exeOptions, const QString &workingDirectory = QString());
     const QString perfCommand();
+    void stopRecording();
 
 signals:
     void recordingFinished(const QString &fileLocation);
     void recordingFailed(const QString &errorMessage);
+    void recordingOutput(const QString &errorMessage);
 
 private:
     QProcess *m_perfRecordProcess;
     QString m_outputPath;
+    bool m_userTerminated;
 };

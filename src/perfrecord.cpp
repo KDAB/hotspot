@@ -28,6 +28,8 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QProcess>
+#include <csignal>
+#include <QDir>
 
 #include "perfrecord.h"
 
@@ -35,44 +37,80 @@ PerfRecord::PerfRecord(QObject* parent)
     : QObject(parent)
     , m_perfRecordProcess(new QProcess(this))
     , m_outputPath()
+    , m_userTerminated(false)
 {
 }
 
 PerfRecord::~PerfRecord() = default;
 
-void PerfRecord::record(const QStringList &perfOptions, const QString &outputPath,
-                        const QString &exePath, const QStringList &exeOptions)
+void PerfRecord::record(const QStringList &perfOptions, const QString &outputPath, const QString &exePath,
+                        const QStringList &exeOptions, const QString &workingDirectory)
 {
-    QFileInfo info(exePath);
-    if (!info.exists()) {
+    // Reset perf record process to avoid getting signals from old processes
+    m_perfRecordProcess->kill();
+    m_perfRecordProcess->deleteLater();
+    m_perfRecordProcess = new QProcess(this);
+
+    QFileInfo exeFileInfo(exePath);
+    if (!exeFileInfo.exists()) {
         emit recordingFailed(tr("File '%1' does not exist.").arg(exePath));
         return;
     }
-    if (!info.isFile()) {
+    if (!exeFileInfo.isFile()) {
         emit recordingFailed(tr("'%1' is not a file.").arg(exePath));
         return;
     }
-    if (!info.isExecutable()) {
+    if (!exeFileInfo.isExecutable()) {
         emit recordingFailed(tr("File '%1' is not executable.").arg(exePath));
+        return;
+    }
+
+    QFileInfo outputFileInfo(outputPath);
+    QString folderPath = outputFileInfo.dir().path();
+    QFileInfo folderInfo(folderPath);
+    if (!folderInfo.exists()) {
+        emit recordingFailed(tr("Folder '%1' does not exist.").arg(folderPath));
+        return;
+    }
+    if (!folderInfo.isDir()) {
+        emit recordingFailed(tr("'%1' is not a folder.").arg(folderPath));
+        return;
+    }
+    if (!folderInfo.isWritable()) {
+        emit recordingFailed(tr("Folder '%1' is not writable.").arg(folderPath));
         return;
     }
 
     connect(m_perfRecordProcess, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
             [this] (int exitCode, QProcess::ExitStatus exitStatus) {
-                qDebug() << exitCode << exitStatus;
+                Q_UNUSED(exitStatus)
 
-                if (exitCode == EXIT_SUCCESS && QFileInfo::exists(m_outputPath)) {
+                QFileInfo outputFileInfo(m_outputPath);
+                if ((exitCode == EXIT_SUCCESS || (exitCode == SIGTERM && m_userTerminated)
+                     || outputFileInfo.size() > 0) && outputFileInfo.exists()) {
                     emit recordingFinished(m_outputPath);
                 } else {
                     emit recordingFailed(tr("Failed to record perf data, error code %1.").arg(exitCode));
                 }
+                m_userTerminated = false;
             });
 
     connect(m_perfRecordProcess, &QProcess::errorOccurred,
             [this] (QProcess::ProcessError error) {
-                qWarning() << error << m_perfRecordProcess->errorString();
-
+                Q_UNUSED(error)
                 emit recordingFailed(m_perfRecordProcess->errorString());
+            });
+
+    connect(m_perfRecordProcess, &QProcess::readyReadStandardOutput,
+            [this] () {
+                QString output = QString::fromUtf8(m_perfRecordProcess->readAllStandardOutput());
+                emit recordingOutput(output);
+            });
+
+    connect(m_perfRecordProcess, &QProcess::readyReadStandardError,
+            [this] () {
+                QString output = QString::fromUtf8(m_perfRecordProcess->readAllStandardError());
+                emit recordingOutput(output);
             });
 
     m_outputPath = outputPath;
@@ -88,10 +126,20 @@ void PerfRecord::record(const QStringList &perfOptions, const QString &outputPat
     perfCommand += exePath;
     perfCommand += exeOptions;
 
+    if (!workingDirectory.isEmpty()) {
+        m_perfRecordProcess->setWorkingDirectory(workingDirectory);
+    }
+
     m_perfRecordProcess->start(perfBinary, perfCommand);
 }
 
 const QString PerfRecord::perfCommand()
 {
     return QStringLiteral("perf ") + m_perfRecordProcess->arguments().join(QLatin1Char(' '));
+}
+
+void PerfRecord::stopRecording()
+{
+    m_userTerminated = true;
+    m_perfRecordProcess->terminate();
 }

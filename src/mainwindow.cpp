@@ -47,11 +47,16 @@
 #include <KFormat>
 #include <KConfigGroup>
 #include <KRecentFilesAction>
+#include <KUrlRequester>
+#include <Solid/Device>
+#include <Solid/Processor>
+#include <KShell>
 
 #include "aboutdialog.h"
 #include "flamegraph.h"
 
 #include "parsers/perf/perfparser.h"
+#include "perfrecord.h"
 
 #include "models/summarydata.h"
 #include "models/hashmodel.h"
@@ -165,19 +170,48 @@ static const IdeSettings ideSettings[] = {
 #else
     static const int ideSettingsSize = sizeof(ideSettings) / sizeof(IdeSettings);
 #endif
+
+bool isIntel()
+{
+    const auto list = Solid::Device::listFromType(Solid::DeviceInterface::Processor, QString());
+    Solid::Device device = list[0];
+    if(list.empty() || !device.is<Solid::Processor>()) {
+        return false;
+    }
+    const auto *processor= device.as<Solid::Processor>();
+    const auto instructionSets = processor->instructionSets();
+
+    return instructionSets.testFlag(Solid::Processor::IntelMmx) ||
+           instructionSets.testFlag(Solid::Processor::IntelSse) ||
+           instructionSets.testFlag(Solid::Processor::IntelSse2) ||
+           instructionSets.testFlag(Solid::Processor::IntelSse3) ||
+           instructionSets.testFlag(Solid::Processor::IntelSsse3) ||
+           instructionSets.testFlag(Solid::Processor::IntelSse4) ||
+           instructionSets.testFlag(Solid::Processor::IntelSse41) ||
+           instructionSets.testFlag(Solid::Processor::IntelSse42);
+}
 }
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     m_parser(new PerfParser(this)),
-    m_config(KSharedConfig::openConfig())
+    m_config(KSharedConfig::openConfig()),
+    m_perfRecord(new PerfRecord(this))
 {
     ui->setupUi(this);
 
     ui->lostMessage->setVisible(false);
     ui->parserErrorsBox->setVisible(false);
-    ui->fileMenu->addAction(KStandardAction::open(this, SLOT(on_openFileButton_clicked()), this));
+
+    auto *recordDataAction = new QAction(this);
+    recordDataAction->setText(QStringLiteral("&Record Data"));
+    recordDataAction->setIcon(QIcon::fromTheme(QStringLiteral("media-record")));
+    recordDataAction->setShortcut(Qt::CTRL + Qt::Key_R);
+    ui->fileMenu->addAction(recordDataAction);
+    connect(recordDataAction, &QAction::triggered, this, &MainWindow::onRecordDataButtonClicked);
+
+    ui->fileMenu->addAction(KStandardAction::open(this, SLOT(onOpenFileButtonClicked()), this));
     m_recentFilesAction = KStandardAction::openRecent(this, SLOT(openFile(QUrl)), this);
     m_recentFilesAction->loadEntries(m_config->group("RecentFiles"));
     ui->fileMenu->addAction(m_recentFilesAction);
@@ -192,6 +226,34 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->mainPageStack->setCurrentWidget(ui->startPage);
     ui->openFileButton->setFocus();
+    ui->workingDirectory->setMode(KFile::Directory);
+    ui->workingDirectory->setText(QDir::currentPath());
+    ui->applicationRecordErrorMessage->hide();
+    ui->applicationRecordErrorMessage->setCloseButtonVisible(false);
+    ui->applicationRecordErrorMessage->setWordWrap(true);
+    ui->applicationRecordErrorMessage->setMessageType(KMessageWidget::Error);
+    ui->outputFile->setText(QDir::currentPath() + QDir::separator() + QStringLiteral("perf.data"));
+    ui->outputFile->setMode(KFile::File);
+    connect(ui->openFileButton, &QPushButton::clicked, this, &MainWindow::onOpenFileButtonClicked);
+    connect(ui->recordDataButton, &QPushButton::clicked, this, &MainWindow::onRecordDataButtonClicked);
+    connect(ui->homeButton, &QPushButton::clicked, this, &MainWindow::onHomeButtonClicked);
+    connect(ui->applicationName, &KUrlRequester::textChanged, this, &MainWindow::onApplicationNameChanged);
+    connect(ui->startRecordingButton, &QPushButton::toggled, this, &MainWindow::onStartRecordingButtonClicked);
+    connect(ui->workingDirectory, &KUrlRequester::textChanged, this, &MainWindow::onWorkingDirectoryNameChanged);
+    connect(ui->viewPerfRecordResultsButton, &QPushButton::clicked, this, &MainWindow::onViewPerfRecordResultsButtonClicked);
+    connect(ui->outputFile, &KUrlRequester::textChanged, this, &MainWindow::onOutputFileNameChanged);
+    connect(ui->outputFile, static_cast<void (KUrlRequester::*)(const QString&)>(&KUrlRequester::returnPressed),
+            this, &MainWindow::onOutputFileNameSelected);
+    connect(ui->outputFile, &KUrlRequester::urlSelected, this, &MainWindow::onOutputFileUrlChanged);
+
+    ui->recordTypeComboBox->addItem(tr("Launch Application"), QVariant::fromValue(LaunchApplication));
+    ui->callGraphComboBox->addItem(tr("None"), QVariant::fromValue(QString()));
+    ui->callGraphComboBox->addItem(tr("DWARF"), QVariant::fromValue(QStringLiteral("dwarf")));
+    ui->callGraphComboBox->addItem(tr("Frame Pointer"), QVariant::fromValue(QStringLiteral("fp")));
+    if (isIntel()) {
+        ui->callGraphComboBox->addItem(tr("Last Branch Record"), QVariant::fromValue(QStringLiteral("lbr")));
+    }
+    ui->callGraphComboBox->setCurrentIndex(1);
 
     auto bottomUpCostModel = new BottomUpModel(this);
     setupTreeView(ui->bottomUpTreeView,  ui->bottomUpSearch, bottomUpCostModel);
@@ -368,6 +430,30 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->resultsTabWidget->setTabToolTip(i, ui->resultsTabWidget->widget(i)->toolTip());
     }
 
+    connect(m_perfRecord, &PerfRecord::recordingFinished,
+            this, [this] (const QString& fileLocation) {
+                ui->startRecordingButton->setChecked(false);
+                ui->applicationRecordErrorMessage->hide();
+                m_resultsFile = fileLocation;
+                ui->viewPerfRecordResultsButton->setEnabled(true);
+    });
+
+    connect(m_perfRecord, &PerfRecord::recordingFailed,
+            this, [this] (const QString& errorMessage) {
+                ui->startRecordingButton->setChecked(false);
+                ui->applicationRecordErrorMessage->setText(errorMessage);
+                ui->applicationRecordErrorMessage->show();
+                ui->viewPerfRecordResultsButton->setEnabled(false);
+
+    });
+
+    connect(m_perfRecord, &PerfRecord::recordingOutput,
+            this, [this] (const QString& outputMessage) {
+                ui->perfResultsTextEdit->append(outputMessage);
+                ui->perfResultsTextEdit->show();
+                ui->perfResultsLabel->show();
+    });
+
     setupCodeNavigationMenu();
     setupPathSettingsMenu();
 
@@ -408,7 +494,7 @@ void MainWindow::setArch(const QString& arch)
     m_arch = arch;
 }
 
-void MainWindow::on_openFileButton_clicked()
+void MainWindow::onOpenFileButtonClicked()
 {
     const auto fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(),
                                                        tr("Data Files (*.data)"));
@@ -417,6 +503,123 @@ void MainWindow::on_openFileButton_clicked()
     }
 
     openFile(fileName);
+}
+
+void MainWindow::onRecordDataButtonClicked()
+{
+    ui->mainPageStack->setCurrentWidget(ui->recordDataPage);
+}
+
+void MainWindow::onHomeButtonClicked()
+{
+    ui->mainPageStack->setCurrentWidget(ui->startPage);
+}
+
+void MainWindow::onStartRecordingButtonClicked(bool checked)
+{
+    if (checked) {
+        ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-stop")));
+        ui->startRecordingButton->setText(tr("Stop Recording"));
+        ui->perfResultsTextEdit->clear();
+        ui->perfResultsTextEdit->hide();
+        ui->perfResultsLabel->hide();
+
+        QStringList perfOptions;
+        const auto callGraphOption = ui->callGraphComboBox->currentData().toString();
+
+        if (!callGraphOption.isEmpty()) {
+            perfOptions << QStringLiteral("--call-graph") << callGraphOption;
+        }
+
+        if (!ui->eventTypeBox->text().isEmpty()) {
+            perfOptions << QStringLiteral("--event") << ui->eventTypeBox->text();
+        }
+
+        m_perfRecord->record(perfOptions, ui->outputFile->text(), ui->applicationName->text(),
+                             KShell::splitArgs(ui->applicationParametersBox->text()),
+                             ui->workingDirectory->text());
+    } else {
+        ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
+        ui->startRecordingButton->setText(tr("Start Recording"));
+        m_perfRecord->stopRecording();
+    }
+}
+
+void MainWindow::onApplicationNameChanged(const QString& filePath)
+{
+    QFileInfo application(filePath);
+
+    if (!application.exists()) {
+        ui->applicationRecordErrorMessage->setText(tr("Application file cannot be found: %1").arg(filePath));
+    } else if (!application.isFile()) {
+        ui->applicationRecordErrorMessage->setText(tr("Application file is not valid: %1").arg(filePath));
+    } else if (!application.isExecutable()) {
+        ui->applicationRecordErrorMessage->setText(tr("Application file is not executable: %1").arg(filePath));
+    } else {
+        if (ui->workingDirectory->text().isEmpty()) {
+            ui->workingDirectory->setPlaceholderText(QFileInfo(filePath).path());
+        }
+        ui->applicationRecordErrorMessage->hide();
+        return;
+    }
+    ui->applicationRecordErrorMessage->show();
+}
+
+void MainWindow::onWorkingDirectoryNameChanged(const QString& folderPath)
+{
+    QFileInfo folder(folderPath);
+
+    if (!folder.exists()) {
+        ui->applicationRecordErrorMessage->setText(tr("Working directory folder cannot be found: %1").arg(folderPath));
+    } else if (!folder.isDir()) {
+        ui->applicationRecordErrorMessage->setText(tr("Working directory folder is not valid: %1").arg(folderPath));
+    } else if (!folder.isWritable()) {
+        ui->applicationRecordErrorMessage->setText(tr("Working directory folder is not writable: %1").arg(folderPath));
+    } else {
+        ui->applicationRecordErrorMessage->hide();
+        return;
+    }
+    ui->applicationRecordErrorMessage->show();
+}
+
+void MainWindow::onViewPerfRecordResultsButtonClicked()
+{
+    openFile(m_resultsFile);
+}
+void MainWindow::onOutputFileNameChanged(const QString& filePath)
+{
+    const auto perfDataExtension = QStringLiteral(".data");
+
+    QFileInfo file(filePath);
+    QFileInfo folder(file.absolutePath());
+
+    if (!folder.exists()) {
+        ui->applicationRecordErrorMessage->setText(tr("Output file directory folder cannot be found: %1").arg(folder.path()));
+    } else if (!folder.isDir()) {
+        ui->applicationRecordErrorMessage->setText(tr("Output file directory folder is not valid: %1").arg(folder.path()));
+    } else if (!folder.isWritable()) {
+        ui->applicationRecordErrorMessage->setText(tr("Output file directory folder is not writable: %1").arg(folder.path()));
+    } else if (!file.absoluteFilePath().endsWith(perfDataExtension)) {
+        ui->applicationRecordErrorMessage->setText(tr("Output file must end with %1").arg(perfDataExtension));
+    } else {
+        ui->applicationRecordErrorMessage->hide();
+        return;
+    }
+    ui->applicationRecordErrorMessage->show();
+}
+
+void MainWindow::onOutputFileNameSelected(const QString& filePath)
+{
+    const auto perfDataExtension = QStringLiteral(".data");
+
+    if (!filePath.endsWith(perfDataExtension)) {
+        ui->outputFile->setText(filePath + perfDataExtension);
+    }
+}
+
+void MainWindow::onOutputFileUrlChanged(const QUrl& fileUrl)
+{
+    onOutputFileNameSelected(fileUrl.toLocalFile());
 }
 
 void MainWindow::paintEvent(QPaintEvent* /*event*/)
@@ -470,6 +673,11 @@ void MainWindow::clear()
     ui->loadingResultsErrorLabel->hide();
     ui->mainPageStack->setCurrentWidget(ui->startPage);
     ui->loadStack->setCurrentWidget(ui->openFilePage);
+    ui->viewPerfRecordResultsButton->setEnabled(false);
+    ui->perfResultsTextEdit->clear();
+    ui->perfResultsTextEdit->hide();
+    ui->perfResultsLabel->hide();
+    m_resultsFile.clear();
 }
 
 void MainWindow::openFile(const QString& path)

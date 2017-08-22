@@ -46,6 +46,15 @@ class CallerCalleeModel;
 class QSortFilterProxyModel;
 class QTreeView;
 class KRecentFilesAction;
+class PerfRecord;
+
+enum RecordType
+{
+    LaunchApplication,
+    AttachToProcess,
+    ProfileSystem
+};
+Q_DECLARE_METATYPE(RecordType)
 
 class MainWindow : public QMainWindow
 {
@@ -75,7 +84,16 @@ public slots:
     void aboutHotspot();
 
 private slots:
-    void on_openFileButton_clicked();
+    void onOpenFileButtonClicked();
+    void onRecordDataButtonClicked();
+    void onHomeButtonClicked();
+    void onApplicationNameChanged(const QString& filePath);
+    void onStartRecordingButtonClicked(bool checked);
+    void onWorkingDirectoryNameChanged(const QString& folderPath);
+    void onViewPerfRecordResultsButtonClicked();
+    void onOutputFileNameChanged(const QString& filePath);
+    void onOutputFileUrlChanged(const QUrl& fileUrl);
+    void onOutputFileNameSelected(const QString& filePath);
 
     void customContextMenu(const QPoint &point, QTreeView* view, int symbolRole);
     void onBottomUpContextMenu(const QPoint &pos);
@@ -106,4 +124,6 @@ private:
     QPixmap m_background;
     KRecentFilesAction* m_recentFilesAction = nullptr;
     KSharedConfigPtr m_config;
+    PerfRecord* m_perfRecord;
+    QString m_resultsFile;
 };
