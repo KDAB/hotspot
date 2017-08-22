@@ -8,7 +8,7 @@ before_install:
   - sudo apt-get update -qq
     
 install: 
-  - sudo apt-get -y install qt59base qt59x11extras elfutils libelf-dev libdw-dev libasm-dev
+  - sudo apt-get -y install qt59base qt59svg qt59x11extras elfutils libelf-dev libdw-dev libasm-dev
   - source /opt/qt*/bin/qt*-env.sh
   - git clone git://anongit.kde.org/extra-cmake-modules
   - cd extra-cmake-modules
