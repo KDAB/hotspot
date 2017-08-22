@@ -449,7 +449,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(m_perfRecord, &PerfRecord::recordingOutput,
             this, [this] (const QString& outputMessage) {
-                ui->perfResultsTextEdit->append(outputMessage);
+                ui->perfResultsTextEdit->insertPlainText(outputMessage);
                 ui->perfResultsTextEdit->show();
                 ui->perfResultsLabel->show();
     });
