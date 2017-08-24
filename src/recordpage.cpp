@@ -156,9 +156,10 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
             perfOptions << QStringLiteral("--event") << ui->eventTypeBox->text();
         }
 
-        m_perfRecord->record(perfOptions, ui->outputFile->text(), ui->applicationName->text(),
+        m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(),
+                             ui->applicationName->url().toLocalFile(),
                              KShell::splitArgs(ui->applicationParametersBox->text()),
-                             ui->workingDirectory->text());
+                             ui->workingDirectory->url().toLocalFile());
     } else {
         ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
         ui->startRecordingButton->setText(tr("Start Recording"));
@@ -168,7 +169,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
 
 void RecordPage::onApplicationNameChanged(const QString& filePath)
 {
-    QFileInfo application(filePath);
+    QFileInfo application(ui->applicationName->url().toLocalFile());
 
     if (!application.exists()) {
         application.setFile(QStandardPaths::findExecutable(filePath));
@@ -192,7 +193,7 @@ void RecordPage::onApplicationNameChanged(const QString& filePath)
 
 void RecordPage::onWorkingDirectoryNameChanged(const QString& folderPath)
 {
-    QFileInfo folder(folderPath);
+    QFileInfo folder(ui->workingDirectory->url().toLocalFile());
 
     if (!folder.exists()) {
         ui->applicationRecordErrorMessage->setText(tr("Working directory folder cannot be found: %1").arg(folderPath));
@@ -212,11 +213,11 @@ void RecordPage::onViewPerfRecordResultsButtonClicked()
     emit openFile(m_resultsFile);
 }
 
-void RecordPage::onOutputFileNameChanged(const QString& filePath)
+void RecordPage::onOutputFileNameChanged(const QString& /*filePath*/)
 {
     const auto perfDataExtension = QStringLiteral(".data");
 
-    QFileInfo file(filePath);
+    QFileInfo file(ui->outputFile->url().toLocalFile());
     QFileInfo folder(file.absolutePath());
 
     if (!folder.exists()) {
