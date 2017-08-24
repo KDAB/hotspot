@@ -67,6 +67,10 @@ RecordPage::RecordPage(QWidget *parent)
     ui->setupUi(this);
 
     ui->applicationName->setMode(KFile::File | KFile::ExistingOnly | KFile::LocalOnly);
+    // we are only interested in executable files, so set the mime type filter accordingly
+    // note that exe's build with PIE are actually "shared libs"...
+    ui->applicationName->setMimeTypeFilters({QStringLiteral("application/x-executable"),
+                                             QStringLiteral("application/x-sharedlib")});
     ui->workingDirectory->setMode(KFile::Directory | KFile::LocalOnly);
     ui->workingDirectory->setText(QDir::currentPath());
     ui->applicationRecordErrorMessage->setCloseButtonVisible(false);
