@@ -34,6 +34,8 @@
 #include <QFileInfo>
 #include <QDebug>
 
+#include <initializer_list>
+
 QString Util::findLibexecBinary(const QString& name)
 {
     QDir dir(qApp->applicationDirPath());
@@ -89,4 +91,18 @@ QString Util::formatTimeString(quint64 nanoseconds)
     };
     return optional(days) + optional(hours) + optional(minutes)
             + format(seconds, 2) + QLatin1Char('.') + format(milliseconds, 3) + QLatin1Char('s');
+}
+
+QString Util::formatFrequency(quint64 occurrences, quint64 nanoseconds)
+{
+    auto hz = 1E9 * occurrences / nanoseconds;
+
+    static const auto units = {"Hz", "KHz", "MHz", "GHz", "THz"};
+    auto unit = units.begin();
+    auto lastUnit = units.end() - 1;
+    while (unit != lastUnit && hz > 1000.) {
+        hz /= 1000.;
+        ++unit;
+    }
+    return QString::number(hz, 'g', 4) + QLatin1String(*unit);
 }

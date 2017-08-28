@@ -51,5 +51,6 @@ QString formatString(const QString& input);
 QString formatCost(quint64 cost);
 QString formatCostRelative(quint64 selfCost, quint64 totalCost, bool addPercentSign = false);
 QString formatTimeString(quint64 nanoseconds);
+QString formatFrequency(quint64 occurrences, quint64 nanoseconds);
 
 }

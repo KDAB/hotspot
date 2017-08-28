@@ -90,14 +90,16 @@ ResultsSummaryPage::ResultsSummaryPage(PerfParser *parser, QWidget *parent)
                            << formatSummaryText(tr("Run Time"), Util::formatTimeString(data.applicationRunningTime))
                            << formatSummaryText(tr("Processes"), QString::number(data.processCount))
                            << formatSummaryText(tr("Threads"), QString::number(data.threadCount))
-                           << formatSummaryText(tr("Total Samples"), QString::number(data.sampleCount));
+                           << formatSummaryText(tr("Total Samples"), tr("%1 (%4)")
+                                .arg(QString::number(data.sampleCount), Util::formatFrequency(data.sampleCount, data.applicationRunningTime)));
                     const auto indent = QLatin1String("&nbsp;&nbsp;&nbsp;&nbsp;");
                     for (const auto& costSummary : data.costs) {
                         stream << formatSummaryText(indent + costSummary.label,
-                                                    tr("%1 (%2 samples, %3% of total)")
+                                                    tr("%1 (%2 samples, %3% of total, %4)")
                                                         .arg(costSummary.totalPeriod)
                                                         .arg(costSummary.sampleCount)
-                                                        .arg(Util::formatCostRelative(costSummary.sampleCount, data.sampleCount)));
+                                                        .arg(Util::formatCostRelative(costSummary.sampleCount, data.sampleCount))
+                                                        .arg(Util::formatFrequency(costSummary.sampleCount, data.applicationRunningTime)));
                     }
                     stream << formatSummaryText(tr("Lost Chunks"), QString::number(data.lostChunks))
                            << "</table></qt>";
