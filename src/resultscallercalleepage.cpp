@@ -139,8 +139,8 @@ void ResultsCallerCalleePage::onSourceMapContextMenu(const QPoint &point)
     }
 
     const auto sourceMap = index.data(SourceMapModel::LocationRole).value<QString>();
-    auto seperator = sourceMap.lastIndexOf(QLatin1Char(':'));
-    if (seperator <= 0) {
+    auto separator = sourceMap.lastIndexOf(QLatin1Char(':'));
+    if (separator <= 0) {
         return;
     }
 
@@ -157,8 +157,8 @@ void ResultsCallerCalleePage::onSourceMapContextMenu(const QPoint &point)
         return false;
     };
 
-    QString fileName = sourceMap.left(seperator);
-    int lineNumber = sourceMap.mid(seperator+1).toInt();
+    QString fileName = sourceMap.left(separator);
+    int lineNumber = sourceMap.mid(separator+1).toInt();
     if (!showMenu(m_sysroot, fileName, lineNumber)) {
          showMenu(m_appPath, fileName, lineNumber);
     }
