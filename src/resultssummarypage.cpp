@@ -100,6 +100,9 @@ ResultsSummaryPage::ResultsSummaryPage(PerfParser *parser, QWidget *parent)
                                                         .arg(costSummary.sampleCount)
                                                         .arg(Util::formatCostRelative(costSummary.sampleCount, data.sampleCount))
                                                         .arg(Util::formatFrequency(costSummary.sampleCount, data.applicationRunningTime)));
+                        if ((costSummary.sampleCount * 1E9 / data.applicationRunningTime) < 100) {
+                            stream << formatSummaryText(indent + tr("<b>WARNING</b>"), tr("Sampling frequency below 100Hz"));
+                        }
                     }
                     stream << formatSummaryText(tr("Lost Chunks"), QString::number(data.lostChunks))
                            << "</table></qt>";
