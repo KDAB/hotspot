@@ -32,6 +32,7 @@
 #include <QEvent>
 #include <QHelpEvent>
 #include <QDebug>
+#include <QAbstractItemView>
 
 #include "eventmodel.h"
 #include "../util.h"
@@ -91,9 +92,11 @@ struct TimeLineData
 
 }
 
-TimeLineDelegate::TimeLineDelegate(QObject* parent)
-    : QStyledItemDelegate(parent)
+TimeLineDelegate::TimeLineDelegate(QAbstractItemView* view)
+    : QStyledItemDelegate(view)
+    , m_viewport(view->viewport())
 {
+    m_viewport->installEventFilter(this);
 }
 
 TimeLineDelegate::~TimeLineDelegate() = default;
@@ -161,6 +164,26 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     }
 
     painter->restore();
+
+    if (!m_timeSliceStart.isNull()) {
+        auto timeSlice = QRectF(m_timeSliceStart, m_timeSliceEnd).normalized();
+
+        // clamp to size of the current column
+        timeSlice.setTop(option.rect.top());
+        timeSlice.setHeight(option.rect.height());
+        if (timeSlice.x() < option.rect.left())
+            timeSlice.setLeft(option.rect.left());
+        if (timeSlice.x() > option.rect.right())
+            timeSlice.setRight(option.rect.right());
+
+        if (timeSlice.width() > 1) {
+            auto brush = palette.highlight();
+            auto color = brush.color();
+            color.setAlpha(128);
+            brush.setColor(color);
+            painter->fillRect(timeSlice, brush);
+        }
+    }
 }
 
 bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
@@ -205,4 +228,35 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
         return true;
     }
     return QStyledItemDelegate::helpEvent(event, view, option, index);
+}
+
+bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
+{
+    if (watched != m_viewport) {
+        return false;
+    }
+
+    if (event->type() != QEvent::MouseButtonPress
+        && event->type() != QEvent::MouseButtonRelease
+        && event->type() != QEvent::MouseMove)
+    {
+        return false;
+    }
+
+    const auto *mouseEvent = static_cast<QMouseEvent*>(event);
+
+    if (mouseEvent->type() == QEvent::MouseButtonPress && mouseEvent->button() != Qt::LeftButton) {
+        return false;
+    }
+
+    const auto pos = mouseEvent->localPos();
+    if (event->type() == QEvent::MouseButtonPress) {
+        m_timeSliceStart = pos;
+    }
+    m_timeSliceEnd = pos;
+
+    // trigger an update of the viewport, to ensure our paint method gets called again
+    m_viewport->update();
+
+    return false;
 }

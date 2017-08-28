@@ -71,7 +71,7 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     ui->timeLineView->setModel(timeLineProxy);
     ui->timeLineView->sortByColumn(EventModel::EventsColumn);
 
-    auto* timeLineDelegate = new TimeLineDelegate(this);
+    auto* timeLineDelegate = new TimeLineDelegate(ui->timeLineView);
     ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, timeLineDelegate);
     connect(parser, &PerfParser::eventsAvailable,
             this, [eventModel] (const Data::EventResults& data) {

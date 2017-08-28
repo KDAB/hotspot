@@ -31,17 +31,27 @@
 
 #include "data.h"
 
+class QAbstractItemView;
+
 class TimeLineDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    explicit TimeLineDelegate(QObject* parent = nullptr);
+    explicit TimeLineDelegate(QAbstractItemView* view);
     virtual ~TimeLineDelegate();
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;
 
-    bool helpEvent(QHelpEvent * event, QAbstractItemView * view,
-                   const QStyleOptionViewItem & option,
-                   const QModelIndex & index) override;
+    bool helpEvent(QHelpEvent* event, QAbstractItemView* view,
+                   const QStyleOptionViewItem& option,
+                   const QModelIndex& index) override;
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
+private:
+    QWidget* m_viewport;
+    QPointF m_timeSliceStart;
+    QPointF m_timeSliceEnd;
 };
