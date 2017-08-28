@@ -33,6 +33,7 @@
 #include <QHelpEvent>
 #include <QDebug>
 #include <QAbstractItemView>
+#include <QMenu>
 
 #include "eventmodel.h"
 #include "../util.h"
@@ -41,54 +42,74 @@
 
 #include <algorithm>
 
+TimeLineData::TimeLineData()
+    : TimeLineData({}, 0, 0, 0, 0, 0, {})
+{}
+
+TimeLineData::TimeLineData(const Data::Events& events, quint64 maxCost,
+                           quint64 minTime, quint64 maxTime,
+                           quint64 threadStartTime, quint64 threadEndTime,
+                           QRect rect)
+    : events(events)
+    , maxCost(maxCost)
+    , minTime(minTime)
+    , maxTime(maxTime)
+    , timeDelta(maxTime - minTime)
+    , threadStartTime(threadStartTime)
+    , threadEndTime(threadEndTime)
+    , h(rect.height() - 2 * padding)
+    , w(rect.width() - 2 * padding)
+    , xMultiplicator(double(w) / timeDelta)
+    , yMultiplicator(double(h) / maxCost)
+    , zoomOffset(0.)
+    , zoomScale(1.)
+{
+}
+
+int TimeLineData::mapTimeToX(quint64 time) const
+{
+    return int(double(time - minTime) * xMultiplicator);
+}
+
+quint64 TimeLineData::mapXToTime(int x) const
+{
+    return quint64(double(x) / xMultiplicator) + minTime;
+}
+
+int TimeLineData::mapCostToY(quint64 cost) const
+{
+    return double(cost) * yMultiplicator;
+}
+
+void TimeLineData::zoom(int xOffset, double scale)
+{
+    const auto timeOffset = mapXToTime(xOffset);
+    zoomScale *= scale;
+    minTime = timeOffset;
+    maxTime = mapXToTime(w / scale);
+    timeDelta = maxTime - minTime;
+    xMultiplicator = double(w) / timeDelta;
+}
+
 namespace {
 
-const constexpr int padding = 2;
-
-struct TimeLineData
+TimeLineData dataFromIndex(const QModelIndex& index, QRect rect,
+                           const QVector<QRectF>& zoomStack)
 {
-    TimeLineData(const QModelIndex& index, QRect rect)
-        : events(index.data(EventModel::EventsRole).value<Data::Events>())
-        , maxCost(index.data(EventModel::MaxCostRole).value<quint64>())
-        , minTime(index.data(EventModel::MinTimeRole).value<quint64>())
-        , maxTime(index.data(EventModel::MaxTimeRole).value<quint64>())
-        , timeDelta(maxTime - minTime)
-        , threadStartTime(index.data(EventModel::ThreadStartRole).value<quint64>())
-        , threadEndTime(index.data(EventModel::ThreadEndRole).value<quint64>())
-        , h(rect.height() - 2 * padding)
-        , w(rect.width() - 2 * padding)
-        , xMultiplicator(double(w) / timeDelta)
-        , yMultiplicator(double(h) / maxCost)
-    {
+    TimeLineData data(index.data(EventModel::EventsRole).value<Data::Events>(),
+                        index.data(EventModel::MaxCostRole).value<quint64>(),
+                        index.data(EventModel::MinTimeRole).value<quint64>(),
+                        index.data(EventModel::MaxTimeRole).value<quint64>(),
+                        index.data(EventModel::ThreadStartRole).value<quint64>(),
+                        index.data(EventModel::ThreadEndRole).value<quint64>(),
+                        rect);
+    for (const auto &zoomRect : zoomStack) {
+        const auto offset = zoomRect.left() - rect.left();
+        const auto scale = double(rect.width()) / zoomRect.width();
+        data.zoom(offset, scale);
     }
-
-    int mapTimeToX(quint64 time) const
-    {
-        return int(double(time - minTime) * xMultiplicator);
-    }
-
-    quint64 mapXToTime(int x) const
-    {
-        return quint64(double(x) / xMultiplicator) + minTime;
-    }
-
-    int mapCostToY(quint64 cost) const
-    {
-        return double(cost) * yMultiplicator;
-    }
-
-    Data::Events events;
-    quint64 maxCost;
-    quint64 minTime;
-    quint64 maxTime;
-    quint64 timeDelta;
-    quint64 threadStartTime;
-    quint64 threadEndTime;
-    int h;
-    int w;
-    double xMultiplicator;
-    double yMultiplicator;
-};
+    return data;
+}
 
 }
 
@@ -104,66 +125,76 @@ TimeLineDelegate::~TimeLineDelegate() = default;
 void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
                              const QModelIndex& index) const
 {
-    const TimeLineData data(index, option.rect);
+    const auto data = dataFromIndex(index, option.rect, m_zoomStack);
     const bool is_alternate = option.features & QStyleOptionViewItem::Alternate;
     const auto& palette = option.palette;
 
     painter->fillRect(option.rect, is_alternate ? palette.base()
                                                 : palette.alternateBase());
 
-    painter->save();
-
-    // transform into target coordinate system
-    painter->translate(option.rect.topLeft());
-    // account for padding
-    painter->translate(padding, padding);
-
-    KColorScheme scheme(palette.currentColorGroup());
-
-    auto runningColor = scheme.background(KColorScheme::PositiveBackground).color();
-    runningColor.setAlpha(128);
     // visualize the time where the group was active
-    const auto threadTimeRect = QRect(QPoint(data.mapTimeToX(data.threadStartTime),
-                                      0),
-                                      QPoint(data.mapTimeToX(data.threadEndTime),
-                                      data.h));
-    auto runningOutlineColor = scheme.foreground(KColorScheme::PositiveText).color();
-    runningOutlineColor.setAlpha(128);
-    painter->setBrush(QBrush(runningColor));
-    painter->setPen(QPen(runningOutlineColor, 1));
-    painter->drawRect(threadTimeRect.adjusted(-1, -1, 0, 0));
+    auto threadTimeRect = QRect(QPoint(data.mapTimeToX(data.threadStartTime), 0),
+                                QPoint(data.mapTimeToX(data.threadEndTime),
+                                data.h));
+    // skip threads that are outside the visible (zoomed) region
+    if (threadTimeRect.left() < option.rect.width() && threadTimeRect.right() > 0) {
+        painter->save();
 
-    // visualize all events
-    QPen pen(scheme.foreground(KColorScheme::NeutralText), 1);
-    painter->setPen(pen);
-    painter->setBrush({});
+        // transform into target coordinate system
+        painter->translate(option.rect.topLeft());
+        // account for padding
+        painter->translate(data.padding, data.padding);
 
-    int last_x = -1;
-    double last_y = 0;
+        if (threadTimeRect.left() < 0)
+            threadTimeRect.setLeft(0);
+        if (threadTimeRect.right() > option.rect.width())
+            threadTimeRect.setRight(option.rect.width());
 
-    painter->translate(0, data.h);
-    for (const auto& event : data.events) {
-        if (event.type != 0) {
-            // TODO: support multiple cost types somehow
-            continue;
+        KColorScheme scheme(palette.currentColorGroup());
+
+        auto runningColor = scheme.background(KColorScheme::PositiveBackground).color();
+        runningColor.setAlpha(128);
+        auto runningOutlineColor = scheme.foreground(KColorScheme::PositiveText).color();
+        runningOutlineColor.setAlpha(128);
+        painter->setBrush(QBrush(runningColor));
+        painter->setPen(QPen(runningOutlineColor, 1));
+        painter->drawRect(threadTimeRect.adjusted(-1, -1, 0, 0));
+
+        // visualize all events
+        QPen pen(scheme.foreground(KColorScheme::NeutralText), 1);
+        painter->setPen(pen);
+        painter->setBrush({});
+
+        int last_x = -1;
+        double last_y = 0;
+
+        painter->translate(0, data.h);
+        for (const auto& event : data.events) {
+            if (event.type != 0) {
+                // TODO: support multiple cost types somehow
+                continue;
+            }
+
+            const auto x = data.mapTimeToX(event.time);
+            if (x < data.padding || x >= data.w) {
+                continue;
+            }
+
+            const auto y = data.mapCostToY(event.cost);
+
+            // only draw a line when it changes anything visually
+            if (x != last_x || y > last_y) {
+                // TODO: accumulate cost for events that fall to the same pixel somehow
+                // but how to then sync the y scale across different delegates?
+                // somehow deduce threshold via min time delta and max cost?
+                painter->drawLine(x, 0, x, -y);
+            }
+
+            last_x = x;
+            last_y = y;
         }
-
-        const auto x = data.mapTimeToX(event.time);
-        const auto y = data.mapCostToY(event.cost);
-
-        // only draw a line when it changes anything visually
-        if (x != last_x || y > last_y) {
-            // TODO: accumulate cost for events that fall to the same pixel somehow
-            // but how to then sync the y scale across different delegates?
-            // somehow deduce threshold via min time delta and max cost?
-            painter->drawLine(x, 0, x, -y);
-        }
-
-        last_x = x;
-        last_y = y;
+        painter->restore();
     }
-
-    painter->restore();
 
     if (!m_timeSliceStart.isNull()) {
         auto timeSlice = QRectF(m_timeSliceStart, m_timeSliceEnd).normalized();
@@ -191,9 +222,9 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
                                  const QModelIndex& index)
 {
     if (event->type() == QEvent::ToolTip) {
-        const TimeLineData data(index, option.rect);
+        const auto data = dataFromIndex(index, option.rect, m_zoomStack);
         const auto localX = event->pos().x();
-        const auto mappedX = localX - option.rect.x() - padding;
+        const auto mappedX = localX - option.rect.x() - data.padding;
         const auto time = data.mapXToTime(mappedX);
         auto it = std::lower_bound(data.events.begin(), data.events.end(), time,
                                    [](const Data::Event& event, quint64 time) {
@@ -258,5 +289,34 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     // trigger an update of the viewport, to ensure our paint method gets called again
     m_viewport->update();
 
+    if (event->type() == QEvent::MouseButtonRelease
+        && std::abs(m_timeSliceStart.x() - m_timeSliceEnd.x()) > 1.)
+    {
+        auto contextMenu = new QMenu(m_viewport);
+        contextMenu->setAttribute(Qt::WA_DeleteOnClose, true);
+        contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
+                               tr("Zoom In"), this, [this](){
+                                   QRectF zoomRect(m_timeSliceStart, m_timeSliceEnd);
+                                   m_zoomStack.append(zoomRect.normalized());
+                                   m_timeSliceStart = {};
+                                   m_viewport->update();
+                               });
+        if (!m_zoomStack.isEmpty()) {
+            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-out")),
+                                   tr("Zoom Out"), this, [this](){
+                                        m_zoomStack.removeLast();
+                                        m_timeSliceStart = {};
+                                        m_viewport->update();
+                                   });
+            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-original")),
+                                   tr("Reset Zoom"), this, [this](){
+                                        m_zoomStack.clear();
+                                        m_timeSliceStart = {};
+                                        m_viewport->update();
+                                   });
+        }
+        contextMenu->popup(mouseEvent->globalPos());
+        return true;
+    }
     return false;
 }

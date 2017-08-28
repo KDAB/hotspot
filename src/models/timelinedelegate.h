@@ -28,10 +28,45 @@
 #pragma once
 
 #include <QStyledItemDelegate>
+#include <QVector>
 
 #include "data.h"
 
 class QAbstractItemView;
+
+struct TimeLineData
+{
+    TimeLineData();
+
+    TimeLineData(const Data::Events& events, quint64 maxCost,
+                 quint64 minTime, quint64 maxTime,
+                 quint64 threadStartTime, quint64 threadEndTime,
+                 QRect rect);
+
+    int mapTimeToX(quint64 time) const;
+
+    quint64 mapXToTime(int x) const;
+
+    int mapCostToY(quint64 cost) const;
+
+    void zoom(int xOffset, double scale);
+
+    static const constexpr int padding = 2;
+    Data::Events events;
+    quint64 maxCost;
+    quint64 minTime;
+    quint64 maxTime;
+    quint64 timeDelta;
+    quint64 threadStartTime;
+    quint64 threadEndTime;
+    int h;
+    int w;
+    double xMultiplicator;
+    double yMultiplicator;
+    double zoomOffset;
+    double zoomScale;
+};
+Q_DECLARE_METATYPE(TimeLineData)
 
 class TimeLineDelegate : public QStyledItemDelegate
 {
@@ -54,4 +89,5 @@ private:
     QWidget* m_viewport;
     QPointF m_timeSliceStart;
     QPointF m_timeSliceEnd;
+    QVector<QRectF> m_zoomStack;
 };
