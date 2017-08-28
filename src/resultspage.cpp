@@ -39,6 +39,8 @@
 #include "models/eventmodel.h"
 #include "models/timelinedelegate.h"
 
+#include <QSortFilterProxyModel>
+
 ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ResultsPage)
@@ -62,8 +64,12 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
         ui->resultsTabWidget->setTabToolTip(i, ui->resultsTabWidget->widget(i)->toolTip());
     }
 
-    auto* eventModel = new EventModel(this);
-    ui->timeLineView->setModel(eventModel);
+    auto *eventModel = new EventModel(this);
+    auto *timeLineProxy = new QSortFilterProxyModel(this);
+    timeLineProxy->setSourceModel(eventModel);
+    timeLineProxy->setSortRole(EventModel::SortRole);
+    ui->timeLineView->setModel(timeLineProxy);
+    ui->timeLineView->sortByColumn(EventModel::EventsColumn);
 
     auto* timeLineDelegate = new TimeLineDelegate(this);
     ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, timeLineDelegate);
@@ -71,6 +77,7 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
             this, [eventModel] (const Data::EventResults& data) {
                 eventModel->setData(data);
             });
+    ui->timeLineView->setSortingEnabled(true);
     ui->timeLineView->hide();
 
     connect(ui->resultsTabWidget, &QTabWidget::currentChanged,

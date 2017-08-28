@@ -49,7 +49,8 @@ public:
         MinTimeRole,
         ThreadStartRole,
         ThreadEndRole,
-        MaxCostRole
+        MaxCostRole,
+        SortRole,
     };
 
     int rowCount(const QModelIndex& parent = {}) const override;

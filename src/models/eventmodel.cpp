@@ -50,9 +50,13 @@ QVariant EventModel::headerData(int section, Qt::Orientation orientation,
                                 int role) const
 {
     if (section < 0 || section >= NUM_COLUMNS || orientation != Qt::Horizontal
-        || role != Qt::DisplayRole)
+        || (role != Qt::DisplayRole && role != Qt::InitialSortOrderRole))
     {
         return {};
+    }
+
+    if (role == Qt::InitialSortOrderRole) {
+        return section == ThreadColumn ? Qt::AscendingOrder : Qt::DescendingOrder;
     }
 
     switch (static_cast<Columns>(section)) {
@@ -88,6 +92,11 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(thread.events);
     } else if (role == MaxCostRole) {
         return m_maxCost;
+    } else if (role == SortRole) {
+        if (index.column() == ThreadColumn)
+            return thread.name;
+        else
+            return thread.events.size();
     }
 
     switch (static_cast<Columns>(index.column())) {
