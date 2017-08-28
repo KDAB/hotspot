@@ -53,6 +53,8 @@
 
 #include "parsers/perf/perfparser.h"
 
+#include <functional>
+
 namespace {
 struct IdeSettings {
     const char * const app;
