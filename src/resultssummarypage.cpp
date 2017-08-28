@@ -25,6 +25,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "resultssummarypage.h"
+#include "ui_resultssummarypage.h"
+
 #include <QSortFilterProxyModel>
 #include <QStringListModel>
 #include <QTextStream>
@@ -36,9 +39,6 @@
 #include "parsers/perf/perfparser.h"
 #include "util.h"
 #include "resultsutil.h"
-
-#include "resultssummarypage.h"
-#include "ui_resultssummarypage.h"
 
 #include "models/summarydata.h"
 #include "models/hashmodel.h"

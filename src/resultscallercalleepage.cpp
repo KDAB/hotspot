@@ -25,15 +25,15 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "resultscallercalleepage.h"
+#include "ui_resultscallercalleepage.h"
+
 #include <QSortFilterProxyModel>
 #include <QMenu>
 #include <QFileInfo>
 
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
-
-#include "resultscallercalleepage.h"
-#include "ui_resultscallercalleepage.h"
 
 #include "models/hashmodel.h"
 #include "models/costdelegate.h"

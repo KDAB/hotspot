@@ -25,15 +25,15 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "resultsbottomuppage.h"
+#include "ui_resultsbottomuppage.h"
+
 #include <QMenu>
 
 #include <KRecursiveFilterProxyModel>
 
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
-
-#include "resultsbottomuppage.h"
-#include "ui_resultsbottomuppage.h"
 
 #include "models/hashmodel.h"
 #include "models/costdelegate.h"

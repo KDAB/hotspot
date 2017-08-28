@@ -25,10 +25,10 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "parsers/perf/perfparser.h"
-
 #include "resultsflamegraphpage.h"
 #include "ui_resultsflamegraphpage.h"
+
+#include "parsers/perf/perfparser.h"
 
 ResultsFlameGraphPage::ResultsFlameGraphPage(PerfParser *parser, QWidget *parent)
     : QWidget(parent)

@@ -25,10 +25,10 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "parsers/perf/perfparser.h"
-
 #include "resultspage.h"
 #include "ui_resultspage.h"
+
+#include "parsers/perf/perfparser.h"
 
 #include "resultssummarypage.h"
 #include "resultsbottomuppage.h"

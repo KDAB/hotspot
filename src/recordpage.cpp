@@ -25,6 +25,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "recordpage.h"
+#include "ui_recordpage.h"
+
 #include <QDebug>
 #include <QStandardPaths>
 
@@ -33,8 +36,6 @@
 #include <Solid/Processor>
 #include <KShell>
 
-#include "recordpage.h"
-#include "ui_recordpage.h"
 #include "perfrecord.h"
 
 namespace {

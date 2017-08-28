@@ -25,12 +25,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "startpage.h"
+#include "ui_startpage.h"
+
 #include <QDebug>
 #include <QMainWindow>
 #include <QPainter>
-
-#include "startpage.h"
-#include "ui_startpage.h"
 
 StartPage::StartPage(QWidget *parent)
     : QWidget(parent)

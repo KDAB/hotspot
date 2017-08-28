@@ -25,6 +25,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "resultstopdownpage.h"
+#include "ui_resultstopdownpage.h"
+
 #include <QSortFilterProxyModel>
 #include <QMenu>
 
@@ -32,9 +35,6 @@
 
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
-
-#include "resultstopdownpage.h"
-#include "ui_resultstopdownpage.h"
 
 #include "models/hashmodel.h"
 #include "models/costdelegate.h"
