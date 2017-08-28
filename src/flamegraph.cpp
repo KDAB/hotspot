@@ -222,11 +222,11 @@ Q_DECL_UNUSED QBrush memBrush()
     static const QVector<QBrush> brushes = ([] () -> QVector<QBrush> {
         QVector<QBrush> ret;
         std::generate_n(std::back_inserter(ret), 100, [] () {
-            return QColor(0, 190 + 50 * qreal(rand()) / RAND_MAX, 210 * qreal(rand()) / RAND_MAX, 125);
+            return QColor(0, 190 + 50 * qreal(qrand()) / RAND_MAX, 210 * qreal(qrand()) / RAND_MAX, 125);
         });
         return ret;
     }) ();
-    return brushes.at(rand() % brushes.size());
+    return brushes.at(qrand() % brushes.size());
 }
 
 /**
@@ -239,11 +239,11 @@ QBrush hotBrush()
     static const QVector<QBrush> brushes = ([] () -> QVector<QBrush> {
         QVector<QBrush> ret;
         std::generate_n(std::back_inserter(ret), 100, [] () {
-            return QColor(205 + 50 * qreal(rand()) / RAND_MAX, 230 * qreal(rand()) / RAND_MAX, 55 * qreal(rand()) / RAND_MAX, 125);
+            return QColor(205 + 50 * qreal(qrand()) / RAND_MAX, 230 * qreal(qrand()) / RAND_MAX, 55 * qreal(qrand()) / RAND_MAX, 125);
         });
         return ret;
     }) ();
-    return brushes.at(rand() % brushes.size());
+    return brushes.at(qrand() % brushes.size());
 }
 
 /**
