@@ -35,7 +35,7 @@ class AbstractTreeModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    AbstractTreeModel(QObject* parent = nullptr);
+    explicit AbstractTreeModel(QObject* parent = nullptr);
     ~AbstractTreeModel();
 
     enum Roles {
@@ -199,7 +199,7 @@ class BottomUpModel : public CostTreeModel<Data::BottomUpResults, BottomUpModel>
 {
     Q_OBJECT
 public:
-    BottomUpModel(QObject* parent = nullptr);
+    explicit BottomUpModel(QObject* parent = nullptr);
     ~BottomUpModel();
     enum Columns {
         Symbol = 0,
@@ -219,7 +219,7 @@ class TopDownModel : public CostTreeModel<Data::TopDownResults, TopDownModel>
 {
     Q_OBJECT
 public:
-    TopDownModel(QObject* parent = nullptr);
+    explicit TopDownModel(QObject* parent = nullptr);
     ~TopDownModel();
 
     enum Columns {

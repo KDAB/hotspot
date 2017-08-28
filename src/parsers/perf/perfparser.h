@@ -39,7 +39,7 @@ class PerfParser : public QObject
 {
     Q_OBJECT
 public:
-    PerfParser(QObject* parent = nullptr);
+    explicit PerfParser(QObject* parent = nullptr);
     ~PerfParser();
 
     void startParseFile(const QString& path, const QString& sysroot,

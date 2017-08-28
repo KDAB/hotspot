@@ -35,7 +35,7 @@ class PerfRecord : public QObject
 {
     Q_OBJECT
 public:
-    PerfRecord(QObject* parent = nullptr);
+    explicit PerfRecord(QObject* parent = nullptr);
     ~PerfRecord();
 
     void record(const QStringList &perfOptions, const QString &outputPath, const QString &exePath,
