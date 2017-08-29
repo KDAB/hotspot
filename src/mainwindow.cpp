@@ -49,7 +49,6 @@
 #include <KRecentFilesAction>
 
 #include "aboutdialog.h"
-#include "flamegraph.h"
 
 #include "parsers/perf/perfparser.h"
 
