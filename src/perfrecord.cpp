@@ -37,20 +37,29 @@
 
 PerfRecord::PerfRecord(QObject* parent)
     : QObject(parent)
-    , m_perfRecordProcess(new QProcess(this))
+    , m_perfRecordProcess(nullptr)
     , m_outputPath()
     , m_userTerminated(false)
 {
 }
 
-PerfRecord::~PerfRecord() = default;
+PerfRecord::~PerfRecord()
+{
+    if (m_perfRecordProcess) {
+        stopRecording();
+        m_perfRecordProcess->waitForFinished(100);
+        delete m_perfRecordProcess;
+    }
+}
 
 void PerfRecord::record(const QStringList &perfOptions, const QString &outputPath, const QString &exePath,
                         const QStringList &exeOptions, const QString &workingDirectory)
 {
     // Reset perf record process to avoid getting signals from old processes
-    m_perfRecordProcess->kill();
-    m_perfRecordProcess->deleteLater();
+    if (m_perfRecordProcess) {
+        m_perfRecordProcess->kill();
+        m_perfRecordProcess->deleteLater();
+    }
     m_perfRecordProcess = new QProcess(this);
     m_perfRecordProcess->setProcessChannelMode(QProcess::MergedChannels);
 
@@ -137,11 +146,17 @@ void PerfRecord::record(const QStringList &perfOptions, const QString &outputPat
 
 const QString PerfRecord::perfCommand()
 {
-    return QStringLiteral("perf ") + m_perfRecordProcess->arguments().join(QLatin1Char(' '));
+    if (m_perfRecordProcess) {
+        return QStringLiteral("perf ") + m_perfRecordProcess->arguments().join(QLatin1Char(' '));
+    } else {
+        return {};
+    }
 }
 
 void PerfRecord::stopRecording()
 {
-    m_userTerminated = true;
-    m_perfRecordProcess->terminate();
+    if (m_perfRecordProcess) {
+        m_userTerminated = true;
+        m_perfRecordProcess->terminate();
+    }
 }
