@@ -283,7 +283,7 @@ private:
         // Verify the top Bottom-Up symbol result contains the expected data
         QCOMPARE(bottomUpDataSpy.count(), 1);
         QList<QVariant> bottomUpDataArgs = bottomUpDataSpy.takeFirst();
-        m_bottomUpData = qvariant_cast<Data::BottomUpResults>(bottomUpDataArgs.at(0));
+        m_bottomUpData = bottomUpDataArgs.at(0).value<Data::BottomUpResults>();
         QVERIFY(m_bottomUpData.root.children.count() > 0);
 
         int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData);
@@ -293,7 +293,7 @@ private:
         // Verify the top Top-Down symbol result contains the expected data
         QCOMPARE(topDownDataSpy.count(), 1);
         QList<QVariant> topDownDataArgs = topDownDataSpy.takeFirst();
-        m_topDownData = qvariant_cast<Data::TopDownResults>(topDownDataArgs.at(0));
+        m_topDownData = topDownDataArgs.at(0).value<Data::TopDownResults>();
         QVERIFY(m_topDownData.root.children.count() > 0);
 
         int topDownTopIndex = maxElementTopIndex(m_topDownData);
@@ -303,7 +303,7 @@ private:
         // Verify the Caller/Callee data isn't empty
         QCOMPARE(callerCalleeDataSpy.count(), 1);
         QList<QVariant> callerCalleeDataArgs = callerCalleeDataSpy.takeFirst();
-        m_callerCalleeData = qvariant_cast<Data::CallerCalleeResults>(callerCalleeDataArgs.at(0));
+        m_callerCalleeData = callerCalleeDataArgs.at(0).value<Data::CallerCalleeResults>();
         QVERIFY(m_callerCalleeData.entries.count() > 0);
 
         // Verify that no individual cost in the Caller/Callee data is greater than the total cost of all samples
