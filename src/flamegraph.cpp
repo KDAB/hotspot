@@ -539,6 +539,8 @@ void FlameGraph::setTopDownData(const Data::TopDownResults& topDownData)
 
     if (isVisible()) {
         showData();
+    } else {
+        setData(nullptr);
     }
 }
 
