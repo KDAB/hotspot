@@ -151,8 +151,8 @@ QStringList printCallerCalleeModel(const CallerCalleeModel& model)
         const auto& selfCostIndex = model.index(i, CallerCalleeModel::Binary + 1);
         const auto& inclusiveCostIndex = model.index(i, CallerCalleeModel::Binary + 2);
         list.push_back(symbol
-                        + "=s:" + selfCostIndex.data().toString()
-                        + ",i:" + inclusiveCostIndex.data().toString());
+                        + "=s:" + selfCostIndex.data(CallerCalleeModel::SortRole).toString()
+                        + ",i:" + inclusiveCostIndex.data(CallerCalleeModel::SortRole).toString());
         QStringList subList;
         const auto& callers = symbolIndex.data(CallerCalleeModel::CallersRole).value<Data::CallerMap>();
         for (auto callersIt = callers.begin(), callersEnd = callers.end();
