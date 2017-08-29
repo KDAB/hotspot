@@ -166,9 +166,14 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         painter->setBrush({});
 
         int last_x = -1;
-        double last_y = 0;
 
-        painter->translate(0, data.h);
+        // TODO: accumulate cost for events that fall to the same pixel somehow
+        // but how to then sync the y scale across different delegates?
+        // somehow deduce threshold via min time delta and max cost?
+        // TODO: how to deal with broken cycle counts in frequency mode? For now,
+        // we simply always fill the complete height which is also what we'd get
+        // from a graph in count mode (perf record -F vs. perf record -c)
+        // see also: https://www.spinics.net/lists/linux-perf-users/msg03486.html
         for (const auto& event : data.events) {
             if (event.type != 0) {
                 // TODO: support multiple cost types somehow
@@ -180,18 +185,12 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
                 continue;
             }
 
-            const auto y = data.mapCostToY(event.cost);
-
             // only draw a line when it changes anything visually
-            if (x != last_x || y > last_y) {
-                // TODO: accumulate cost for events that fall to the same pixel somehow
-                // but how to then sync the y scale across different delegates?
-                // somehow deduce threshold via min time delta and max cost?
-                painter->drawLine(x, 0, x, -y);
+            if (x != last_x) {
+                painter->drawLine(x, 0, x, data.h);
             }
 
             last_x = x;
-            last_y = y;
         }
         painter->restore();
     }
