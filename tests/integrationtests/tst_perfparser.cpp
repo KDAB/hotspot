@@ -100,6 +100,8 @@ private slots:
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
         testPerfData(Data::Symbol{"hypot", "libm"}, Data::Symbol{"hypot", "libm"}, tempFile.fileName());
+        QVERIFY(!m_bottomUpData.root.children.isEmpty());
+        QVERIFY(!m_topDownData.root.children.isEmpty());
     }
 
     void testCppInliningCallGraphDwarf()
@@ -113,6 +115,8 @@ private slots:
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
         testPerfData(Data::Symbol{"hypot", "libm"}, Data::Symbol{"start", "cpp-inlining"}, tempFile.fileName());
+        QVERIFY(!m_bottomUpData.root.children.isEmpty());
+        QVERIFY(!m_topDownData.root.children.isEmpty());
 
         QVERIFY(searchForChildSymbol(m_bottomUpData.root.children.at(maxElementTopIndex(m_bottomUpData)), "main"));
         QVERIFY(searchForChildSymbol(m_topDownData.root.children.at(maxElementTopIndex(m_topDownData)), "main"));
@@ -129,6 +133,8 @@ private slots:
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
         testPerfData(Data::Symbol{"hypot", "libm"}, Data::Symbol{"hypot", "libm"}, tempFile.fileName());
+        QVERIFY(!m_bottomUpData.root.children.isEmpty());
+        QVERIFY(!m_topDownData.root.children.isEmpty());
     }
 
     void testCppInliningEventCyclesInstructions()
@@ -142,6 +148,8 @@ private slots:
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
         testPerfData(Data::Symbol{"hypot", "libm"}, Data::Symbol{"start", "cpp-inlining"}, tempFile.fileName());
+        QVERIFY(!m_bottomUpData.root.children.isEmpty());
+        QVERIFY(!m_topDownData.root.children.isEmpty());
 
         int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData);
         qint64 bottomUpCycleCost = m_bottomUpData.costs.cost(0, m_bottomUpData.root.children.at(bottomUpTopIndex).id);
@@ -165,6 +173,8 @@ private slots:
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
         testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"fibonacci", "cpp-recursion"}, tempFile.fileName());
+        QVERIFY(!m_bottomUpData.root.children.isEmpty());
+        QVERIFY(!m_topDownData.root.children.isEmpty());
     }
 
     void testCppRecursionCallGraphDwarf()
@@ -178,6 +188,8 @@ private slots:
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
         testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"start", "cpp-recursion"}, tempFile.fileName());
+        QVERIFY(!m_bottomUpData.root.children.isEmpty());
+        QVERIFY(!m_topDownData.root.children.isEmpty());
 
         QVERIFY(searchForChildSymbol(m_bottomUpData.root.children.at(maxElementTopIndex(m_bottomUpData)), "main"));
         QVERIFY(searchForChildSymbol(m_topDownData.root.children.at(maxElementTopIndex(m_topDownData)), "main"));
@@ -195,6 +207,8 @@ private slots:
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
         testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"fibonacci", "cpp-recursion"}, tempFile.fileName());
+        QVERIFY(!m_bottomUpData.root.children.isEmpty());
+        QVERIFY(!m_topDownData.root.children.isEmpty());
     }
 
     void testCppRecursionEventCyclesInstructions()
@@ -208,6 +222,8 @@ private slots:
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
         testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"start", "cpp-recursion"}, tempFile.fileName());
+        QVERIFY(!m_bottomUpData.root.children.isEmpty());
+        QVERIFY(!m_topDownData.root.children.isEmpty());
 
         int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData);
         qint64 bottomUpCycleCost = m_bottomUpData.costs.cost(0, m_bottomUpData.root.children.at(bottomUpTopIndex).id);
