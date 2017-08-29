@@ -89,6 +89,15 @@ private slots:
         qRegisterMetaType<Data::CallerCalleeEntryMap>("Data::CallerCalleeEntryMap");
     }
 
+    void init()
+    {
+        m_bottomUpData = {};
+        m_topDownData = {};
+        m_callerCalleeData = {};
+        m_summaryData = {};
+        m_perfCommand.clear();
+    }
+
     void testCppInliningNoOptions()
     {
         const QStringList perfOptions;
