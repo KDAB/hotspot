@@ -25,6 +25,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "perfrecord.h"
+
 #include <QDebug>
 #include <QFileInfo>
 #include <QProcess>
@@ -32,8 +34,6 @@
 #include <QStandardPaths>
 
 #include <csignal>
-
-#include "perfrecord.h"
 
 PerfRecord::PerfRecord(QObject* parent)
     : QObject(parent)
