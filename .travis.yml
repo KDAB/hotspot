@@ -24,6 +24,7 @@ install:
   - sudo cp -Rf root/kf5-release/* /opt/qt*/
 
 script:
+  - set -e # Exit immediately if anything fails
   - mkdir build
   - cd build
   - cmake .. -DCMAKE_INSTALL_PREFIX=/usr
@@ -35,5 +36,7 @@ script:
   - chmod a+x linuxdeployqt*.AppImage
   - unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs
-  - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage 
+  - # workaround for https://github.com/KDAB/hotspot/issues/87
+  - ./linuxdeployqt*.AppImage ./appdir/usr/lib/x86_64-linux-gnu/libexec/hotspot-perfparser -bundle-non-qt-libs -no-plugins
+  - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage
   - curl --upload-file ./Hotspot-*.AppImage https://transfer.sh/Hotspot-git.$(git rev-parse --short HEAD)-x86_64.AppImage
