@@ -42,6 +42,6 @@ script:
   - # workaround for https://github.com/KDAB/hotspot/issues/87
   - ./linuxdeployqt*.AppImage ./appdir/usr/lib/x86_64-linux-gnu/libexec/hotspot-perfparser -bundle-non-qt-libs -no-plugins
   - # also include the elfutils backend library ABI specific implementations
-  - cp -va /usr/lib/x86_64-linux-gnu/elfutils/ ./appdir/usr/lib/x86_64-linux-gnu/libexec/lib/
+  - cp -va /usr/lib/x86_64-linux-gnu/elfutils/* ./appdir/usr/lib/x86_64-linux-gnu/libexec/lib/
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage
   - curl --upload-file ./Hotspot-*.AppImage https://transfer.sh/Hotspot-git.$(git rev-parse --short HEAD)-x86_64.AppImage
