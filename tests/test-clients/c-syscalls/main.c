@@ -31,8 +31,9 @@ int main(int argc, char** argv)
     FILE* file;
     long fileSize;
     char* buffer;
+    int i;
 
-    for (int i = 0; i < 500000; ++i) {
+    for (i = 0; i < 500000; ++i) {
         file = fopen(argv[0], "rb");
         if (!file) {
             fprintf(stderr, "failed to open file %s\n", argv[0]);
