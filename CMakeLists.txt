@@ -53,6 +53,7 @@ find_package(Qt5 5.6 COMPONENTS Core Widgets Network Test REQUIRED)
 find_package(LibElf REQUIRED)
 find_package(Elfutils REQUIRED) # TODO: make optional, use internal copy
 find_package(ECM 1.0.0 NO_MODULE REQUIRED)
+find_package(Threads REQUIRED)
 
 if(Qt5_FOUND AND ECM_FOUND)
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
