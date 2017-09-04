@@ -25,6 +25,12 @@ install:
   - # Precompiled version of elfutils in newer version (0.170)
   - wget -c "https://swanson.kdab.com/owncloud/index.php/s/RzRwIkFuTKI30t3/download" -O elfutils.tar.bz2
   - sudo tar -xf elfutils.tar.bz2 -C /
+  - wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
+  - chmod a+x linuxdeployqt*.AppImage
+  - sudo mv linuxdeployqt*.AppImage /usr/bin/linuxdeployqt
+  - wget -c "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+  - chmod a+x appimagetool-*.AppImage
+  - sudo mv appimagetool-*.AppImage /usr/bin/appimagetool
 
 script:
   - set -e # Exit immediately if anything fails
@@ -35,18 +41,20 @@ script:
   - make DESTDIR=appdir install ; find appdir/
   - mkdir -p appdir/usr/share/applications/ # FIXME: Do in CMakeLists.txt
   - cp ../hotspot.desktop appdir/usr/share/applications/ # FIXME: Do in CMakeLists.txt
-  - wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" 
-  - chmod a+x linuxdeployqt*.AppImage
   - unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
-  - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs
+  - linuxdeployqt ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs
   - # workaround for https://github.com/KDAB/hotspot/issues/87
-  - ./linuxdeployqt*.AppImage ./appdir/usr/lib/x86_64-linux-gnu/libexec/hotspot-perfparser -bundle-non-qt-libs -no-plugins
+  - linuxdeployqt ./appdir/usr/lib/x86_64-linux-gnu/libexec/hotspot-perfparser -bundle-non-qt-libs -no-plugins
   - # also include the elfutils backend library ABI specific implementations
   - cp -va /usr/lib/x86_64-linux-gnu/elfutils/* ./appdir/usr/lib/x86_64-linux-gnu/libexec/lib/
   - # Share libraries to reduce image size
   - mv ./appdir/usr/lib/x86_64-linux-gnu/libexec/lib/* ./appdir/usr/lib/
   - rmdir ./appdir/usr/lib/x86_64-linux-gnu/libexec/lib
   - ln -sr ./appdir/usr/lib/ ./appdir/usr/lib/x86_64-linux-gnu/libexec/lib
+  - # Ensure we prefer the bundled libs also when calling dlopen, cf.: https://github.com/KDAB/hotspot/issues/89
+  - rm ./appdir/AppRun
+  - echo -e '#!/bin/bash\nd="$(dirname "$(readlink -f "${0}")")"\nLD_LIBRARY_PATH="$d/usr/lib":$LD_LIBRARY_PATH "$d/usr/bin/hotspot"' > ./appdir/AppRun
+  - chmod +x ./appdir/AppRun
   - # Actually create the final image
-  - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage
+  - appimagetool ./appdir/
   - curl --upload-file ./Hotspot-*.AppImage https://transfer.sh/Hotspot-git.$(git rev-parse --short HEAD)-x86_64.AppImage
