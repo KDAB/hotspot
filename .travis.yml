@@ -8,7 +8,7 @@ before_install:
   - sudo apt-get update -qq
     
 install: 
-  - sudo apt-get -y install qt59base qt59svg qt59x11extras elfutils libelf-dev libdw-dev libasm-dev
+  - sudo apt-get -y install qt59base qt59svg qt59x11extras
   - source /opt/qt*/bin/qt*-env.sh
   - git clone git://anongit.kde.org/extra-cmake-modules
   - cd extra-cmake-modules
@@ -22,6 +22,9 @@ install:
   - wget -c "https://github.com/chigraph/precompiled-kf5-linux/releases/download/precompiled/kf5-gcc6-linux64-release.tar.xz"
   - tar xf kf5-gcc6-linux64-release.tar.xz
   - sudo cp -Rf root/kf5-release/* /opt/qt*/
+  - # Precompiled version of elfutils in newer version (0.170)
+  - wget -c "https://swanson.kdab.com/owncloud/index.php/s/RzRwIkFuTKI30t3/download" -O elfutils.tar.bz2
+  - sudo tar -xf elfutils.tar.bz2 -C /
 
 script:
   - set -e # Exit immediately if anything fails
@@ -38,5 +41,7 @@ script:
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs
   - # workaround for https://github.com/KDAB/hotspot/issues/87
   - ./linuxdeployqt*.AppImage ./appdir/usr/lib/x86_64-linux-gnu/libexec/hotspot-perfparser -bundle-non-qt-libs -no-plugins
+  - # also include the elfutils backend library ABI specific implementations
+  - cp -va /usr/lib/x86_64-linux-gnu/elfutils/ ./appdir/usr/lib/x86_64-linux-gnu/libexec/lib/
   - ./linuxdeployqt*.AppImage ./appdir/usr/share/applications/*.desktop -appimage
   - curl --upload-file ./Hotspot-*.AppImage https://transfer.sh/Hotspot-git.$(git rev-parse --short HEAD)-x86_64.AppImage
