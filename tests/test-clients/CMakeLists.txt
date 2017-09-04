@@ -1,4 +1,5 @@
 add_subdirectory(cpp-inlining)
 add_subdirectory(cpp-recursion)
 add_subdirectory(cpp-locking)
+add_subdirectory(cpp-minimal-static)
 add_subdirectory(c-syscalls)
