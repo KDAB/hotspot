@@ -258,7 +258,9 @@ private:
         QSignalSpy recordingFinishedSpy(&perf, &PerfRecord::recordingFinished);
         QSignalSpy recordingFailedSpy(&perf, &PerfRecord::recordingFailed);
 
-        perf.record(perfOptions, fileName, exePath, exeOptions);
+        // always add `-c 1000000`, as perf's frequency mode is too unreliable for testing purposes
+        perf.record(perfOptions + QStringList{QStringLiteral("-c"), QStringLiteral("1000000")},
+                    fileName, exePath, exeOptions);
 
         QVERIFY(recordingFinishedSpy.wait(10000));
 
