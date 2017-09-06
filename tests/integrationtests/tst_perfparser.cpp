@@ -337,8 +337,8 @@ private:
         QVERIFY(m_callerCalleeData.entries.count() > 0);
 
         // Verify that no individual cost in the Caller/Callee data is greater than the total cost of all samples
-        for (const auto& entry : m_callerCalleeData.entries) {
-            QVERIFY(m_callerCalleeData.inclusiveCosts.cost(0, entry.id) < m_summaryData.sampleCount);
+        for (const auto &entry : m_callerCalleeData.entries) {
+            QVERIFY(m_callerCalleeData.inclusiveCosts.cost(0, entry.id) <= m_summaryData.costs[0].totalPeriod);
         }
     }
 };
