@@ -511,20 +511,9 @@ QDebug operator<<(QDebug stream, const Error& error)
     return stream;
 }
 
-struct LocationData
-{
-    LocationData(qint32 parentLocationId = -1, const Data::Location& location = {})
-        : parentLocationId(parentLocationId)
-        , location(location)
-    { }
-
-    qint32 parentLocationId = -1;
-    Data::Location location;
-};
 }
 
 Q_DECLARE_TYPEINFO(AttributesDefinition, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(LocationData, Q_MOVABLE_TYPE);
 
 struct PerfParserPrivate
 {
@@ -795,8 +784,8 @@ struct PerfParserPrivate
 
     void addLocation(const LocationDefinition& location)
     {
-        Q_ASSERT(locations.size() == location.id);
-        Q_ASSERT(symbols.size() == location.id);
+        Q_ASSERT(bottomUpResult.locations.size() == location.id);
+        Q_ASSERT(bottomUpResult.symbols.size() == location.id);
         QString locationString;
         if (location.location.file.id != -1) {
             locationString = strings.value(location.location.file.id);
@@ -804,68 +793,25 @@ struct PerfParserPrivate
                 locationString += QLatin1Char(':') + QString::number(location.location.line);
             }
         }
-        locations.push_back({
+        bottomUpResult.locations.push_back({
             location.location.parentLocationId,
             {location.location.address, locationString}
         });
-        symbols.push_back({});
+        bottomUpResult.symbols.push_back({});
     }
 
     void addSymbol(const SymbolDefinition& symbol)
     {
         // empty symbol was added in addLocation already
-        Q_ASSERT(symbols.size() > symbol.id);
+        Q_ASSERT(bottomUpResult.symbols.size() > symbol.id);
         // TODO: isKernel information
         const auto symbolString = strings.value(symbol.symbol.name.id);
         const auto binaryString = strings.value(symbol.symbol.binary.id);
-        symbols[symbol.id] = {symbolString, binaryString};
+        bottomUpResult.symbols[symbol.id] = {symbolString, binaryString};
         if (symbolString.isEmpty() && !reportedMissingDebugInfoModules.contains(symbol.symbol.binary.id)) {
             reportedMissingDebugInfoModules.insert(symbol.symbol.binary.id);
             summaryResult.errors << PerfParser::tr("Module \"%1\" is missing (some) debug symbols.").arg(binaryString);
         }
-    }
-
-    Data::BottomUp* addFrame(Data::BottomUp* parent, qint32 id, QSet<Data::Symbol>* recursionGuard, int type, quint64 period)
-    {
-        bool skipNextFrame = false;
-        while (id != -1) {
-            const auto& location = locations.value(id);
-            if (skipNextFrame) {
-                id = location.parentLocationId;
-                skipNextFrame = false;
-                continue;
-            }
-
-            auto symbol = symbols.value(id);
-            if (!symbol.isValid()) {
-                // we get function entry points from the perfparser but
-                // those are imo not interesting - skip them
-                symbol = symbols.value(location.parentLocationId);
-                skipNextFrame = true;
-            }
-
-            auto ret = parent->entryForSymbol(symbol, &maxBottomUpId);
-            bottomUpResult.costs.add(type, ret->id, period);
-
-            if (perfScriptOutput) {
-                *perfScriptOutput << '\t' << hex << qSetFieldWidth(16) << location.location.address
-                                  << qSetFieldWidth(0) << dec << ' '
-                                  << (symbol.symbol.isEmpty() ? QStringLiteral("[unknown]") : symbol.symbol)
-                                  << " (" << symbol.binary << ")\n";
-            }
-
-            auto recursionIt = recursionGuard->find(symbol);
-            if (recursionIt == recursionGuard->end()) {
-                auto& locationCost = callerCalleeResult.entry(symbol).source(location.location.location, bottomUpResult.costs.numTypes());
-                locationCost[type] += period;
-                recursionGuard->insert(symbol);
-            }
-
-            parent = ret;
-            id = location.parentLocationId;
-        }
-
-        return parent;
     }
 
     void addSample(const Sample& sample)
@@ -901,16 +847,32 @@ struct PerfParserPrivate
                               << ":\t" << sample.period << '\n';
         }
 
-        bottomUpResult.costs.addTotalCost(sample.attributeId, sample.period);
-        auto parent = &bottomUpResult.root;
         QSet<Data::Symbol> recursionGuard;
-        for (auto id : sample.frames) {
-            parent = addFrame(parent, id, &recursionGuard, sample.attributeId, sample.period);
-        }
+        auto frameCallback = [this, &recursionGuard, &sample] (const Data::Symbol& symbol, const Data::Location& location)
+        {
+            auto recursionIt = recursionGuard.find(symbol);
+            if (recursionIt == recursionGuard.end()) {
+                auto& entry = callerCalleeResult.entry(symbol);
+                auto& locationCost = entry.source(location.location, bottomUpResult.costs.numTypes());
+                locationCost[sample.attributeId] += sample.period;
+                recursionGuard.insert(symbol);
+            }
+
+            if (perfScriptOutput) {
+                    *perfScriptOutput << '\t' << hex << qSetFieldWidth(16)
+                        << location.address
+                        << qSetFieldWidth(0) << dec << ' '
+                        << (symbol.symbol.isEmpty() ? QStringLiteral("[unknown]") : symbol.symbol)
+                        << " (" << symbol.binary << ")\n";
+            }
+        };
+
+        bottomUpResult.addEvent(sample.attributeId, sample.period, sample.frames, frameCallback);
 
         if (perfScriptOutput) {
             *perfScriptOutput << "\n";
         }
+
     }
 
     void buildTopDownResult()
@@ -1018,8 +980,6 @@ struct PerfParserPrivate
     QBuffer buffer;
     QDataStream stream;
     QVector<AttributesDefinition> attributes;
-    QVector<Data::Symbol> symbols;
-    QVector<LocationData> locations;
     QVector<QString> strings;
     QProcess process;
     SummaryData summaryResult;
@@ -1027,7 +987,6 @@ struct PerfParserPrivate
     quint64 applicationEndTime = 0;
     QSet<quint32> uniqueThreads;
     QSet<quint32> uniqueProcess;
-    quint32 maxBottomUpId = 0;
     Data::BottomUpResults bottomUpResult;
     Data::TopDownResults topDownResult;
     Data::CallerCalleeResults callerCalleeResult;

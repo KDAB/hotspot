@@ -38,6 +38,7 @@
 #include <tuple>
 #include <valarray>
 #include <limits>
+#include <functional>
 
 namespace Data {
 struct Symbol
@@ -123,6 +124,17 @@ inline uint qHash(const Location& location, uint seed = 0)
     seed = hash(seed, location.location);
     return seed;
 }
+
+struct FrameLocation
+{
+    FrameLocation(qint32 parentLocationId = -1, const Data::Location& location = {})
+        : parentLocationId(parentLocationId)
+        , location(location)
+    { }
+
+    qint32 parentLocationId = -1;
+    Data::Location location;
+};
 
 using ItemCost = std::valarray<qint64>;
 
@@ -315,6 +327,20 @@ struct BottomUpResults
 {
     BottomUp root;
     Costs costs;
+    QVector<Data::Symbol> symbols;
+    QVector<Data::FrameLocation> locations;
+
+    using FrameCallback = std::function<void(const Symbol&, const Location&)>;
+
+    const BottomUp* addEvent(int type, quint64 cost,
+                             const QVector<qint32>& frames,
+                             const FrameCallback& frameCallback);
+
+private:
+    quint32 maxBottomUpId = 0;
+    BottomUp* addFrame(BottomUp* parent, qint32 locationId,
+                       int type, quint64 period,
+                       const FrameCallback& frameCallback);
 };
 
 struct TopDown : SymbolTree<TopDown>
@@ -431,6 +457,9 @@ Q_DECLARE_TYPEINFO(Data::Symbol, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::Location)
 Q_DECLARE_TYPEINFO(Data::Location, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::FrameLocation)
+Q_DECLARE_TYPEINFO(Data::FrameLocation, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::BottomUp)
 Q_DECLARE_TYPEINFO(Data::BottomUp, Q_MOVABLE_TYPE);
