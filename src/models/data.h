@@ -231,6 +231,13 @@ public:
         }
     }
 
+    void initializeCostsFrom(const Costs& rhs)
+    {
+        m_typeNames = rhs.m_typeNames;
+        m_costs.resize(rhs.m_costs.size());
+        m_totalCosts.resize(rhs.m_totalCosts.size());
+    }
+
 private:
     void ensureSpaceAvailable(int type, quint32 id)
     {
@@ -426,7 +433,7 @@ struct Event
     quint64 time = 0;
     quint64 cost = 0;
     qint32 type = -1;
-//     qint32 stackId = -1; TODO
+    qint32 stackId = -1;
 };
 
 using Events = QVector<Event>;
@@ -445,7 +452,7 @@ struct EventResults
 {
     QVector<ThreadEvents> threads;
     QVector<QString> eventTypes;
-    // TODO: remember stacks, to be able to rebuild the tree after filtering
+    QVector<QVector<qint32>> stacks;
 
     ThreadEvents* findThread(qint32 pid, qint32 tid);
 };

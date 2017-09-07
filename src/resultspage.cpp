@@ -70,6 +70,10 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     timeLineProxy->setSortRole(EventModel::SortRole);
     ui->timeLineView->setModel(timeLineProxy);
     ui->timeLineView->sortByColumn(EventModel::EventsColumn);
+    // ensure the vertical scroll bar is always shown, otherwise the timeline
+    // view would get more or less space, which leads to odd jumping when filtering
+    // due to the increased width leading to a zoom effect
+    ui->timeLineView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     auto* timeLineDelegate = new TimeLineDelegate(ui->timeLineView);
     ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, timeLineDelegate);
@@ -79,6 +83,8 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
             });
     ui->timeLineView->setSortingEnabled(true);
     ui->timeLineView->hide();
+    connect(timeLineDelegate, &TimeLineDelegate::filterByTime,
+            parser, &PerfParser::filterByTime);
 
     connect(ui->resultsTabWidget, &QTabWidget::currentChanged,
             this, [this, summaryTabIndex](int index) {

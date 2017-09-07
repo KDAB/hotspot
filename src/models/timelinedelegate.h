@@ -82,12 +82,18 @@ public:
                    const QStyleOptionViewItem& option,
                    const QModelIndex& index) override;
 
+signals:
+    // emitted when user wants to filter by time
+    // start == 0 && end == 0 means "show everything"
+    void filterByTime(quint64 start, quint64 end);
+
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
-    QWidget* m_viewport;
+    QAbstractItemView* m_view;
     QPointF m_timeSliceStart;
     QPointF m_timeSliceEnd;
     QVector<QRectF> m_zoomStack;
+    QVector<QPair<quint64, quint64>> m_filterStack;
 };

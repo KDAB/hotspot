@@ -115,9 +115,9 @@ TimeLineData dataFromIndex(const QModelIndex& index, QRect rect,
 
 TimeLineDelegate::TimeLineDelegate(QAbstractItemView* view)
     : QStyledItemDelegate(view)
-    , m_viewport(view->viewport())
+    , m_view(view)
 {
-    m_viewport->installEventFilter(this);
+    m_view->viewport()->installEventFilter(this);
 }
 
 TimeLineDelegate::~TimeLineDelegate() = default;
@@ -136,6 +136,7 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     auto threadTimeRect = QRect(QPoint(data.mapTimeToX(data.threadStartTime), 0),
                                 QPoint(data.mapTimeToX(data.threadEndTime),
                                 data.h));
+
     // skip threads that are outside the visible (zoomed) region
     if (threadTimeRect.left() < option.rect.width() && threadTimeRect.right() > 0) {
         painter->save();
@@ -262,7 +263,7 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
 
 bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
 {
-    if (watched != m_viewport) {
+    if (watched != m_view->viewport()) {
         return false;
     }
 
@@ -275,45 +276,96 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
 
     const auto *mouseEvent = static_cast<QMouseEvent*>(event);
 
-    if (mouseEvent->type() == QEvent::MouseButtonPress && mouseEvent->button() != Qt::LeftButton) {
-        return false;
+    if (mouseEvent->button() == Qt::LeftButton || event->type() == QEvent::MouseMove) {
+        const auto pos = mouseEvent->localPos();
+        if (event->type() == QEvent::MouseButtonPress) {
+            m_timeSliceStart = pos;
+        }
+        m_timeSliceEnd = pos;
+
+        // trigger an update of the viewport, to ensure our paint method gets called again
+        m_view->viewport()->update();
     }
 
-    const auto pos = mouseEvent->localPos();
-    if (event->type() == QEvent::MouseButtonPress) {
-        m_timeSliceStart = pos;
-    }
-    m_timeSliceEnd = pos;
-
-    // trigger an update of the viewport, to ensure our paint method gets called again
-    m_viewport->update();
-
-    if (event->type() == QEvent::MouseButtonRelease
-        && std::abs(m_timeSliceStart.x() - m_timeSliceEnd.x()) > 1.)
+    const bool timeSpanSelected = !m_timeSliceStart.isNull()
+        && std::abs(m_timeSliceStart.x() - m_timeSliceEnd.x()) > 1.;
+    if (event->type() == QEvent::MouseButtonRelease &&
+        (timeSpanSelected || !m_filterStack.isEmpty() || !m_zoomStack.isEmpty()))
     {
-        auto contextMenu = new QMenu(m_viewport);
+        auto contextMenu = new QMenu(m_view->viewport());
         contextMenu->setAttribute(Qt::WA_DeleteOnClose, true);
-        contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
-                               tr("Zoom In"), this, [this](){
-                                   QRectF zoomRect(m_timeSliceStart, m_timeSliceEnd);
-                                   m_zoomStack.append(zoomRect.normalized());
-                                   m_timeSliceStart = {};
-                                   m_viewport->update();
-                               });
+
+        if (timeSpanSelected) {
+            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
+                                   tr("Zoom In"), this, [this](){
+                                        QRectF zoomRect(m_timeSliceStart, m_timeSliceEnd);
+                                        m_zoomStack.append(zoomRect.normalized());
+                                        m_timeSliceStart = {};
+                                        m_view->viewport()->update();
+                                   });
+        }
         if (!m_zoomStack.isEmpty()) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-out")),
                                    tr("Zoom Out"), this, [this](){
                                         m_zoomStack.removeLast();
                                         m_timeSliceStart = {};
-                                        m_viewport->update();
+                                        m_view->viewport()->update();
                                    });
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-original")),
                                    tr("Reset Zoom"), this, [this](){
                                         m_zoomStack.clear();
                                         m_timeSliceStart = {};
-                                        m_viewport->update();
+                                        m_view->viewport()->update();
                                    });
         }
+
+        if (timeSpanSelected || (!m_zoomStack.isEmpty() && !m_filterStack.isEmpty())) {
+            contextMenu->addSeparator();
+        }
+
+        if (timeSpanSelected) {
+            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                                   tr("Filter In"), this, [this](){
+                                        QRectF filterRect(m_timeSliceStart, m_timeSliceEnd);
+                                        filterRect = filterRect.normalized();
+                                        const auto index = m_view->model()->index(0, EventModel::EventsColumn);
+                                        const auto visualRect = m_view->visualRect(index);
+                                        const auto data = dataFromIndex(index, visualRect, m_zoomStack);
+                                        const auto timeStart = data.mapXToTime(filterRect.left() - visualRect.left() - data.padding);
+                                        const auto timeEnd = data.mapXToTime(filterRect.right() - visualRect.left() - data.padding);
+                                        m_filterStack.push_back({timeStart, timeEnd});
+                                        emit filterByTime(timeStart, timeEnd);
+                                   });
+        }
+
+        if (!m_filterStack.isEmpty()) {
+            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-remove-filters")),
+                                   tr("Filter Out"), this, [this](){
+                                       m_filterStack.removeLast();
+                                       if (m_filterStack.isEmpty()) {
+                                            emit filterByTime(0, 0);
+                                       } else {
+                                           emit filterByTime(m_filterStack.last().first,
+                                                             m_filterStack.last().second);
+                                       }
+                                   });
+            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("view-filter")),
+                                   tr("Reset Filter"), this, [this](){
+                                       m_filterStack.clear();
+                                       emit filterByTime(0, 0);
+                                   });
+        }
+
+        if (!m_zoomStack.isEmpty() && !m_filterStack.isEmpty()) {
+            contextMenu->addSeparator();
+            contextMenu->addAction(tr("Reset View"), this, [this](){
+                                       m_filterStack.clear();
+                                       m_zoomStack.clear();
+                                       m_timeSliceStart = {};
+                                       emit filterByTime(0, 0);
+                                   });
+        }
+
         contextMenu->popup(mouseEvent->globalPos());
         return true;
     }

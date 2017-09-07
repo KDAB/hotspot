@@ -511,6 +511,18 @@ QDebug operator<<(QDebug stream, const Error& error)
     return stream;
 }
 
+void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& location,
+                          int type, quint64 cost, QSet<Data::Symbol>* recursionGuard,
+                          Data::CallerCalleeResults* callerCalleeResult, int numCosts)
+{
+    auto recursionIt = recursionGuard->find(symbol);
+    if (recursionIt == recursionGuard->end()) {
+        auto& entry = callerCalleeResult->entry(symbol);
+        auto& locationCost = entry.source(location.location, numCosts);
+        locationCost[type] += cost;
+        recursionGuard->insert(symbol);
+    }
+}
 }
 
 Q_DECLARE_TYPEINFO(AttributesDefinition, Q_MOVABLE_TYPE);
@@ -814,12 +826,24 @@ struct PerfParserPrivate
         }
     }
 
+    qint32 internStack(const QVector<qint32>& frames)
+    {
+        auto& id = stacks[frames];
+        if (!id) {
+            Q_ASSERT(stacks.size() == eventResult.stacks.size() + 1);
+            id = stacks.size();
+            eventResult.stacks.push_back(frames);
+        }
+        return id - 1;
+    }
+
     void addSample(const Sample& sample)
     {
         Data::Event event;
         event.time = sample.time;
         event.cost = sample.period;
         event.type = sample.attributeId;
+        event.stackId = internStack(sample.frames);
         auto* thread = eventResult.findThread(sample.pid, sample.tid);
         if (!thread) {
             thread = addThread(sample);
@@ -850,13 +874,10 @@ struct PerfParserPrivate
         QSet<Data::Symbol> recursionGuard;
         auto frameCallback = [this, &recursionGuard, &sample] (const Data::Symbol& symbol, const Data::Location& location)
         {
-            auto recursionIt = recursionGuard.find(symbol);
-            if (recursionIt == recursionGuard.end()) {
-                auto& entry = callerCalleeResult.entry(symbol);
-                auto& locationCost = entry.source(location.location, bottomUpResult.costs.numTypes());
-                locationCost[sample.attributeId] += sample.period;
-                recursionGuard.insert(symbol);
-            }
+            addCallerCalleeEvent(symbol, location,
+                                 sample.attributeId, sample.period,
+                                 &recursionGuard, &callerCalleeResult,
+                                 bottomUpResult.costs.numTypes());
 
             if (perfScriptOutput) {
                     *perfScriptOutput << '\t' << hex << qSetFieldWidth(16)
@@ -996,11 +1017,24 @@ struct PerfParserPrivate
     std::function<void(float)> progressHandler;
     QSet<qint32> reportedMissingDebugInfoModules;
     QSet<QString> encounteredErrors;
+    QHash<QVector<qint32>, qint32> stacks;
 };
 
 PerfParser::PerfParser(QObject* parent)
     : QObject(parent)
 {
+    connect(this, &PerfParser::bottomUpDataAvailable,
+            this, [this](const Data::BottomUpResults& data) {
+                if (m_bottomUpResults.root.children.isEmpty()) {
+                    m_bottomUpResults = data;
+                }
+            });
+    connect(this, &PerfParser::eventsAvailable,
+            this, [this](const Data::EventResults& data) {
+                if (m_events.threads.isEmpty()) {
+                    m_events = data;
+                }
+            });
 }
 
 PerfParser::~PerfParser() = default;
@@ -1056,6 +1090,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
         parserArgs += {QStringLiteral("--arch"), arch};
     }
 
+    emit parsingStarted();
     using namespace ThreadWeaver;
     stream() << make_job([parserBinary, parserArgs, this]() {
         PerfParserPrivate d([this](float percent) {
@@ -1127,5 +1162,76 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
             return;
         }
         d.process.waitForFinished(-1);
+    });
+}
+
+void PerfParser::filterByTime(quint64 start, quint64 end)
+{
+    emit parsingStarted();
+    using namespace ThreadWeaver;
+    stream() << make_job([this, start, end]() {
+        Data::BottomUpResults bottomUp;
+        Data::EventResults events = m_events;
+        Data::CallerCalleeResults callerCallee;
+        if (start == 0 && end == 0) {
+            bottomUp = m_bottomUpResults;
+        } else {
+            bottomUp.symbols = m_bottomUpResults.symbols;
+            bottomUp.locations = m_bottomUpResults.locations;
+            bottomUp.costs.initializeCostsFrom(m_bottomUpResults.costs);
+            const int numCosts = m_bottomUpResults.costs.numTypes();
+
+            // remove events that lie outside the selected time span
+            // TODO: parallelize
+            for (auto& thread : events.threads) {
+                if (thread.timeStart > end || thread.timeEnd < start) {
+                    thread.events.clear();
+                    continue;
+                }
+
+                auto it = std::remove_if(thread.events.begin(),
+                                         thread.events.end(),
+                                         [start, end] (const Data::Event& event) {
+                                            return event.time < start || event.time >= end;
+                                        });
+                thread.events.erase(it, thread.events.end());
+
+                // add event data to bottom up and caller callee sets
+                for (const auto& event : thread.events) {
+                    QSet<Data::Symbol> recursionGuard;
+                    auto frameCallback = [&callerCallee, &recursionGuard, &event, numCosts]
+                        (const Data::Symbol& symbol, const Data::Location& location)
+                    {
+                        addCallerCalleeEvent(symbol, location,
+                                             event.type, event.cost,
+                                             &recursionGuard, &callerCallee,
+                                             numCosts);
+                    };
+
+                    bottomUp.addEvent(event.type, event.cost,
+                                      events.stacks.at(event.stackId),
+                                      frameCallback);
+                }
+            }
+
+            // remove threads that have no events within the selected time span
+            auto it = std::remove_if(events.threads.begin(), events.threads.end(),
+                                     [](const Data::ThreadEvents& thread) {
+                                        return thread.events.isEmpty();
+                                    });
+            events.threads.erase(it, events.threads.end());
+
+            Data::BottomUp::initializeParents(&bottomUp.root);
+        }
+
+        // TODO: parallelize
+        Data::callerCalleesFromBottomUpData(bottomUp, &callerCallee);
+        const auto topDown = Data::TopDownResults::fromBottomUp(bottomUp);
+
+        emit bottomUpDataAvailable(bottomUp);
+        emit topDownDataAvailable(topDown);
+        emit callerCalleeDataAvailable(callerCallee);
+        emit eventsAvailable(events);
+        emit parsingFinished();
     });
 }
