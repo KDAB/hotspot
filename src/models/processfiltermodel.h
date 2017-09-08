@@ -1,10 +1,11 @@
 /*
-  perfrecord.h
+  processfiltermodel.h
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
   Copyright (C) 2017 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
-  Author: Nate Rogers <nate.rogers@kdab.com>
+  Authors: Milian Wolff <milian.wolff@kdab.com>
+           Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
   accordance with Hotspot Commercial License Agreement provided with the Software.
@@ -27,33 +28,21 @@
 
 #pragma once
 
-#include <QObject>
+#include <KRecursiveFilterProxyModel>
 
-class QProcess;
-
-class PerfRecord : public QObject
+// A filterable and sortable process model
+class ProcessFilterModel : public KRecursiveFilterProxyModel
 {
     Q_OBJECT
 public:
-    explicit PerfRecord(QObject* parent = nullptr);
-    ~PerfRecord();
+    explicit ProcessFilterModel(QObject *parent);
 
-    void record(const QStringList &perfOptions, const QString &outputPath, const QString &exePath,
-                const QStringList &exeOptions, const QString &workingDirectory = QString());
-    void record(const QStringList &perfOptions, const QString &outputPath, const QStringList &pids);
-    const QString perfCommand();
-    void stopRecording();
-
-signals:
-    void recordingFinished(const QString &fileLocation);
-    void recordingFailed(const QString &errorMessage);
-    void recordingOutput(const QString &errorMessage);
+    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
+    bool filterAcceptsColumn(int source_column,
+                             const QModelIndex &source_parent) const override;
 
 private:
-    QProcess *m_perfRecordProcess;
-    QString m_outputPath;
-    bool m_userTerminated;
-
-    void startRecording(const QStringList &perfOptions, const QString &outputPath, const QStringList &recordOptions,
-                        const QString &workingDirectory = QString());
+    bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
+    QString m_currentProcId;
+    QString m_currentUser;
 };

@@ -28,13 +28,22 @@
 #include "recordpage.h"
 #include "ui_recordpage.h"
 
+#include "processfiltermodel.h"
+#include "processmodel.h"
+
 #include <QDebug>
 #include <QStandardPaths>
+#include <QStandardItemModel>
+#include <QListView>
+#include <QTimer>
+#include <QtConcurrent/QtConcurrentRun>
 
 #include <KUrlRequester>
 #include <Solid/Device>
 #include <Solid/Processor>
 #include <KShell>
+#include <KFilterProxySearchLine>
+#include <KRecursiveFilterProxyModel>
 
 #include "perfrecord.h"
 
@@ -58,12 +67,48 @@ bool isIntel()
            instructionSets.testFlag(Solid::Processor::IntelSse41) ||
            instructionSets.testFlag(Solid::Processor::IntelSse42);
 }
+
+void updateStartRecordingButtonState(const QScopedPointer<Ui::RecordPage> &ui)
+{
+    if (ui->processesTableView->selectionModel()->selectedIndexes().count() > 0) {
+        ui->startRecordingButton->setEnabled(true);
+    } else {
+        ui->startRecordingButton->setEnabled(false);
+    }
+}
+
+void setRecordApplicationVisibility(const QScopedPointer<Ui::RecordPage> &ui, bool visible)
+{
+    ui->applicationLabel->setVisible(visible);
+    ui->applicationName->setVisible(visible);
+    ui->applicationParamsLabel->setVisible(visible);
+    ui->applicationParametersBox->setVisible(visible);
+    ui->workingDirectoryLabel->setVisible(visible);
+    ui->workingDirectory->setVisible(visible);
+
+    if (visible) {
+        ui->startRecordingButton->setEnabled(visible);
+    }
+}
+
+void setRecordProcessesVisibility(const QScopedPointer<Ui::RecordPage> &ui, bool visible)
+{
+    ui->processesFilterLabel->setVisible(visible);
+    ui->processesFilterBox->setVisible(visible);
+    ui->processesLabel->setVisible(visible);
+    ui->processesTableView->setVisible(visible);
+
+    if (visible) {
+        updateStartRecordingButtonState(ui);
+    }
+}
 }
 
 RecordPage::RecordPage(QWidget *parent)
     : QWidget(parent),
       ui(new Ui::RecordPage),
-      m_perfRecord(new PerfRecord(this))
+      m_perfRecord(new PerfRecord(this)),
+      m_watcher(new QFutureWatcher<ProcDataList>(this))
 {
     ui->setupUi(this);
 
@@ -91,6 +136,23 @@ RecordPage::RecordPage(QWidget *parent)
     connect(ui->outputFile, &KUrlRequester::urlSelected, this, &RecordPage::onOutputFileUrlChanged);
 
     ui->recordTypeComboBox->addItem(tr("Launch Application"), QVariant::fromValue(LaunchApplication));
+    ui->recordTypeComboBox->addItem(tr("Attach To Process(es)"), QVariant::fromValue(AttachToProcess));
+    connect(ui->recordTypeComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+        [=](int index){
+        switch (index) {
+        case LaunchApplication:
+            setRecordApplicationVisibility(ui, true);
+            setRecordProcessesVisibility(ui, false);
+            break;
+        case AttachToProcess:
+            setRecordProcessesVisibility(ui, true);
+            setRecordApplicationVisibility(ui, false);
+            break;
+        default:
+            break;
+        }
+    });
+
     ui->callGraphComboBox->addItem(tr("None"), QVariant::fromValue(QString()));
     ui->callGraphComboBox->addItem(tr("DWARF"), QVariant::fromValue(QStringLiteral("dwarf")));
     ui->callGraphComboBox->addItem(tr("Frame Pointer"), QVariant::fromValue(QStringLiteral("fp")));
@@ -124,6 +186,32 @@ RecordPage::RecordPage(QWidget *parent)
                 ui->perfResultsTextEdit->moveCursor(QTextCursor::End);
     });
 
+    m_processModel = new ProcessModel(this);
+    m_processProxyModel = new ProcessFilterModel(this);
+    m_processProxyModel->setSourceModel(m_processModel);
+    m_processProxyModel->setDynamicSortFilter(true);
+
+    ui->processesTableView->setModel(m_processProxyModel);
+    // hide state
+    ui->processesTableView->hideColumn(ProcessModel::StateColumn);
+    ui->processesTableView->sortByColumn(ProcessModel::NameColumn, Qt::AscendingOrder);
+    ui->processesTableView->setSortingEnabled(true);
+    ui->processesTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->processesTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->processesTableView->setSelectionMode(QAbstractItemView::MultiSelection);
+    connect(ui->processesTableView, &QTreeView::clicked,
+            [=](){
+            updateStartRecordingButtonState(ui);
+        });
+
+    ui->processesFilterBox->setProxy(m_processProxyModel);
+
+    setRecordApplicationVisibility(ui, true);
+    setRecordProcessesVisibility(ui, false);
+
+    connect(m_watcher, SIGNAL(finished()), this, SLOT(updateProcessesFinished()));
+    updateProcesses();
+
     showRecordPage();
 }
 
@@ -137,6 +225,7 @@ void RecordPage::showRecordPage()
     ui->perfResultsTextEdit->clear();
     ui->perfResultsTextEdit->hide();
     ui->perfResultsLabel->hide();
+    ui->viewPerfRecordResultsButton->setEnabled(false);
 }
 
 void RecordPage::onStartRecordingButtonClicked(bool checked)
@@ -157,10 +246,23 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
             perfOptions << QStringLiteral("--event") << ui->eventTypeBox->text();
         }
 
-        m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(),
-                             ui->applicationName->url().toLocalFile(),
-                             KShell::splitArgs(ui->applicationParametersBox->text()),
-                             ui->workingDirectory->url().toLocalFile());
+        if (ui->recordTypeComboBox->currentData() == LaunchApplication) {
+            m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(),
+                                 ui->applicationName->url().toLocalFile(),
+                                 KShell::splitArgs(ui->applicationParametersBox->text()),
+                                 ui->workingDirectory->url().toLocalFile());
+        } else {
+            QItemSelectionModel *selectionModel = ui->processesTableView->selectionModel();
+            QStringList pids;
+
+            for (const auto& item : selectionModel->selectedIndexes()) {
+                if (item.column() == 0) {
+                    pids.append(item.data(ProcessModel::PIDRole).toString());
+                }
+            }
+
+            m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(), pids);
+        }
     } else {
         ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
         ui->startRecordingButton->setText(tr("Start Recording"));
@@ -248,4 +350,16 @@ void RecordPage::onOutputFileNameSelected(const QString& filePath)
 void RecordPage::onOutputFileUrlChanged(const QUrl& fileUrl)
 {
     onOutputFileNameSelected(fileUrl.toLocalFile());
+}
+
+void RecordPage::updateProcesses()
+{
+    m_watcher->setFuture(QtConcurrent::run(processList, m_processModel->processes()));
+}
+
+void RecordPage::updateProcessesFinished()
+{
+    m_processModel->mergeProcesses(m_watcher->result());
+    updateStartRecordingButtonState(ui);
+    QTimer::singleShot(1000, this, SLOT(updateProcesses()));
 }
