@@ -276,7 +276,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
 
     const auto *mouseEvent = static_cast<QMouseEvent*>(event);
 
-    if (mouseEvent->button() == Qt::LeftButton || event->type() == QEvent::MouseMove) {
+    if (mouseEvent->buttons() == Qt::LeftButton) {
         const auto pos = mouseEvent->localPos();
         if (event->type() == QEvent::MouseButtonPress) {
             m_timeSliceStart = pos;
