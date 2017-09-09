@@ -89,6 +89,10 @@ protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
+    void filterIn(quint64 startTime, quint64 endTime);
+    void zoomIn(quint64 startTime, quint64 endTime);
+    void updateZoomState();
+
     QAbstractItemView* m_view;
     quint64 m_timeSliceStart = 0;
     quint64 m_timeSliceEnd = 0;

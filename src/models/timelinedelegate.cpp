@@ -270,10 +270,12 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     }
 
     const auto *mouseEvent = static_cast<QMouseEvent*>(event);
+    const auto pos = mouseEvent->localPos();
+    const auto index = m_view->indexAt(pos.toPoint());
+    const bool inEventsColumn = index.column() == EventModel::EventsColumn;
 
-    if (mouseEvent->buttons() == Qt::LeftButton) {
-        const auto pos = mouseEvent->localPos();
-        const auto index = m_view->model()->index(0, EventModel::EventsColumn);
+    if (mouseEvent->buttons() == Qt::LeftButton && inEventsColumn)
+    {
         const auto visualRect = m_view->visualRect(index);
         const auto data = dataFromIndex(index, visualRect, m_zoomStack);
         const auto time = data.mapXToTime(pos.x() - visualRect.left() - data.padding);
@@ -292,56 +294,65 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     }
 
     const bool isTimeSpanSelected = m_timeSliceStart != m_timeSliceEnd;
+    const bool isZoomed = !m_zoomStack.isEmpty();
+    const bool isFiltered = !m_filterStack.isEmpty();
     if (event->type() == QEvent::MouseButtonRelease &&
-        (isTimeSpanSelected || !m_filterStack.isEmpty() || !m_zoomStack.isEmpty()))
+        (isTimeSpanSelected || isFiltered || isZoomed || index.isValid()))
     {
         auto contextMenu = new QMenu(m_view->viewport());
         contextMenu->setAttribute(Qt::WA_DeleteOnClose, true);
 
-        if (isTimeSpanSelected) {
+        if (isTimeSpanSelected && inEventsColumn) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
                                    tr("Zoom In"), this, [this](){
-                                        m_zoomStack.append({m_timeSliceStart, m_timeSliceEnd});
-                                        m_timeSliceStart = 0;
-                                        m_timeSliceEnd = 0;
-                                        m_view->viewport()->update();
+                                       zoomIn(m_timeSliceStart, m_timeSliceEnd);
                                    });
         }
-        if (!m_zoomStack.isEmpty()) {
+        const auto threadStartTime = index.data(EventModel::ThreadStartRole).value<quint64>();
+        const auto threadEndTime = index.data(EventModel::ThreadEndRole).value<quint64>();
+        if (threadStartTime != threadEndTime) {
+            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
+                                   tr("Zoom In On Thread Time"), this, [this, threadStartTime, threadEndTime](){
+                                       zoomIn(threadStartTime, threadEndTime);
+                                   });
+        }
+
+        if (isZoomed) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-out")),
                                    tr("Zoom Out"), this, [this](){
-                                        m_zoomStack.removeLast();
-                                        m_timeSliceStart = 0;
-                                        m_timeSliceEnd = 0;
-                                        m_view->viewport()->update();
+                                       m_zoomStack.removeLast();
+                                       updateZoomState();
                                    });
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-original")),
                                    tr("Reset Zoom"), this, [this](){
-                                        m_zoomStack.clear();
-                                        m_timeSliceStart = 0;
-                                        m_timeSliceEnd = 0;
-                                        m_view->viewport()->update();
+                                       m_zoomStack.clear();
+                                       updateZoomState();
                                    });
         }
 
-        if (isTimeSpanSelected || (!m_zoomStack.isEmpty() && !m_filterStack.isEmpty())) {
-            contextMenu->addSeparator();
-        }
+        contextMenu->addSeparator();
 
-        if (isTimeSpanSelected) {
+        if (isTimeSpanSelected && inEventsColumn) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
                                    tr("Filter In"), this, [this](){
-                                        m_filterStack.push_back({m_timeSliceStart, m_timeSliceEnd});
-                                        emit filterByTime(m_timeSliceStart, m_timeSliceEnd);
+                                       m_filterStack.push_back({m_timeSliceStart, m_timeSliceEnd});
+                                       emit filterByTime(m_timeSliceStart, m_timeSliceEnd);
+                                   });
+        }
+        if (index.isValid()) {
+            const auto threadEndTime = index.data(EventModel::ThreadEndRole).value<quint64>();
+            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                                   tr("Filter In On Thread Time"), this, [this, threadStartTime, threadEndTime](){
+                                       filterIn(threadStartTime, threadEndTime);
                                    });
         }
 
-        if (!m_filterStack.isEmpty()) {
+        if (isFiltered) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-remove-filters")),
                                    tr("Filter Out"), this, [this](){
                                        m_filterStack.removeLast();
                                        if (m_filterStack.isEmpty()) {
-                                            emit filterByTime(0, 0);
+                                           emit filterByTime(0, 0);
                                        } else {
                                            emit filterByTime(m_filterStack.last().first,
                                                              m_filterStack.last().second);
@@ -354,14 +365,13 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                                    });
         }
 
-        if (!m_zoomStack.isEmpty() && !m_filterStack.isEmpty()) {
+        if (isZoomed && isFiltered) {
             contextMenu->addSeparator();
-            contextMenu->addAction(tr("Reset View"), this, [this](){
+            contextMenu->addAction(tr("Reset Zoom And Filter"), this, [this](){
                                        m_filterStack.clear();
                                        m_zoomStack.clear();
-                                       m_timeSliceStart = 0;
-                                       m_timeSliceEnd = 0;
                                        emit filterByTime(0, 0);
+                                       updateZoomState();
                                    });
         }
 
@@ -369,4 +379,23 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         return true;
     }
     return false;
+}
+
+void TimeLineDelegate::filterIn(quint64 startTime, quint64 endTime)
+{
+    m_filterStack.push_back({startTime, endTime});
+    emit filterByTime(startTime, endTime);
+}
+
+void TimeLineDelegate::zoomIn(quint64 startTime, quint64 endTime)
+{
+    m_zoomStack.append({startTime, endTime});
+    updateZoomState();
+}
+
+void TimeLineDelegate::updateZoomState()
+{
+    m_timeSliceStart = 0;
+    m_timeSliceEnd = 0;
+    m_view->viewport()->update();
 }
