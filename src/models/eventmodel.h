@@ -49,6 +49,8 @@ public:
         MinTimeRole,
         ThreadStartRole,
         ThreadEndRole,
+        ThreadIdRole,
+        ProcessIdRole,
         MaxCostRole,
         SortRole,
     };

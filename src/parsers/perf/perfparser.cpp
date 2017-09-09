@@ -1165,15 +1165,16 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
     });
 }
 
-void PerfParser::filterByTime(quint64 start, quint64 end)
+void PerfParser::filterResults(quint64 start, quint64 end, qint32 processId, qint32 threadId)
 {
     emit parsingStarted();
     using namespace ThreadWeaver;
-    stream() << make_job([this, start, end]() {
+    stream() << make_job([this, start, end, processId, threadId]() {
         Data::BottomUpResults bottomUp;
         Data::EventResults events = m_events;
         Data::CallerCalleeResults callerCallee;
-        if (start == 0 && end == 0) {
+        const bool filterByTime = start != 0 && end != 0;
+        if (!filterByTime && processId == 0 && threadId == 0) {
             bottomUp = m_bottomUpResults;
         } else {
             bottomUp.symbols = m_bottomUpResults.symbols;
@@ -1184,17 +1185,22 @@ void PerfParser::filterByTime(quint64 start, quint64 end)
             // remove events that lie outside the selected time span
             // TODO: parallelize
             for (auto& thread : events.threads) {
-                if (thread.timeStart > end || thread.timeEnd < start) {
+                if ((processId && thread.pid != processId) ||
+                    (threadId && thread.tid != threadId) ||
+                    (filterByTime && (thread.timeStart > end || thread.timeEnd < start)))
+                {
                     thread.events.clear();
                     continue;
                 }
 
-                auto it = std::remove_if(thread.events.begin(),
-                                         thread.events.end(),
-                                         [start, end] (const Data::Event& event) {
-                                            return event.time < start || event.time >= end;
-                                        });
-                thread.events.erase(it, thread.events.end());
+                if (filterByTime) {
+                    auto it = std::remove_if(thread.events.begin(),
+                                            thread.events.end(),
+                                            [start, end] (const Data::Event& event) {
+                                                return event.time < start || event.time >= end;
+                                            });
+                    thread.events.erase(it, thread.events.end());
+                }
 
                 // add event data to bottom up and caller callee sets
                 for (const auto& event : thread.events) {

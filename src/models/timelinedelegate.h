@@ -66,6 +66,14 @@ struct TimeLineData
 };
 Q_DECLARE_METATYPE(TimeLineData)
 
+struct FilterAction {
+    quint64 startTime = 0;
+    quint64 endTime = 0;
+    qint32 processId = 0;
+    qint32 threadId = 0;
+};
+Q_DECLARE_TYPEINFO(FilterAction, Q_MOVABLE_TYPE);
+
 class TimeLineDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
@@ -81,15 +89,19 @@ public:
                    const QModelIndex& index) override;
 
 signals:
-    // emitted when user wants to filter by time
-    // start == 0 && end == 0 means "show everything"
-    void filterByTime(quint64 start, quint64 end);
+    // emitted when user wants to filter by time, process id or thread id
+    // a zero for any of the values means "show everything"
+    void filterRequested(quint64 startTime, quint64 endTime,
+                         qint32 processId, qint32 threadId);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
-    void filterIn(quint64 startTime, quint64 endTime);
+    void filterInByTime(quint64 timeStart, quint64 timeEnd);
+    void filterInByProcess(qint32 processId);
+    void filterInByThread(qint32 threadId);
+    void applyFilter(FilterAction filter);
     void zoomIn(quint64 startTime, quint64 endTime);
     void updateZoomState();
 
@@ -97,5 +109,5 @@ private:
     quint64 m_timeSliceStart = 0;
     quint64 m_timeSliceEnd = 0;
     QVector<QPair<quint64, quint64>> m_zoomStack;
-    QVector<QPair<quint64, quint64>> m_filterStack;
+    QVector<FilterAction> m_filterStack;
 };

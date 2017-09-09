@@ -84,6 +84,10 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         return thread.timeStart;
     } else if (role == ThreadEndRole) {
         return thread.timeEnd;
+    } else if (role == ThreadIdRole) {
+        return thread.tid;
+    } else if (role == ProcessIdRole) {
+        return thread.pid;
     } else if (role == MaxTimeRole) {
         return m_maxTime;
     } else if (role == MinTimeRole) {

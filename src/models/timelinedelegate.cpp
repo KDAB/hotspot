@@ -308,9 +308,15 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                                        zoomIn(m_timeSliceStart, m_timeSliceEnd);
                                    });
         }
+
         const auto threadStartTime = index.data(EventModel::ThreadStartRole).value<quint64>();
         const auto threadEndTime = index.data(EventModel::ThreadEndRole).value<quint64>();
-        if (threadStartTime != threadEndTime) {
+        const auto processId = index.data(EventModel::ProcessIdRole).value<qint32>();
+        const auto threadId = index.data(EventModel::ThreadIdRole).value<qint32>();
+
+        if (threadStartTime != threadEndTime &&
+            (!isZoomed || (m_zoomStack.last().first != threadStartTime && m_zoomStack.last().second != threadEndTime)))
+        {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
                                    tr("Zoom In On Thread Time"), this, [this, threadStartTime, threadEndTime](){
                                        zoomIn(threadStartTime, threadEndTime);
@@ -335,16 +341,28 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         if (isTimeSpanSelected && inEventsColumn) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
                                    tr("Filter In"), this, [this](){
-                                       m_filterStack.push_back({m_timeSliceStart, m_timeSliceEnd});
-                                       emit filterByTime(m_timeSliceStart, m_timeSliceEnd);
+                                       filterInByTime(m_timeSliceStart, m_timeSliceEnd);
                                    });
         }
         if (index.isValid()) {
-            const auto threadEndTime = index.data(EventModel::ThreadEndRole).value<quint64>();
-            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                   tr("Filter In On Thread Time"), this, [this, threadStartTime, threadEndTime](){
-                                       filterIn(threadStartTime, threadEndTime);
-                                   });
+            if (!isFiltered || (m_filterStack.last().startTime != threadStartTime && m_filterStack.last().endTime != threadEndTime)) {
+                contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                                        tr("Filter In On Thread #%1 By Time").arg(threadId), this, [this, threadStartTime, threadEndTime](){
+                                            filterInByTime(threadStartTime, threadEndTime);
+                                        });
+            }
+            if (!isFiltered || !m_filterStack.last().threadId) {
+                contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                                        tr("Filter In On Thread #%1").arg(threadId), this, [this, threadId](){
+                                            filterInByThread(threadId);
+                                        });
+            }
+            if (!isFiltered || (!m_filterStack.last().processId && !m_filterStack.last().threadId)) {
+                contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                                        tr("Filter In On Process #%1").arg(processId), this, [this, processId](){
+                                            filterInByProcess(processId);
+                                        });
+            }
         }
 
         if (isFiltered) {
@@ -352,16 +370,17 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                                    tr("Filter Out"), this, [this](){
                                        m_filterStack.removeLast();
                                        if (m_filterStack.isEmpty()) {
-                                           emit filterByTime(0, 0);
+                                           emit filterRequested(0, 0, 0, 0);
                                        } else {
-                                           emit filterByTime(m_filterStack.last().first,
-                                                             m_filterStack.last().second);
+                                           const auto filter = m_filterStack.last();
+                                           emit filterRequested(filter.startTime, filter.endTime,
+                                                                filter.processId, filter.threadId);
                                        }
                                    });
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("view-filter")),
                                    tr("Reset Filter"), this, [this](){
                                        m_filterStack.clear();
-                                       emit filterByTime(0, 0);
+                                       emit filterRequested(0, 0, 0, 0);
                                    });
         }
 
@@ -370,7 +389,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
             contextMenu->addAction(tr("Reset Zoom And Filter"), this, [this](){
                                        m_filterStack.clear();
                                        m_zoomStack.clear();
-                                       emit filterByTime(0, 0);
+                                       emit filterRequested(0, 0, 0, 0);
                                        updateZoomState();
                                    });
         }
@@ -381,10 +400,47 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     return false;
 }
 
-void TimeLineDelegate::filterIn(quint64 startTime, quint64 endTime)
+void TimeLineDelegate::filterInByTime(quint64 startTime, quint64 endTime)
 {
-    m_filterStack.push_back({startTime, endTime});
-    emit filterByTime(startTime, endTime);
+    FilterAction filter;
+    filter.startTime = startTime;
+    filter.endTime = endTime;
+    applyFilter(filter);
+}
+
+void TimeLineDelegate::filterInByProcess(qint32 processId)
+{
+    FilterAction filter;
+    filter.processId = processId;
+    applyFilter(filter);
+}
+
+void TimeLineDelegate::filterInByThread(qint32 threadId)
+{
+    FilterAction filter;
+    filter.threadId = threadId;
+    applyFilter(filter);
+}
+
+void TimeLineDelegate::applyFilter(FilterAction filter)
+{
+    if (!m_filterStack.isEmpty()) {
+        // apply previous filter state
+        const auto& lastFilter = m_filterStack.last();
+        if (!filter.startTime)
+            filter.startTime = lastFilter.startTime;
+        if (!filter.endTime)
+            filter.endTime = lastFilter.endTime;
+        if (!filter.processId)
+            filter.processId = lastFilter.processId;
+        if (!filter.threadId)
+            filter.threadId = lastFilter.threadId;
+    }
+
+    m_filterStack.push_back(filter);
+
+    emit filterRequested(filter.startTime, filter.endTime,
+                         filter.processId, filter.threadId);
 }
 
 void TimeLineDelegate::zoomIn(quint64 startTime, quint64 endTime)

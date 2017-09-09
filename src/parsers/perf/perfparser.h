@@ -47,7 +47,8 @@ public:
                         const QString& extraLibPaths, const QString& appPath,
                         const QString& arch);
 
-    void filterByTime(quint64 start, quint64 end);
+    void filterResults(quint64 start, quint64 end,
+                       qint32 processId, qint32 threadId);
 
 signals:
     void parsingStarted();
