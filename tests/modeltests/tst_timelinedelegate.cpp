@@ -101,8 +101,8 @@ private slots:
             << minTime << maxTime;
 
         // zoom into the 2nd half
-        data.zoom(data.w / 2, 2.);
-        minTime = 6000; // minTime + timeDelta / 2
+        minTime = 6000;
+        data.zoom(minTime, maxTime);
         QTest::newRow("minTime_zoom_2nd_half") << data
             << 0 << minTime
             << minTime << maxTime;
@@ -114,8 +114,8 @@ private slots:
             << minTime << maxTime;
 
         // zoom into the 4th quadrant
-        data.zoom(data.w / 2, 2.);
         minTime = 8500;
+        data.zoom(minTime, maxTime);
         QTest::newRow("minTime_zoom_4th_quadrant") << data
             << 0 << minTime
             << minTime << maxTime;

@@ -49,7 +49,7 @@ struct TimeLineData
 
     int mapCostToY(quint64 cost) const;
 
-    void zoom(int xOffset, double scale);
+    void zoom(quint64 timeStart, quint64 timeEnd);
 
     static const constexpr int padding = 2;
     Data::Events events;
@@ -63,8 +63,6 @@ struct TimeLineData
     int w;
     double xMultiplicator;
     double yMultiplicator;
-    double zoomOffset;
-    double zoomScale;
 };
 Q_DECLARE_METATYPE(TimeLineData)
 
@@ -92,8 +90,8 @@ protected:
 
 private:
     QAbstractItemView* m_view;
-    QPointF m_timeSliceStart;
-    QPointF m_timeSliceEnd;
-    QVector<QRectF> m_zoomStack;
+    quint64 m_timeSliceStart = 0;
+    quint64 m_timeSliceEnd = 0;
+    QVector<QPair<quint64, quint64>> m_zoomStack;
     QVector<QPair<quint64, quint64>> m_filterStack;
 };

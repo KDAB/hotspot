@@ -61,8 +61,6 @@ TimeLineData::TimeLineData(const Data::Events& events, quint64 maxCost,
     , w(rect.width() - 2 * padding)
     , xMultiplicator(double(w) / timeDelta)
     , yMultiplicator(double(h) / maxCost)
-    , zoomOffset(0.)
-    , zoomScale(1.)
 {
 }
 
@@ -81,20 +79,19 @@ int TimeLineData::mapCostToY(quint64 cost) const
     return double(cost) * yMultiplicator;
 }
 
-void TimeLineData::zoom(int xOffset, double scale)
+void TimeLineData::zoom(quint64 newMinTime, quint64 newMaxTime)
 {
-    const auto timeOffset = mapXToTime(xOffset);
-    zoomScale *= scale;
-    minTime = timeOffset;
-    maxTime = mapXToTime(w / scale);
-    timeDelta = maxTime - minTime;
-    xMultiplicator = double(w) / timeDelta;
+    const auto newTimeDelta = (newMaxTime - newMinTime);
+    minTime = newMinTime;
+    maxTime = newMaxTime;
+    timeDelta = newTimeDelta;
+    xMultiplicator = double(w) / newTimeDelta;
 }
 
 namespace {
 
 TimeLineData dataFromIndex(const QModelIndex& index, QRect rect,
-                           const QVector<QRectF>& zoomStack)
+                           const QVector<QPair<quint64, quint64>>& zoomStack)
 {
     TimeLineData data(index.data(EventModel::EventsRole).value<Data::Events>(),
                         index.data(EventModel::MaxCostRole).value<quint64>(),
@@ -103,10 +100,8 @@ TimeLineData dataFromIndex(const QModelIndex& index, QRect rect,
                         index.data(EventModel::ThreadStartRole).value<quint64>(),
                         index.data(EventModel::ThreadEndRole).value<quint64>(),
                         rect);
-    for (const auto &zoomRect : zoomStack) {
-        const auto offset = zoomRect.left() - rect.left();
-        const auto scale = double(rect.width()) / zoomRect.width();
-        data.zoom(offset, scale);
+    if (!zoomStack.isEmpty()) {
+        data.zoom(zoomStack.last().first, zoomStack.last().second);
     }
     return data;
 }
@@ -132,20 +127,20 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     painter->fillRect(option.rect, is_alternate ? palette.base()
                                                 : palette.alternateBase());
 
-    // visualize the time where the group was active
+    // skip threads that are outside the visible (zoomed) region
+    painter->save();
+
+    // transform into target coordinate system
+    painter->translate(option.rect.topLeft());
+    // account for padding
+    painter->translate(data.padding, data.padding);
+
+    // visualize the time where the thread was active
+    // i.e. paint events for threads that have any in the selected time range
     auto threadTimeRect = QRect(QPoint(data.mapTimeToX(data.threadStartTime), 0),
                                 QPoint(data.mapTimeToX(data.threadEndTime),
                                 data.h));
-
-    // skip threads that are outside the visible (zoomed) region
     if (threadTimeRect.left() < option.rect.width() && threadTimeRect.right() > 0) {
-        painter->save();
-
-        // transform into target coordinate system
-        painter->translate(option.rect.topLeft());
-        // account for padding
-        painter->translate(data.padding, data.padding);
-
         if (threadTimeRect.left() < 0)
             threadTimeRect.setLeft(0);
         if (threadTimeRect.right() > option.rect.width())
@@ -193,28 +188,28 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
             last_x = x;
         }
-        painter->restore();
     }
 
-    if (!m_timeSliceStart.isNull()) {
-        auto timeSlice = QRectF(m_timeSliceStart, m_timeSliceEnd).normalized();
+    if (m_timeSliceStart != m_timeSliceEnd) {
+        const auto startX = data.mapTimeToX(m_timeSliceStart);
+        const auto endX = data.mapTimeToX(m_timeSliceEnd);
+        // undo vertical padding manually to fill complete height
+        QRect timeSlice(startX, -data.padding,
+                        endX - startX, option.rect.height());
 
-        // clamp to size of the current column
-        timeSlice.setTop(option.rect.top());
-        timeSlice.setHeight(option.rect.height());
         if (timeSlice.x() < option.rect.left())
             timeSlice.setLeft(option.rect.left());
         if (timeSlice.x() > option.rect.right())
             timeSlice.setRight(option.rect.right());
 
-        if (timeSlice.width() > 1) {
-            auto brush = palette.highlight();
-            auto color = brush.color();
-            color.setAlpha(128);
-            brush.setColor(color);
-            painter->fillRect(timeSlice, brush);
-        }
+        auto brush = palette.highlight();
+        auto color = brush.color();
+        color.setAlpha(128);
+        brush.setColor(color);
+        painter->fillRect(timeSlice, brush);
     }
+
+    painter->restore();
 }
 
 bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
@@ -278,29 +273,37 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
 
     if (mouseEvent->buttons() == Qt::LeftButton) {
         const auto pos = mouseEvent->localPos();
+        const auto index = m_view->model()->index(0, EventModel::EventsColumn);
+        const auto visualRect = m_view->visualRect(index);
+        const auto data = dataFromIndex(index, visualRect, m_zoomStack);
+        const auto time = data.mapXToTime(pos.x() - visualRect.left() - data.padding);
+
         if (event->type() == QEvent::MouseButtonPress) {
-            m_timeSliceStart = pos;
+            m_timeSliceStart = time;
         }
-        m_timeSliceEnd = pos;
+        m_timeSliceEnd = time;
+
+        if (m_timeSliceEnd < m_timeSliceStart) {
+            std::swap(m_timeSliceStart, m_timeSliceEnd);
+        }
 
         // trigger an update of the viewport, to ensure our paint method gets called again
         m_view->viewport()->update();
     }
 
-    const bool timeSpanSelected = !m_timeSliceStart.isNull()
-        && std::abs(m_timeSliceStart.x() - m_timeSliceEnd.x()) > 1.;
+    const bool isTimeSpanSelected = m_timeSliceStart != m_timeSliceEnd;
     if (event->type() == QEvent::MouseButtonRelease &&
-        (timeSpanSelected || !m_filterStack.isEmpty() || !m_zoomStack.isEmpty()))
+        (isTimeSpanSelected || !m_filterStack.isEmpty() || !m_zoomStack.isEmpty()))
     {
         auto contextMenu = new QMenu(m_view->viewport());
         contextMenu->setAttribute(Qt::WA_DeleteOnClose, true);
 
-        if (timeSpanSelected) {
+        if (isTimeSpanSelected) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
                                    tr("Zoom In"), this, [this](){
-                                        QRectF zoomRect(m_timeSliceStart, m_timeSliceEnd);
-                                        m_zoomStack.append(zoomRect.normalized());
-                                        m_timeSliceStart = {};
+                                        m_zoomStack.append({m_timeSliceStart, m_timeSliceEnd});
+                                        m_timeSliceStart = 0;
+                                        m_timeSliceEnd = 0;
                                         m_view->viewport()->update();
                                    });
         }
@@ -308,33 +311,28 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-out")),
                                    tr("Zoom Out"), this, [this](){
                                         m_zoomStack.removeLast();
-                                        m_timeSliceStart = {};
+                                        m_timeSliceStart = 0;
+                                        m_timeSliceEnd = 0;
                                         m_view->viewport()->update();
                                    });
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-original")),
                                    tr("Reset Zoom"), this, [this](){
                                         m_zoomStack.clear();
-                                        m_timeSliceStart = {};
+                                        m_timeSliceStart = 0;
+                                        m_timeSliceEnd = 0;
                                         m_view->viewport()->update();
                                    });
         }
 
-        if (timeSpanSelected || (!m_zoomStack.isEmpty() && !m_filterStack.isEmpty())) {
+        if (isTimeSpanSelected || (!m_zoomStack.isEmpty() && !m_filterStack.isEmpty())) {
             contextMenu->addSeparator();
         }
 
-        if (timeSpanSelected) {
+        if (isTimeSpanSelected) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
                                    tr("Filter In"), this, [this](){
-                                        QRectF filterRect(m_timeSliceStart, m_timeSliceEnd);
-                                        filterRect = filterRect.normalized();
-                                        const auto index = m_view->model()->index(0, EventModel::EventsColumn);
-                                        const auto visualRect = m_view->visualRect(index);
-                                        const auto data = dataFromIndex(index, visualRect, m_zoomStack);
-                                        const auto timeStart = data.mapXToTime(filterRect.left() - visualRect.left() - data.padding);
-                                        const auto timeEnd = data.mapXToTime(filterRect.right() - visualRect.left() - data.padding);
-                                        m_filterStack.push_back({timeStart, timeEnd});
-                                        emit filterByTime(timeStart, timeEnd);
+                                        m_filterStack.push_back({m_timeSliceStart, m_timeSliceEnd});
+                                        emit filterByTime(m_timeSliceStart, m_timeSliceEnd);
                                    });
         }
 
@@ -361,7 +359,8 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
             contextMenu->addAction(tr("Reset View"), this, [this](){
                                        m_filterStack.clear();
                                        m_zoomStack.clear();
-                                       m_timeSliceStart = {};
+                                       m_timeSliceStart = 0;
+                                       m_timeSliceEnd = 0;
                                        emit filterByTime(0, 0);
                                    });
         }
