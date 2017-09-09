@@ -69,6 +69,7 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     timeLineProxy->setSourceModel(eventModel);
     timeLineProxy->setSortRole(EventModel::SortRole);
     ui->timeLineView->setModel(timeLineProxy);
+    ui->timeLineView->setSortingEnabled(true);
     ui->timeLineView->sortByColumn(EventModel::EventsColumn);
     // ensure the vertical scroll bar is always shown, otherwise the timeline
     // view would get more or less space, which leads to odd jumping when filtering
@@ -77,18 +78,27 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
 
     auto* timeLineDelegate = new TimeLineDelegate(ui->timeLineView);
     ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, timeLineDelegate);
+
     connect(parser, &PerfParser::eventsAvailable,
-            this, [eventModel] (const Data::EventResults& data) {
+            this, [this, eventModel] (const Data::EventResults& data) {
+                ui->timeLineEventSource->clear();
+                for (const auto& type : data.eventTypes) {
+                    ui->timeLineEventSource->addItem(type);
+                }
                 eventModel->setData(data);
             });
-    ui->timeLineView->setSortingEnabled(true);
-    ui->timeLineView->hide();
     connect(timeLineDelegate, &TimeLineDelegate::filterRequested,
             parser, &PerfParser::filterResults);
 
+    connect(ui->timeLineEventSource, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, [this, timeLineDelegate] (int eventType) {
+                timeLineDelegate->setEventType(eventType);
+            });
+
+    ui->timeLineArea->hide();
     connect(ui->resultsTabWidget, &QTabWidget::currentChanged,
             this, [this, summaryTabIndex](int index) {
-                ui->timeLineView->setVisible(index != summaryTabIndex);
+                ui->timeLineArea->setVisible(index != summaryTabIndex);
             });
 
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode,

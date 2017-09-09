@@ -171,8 +171,7 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         // from a graph in count mode (perf record -F vs. perf record -c)
         // see also: https://www.spinics.net/lists/linux-perf-users/msg03486.html
         for (const auto& event : data.events) {
-            if (event.type != 0) {
-                // TODO: support multiple cost types somehow
+            if (event.type != m_eventType) {
                 continue;
             }
 
@@ -455,5 +454,11 @@ void TimeLineDelegate::updateZoomState()
 {
     m_timeSliceStart = 0;
     m_timeSliceEnd = 0;
+    m_view->viewport()->update();
+}
+
+void TimeLineDelegate::setEventType(int type)
+{
+    m_eventType = type;
     m_view->viewport()->update();
 }

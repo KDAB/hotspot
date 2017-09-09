@@ -88,6 +88,8 @@ public:
                    const QStyleOptionViewItem& option,
                    const QModelIndex& index) override;
 
+    void setEventType(int type);
+
 signals:
     // emitted when user wants to filter by time, process id or thread id
     // a zero for any of the values means "show everything"
@@ -110,4 +112,5 @@ private:
     quint64 m_timeSliceEnd = 0;
     QVector<QPair<quint64, quint64>> m_zoomStack;
     QVector<FilterAction> m_filterStack;
+    int m_eventType = 0;
 };
