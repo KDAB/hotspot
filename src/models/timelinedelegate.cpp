@@ -197,9 +197,9 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         QRect timeSlice(startX, -data.padding,
                         endX - startX, option.rect.height());
 
-        if (timeSlice.x() < option.rect.left())
+        if (timeSlice.left() < option.rect.left())
             timeSlice.setLeft(option.rect.left());
-        if (timeSlice.x() > option.rect.right())
+        if (timeSlice.right() > option.rect.right())
             timeSlice.setRight(option.rect.right());
 
         auto brush = palette.highlight();
@@ -284,10 +284,6 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
             m_timeSliceStart = time;
         }
         m_timeSliceEnd = time;
-
-        if (m_timeSliceEnd < m_timeSliceStart) {
-            std::swap(m_timeSliceStart, m_timeSliceEnd);
-        }
 
         // trigger an update of the viewport, to ensure our paint method gets called again
         m_view->viewport()->update();
@@ -402,6 +398,9 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
 
 void TimeLineDelegate::filterInByTime(quint64 startTime, quint64 endTime)
 {
+    if (endTime < startTime)
+        std::swap(endTime, startTime);
+
     FilterAction filter;
     filter.startTime = startTime;
     filter.endTime = endTime;
@@ -445,6 +444,9 @@ void TimeLineDelegate::applyFilter(FilterAction filter)
 
 void TimeLineDelegate::zoomIn(quint64 startTime, quint64 endTime)
 {
+    if (endTime < startTime)
+        std::swap(endTime, startTime);
+
     m_zoomStack.append({startTime, endTime});
     updateZoomState();
 }
