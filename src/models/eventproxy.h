@@ -1,5 +1,5 @@
 /*
-  eventmodel.h
+  eventproxy.h
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
@@ -25,50 +25,21 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#ifndef EVENTPROXY_H
+#define EVENTPROXY_H
 
-#include <QAbstractTableModel>
+#include <QSortFilterProxyModel>
 
-#include "data.h"
-
-class EventModel : public QAbstractTableModel
+class EventProxy : public QSortFilterProxyModel
 {
     Q_OBJECT
+
 public:
-    EventModel(QObject* parent = nullptr);
-    virtual ~EventModel();
+    explicit EventProxy(QObject* parent = nullptr);
+    ~EventProxy() override;
 
-    enum Columns {
-        ThreadColumn = 0,
-        EventsColumn,
-        NUM_COLUMNS
-    };
-    enum Roles {
-        EventsRole = Qt::UserRole,
-        MaxTimeRole,
-        MinTimeRole,
-        ThreadStartRole,
-        ThreadEndRole,
-        ThreadNameRole,
-        ThreadIdRole,
-        ProcessIdRole,
-        MaxCostRole,
-        SortRole,
-    };
-
-    int rowCount(const QModelIndex& parent = {}) const override;
-    int columnCount(const QModelIndex& parent = {}) const override;
-
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-
-    using QAbstractTableModel::setData;
-    void setData(const Data::EventResults& data);
-
-private:
-    Data::EventResults m_data;
-    quint64 m_minTime = 0;
-    quint64 m_maxTime = 0;
-    quint64 m_totalEvents = 0;
-    quint64 m_maxCost = 0;
+protected:
+    bool lessThan(const QModelIndex& sourceLeft, const QModelIndex& sourceRight) const override;
 };
+
+#endif // EVENTPROXY_H

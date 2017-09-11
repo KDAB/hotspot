@@ -55,10 +55,6 @@ QVariant EventModel::headerData(int section, Qt::Orientation orientation,
         return {};
     }
 
-    if (role == Qt::InitialSortOrderRole) {
-        return section == ThreadColumn ? Qt::AscendingOrder : Qt::DescendingOrder;
-    }
-
     switch (static_cast<Columns>(section)) {
     case ThreadColumn:
         return tr("Thread");
@@ -84,6 +80,8 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         return thread.timeStart;
     } else if (role == ThreadEndRole) {
         return thread.timeEnd;
+    } else if (role == ThreadNameRole) {
+        return thread.name;
     } else if (role == ThreadIdRole) {
         return thread.tid;
     } else if (role == ProcessIdRole) {
@@ -106,7 +104,7 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
     switch (static_cast<Columns>(index.column())) {
         case ThreadColumn:
             if (role == Qt::DisplayRole) {
-                return thread.name;
+                return tr("%1 (#%2)").arg(thread.name, QString::number(thread.tid));
             } else if (role == Qt::ToolTipRole) {
                 return tr("Thread %1 (tid=%2, pid=%3) ran for %4 (%5% of total runtime).\n"
                         "It produced %6 events (%7% of the total events).")

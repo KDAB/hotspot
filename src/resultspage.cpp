@@ -37,9 +37,8 @@
 #include "resultscallercalleepage.h"
 
 #include "models/eventmodel.h"
+#include "models/eventproxy.h"
 #include "models/timelinedelegate.h"
-
-#include <QSortFilterProxyModel>
 
 ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     : QWidget(parent)
@@ -65,12 +64,11 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     }
 
     auto *eventModel = new EventModel(this);
-    auto *timeLineProxy = new QSortFilterProxyModel(this);
+    auto *timeLineProxy = new EventProxy(this);
     timeLineProxy->setSourceModel(eventModel);
-    timeLineProxy->setSortRole(EventModel::SortRole);
     ui->timeLineView->setModel(timeLineProxy);
     ui->timeLineView->setSortingEnabled(true);
-    ui->timeLineView->sortByColumn(EventModel::EventsColumn);
+    ui->timeLineView->sortByColumn(EventModel::ThreadColumn, Qt::AscendingOrder);
     // ensure the vertical scroll bar is always shown, otherwise the timeline
     // view would get more or less space, which leads to odd jumping when filtering
     // due to the increased width leading to a zoom effect

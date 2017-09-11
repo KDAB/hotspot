@@ -6,6 +6,7 @@ add_library(models STATIC
     costdelegate.cpp
     timelinedelegate.cpp
     eventmodel.cpp
+    eventproxy.cpp
     ../util.cpp
 )
 
