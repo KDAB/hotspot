@@ -270,13 +270,14 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
 
     const auto *mouseEvent = static_cast<QMouseEvent*>(event);
     const auto pos = mouseEvent->localPos();
-    const auto index = m_view->indexAt(pos.toPoint());
-    const bool inEventsColumn = index.column() == EventModel::EventsColumn;
+    // the pos may lay outside any valid index, but for the code below we need
+    // to query for some values that require any valid index. use the first rows index
+    const auto alwaysValidIndex = m_view->model()->index(0, EventModel::EventsColumn);
+    const auto visualRect = m_view->visualRect(alwaysValidIndex);
+    const bool inEventsColumn = visualRect.left() < pos.x();
 
-    if (mouseEvent->buttons() == Qt::LeftButton && inEventsColumn)
-    {
-        const auto visualRect = m_view->visualRect(index);
-        const auto data = dataFromIndex(index, visualRect, m_zoomStack);
+    if (mouseEvent->buttons() == Qt::LeftButton && inEventsColumn) {
+        const auto data = dataFromIndex(alwaysValidIndex, visualRect, m_zoomStack);
         const auto time = data.mapXToTime(pos.x() - visualRect.left() - data.padding);
 
         if (event->type() == QEvent::MouseButtonPress) {
@@ -291,6 +292,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     const bool isTimeSpanSelected = m_timeSliceStart != m_timeSliceEnd;
     const bool isZoomed = !m_zoomStack.isEmpty();
     const bool isFiltered = !m_filterStack.isEmpty();
+    const auto index = m_view->indexAt(pos.toPoint());
     if (event->type() == QEvent::MouseButtonRelease &&
         (isTimeSpanSelected || isFiltered || isZoomed || index.isValid()))
     {
