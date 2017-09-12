@@ -53,7 +53,7 @@ script:
   - ln -sr ./appdir/usr/lib/ ./appdir/usr/lib/x86_64-linux-gnu/libexec/lib
   - # Ensure we prefer the bundled libs also when calling dlopen, cf.: https://github.com/KDAB/hotspot/issues/89
   - rm ./appdir/AppRun
-  - echo -e '#!/bin/bash\nd="$(dirname "$(readlink -f "${0}")")"\nLD_LIBRARY_PATH="$d/usr/lib":$LD_LIBRARY_PATH "$d/usr/bin/hotspot"' > ./appdir/AppRun
+  - echo -e '#!/bin/bash\nd="$(dirname "$(readlink -f "${0}")")"\nLD_LIBRARY_PATH="$d/usr/lib":$LD_LIBRARY_PATH "$d/usr/bin/hotspot" $@' > ./appdir/AppRun
   - chmod +x ./appdir/AppRun
   - # Actually create the final image
   - appimagetool ./appdir/
