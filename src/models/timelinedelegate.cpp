@@ -276,10 +276,10 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         return false;
     }
 
-    if (event->type() != QEvent::MouseButtonPress
-        && event->type() != QEvent::MouseButtonRelease
-        && event->type() != QEvent::MouseMove)
-    {
+    const bool isButtonRelease = event->type() == QEvent::MouseButtonRelease;
+    const bool isButtonPress = event->type() == QEvent::MouseButtonPress;
+    const bool isMove = event->type() == QEvent::MouseMove;
+    if (!isButtonRelease && !isButtonPress && !isMove) {
         return false;
     }
 
@@ -297,7 +297,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         const auto data = dataFromIndex(alwaysValidIndex, visualRect, m_zoomStack);
         const auto time = data.mapXToTime(pos.x() - visualRect.left() - data.padding);
 
-        if (event->type() == QEvent::MouseButtonPress) {
+        if (isButtonPress) {
             m_timeSliceStart = time;
         }
         m_timeSliceEnd = time;
@@ -310,7 +310,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     const bool isZoomed = !m_zoomStack.isEmpty();
     const bool isFiltered = !m_filterStack.isEmpty();
     const auto index = m_view->indexAt(pos.toPoint());
-    if (event->type() == QEvent::MouseButtonRelease &&
+    if (isButtonRelease &&
         (!isLeftButtonEvent || inEventsColumn) &&
         (isTimeSpanSelected || isFiltered || isZoomed || index.isValid()))
     {
