@@ -66,6 +66,7 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     auto *eventModel = new EventModel(this);
     auto *timeLineProxy = new EventProxy(this);
     timeLineProxy->setSourceModel(eventModel);
+    ui->timeLineSearch->setProxy(timeLineProxy);
     ui->timeLineView->setModel(timeLineProxy);
     ui->timeLineView->setSortingEnabled(true);
     ui->timeLineView->sortByColumn(EventModel::ThreadColumn, Qt::AscendingOrder);

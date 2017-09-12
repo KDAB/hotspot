@@ -33,6 +33,8 @@ EventProxy::EventProxy(QObject* parent)
     : QSortFilterProxyModel(parent)
 {
     setSortRole(EventModel::ThreadIdRole);
+    setFilterKeyColumn(EventModel::ThreadColumn);
+    setFilterRole(Qt::DisplayRole);
 }
 
 EventProxy::~EventProxy() = default;
