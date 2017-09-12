@@ -115,8 +115,15 @@ TimeLineDelegate::TimeLineDelegate(QAbstractItemView* view)
 {
     m_view->viewport()->installEventFilter(this);
 
+    m_filterOutAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-remove-filters")),
+        tr("Filter Out"), this, &TimeLineDelegate::filterOut);
     m_resetFilterAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("view-filter")),
         tr("Reset Filter"), this, &TimeLineDelegate::resetFilter);
+
+    m_filterMenu->addSeparator();
+
+    m_zoomOutAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-out")),
+        tr("Zoom Out"), this, &TimeLineDelegate::zoomOut);
     m_resetZoomAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-original")),
         tr("Reset Zoom"), this, &TimeLineDelegate::resetZoom);
     m_resetZoomAndFilterAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("edit-clear")),
@@ -343,11 +350,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         }
 
         if (isRightButtonEvent && isZoomed) {
-            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-out")),
-                                   tr("Zoom Out"), this, [this](){
-                                       m_zoomStack.removeLast();
-                                       updateZoomState();
-                                   });
+            contextMenu->addAction(m_zoomOutAction);
             contextMenu->addAction(m_resetZoomAction);
         }
 
@@ -383,17 +386,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         }
 
         if (isRightButtonEvent && isFiltered) {
-            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-remove-filters")),
-                                   tr("Filter Out"), this, [this](){
-                                       m_filterStack.removeLast();
-                                       if (m_filterStack.isEmpty()) {
-                                           emit filterRequested(0, 0, 0, 0);
-                                       } else {
-                                           const auto filter = m_filterStack.last();
-                                           emit filterRequested(filter.startTime, filter.endTime,
-                                                                filter.processId, filter.threadId);
-                                       }
-                                   });
+            contextMenu->addAction(m_filterOutAction);
             contextMenu->addAction(m_resetFilterAction);
         }
 
@@ -485,9 +478,28 @@ void TimeLineDelegate::resetFilter()
     updateFilterActions();
 }
 
+void TimeLineDelegate::filterOut()
+{
+    m_filterStack.removeLast();
+    if (m_filterStack.isEmpty()) {
+        emit filterRequested(0, 0, 0, 0);
+    } else {
+        const auto filter = m_filterStack.last();
+        emit filterRequested(filter.startTime, filter.endTime,
+                            filter.processId, filter.threadId);
+    }
+    updateFilterActions();
+}
+
 void TimeLineDelegate::resetZoom()
 {
     m_zoomStack.clear();
+    updateZoomState();
+}
+
+void TimeLineDelegate::zoomOut()
+{
+    m_zoomStack.removeLast();
     updateZoomState();
 }
 
@@ -499,7 +511,13 @@ void TimeLineDelegate::resetZoomAndFilter()
 
 void TimeLineDelegate::updateFilterActions()
 {
-    m_resetFilterAction->setEnabled(!m_filterStack.isEmpty());
-    m_resetZoomAction->setEnabled(!m_zoomStack.isEmpty());
-    m_resetZoomAndFilterAction->setEnabled(!m_filterStack.isEmpty() || !m_zoomStack.isEmpty());
+    const bool isFiltered = !m_filterStack.isEmpty();
+    m_filterOutAction->setEnabled(isFiltered);
+    m_resetFilterAction->setEnabled(isFiltered);
+
+    const bool isZoomed = !m_zoomStack.isEmpty();
+    m_zoomOutAction->setEnabled(isZoomed);
+    m_resetZoomAction->setEnabled(isZoomed);
+
+    m_resetZoomAndFilterAction->setEnabled(isZoomed || isFiltered);
 }

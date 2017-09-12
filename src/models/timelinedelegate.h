@@ -112,7 +112,9 @@ private:
     void zoomIn(quint64 startTime, quint64 endTime);
     void updateZoomState();
     void resetFilter();
+    void filterOut();
     void resetZoom();
+    void zoomOut();
     void resetZoomAndFilter();
     void updateFilterActions();
 
@@ -123,7 +125,9 @@ private:
     QVector<FilterAction> m_filterStack;
     int m_eventType = 0;
     QScopedPointer<QMenu> m_filterMenu;
+    QAction* m_filterOutAction;
     QAction* m_resetFilterAction;
+    QAction* m_zoomOutAction;
     QAction* m_resetZoomAction;
     QAction* m_resetZoomAndFilterAction;
 };
