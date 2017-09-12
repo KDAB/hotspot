@@ -39,7 +39,8 @@ public:
     ~EventProxy() override;
 
 protected:
-    bool lessThan(const QModelIndex& sourceLeft, const QModelIndex& sourceRight) const override;
+    bool lessThan(const QModelIndex& sourceLeft,
+                  const QModelIndex& sourceRight) const override;
 };
 
 #endif // EVENTPROXY_H
