@@ -29,10 +29,13 @@
 
 #include <QStyledItemDelegate>
 #include <QVector>
+#include <QScopedPointer>
 
 #include "data.h"
 
 class QAbstractItemView;
+class QMenu;
+class QAction;
 
 struct TimeLineData
 {
@@ -90,6 +93,8 @@ public:
 
     void setEventType(int type);
 
+    QMenu* filterMenu() const;
+
 signals:
     // emitted when user wants to filter by time, process id or thread id
     // a zero for any of the values means "show everything"
@@ -106,11 +111,19 @@ private:
     void applyFilter(FilterAction filter);
     void zoomIn(quint64 startTime, quint64 endTime);
     void updateZoomState();
+    void resetFilter();
+    void resetZoom();
+    void resetZoomAndFilter();
+    void updateFilterActions();
 
-    QAbstractItemView* m_view;
+    QAbstractItemView* m_view = nullptr;
     quint64 m_timeSliceStart = 0;
     quint64 m_timeSliceEnd = 0;
     QVector<QPair<quint64, quint64>> m_zoomStack;
     QVector<FilterAction> m_filterStack;
     int m_eventType = 0;
+    QScopedPointer<QMenu> m_filterMenu;
+    QAction* m_resetFilterAction;
+    QAction* m_resetZoomAction;
+    QAction* m_resetZoomAndFilterAction;
 };

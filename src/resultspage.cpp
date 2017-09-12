@@ -76,6 +76,7 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     ui->timeLineView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     auto* timeLineDelegate = new TimeLineDelegate(ui->timeLineView);
+    ui->timeLineEventFilterButton->setMenu(timeLineDelegate->filterMenu());
     ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, timeLineDelegate);
 
     connect(parser, &PerfParser::eventsAvailable,

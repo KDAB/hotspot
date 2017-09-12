@@ -73,6 +73,25 @@
            </widget>
           </item>
           <item>
+           <widget class="QToolButton" name="timeLineEventFilterButton">
+            <property name="toolTip">
+             <string>Configure event filters</string>
+            </property>
+            <property name="text">
+             <string>Filter</string>
+            </property>
+            <property name="icon">
+             <iconset theme="view-filter"/>
+            </property>
+            <property name="popupMode">
+             <enum>QToolButton::InstantPopup</enum>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="horizontalSpacer">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
