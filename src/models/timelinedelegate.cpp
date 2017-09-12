@@ -275,8 +275,10 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     const auto alwaysValidIndex = m_view->model()->index(0, EventModel::EventsColumn);
     const auto visualRect = m_view->visualRect(alwaysValidIndex);
     const bool inEventsColumn = visualRect.left() < pos.x();
+    const bool isLeftButtonEvent = mouseEvent->button() == Qt::LeftButton ||
+                                    mouseEvent->buttons() == Qt::LeftButton;
 
-    if (mouseEvent->buttons() == Qt::LeftButton && inEventsColumn) {
+    if (isLeftButtonEvent && inEventsColumn) {
         const auto data = dataFromIndex(alwaysValidIndex, visualRect, m_zoomStack);
         const auto time = data.mapXToTime(pos.x() - visualRect.left() - data.padding);
 
@@ -294,6 +296,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     const bool isFiltered = !m_filterStack.isEmpty();
     const auto index = m_view->indexAt(pos.toPoint());
     if (event->type() == QEvent::MouseButtonRelease &&
+        (!isLeftButtonEvent || inEventsColumn) &&
         (isTimeSpanSelected || isFiltered || isZoomed || index.isValid()))
     {
         auto contextMenu = new QMenu(m_view->viewport());
