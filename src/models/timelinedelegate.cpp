@@ -284,16 +284,83 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     }
 
     const auto *mouseEvent = static_cast<QMouseEvent*>(event);
+    const bool isLeftButtonEvent = mouseEvent->button() == Qt::LeftButton ||
+                                    mouseEvent->buttons() == Qt::LeftButton;
+    const bool isRightButtonEvent = mouseEvent->button() == Qt::RightButton ||
+                                    mouseEvent->buttons() == Qt::RightButton;
+
     const auto pos = mouseEvent->localPos();
     // the pos may lay outside any valid index, but for the code below we need
     // to query for some values that require any valid index. use the first rows index
     const auto alwaysValidIndex = m_view->model()->index(0, EventModel::EventsColumn);
     const auto visualRect = m_view->visualRect(alwaysValidIndex);
     const bool inEventsColumn = visualRect.left() < pos.x();
-    const bool isLeftButtonEvent = mouseEvent->button() == Qt::LeftButton ||
-                                    mouseEvent->buttons() == Qt::LeftButton;
+    const bool isZoomed = !m_zoomStack.isEmpty();
+    const bool isFiltered = !m_filterStack.isEmpty();
 
-    if (isLeftButtonEvent && inEventsColumn) {
+    if (!inEventsColumn) {
+        // thread column
+        const auto index = m_view->indexAt(pos.toPoint());
+        if (isRightButtonEvent && isButtonRelease && (index.isValid() || isFiltered || isZoomed)) {
+            auto contextMenu = new QMenu(m_view->viewport());
+            contextMenu->setAttribute(Qt::WA_DeleteOnClose, true);
+
+            const auto threadStartTime = index.data(EventModel::ThreadStartRole).value<quint64>();
+            const auto threadEndTime = index.data(EventModel::ThreadEndRole).value<quint64>();
+            const auto processId = index.data(EventModel::ProcessIdRole).value<qint32>();
+            const auto threadId = index.data(EventModel::ThreadIdRole).value<qint32>();
+
+            if (threadStartTime != threadEndTime &&
+                (!isZoomed || (m_zoomStack.last().first != threadStartTime && m_zoomStack.last().second != threadEndTime)))
+            {
+                contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
+                                    tr("Zoom In On Thread Time"), this, [this, threadStartTime, threadEndTime](){
+                                        zoomIn(threadStartTime, threadEndTime);
+                                    });
+            }
+
+            if (isZoomed) {
+                contextMenu->addAction(m_resetZoomAction);
+            }
+
+            contextMenu->addSeparator();
+
+            if (index.isValid()) {
+                if (!isFiltered || (m_filterStack.last().startTime != threadStartTime && m_filterStack.last().endTime != threadEndTime)) {
+                    contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                                            tr("Filter In On Thread #%1 By Time").arg(threadId), this, [this, threadStartTime, threadEndTime](){
+                                                filterInByTime(threadStartTime, threadEndTime);
+                                            });
+                }
+                if (!isFiltered || !m_filterStack.last().threadId) {
+                    contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                                            tr("Filter In On Thread #%1").arg(threadId), this, [this, threadId](){
+                                                filterInByThread(threadId);
+                                            });
+                }
+                if (!isFiltered || (!m_filterStack.last().processId && !m_filterStack.last().threadId)) {
+                    contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                                            tr("Filter In On Process #%1").arg(processId), this, [this, processId](){
+                                                filterInByProcess(processId);
+                                            });
+                }
+            }
+
+            if (isFiltered) {
+                contextMenu->addAction(m_resetFilterAction);
+            }
+
+            if (isFiltered || isZoomed) {
+                contextMenu->addSeparator();
+                contextMenu->addAction(m_resetZoomAndFilterAction);
+            }
+            contextMenu->popup(mouseEvent->globalPos());
+            return true;
+        }
+        return false;
+    }
+
+    if (isLeftButtonEvent) {
         const auto data = dataFromIndex(alwaysValidIndex, visualRect, m_zoomStack);
         const auto time = data.mapXToTime(pos.x() - visualRect.left() - data.padding);
 
@@ -307,13 +374,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     }
 
     const bool isTimeSpanSelected = m_timeSliceStart != m_timeSliceEnd;
-    const bool isZoomed = !m_zoomStack.isEmpty();
-    const bool isFiltered = !m_filterStack.isEmpty();
-    const auto index = m_view->indexAt(pos.toPoint());
-    if (isButtonRelease &&
-        (!isLeftButtonEvent || inEventsColumn) &&
-        (isTimeSpanSelected || isFiltered || isZoomed || index.isValid()))
-    {
+    if (isButtonRelease && (isTimeSpanSelected || isFiltered || isZoomed)) {
         auto contextMenu = new QMenu(m_view->viewport());
         contextMenu->setAttribute(Qt::WA_DeleteOnClose, true);
 
@@ -321,20 +382,6 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
                                    tr("Zoom In"), this, [this](){
                                        zoomIn(m_timeSliceStart, m_timeSliceEnd);
-                                   });
-        }
-
-        const auto threadStartTime = index.data(EventModel::ThreadStartRole).value<quint64>();
-        const auto threadEndTime = index.data(EventModel::ThreadEndRole).value<quint64>();
-        const auto processId = index.data(EventModel::ProcessIdRole).value<qint32>();
-        const auto threadId = index.data(EventModel::ThreadIdRole).value<qint32>();
-
-        if (threadStartTime != threadEndTime &&
-            (!isZoomed || (m_zoomStack.last().first != threadStartTime && m_zoomStack.last().second != threadEndTime)))
-        {
-            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
-                                   tr("Zoom In On Thread Time"), this, [this, threadStartTime, threadEndTime](){
-                                       zoomIn(threadStartTime, threadEndTime);
                                    });
         }
 
@@ -354,26 +401,6 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                                    tr("Filter In"), this, [this](){
                                        filterInByTime(m_timeSliceStart, m_timeSliceEnd);
                                    });
-        }
-        if (index.isValid()) {
-            if (!isFiltered || (m_filterStack.last().startTime != threadStartTime && m_filterStack.last().endTime != threadEndTime)) {
-                contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                        tr("Filter In On Thread #%1 By Time").arg(threadId), this, [this, threadStartTime, threadEndTime](){
-                                            filterInByTime(threadStartTime, threadEndTime);
-                                        });
-            }
-            if (!isFiltered || !m_filterStack.last().threadId) {
-                contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                        tr("Filter In On Thread #%1").arg(threadId), this, [this, threadId](){
-                                            filterInByThread(threadId);
-                                        });
-            }
-            if (!isFiltered || (!m_filterStack.last().processId && !m_filterStack.last().threadId)) {
-                contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                        tr("Filter In On Process #%1").arg(processId), this, [this, processId](){
-                                            filterInByProcess(processId);
-                                        });
-            }
         }
 
         if (isFiltered) {
