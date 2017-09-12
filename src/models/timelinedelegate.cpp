@@ -298,69 +298,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     const bool isZoomed = !m_zoomStack.isEmpty();
     const bool isFiltered = !m_filterStack.isEmpty();
 
-    if (!inEventsColumn) {
-        // thread column
-        const auto index = m_view->indexAt(pos.toPoint());
-        if (isRightButtonEvent && isButtonRelease && (index.isValid() || isFiltered || isZoomed)) {
-            auto contextMenu = new QMenu(m_view->viewport());
-            contextMenu->setAttribute(Qt::WA_DeleteOnClose, true);
-
-            const auto threadStartTime = index.data(EventModel::ThreadStartRole).value<quint64>();
-            const auto threadEndTime = index.data(EventModel::ThreadEndRole).value<quint64>();
-            const auto processId = index.data(EventModel::ProcessIdRole).value<qint32>();
-            const auto threadId = index.data(EventModel::ThreadIdRole).value<qint32>();
-
-            if (threadStartTime != threadEndTime &&
-                (!isZoomed || (m_zoomStack.last().first != threadStartTime && m_zoomStack.last().second != threadEndTime)))
-            {
-                contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
-                                    tr("Zoom In On Thread Time"), this, [this, threadStartTime, threadEndTime](){
-                                        zoomIn(threadStartTime, threadEndTime);
-                                    });
-            }
-
-            if (isZoomed) {
-                contextMenu->addAction(m_resetZoomAction);
-            }
-
-            contextMenu->addSeparator();
-
-            if (index.isValid()) {
-                if (!isFiltered || (m_filterStack.last().startTime != threadStartTime && m_filterStack.last().endTime != threadEndTime)) {
-                    contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                            tr("Filter In On Thread #%1 By Time").arg(threadId), this, [this, threadStartTime, threadEndTime](){
-                                                filterInByTime(threadStartTime, threadEndTime);
-                                            });
-                }
-                if (!isFiltered || !m_filterStack.last().threadId) {
-                    contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                            tr("Filter In On Thread #%1").arg(threadId), this, [this, threadId](){
-                                                filterInByThread(threadId);
-                                            });
-                }
-                if (!isFiltered || (!m_filterStack.last().processId && !m_filterStack.last().threadId)) {
-                    contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                            tr("Filter In On Process #%1").arg(processId), this, [this, processId](){
-                                                filterInByProcess(processId);
-                                            });
-                }
-            }
-
-            if (isFiltered) {
-                contextMenu->addAction(m_resetFilterAction);
-            }
-
-            if (isFiltered || isZoomed) {
-                contextMenu->addSeparator();
-                contextMenu->addAction(m_resetZoomAndFilterAction);
-            }
-            contextMenu->popup(mouseEvent->globalPos());
-            return true;
-        }
-        return false;
-    }
-
-    if (isLeftButtonEvent) {
+    if (isLeftButtonEvent && inEventsColumn) {
         const auto data = dataFromIndex(alwaysValidIndex, visualRect, m_zoomStack);
         const auto time = data.mapXToTime(pos.x() - visualRect.left() - data.padding);
 
@@ -374,18 +312,37 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     }
 
     const bool isTimeSpanSelected = m_timeSliceStart != m_timeSliceEnd;
-    if (isButtonRelease && (isTimeSpanSelected || isFiltered || isZoomed)) {
+    const auto index = m_view->indexAt(pos.toPoint());
+    const bool haveContextInfo = index.isValid() || isZoomed || isFiltered;
+    const bool showContextMenu = isButtonRelease && ((isRightButtonEvent && haveContextInfo) || (isLeftButtonEvent && isTimeSpanSelected));
+
+    if (showContextMenu) {
         auto contextMenu = new QMenu(m_view->viewport());
         contextMenu->setAttribute(Qt::WA_DeleteOnClose, true);
 
-        if (isTimeSpanSelected && inEventsColumn) {
+        const auto threadStartTime = index.data(EventModel::ThreadStartRole).value<quint64>();
+        const auto threadEndTime = index.data(EventModel::ThreadEndRole).value<quint64>();
+        const auto processId = index.data(EventModel::ProcessIdRole).value<qint32>();
+        const auto threadId = index.data(EventModel::ThreadIdRole).value<qint32>();
+
+        if (isTimeSpanSelected) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
-                                   tr("Zoom In"), this, [this](){
+                                   tr("Zoom In On Selection"), this, [this](){
                                        zoomIn(m_timeSliceStart, m_timeSliceEnd);
                                    });
         }
 
-        if (isZoomed) {
+        if (isRightButtonEvent && index.isValid() && threadStartTime != threadEndTime &&
+            (!isZoomed || (m_zoomStack.last().first != threadStartTime && m_zoomStack.last().second != threadEndTime)))
+        {
+            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
+                                   tr("Zoom In On Thread #%1 By Time").arg(threadId),
+                                   this, [this, threadStartTime, threadEndTime](){
+                                        zoomIn(threadStartTime, threadEndTime);
+                                   });
+        }
+
+        if (isRightButtonEvent && isZoomed) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-out")),
                                    tr("Zoom Out"), this, [this](){
                                        m_zoomStack.removeLast();
@@ -396,14 +353,36 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
 
         contextMenu->addSeparator();
 
-        if (isTimeSpanSelected && inEventsColumn) {
+        if (isTimeSpanSelected) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                   tr("Filter In"), this, [this](){
+                                   tr("Filter In On Selection"), this, [this](){
                                        filterInByTime(m_timeSliceStart, m_timeSliceEnd);
                                    });
         }
 
-        if (isFiltered) {
+        if (isRightButtonEvent && index.isValid()) {
+            if (!isFiltered || (m_filterStack.last().startTime != threadStartTime && m_filterStack.last().endTime != threadEndTime)) {
+                contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                                       tr("Filter In On Thread #%1 By Time").arg(threadId),
+                                       this, [this, threadStartTime, threadEndTime](){
+                                            filterInByTime(threadStartTime, threadEndTime);
+                                       });
+            }
+            if (!isFiltered || !m_filterStack.last().threadId) {
+                contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                                       tr("Filter In On Thread #%1").arg(threadId), this, [this, threadId](){
+                                            filterInByThread(threadId);
+                                       });
+            }
+            if (!isFiltered || (!m_filterStack.last().processId && !m_filterStack.last().threadId)) {
+                contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                                       tr("Filter In On Process #%1").arg(processId), this, [this, processId](){
+                                            filterInByProcess(processId);
+                                       });
+            }
+        }
+
+        if (isRightButtonEvent && isFiltered) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-remove-filters")),
                                    tr("Filter Out"), this, [this](){
                                        m_filterStack.removeLast();
@@ -418,14 +397,14 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
             contextMenu->addAction(m_resetFilterAction);
         }
 
-        if (isZoomed && isFiltered) {
+        if (isRightButtonEvent && (isFiltered || isZoomed)) {
             contextMenu->addSeparator();
             contextMenu->addAction(m_resetZoomAndFilterAction);
         }
-
         contextMenu->popup(mouseEvent->globalPos());
         return true;
     }
+
     return false;
 }
 
