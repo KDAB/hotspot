@@ -52,8 +52,8 @@ PerfRecord::~PerfRecord()
     }
 }
 
-void PerfRecord::record(const QStringList &perfOptions, const QString &outputPath, const QString &exePath,
-                        const QStringList &exeOptions, const QString &workingDirectory)
+void PerfRecord::startRecording(const QStringList &perfOptions, const QString &outputPath,
+                                const QStringList &recordOptions, const QString &workingDirectory)
 {
     // Reset perf record process to avoid getting signals from old processes
     if (m_perfRecordProcess) {
@@ -62,25 +62,6 @@ void PerfRecord::record(const QStringList &perfOptions, const QString &outputPat
     }
     m_perfRecordProcess = new QProcess(this);
     m_perfRecordProcess->setProcessChannelMode(QProcess::MergedChannels);
-
-    QFileInfo exeFileInfo(exePath);
-
-    if (!exeFileInfo.exists()) {
-        exeFileInfo.setFile(QStandardPaths::findExecutable(exePath));
-    }
-
-    if (!exeFileInfo.exists()) {
-        emit recordingFailed(tr("File '%1' does not exist.").arg(exePath));
-        return;
-    }
-    if (!exeFileInfo.isFile()) {
-        emit recordingFailed(tr("'%1' is not a file.").arg(exePath));
-        return;
-    }
-    if (!exeFileInfo.isExecutable()) {
-        emit recordingFailed(tr("File '%1' is not executable.").arg(exePath));
-        return;
-    }
 
     QFileInfo outputFileInfo(outputPath);
     QString folderPath = outputFileInfo.dir().path();
@@ -134,14 +115,53 @@ void PerfRecord::record(const QStringList &perfOptions, const QString &outputPat
         m_outputPath
     };
     perfCommand += perfOptions;
-    perfCommand += exeFileInfo.absoluteFilePath();
-    perfCommand += exeOptions;
+    perfCommand += recordOptions;
 
     if (!workingDirectory.isEmpty()) {
         m_perfRecordProcess->setWorkingDirectory(workingDirectory);
     }
 
     m_perfRecordProcess->start(perfBinary, perfCommand);
+}
+
+void PerfRecord::record(const QStringList &perfOptions, const QString &outputPath, const QStringList &pids)
+{
+    if (pids.empty()) {
+        emit recordingFailed(tr("Process does not exist."));
+        return;
+    }
+
+    QStringList recordOptions = { QStringLiteral("--pid"), pids.join(QLatin1Char(',')) };
+
+    startRecording(perfOptions, outputPath, recordOptions);
+}
+
+void PerfRecord::record(const QStringList &perfOptions, const QString &outputPath, const QString &exePath,
+                        const QStringList &exeOptions, const QString &workingDirectory)
+{
+    QFileInfo exeFileInfo(exePath);
+
+    if (!exeFileInfo.exists()) {
+        exeFileInfo.setFile(QStandardPaths::findExecutable(exePath));
+    }
+
+    if (!exeFileInfo.exists()) {
+        emit recordingFailed(tr("File '%1' does not exist.").arg(exePath));
+        return;
+    }
+    if (!exeFileInfo.isFile()) {
+        emit recordingFailed(tr("'%1' is not a file.").arg(exePath));
+        return;
+    }
+    if (!exeFileInfo.isExecutable()) {
+        emit recordingFailed(tr("File '%1' is not executable.").arg(exePath));
+        return;
+    }
+
+    QStringList recordOptions =  { exeFileInfo.absoluteFilePath() };
+    recordOptions += exeOptions;
+
+    startRecording(perfOptions, outputPath, recordOptions, workingDirectory);
 }
 
 const QString PerfRecord::perfCommand()

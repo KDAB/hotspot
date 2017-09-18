@@ -28,12 +28,17 @@
 #pragma once
 
 #include <QWidget>
+#include <QFutureWatcher>
+
+#include "processlist.h"
 
 namespace Ui {
 class RecordPage;
 }
 
 class PerfRecord;
+class ProcessModel;
+class ProcessFilterModel;
 
 enum RecordType
 {
@@ -65,9 +70,17 @@ private slots:
     void onOutputFileUrlChanged(const QUrl& fileUrl);
     void onOutputFileNameSelected(const QString& filePath);
 
+    void updateProcesses();
+    void updateProcessesFinished();
+
 private:
     QScopedPointer<Ui::RecordPage> ui;
 
     PerfRecord* m_perfRecord;
     QString m_resultsFile;
+
+    ProcessModel *m_processModel;
+    ProcessFilterModel *m_processProxyModel;
+
+    QFutureWatcher<ProcDataList> *m_watcher;
 };
