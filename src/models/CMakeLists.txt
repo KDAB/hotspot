@@ -6,6 +6,9 @@ add_library(models STATIC
     costdelegate.cpp
     processmodel.cpp
     processfiltermodel.cpp
+    timelinedelegate.cpp
+    eventmodel.cpp
+    eventproxy.cpp
     ../util.cpp
 )
 
@@ -13,4 +16,5 @@ target_link_libraries(models
     Qt5::Core
     Qt5::Widgets
     KF5::ItemModels
+    KF5::ConfigWidgets
 )

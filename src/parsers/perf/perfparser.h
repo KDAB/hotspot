@@ -47,12 +47,22 @@ public:
                         const QString& extraLibPaths, const QString& appPath,
                         const QString& arch);
 
+    void filterResults(quint64 start, quint64 end,
+                       qint32 processId, qint32 threadId);
+
 signals:
+    void parsingStarted();
     void summaryDataAvailable(const SummaryData& data);
     void bottomUpDataAvailable(const Data::BottomUpResults& data);
     void topDownDataAvailable(const Data::TopDownResults& data);
     void callerCalleeDataAvailable(const Data::CallerCalleeResults& data);
+    void eventsAvailable(const Data::EventResults& events);
     void parsingFinished();
     void parsingFailed(const QString& errorMessage);
     void progress(float progress);
+
+private:
+    // only set once after the initial startParseFile finished
+    Data::BottomUpResults m_bottomUpResults;
+    Data::EventResults m_events;
 };

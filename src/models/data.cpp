@@ -193,3 +193,60 @@ QDebug Data::operator<<(QDebug stream, const ItemCost& cost)
     stream << "}";
     return stream.resetFormat().space();
 }
+
+Data::ThreadEvents* Data::EventResults::findThread(qint32 pid, qint32 tid)
+{
+    for (int i = threads.size() - 1; i >= 0; --i) {
+        auto& thread = threads[i];
+        if (thread.pid == pid && thread.tid == tid) {
+            return &thread;
+        }
+    }
+
+    return nullptr;
+}
+
+BottomUp* Data::BottomUpResults::addFrame(BottomUp* parent, qint32 locationId,
+                                          int type, quint64 period,
+                                          const FrameCallback& frameCallback)
+{
+    bool skipNextFrame = false;
+    while (locationId != -1) {
+        const auto& location = locations.value(locationId);
+        if (skipNextFrame) {
+            locationId = location.parentLocationId;
+            skipNextFrame = false;
+            continue;
+        }
+
+        auto symbol = symbols.value(locationId);
+        if (!symbol.isValid()) {
+            // we get function entry points from the perfparser but
+            // those are imo not interesting - skip them
+            symbol = symbols.value(location.parentLocationId);
+            skipNextFrame = true;
+        }
+
+        auto ret = parent->entryForSymbol(symbol, &maxBottomUpId);
+        costs.add(type, ret->id, period);
+
+        frameCallback(symbol, location.location);
+
+        parent = ret;
+        locationId = location.parentLocationId;
+    }
+
+    return parent;
+}
+
+const BottomUp* Data::BottomUpResults::addEvent(int type, quint64 cost,
+                                                const QVector<qint32>& frames,
+                                                const FrameCallback& frameCallback)
+{
+    costs.addTotalCost(type, cost);
+    auto parent = &root;
+    for (auto id : frames) {
+        parent = addFrame(parent, id, type, cost, frameCallback);
+    }
+    return parent;
+}

@@ -138,46 +138,36 @@ QDebug operator<<(QDebug stream, const Command& command)
     return stream;
 }
 
-struct ThreadStart
+struct ThreadStart : Record
 {
-    quint32 childPid = 0;
-    quint32 childTid = 0;
-    quint64 time = 0;
 };
 
 QDataStream& operator>>(QDataStream& stream, ThreadStart& threadStart)
 {
-    return stream >> threadStart.childPid >> threadStart.childTid >> threadStart.time;
+    return stream >> static_cast<Record&>(threadStart);
 }
 
 QDebug operator<<(QDebug stream, const ThreadStart& threadStart)
 {
     stream.noquote().nospace() << "ThreadStart{"
-        << "childPid=" << threadStart.childPid << ", "
-        << "childTid=" << threadStart.childTid << ", "
-        << "time=" << threadStart.time
+        << static_cast<const Record&>(threadStart)
         << "}";
     return stream;
 }
 
-struct ThreadEnd
+struct ThreadEnd : Record
 {
-    quint32 childPid = 0;
-    quint32 childTid = 0;
-    quint64 time = 0;
 };
 
 QDataStream& operator>>(QDataStream& stream, ThreadEnd& threadEnd)
 {
-    return stream >> threadEnd.childPid >> threadEnd.childTid >> threadEnd.time;
+    return stream >> static_cast<Record&>(threadEnd);
 }
 
 QDebug operator<<(QDebug stream, const ThreadEnd& threadEnd)
 {
     stream.noquote().nospace() << "ThreadEnd{"
-        << "childPid=" << threadEnd.childPid << ", "
-        << "childTid=" << threadEnd.childTid << ", "
-        << "time=" << threadEnd.time
+        << static_cast<const Record&>(threadEnd)
         << "}";
     return stream;
 }
@@ -521,20 +511,21 @@ QDebug operator<<(QDebug stream, const Error& error)
     return stream;
 }
 
-struct LocationData
+void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& location,
+                          int type, quint64 cost, QSet<Data::Symbol>* recursionGuard,
+                          Data::CallerCalleeResults* callerCalleeResult, int numCosts)
 {
-    LocationData(qint32 parentLocationId = -1, const Data::Location& location = {})
-        : parentLocationId(parentLocationId)
-        , location(location)
-    { }
-
-    qint32 parentLocationId = -1;
-    Data::Location location;
-};
+    auto recursionIt = recursionGuard->find(symbol);
+    if (recursionIt == recursionGuard->end()) {
+        auto& entry = callerCalleeResult->entry(symbol);
+        auto& locationCost = entry.source(location.location, numCosts);
+        locationCost[type] += cost;
+        recursionGuard->insert(symbol);
+    }
+}
 }
 
 Q_DECLARE_TYPEINFO(AttributesDefinition, Q_MOVABLE_TYPE);
-Q_DECLARE_TYPEINFO(LocationData, Q_MOVABLE_TYPE);
 
 struct PerfParserPrivate
 {
@@ -651,12 +642,14 @@ struct PerfParserPrivate
                 ThreadStart threadStart;
                 stream >> threadStart;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << threadStart;
+                addThread(threadStart)->timeStart = threadStart.time;
                 break;
             }
             case EventType::ThreadEnd: {
                 ThreadEnd threadEnd;
                 stream >> threadEnd;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << threadEnd;
+                addThreadEnd(threadEnd);
                 break;
             }
             case EventType::Command: {
@@ -743,6 +736,21 @@ struct PerfParserPrivate
 
         buildTopDownResult();
         buildCallerCalleeResult();
+
+        auto emptyThreadIt = std::remove_if(eventResult.threads.begin(),
+                                            eventResult.threads.end(),
+                                            [](const Data::ThreadEvents& thread) {
+                                                return thread.events.isEmpty();
+                                            });
+        eventResult.threads.erase(emptyThreadIt, eventResult.threads.end());
+
+        for (auto& thread : eventResult.threads) {
+            thread.timeStart = std::max(thread.timeStart, applicationStartTime);
+            thread.timeEnd = std::min(thread.timeEnd, applicationEndTime);
+            if (thread.name.isEmpty()) {
+                thread.name = PerfParser::tr("#%1").arg(thread.tid);
+            }
+        }
     }
 
     void addAttributes(const AttributesDefinition& attributesDefinition)
@@ -751,18 +759,45 @@ struct PerfParserPrivate
         summaryResult.costs.push_back({label, 0, 0});
         bottomUpResult.costs.addType(attributesDefinition.id, label);
         attributes.push_back(attributesDefinition);
+        eventResult.eventTypes.push_back(label);
+    }
+
+    Data::ThreadEvents* addThread(const Record& record)
+    {
+        Data::ThreadEvents thread;
+        thread.pid = record.pid;
+        thread.tid = record.tid;
+        thread.timeStart = applicationStartTime;
+        thread.name = commands.value(thread.pid)
+                              .value(thread.tid);
+        eventResult.threads.push_back(thread);
+        return &eventResult.threads.last();
+    }
+
+    void addThreadEnd(const ThreadEnd& threadEnd)
+    {
+        auto* thread = eventResult.findThread(threadEnd.pid, threadEnd.tid);
+        if (thread) {
+            thread->timeEnd = threadEnd.time;
+        }
     }
 
     void addCommand(const Command& command)
     {
-        // TODO: keep track of list of commands for filtering later on
-        commands[command.pid][command.tid] = strings.value(command.comm.id);
+        const auto& comm = strings.value(command.comm.id);
+        // check if this changes the name of a current thread
+        auto* thread = eventResult.findThread(command.pid, command.tid);
+        if (thread) {
+            thread->name = comm;
+        }
+        // and remember the command, maybe a future ThreadStart event references it
+        commands[command.pid][command.tid] = comm;
     }
 
     void addLocation(const LocationDefinition& location)
     {
-        Q_ASSERT(locations.size() == location.id);
-        Q_ASSERT(symbols.size() == location.id);
+        Q_ASSERT(bottomUpResult.locations.size() == location.id);
+        Q_ASSERT(bottomUpResult.symbols.size() == location.id);
         QString locationString;
         if (location.location.file.id != -1) {
             locationString = strings.value(location.location.file.id);
@@ -770,72 +805,51 @@ struct PerfParserPrivate
                 locationString += QLatin1Char(':') + QString::number(location.location.line);
             }
         }
-        locations.push_back({
+        bottomUpResult.locations.push_back({
             location.location.parentLocationId,
             {location.location.address, locationString}
         });
-        symbols.push_back({});
+        bottomUpResult.symbols.push_back({});
     }
 
     void addSymbol(const SymbolDefinition& symbol)
     {
         // empty symbol was added in addLocation already
-        Q_ASSERT(symbols.size() > symbol.id);
+        Q_ASSERT(bottomUpResult.symbols.size() > symbol.id);
         // TODO: isKernel information
         const auto symbolString = strings.value(symbol.symbol.name.id);
         const auto binaryString = strings.value(symbol.symbol.binary.id);
-        symbols[symbol.id] = {symbolString, binaryString};
+        bottomUpResult.symbols[symbol.id] = {symbolString, binaryString};
         if (symbolString.isEmpty() && !reportedMissingDebugInfoModules.contains(symbol.symbol.binary.id)) {
             reportedMissingDebugInfoModules.insert(symbol.symbol.binary.id);
             summaryResult.errors << PerfParser::tr("Module \"%1\" is missing (some) debug symbols.").arg(binaryString);
         }
     }
 
-    Data::BottomUp* addFrame(Data::BottomUp* parent, qint32 id, QSet<Data::Symbol>* recursionGuard, int type, quint64 period)
+    qint32 internStack(const QVector<qint32>& frames)
     {
-        bool skipNextFrame = false;
-        while (id != -1) {
-            const auto& location = locations.value(id);
-            if (skipNextFrame) {
-                id = location.parentLocationId;
-                skipNextFrame = false;
-                continue;
-            }
-
-            auto symbol = symbols.value(id);
-            if (!symbol.isValid()) {
-                // we get function entry points from the perfparser but
-                // those are imo not interesting - skip them
-                symbol = symbols.value(location.parentLocationId);
-                skipNextFrame = true;
-            }
-
-            auto ret = parent->entryForSymbol(symbol, &maxBottomUpId);
-            bottomUpResult.costs.add(type, ret->id, period);
-
-            if (perfScriptOutput) {
-                *perfScriptOutput << '\t' << hex << qSetFieldWidth(16) << location.location.address
-                                  << qSetFieldWidth(0) << dec << ' '
-                                  << (symbol.symbol.isEmpty() ? QStringLiteral("[unknown]") : symbol.symbol)
-                                  << " (" << symbol.binary << ")\n";
-            }
-
-            auto recursionIt = recursionGuard->find(symbol);
-            if (recursionIt == recursionGuard->end()) {
-                auto& locationCost = callerCalleeResult.entry(symbol).source(location.location.location, bottomUpResult.costs.numTypes());
-                locationCost[type] += period;
-                recursionGuard->insert(symbol);
-            }
-
-            parent = ret;
-            id = location.parentLocationId;
+        auto& id = stacks[frames];
+        if (!id) {
+            Q_ASSERT(stacks.size() == eventResult.stacks.size() + 1);
+            id = stacks.size();
+            eventResult.stacks.push_back(frames);
         }
-
-        return parent;
+        return id - 1;
     }
 
     void addSample(const Sample& sample)
     {
+        Data::Event event;
+        event.time = sample.time;
+        event.cost = sample.period;
+        event.type = sample.attributeId;
+        event.stackId = internStack(sample.frames);
+        auto* thread = eventResult.findThread(sample.pid, sample.tid);
+        if (!thread) {
+            thread = addThread(sample);
+        }
+        thread->events.push_back(event);
+
         addSampleToBottomUp(sample);
         addSampleToSummary(sample);
     }
@@ -857,16 +871,29 @@ struct PerfParserPrivate
                               << ":\t" << sample.period << '\n';
         }
 
-        bottomUpResult.costs.addTotalCost(sample.attributeId, sample.period);
-        auto parent = &bottomUpResult.root;
         QSet<Data::Symbol> recursionGuard;
-        for (auto id : sample.frames) {
-            parent = addFrame(parent, id, &recursionGuard, sample.attributeId, sample.period);
-        }
+        auto frameCallback = [this, &recursionGuard, &sample] (const Data::Symbol& symbol, const Data::Location& location)
+        {
+            addCallerCalleeEvent(symbol, location,
+                                 sample.attributeId, sample.period,
+                                 &recursionGuard, &callerCalleeResult,
+                                 bottomUpResult.costs.numTypes());
+
+            if (perfScriptOutput) {
+                    *perfScriptOutput << '\t' << hex << qSetFieldWidth(16)
+                        << location.address
+                        << qSetFieldWidth(0) << dec << ' '
+                        << (symbol.symbol.isEmpty() ? QStringLiteral("[unknown]") : symbol.symbol)
+                        << " (" << symbol.binary << ")\n";
+            }
+        };
+
+        bottomUpResult.addEvent(sample.attributeId, sample.period, sample.frames, frameCallback);
 
         if (perfScriptOutput) {
             *perfScriptOutput << "\n";
         }
+
     }
 
     void buildTopDownResult()
@@ -974,8 +1001,6 @@ struct PerfParserPrivate
     QBuffer buffer;
     QDataStream stream;
     QVector<AttributesDefinition> attributes;
-    QVector<Data::Symbol> symbols;
-    QVector<LocationData> locations;
     QVector<QString> strings;
     QProcess process;
     SummaryData summaryResult;
@@ -983,20 +1008,33 @@ struct PerfParserPrivate
     quint64 applicationEndTime = 0;
     QSet<quint32> uniqueThreads;
     QSet<quint32> uniqueProcess;
-    quint32 maxBottomUpId = 0;
     Data::BottomUpResults bottomUpResult;
     Data::TopDownResults topDownResult;
     Data::CallerCalleeResults callerCalleeResult;
-    QHash<quint32, QHash<quint32, QString>> commands;
+    Data::EventResults eventResult;
+    QHash<qint32, QHash<qint32, QString>> commands;
     QScopedPointer<QTextStream> perfScriptOutput;
     std::function<void(float)> progressHandler;
     QSet<qint32> reportedMissingDebugInfoModules;
     QSet<QString> encounteredErrors;
+    QHash<QVector<qint32>, qint32> stacks;
 };
 
 PerfParser::PerfParser(QObject* parent)
     : QObject(parent)
 {
+    connect(this, &PerfParser::bottomUpDataAvailable,
+            this, [this](const Data::BottomUpResults& data) {
+                if (m_bottomUpResults.root.children.isEmpty()) {
+                    m_bottomUpResults = data;
+                }
+            });
+    connect(this, &PerfParser::eventsAvailable,
+            this, [this](const Data::EventResults& data) {
+                if (m_events.threads.isEmpty()) {
+                    m_events = data;
+                }
+            });
 }
 
 PerfParser::~PerfParser() = default;
@@ -1052,6 +1090,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
         parserArgs += {QStringLiteral("--arch"), arch};
     }
 
+    emit parsingStarted();
     using namespace ThreadWeaver;
     stream() << make_job([parserBinary, parserArgs, this]() {
         PerfParserPrivate d([this](float percent) {
@@ -1086,6 +1125,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
                             emit topDownDataAvailable(d.topDownResult);
                             emit summaryDataAvailable(d.summaryResult);
                             emit callerCalleeDataAvailable(d.callerCalleeResult);
+                            emit eventsAvailable(d.eventResult);
                             emit parsingFinished();
                             break;
                         case TcpSocketError:
@@ -1122,5 +1162,82 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
             return;
         }
         d.process.waitForFinished(-1);
+    });
+}
+
+void PerfParser::filterResults(quint64 start, quint64 end, qint32 processId, qint32 threadId)
+{
+    emit parsingStarted();
+    using namespace ThreadWeaver;
+    stream() << make_job([this, start, end, processId, threadId]() {
+        Data::BottomUpResults bottomUp;
+        Data::EventResults events = m_events;
+        Data::CallerCalleeResults callerCallee;
+        const bool filterByTime = start != 0 && end != 0;
+        if (!filterByTime && processId == 0 && threadId == 0) {
+            bottomUp = m_bottomUpResults;
+        } else {
+            bottomUp.symbols = m_bottomUpResults.symbols;
+            bottomUp.locations = m_bottomUpResults.locations;
+            bottomUp.costs.initializeCostsFrom(m_bottomUpResults.costs);
+            const int numCosts = m_bottomUpResults.costs.numTypes();
+
+            // remove events that lie outside the selected time span
+            // TODO: parallelize
+            for (auto& thread : events.threads) {
+                if ((processId && thread.pid != processId) ||
+                    (threadId && thread.tid != threadId) ||
+                    (filterByTime && (thread.timeStart > end || thread.timeEnd < start)))
+                {
+                    thread.events.clear();
+                    continue;
+                }
+
+                if (filterByTime) {
+                    auto it = std::remove_if(thread.events.begin(),
+                                            thread.events.end(),
+                                            [start, end] (const Data::Event& event) {
+                                                return event.time < start || event.time >= end;
+                                            });
+                    thread.events.erase(it, thread.events.end());
+                }
+
+                // add event data to bottom up and caller callee sets
+                for (const auto& event : thread.events) {
+                    QSet<Data::Symbol> recursionGuard;
+                    auto frameCallback = [&callerCallee, &recursionGuard, &event, numCosts]
+                        (const Data::Symbol& symbol, const Data::Location& location)
+                    {
+                        addCallerCalleeEvent(symbol, location,
+                                             event.type, event.cost,
+                                             &recursionGuard, &callerCallee,
+                                             numCosts);
+                    };
+
+                    bottomUp.addEvent(event.type, event.cost,
+                                      events.stacks.at(event.stackId),
+                                      frameCallback);
+                }
+            }
+
+            // remove threads that have no events within the selected time span
+            auto it = std::remove_if(events.threads.begin(), events.threads.end(),
+                                     [](const Data::ThreadEvents& thread) {
+                                        return thread.events.isEmpty();
+                                    });
+            events.threads.erase(it, events.threads.end());
+
+            Data::BottomUp::initializeParents(&bottomUp.root);
+        }
+
+        // TODO: parallelize
+        Data::callerCalleesFromBottomUpData(bottomUp, &callerCallee);
+        const auto topDown = Data::TopDownResults::fromBottomUp(bottomUp);
+
+        emit bottomUpDataAvailable(bottomUp);
+        emit topDownDataAvailable(topDown);
+        emit callerCalleeDataAvailable(callerCallee);
+        emit eventsAvailable(events);
+        emit parsingFinished();
     });
 }

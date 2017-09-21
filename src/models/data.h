@@ -37,6 +37,8 @@
 
 #include <tuple>
 #include <valarray>
+#include <limits>
+#include <functional>
 
 namespace Data {
 struct Symbol
@@ -122,6 +124,17 @@ inline uint qHash(const Location& location, uint seed = 0)
     seed = hash(seed, location.location);
     return seed;
 }
+
+struct FrameLocation
+{
+    FrameLocation(qint32 parentLocationId = -1, const Data::Location& location = {})
+        : parentLocationId(parentLocationId)
+        , location(location)
+    { }
+
+    qint32 parentLocationId = -1;
+    Data::Location location;
+};
 
 using ItemCost = std::valarray<qint64>;
 
@@ -216,6 +229,13 @@ public:
             ensureSpaceAvailable(i, id);
             m_costs[i][id] += cost[i];
         }
+    }
+
+    void initializeCostsFrom(const Costs& rhs)
+    {
+        m_typeNames = rhs.m_typeNames;
+        m_costs.resize(rhs.m_costs.size());
+        m_totalCosts.resize(rhs.m_totalCosts.size());
     }
 
 private:
@@ -314,6 +334,20 @@ struct BottomUpResults
 {
     BottomUp root;
     Costs costs;
+    QVector<Data::Symbol> symbols;
+    QVector<Data::FrameLocation> locations;
+
+    using FrameCallback = std::function<void(const Symbol&, const Location&)>;
+
+    const BottomUp* addEvent(int type, quint64 cost,
+                             const QVector<qint32>& frames,
+                             const FrameCallback& frameCallback);
+
+private:
+    quint32 maxBottomUpId = 0;
+    BottomUp* addFrame(BottomUp* parent, qint32 locationId,
+                       int type, quint64 period,
+                       const FrameCallback& frameCallback);
 };
 
 struct TopDown : SymbolTree<TopDown>
@@ -394,6 +428,35 @@ struct CallerCalleeResults
 
 void callerCalleesFromBottomUpData(const BottomUpResults& data, CallerCalleeResults* results);
 
+struct Event
+{
+    quint64 time = 0;
+    quint64 cost = 0;
+    qint32 type = -1;
+    qint32 stackId = -1;
+};
+
+using Events = QVector<Event>;
+
+struct ThreadEvents
+{
+    qint32 pid = 0;
+    qint32 tid = 0;
+    quint64 timeStart = 0;
+    quint64 timeEnd = std::numeric_limits<quint64>::max();
+    Events events;
+    QString name;
+};
+
+struct EventResults
+{
+    QVector<ThreadEvents> threads;
+    QVector<QString> eventTypes;
+    QVector<QVector<qint32>> stacks;
+
+    ThreadEvents* findThread(qint32 pid, qint32 tid);
+};
+
 }
 
 Q_DECLARE_METATYPE(Data::Symbol)
@@ -401,6 +464,9 @@ Q_DECLARE_TYPEINFO(Data::Symbol, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::Location)
 Q_DECLARE_TYPEINFO(Data::Location, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::FrameLocation)
+Q_DECLARE_TYPEINFO(Data::FrameLocation, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::BottomUp)
 Q_DECLARE_TYPEINFO(Data::BottomUp, Q_MOVABLE_TYPE);
@@ -424,3 +490,12 @@ Q_DECLARE_TYPEINFO(Data::TopDownResults, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::CallerCalleeResults)
 Q_DECLARE_TYPEINFO(Data::CallerCalleeResults, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::Event)
+Q_DECLARE_TYPEINFO(Data::Event, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::ThreadEvents)
+Q_DECLARE_TYPEINFO(Data::ThreadEvents, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::EventResults)
+Q_DECLARE_TYPEINFO(Data::EventResults, Q_MOVABLE_TYPE);

@@ -36,6 +36,10 @@
 #include "resultsflamegraphpage.h"
 #include "resultscallercalleepage.h"
 
+#include "models/eventmodel.h"
+#include "models/eventproxy.h"
+#include "models/timelinedelegate.h"
+
 ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ResultsPage)
@@ -48,7 +52,7 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     ui->setupUi(this);
 
     ui->resultsTabWidget->setFocus();
-    ui->resultsTabWidget->addTab(m_resultsSummaryPage, tr("Summary"));
+    const int summaryTabIndex = ui->resultsTabWidget->addTab(m_resultsSummaryPage, tr("Summary"));
     ui->resultsTabWidget->addTab(m_resultsBottomUpPage, tr("Bottom Up"));
     ui->resultsTabWidget->addTab(m_resultsTopDownPage, tr("Top Down"));
     ui->resultsTabWidget->addTab(m_resultsFlameGraphPage, tr("Flame Graph"));
@@ -58,6 +62,44 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     for (int i = 0, c = ui->resultsTabWidget->count(); i < c; ++i) {
         ui->resultsTabWidget->setTabToolTip(i, ui->resultsTabWidget->widget(i)->toolTip());
     }
+
+    auto *eventModel = new EventModel(this);
+    auto *timeLineProxy = new EventProxy(this);
+    timeLineProxy->setSourceModel(eventModel);
+    ui->timeLineSearch->setProxy(timeLineProxy);
+    ui->timeLineView->setModel(timeLineProxy);
+    ui->timeLineView->setSortingEnabled(true);
+    ui->timeLineView->sortByColumn(EventModel::ThreadColumn, Qt::AscendingOrder);
+    // ensure the vertical scroll bar is always shown, otherwise the timeline
+    // view would get more or less space, which leads to odd jumping when filtering
+    // due to the increased width leading to a zoom effect
+    ui->timeLineView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
+    auto* timeLineDelegate = new TimeLineDelegate(ui->timeLineView);
+    ui->timeLineEventFilterButton->setMenu(timeLineDelegate->filterMenu());
+    ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, timeLineDelegate);
+
+    connect(parser, &PerfParser::eventsAvailable,
+            this, [this, eventModel] (const Data::EventResults& data) {
+                ui->timeLineEventSource->clear();
+                for (const auto& type : data.eventTypes) {
+                    ui->timeLineEventSource->addItem(type);
+                }
+                eventModel->setData(data);
+            });
+    connect(timeLineDelegate, &TimeLineDelegate::filterRequested,
+            parser, &PerfParser::filterResults);
+
+    connect(ui->timeLineEventSource, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, [this, timeLineDelegate] (int eventType) {
+                timeLineDelegate->setEventType(eventType);
+            });
+
+    ui->timeLineArea->hide();
+    connect(ui->resultsTabWidget, &QTabWidget::currentChanged,
+            this, [this, summaryTabIndex](int index) {
+                ui->timeLineArea->setVisible(index != summaryTabIndex);
+            });
 
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode,
             this, &ResultsPage::onNavigateToCode);
