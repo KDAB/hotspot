@@ -84,18 +84,17 @@ QVariant BottomUpModel::rowData(const Data::BottomUp* row, int column, int role)
     } else if (role == TotalCostRole && column >= NUM_BASE_COLUMNS) {
         return m_results.costs.totalCost(column - NUM_BASE_COLUMNS);
     } else if (role == Qt::ToolTipRole) {
-        QString toolTip = tr("%1 in %2")
-                            .arg(Util::formatString(row->symbol.symbol), Util::formatString(row->symbol.binary))
-                        + QLatin1Char('\n');
+        QString toolTip = tr("symbol: <tt>%1</tt><br/>binary: <tt>%2</tt>")
+                            .arg(Util::formatString(row->symbol.symbol), Util::formatString(row->symbol.binary));
         for (int i = 0, c = m_results.costs.numTypes(); i < c; ++i) {
             const auto cost = m_results.costs.cost(i, row->id);
             const auto total = m_results.costs.totalCost(i);
-            toolTip += tr("%1: %2 out of %3 total (%4%)")
+            toolTip += QLatin1String("<hr/>") +
+                    tr("%1 cost (inclusive): %2<br/>&nbsp;&nbsp;%4% out of %3 total")
                         .arg(m_results.costs.typeName(i), Util::formatCost(cost), Util::formatCost(total),
-                             Util::formatCostRelative(cost, total))
-                    + QLatin1Char('\n');
+                             Util::formatCostRelative(cost, total));
         }
-        return toolTip;
+        return QString(QLatin1String("<qt>") + toolTip + QLatin1String("</qt>"));
     } else {
         return {};
     }
@@ -187,24 +186,23 @@ QVariant TopDownModel::rowData(const Data::TopDown* row, int column, int role) c
         column -= m_results.inclusiveCosts.numTypes();
         return m_results.selfCosts.totalCost(column);
     } else if (role == Qt::ToolTipRole) {
-        QString toolTip = tr("%1 in %2")
-                            .arg(Util::formatString(row->symbol.symbol), Util::formatString(row->symbol.binary))
-                        + QLatin1Char('\n');
+        QString toolTip = tr("symbol: <tt>%1</tt><br/>binary: <tt>%2</tt>")
+                            .arg(Util::formatString(row->symbol.symbol), Util::formatString(row->symbol.binary));
         Q_ASSERT(m_results.selfCosts.numTypes() == m_results.inclusiveCosts.numTypes());
+        auto extendTooltip = [&toolTip, row](int i, const Data::Costs& costs, const QString& formatting) {
+            const auto currentCost = costs.cost(i, row->id);
+            const auto totalCost = costs.totalCost(i);
+            toolTip += formatting
+                        .arg(costs.typeName(i), Util::formatCost(currentCost), Util::formatCost(totalCost),
+                                Util::formatCostRelative(currentCost, totalCost));
+        };
         for (int i = 0, c = m_results.inclusiveCosts.numTypes(); i < c; ++i) {
-            auto extendTooltip = [&toolTip, i, row](const Data::Costs& costs, const QString& formatting) {
-                const auto currentCost = costs.cost(i, row->id);
-                const auto totalCost = costs.totalCost(i);
-                toolTip += formatting
-                            .arg(costs.typeName(i), Util::formatCost(currentCost), Util::formatCost(totalCost),
-                                 Util::formatCostRelative(currentCost, totalCost))
-                        + QLatin1Char('\n');
-            };
-
-            extendTooltip(m_results.selfCosts, tr("%1 (self): %2 out of %3 total (%4%)"));
-            extendTooltip(m_results.inclusiveCosts, tr("%1 (inclusive): %2 out of %3 total (%4%)"));
+            toolTip += QLatin1String("<hr/>");
+            extendTooltip(i, m_results.selfCosts, tr("%1 (self): %2<br/>&nbsp;&nbsp;%4% out of %3 total"));
+            toolTip += QLatin1String("<br/>");
+            extendTooltip(i, m_results.inclusiveCosts, tr("%1 (inclusive): %2<br/>&nbsp;&nbsp;%4% out of %3 total"));
         }
-        return toolTip;
+        return QString(QLatin1String("<qt>") + toolTip + QLatin1String("</qt>"));
     } else {
         return {};
     }
