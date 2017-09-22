@@ -28,8 +28,14 @@
 #pragma once
 
 #include <QtGlobal>
+#include <QHashFunctions>
 
 class QString;
+
+namespace Data {
+struct Symbol;
+class Costs;
+}
 
 namespace Util {
 
@@ -52,5 +58,8 @@ QString formatCost(quint64 cost);
 QString formatCostRelative(quint64 selfCost, quint64 totalCost, bool addPercentSign = false);
 QString formatTimeString(quint64 nanoseconds);
 QString formatFrequency(quint64 occurrences, quint64 nanoseconds);
-
+QString formatTooltip(int id, const Data::Symbol& symbol,
+                      const Data::Costs& costs);
+QString formatTooltip(int id, const Data::Symbol& symbol,
+                      const Data::Costs& selfCosts, const Data::Costs& inclusiveCosts);
 }

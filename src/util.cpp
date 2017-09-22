@@ -36,6 +36,8 @@
 
 #include <initializer_list>
 
+#include "data.h"
+
 QString Util::findLibexecBinary(const QString& name)
 {
     QDir dir(qApp->applicationDirPath());
@@ -53,7 +55,7 @@ QString Util::findLibexecBinary(const QString& name)
 
 QString Util::formatString(const QString& input)
 {
-    return input.isEmpty() ? QObject::tr("??") : input;
+    return input.isEmpty() ? QCoreApplication::translate("Util", "??") : input;
 }
 
 QString Util::formatCost(quint64 cost)
@@ -105,4 +107,52 @@ QString Util::formatFrequency(quint64 occurrences, quint64 nanoseconds)
         ++unit;
     }
     return QString::number(hz, 'g', 4) + QLatin1String(*unit);
+}
+
+static QString formatTooltipImpl(int id, const Data::Symbol& symbol,
+                                 const Data::Costs* selfCosts,
+                                 const Data::Costs* inclusiveCosts)
+{
+    Q_ASSERT(selfCosts || inclusiveCosts);
+    Q_ASSERT(!selfCosts || !inclusiveCosts || (selfCosts->numTypes() == inclusiveCosts->numTypes()));
+
+    QString toolTip = QCoreApplication::translate("Util", "symbol: <tt>%1</tt><br/>binary: <tt>%2</tt>")
+                        .arg(Util::formatString(symbol.symbol), Util::formatString(symbol.binary));
+
+    auto extendTooltip = [&toolTip, id](int i, const Data::Costs& costs, const QString& formatting) {
+        const auto currentCost = costs.cost(i, id);
+        const auto totalCost = costs.totalCost(i);
+        toolTip += formatting.arg(costs.typeName(i), Util::formatCost(currentCost),
+                                  Util::formatCost(totalCost),
+                                  Util::formatCostRelative(currentCost, totalCost));
+    };
+
+    const auto numTypes = selfCosts ? selfCosts->numTypes() : inclusiveCosts->numTypes();
+    for (int i = 0; i < numTypes; ++i) {
+        toolTip += QLatin1String("<hr/>");
+        if (selfCosts) {
+            extendTooltip(i, *selfCosts,
+                          QCoreApplication::translate("Util", "%1 (self): %2<br/>&nbsp;&nbsp;%4% out of %3 total"));
+        }
+        if (selfCosts && inclusiveCosts) {
+            toolTip += QLatin1String("<br/>");
+        }
+        if (inclusiveCosts) {
+            extendTooltip(i, *inclusiveCosts,
+                          QCoreApplication::translate("Util", "%1 (inclusive): %2<br/>&nbsp;&nbsp;%4% out of %3 total"));
+        }
+    }
+    return QString(QLatin1String("<qt>") + toolTip + QLatin1String("</qt>"));
+}
+
+QString Util::formatTooltip(int id, const Data::Symbol& symbol,
+                            const Data::Costs& costs)
+{
+    return formatTooltipImpl(id, symbol, nullptr, &costs);
+}
+
+QString Util::formatTooltip(int id, const Data::Symbol& symbol,
+                            const Data::Costs& selfCosts, const Data::Costs& inclusiveCosts)
+{
+    return formatTooltipImpl(id, symbol, &selfCosts, &inclusiveCosts);
 }
