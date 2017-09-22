@@ -242,7 +242,7 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
         const auto localX = event->pos().x();
         const auto mappedX = localX - option.rect.x() - data.padding;
         const auto time = data.mapXToTime(mappedX);
-        auto it = std::lower_bound(data.events.begin(), data.events.end(), time,
+        auto it = std::lower_bound(data.events.constBegin(), data.events.constEnd(), time,
                                    [](const Data::Event& event, quint64 time) {
                                        return event.time < time;
                                    });
@@ -250,7 +250,7 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
         uint numSamples = 0;
         quint64 maxCost = 0;
         quint64 totalCost = 0;
-        while (it != data.events.end() && data.mapTimeToX(it->time) == mappedX) {
+        while (it != data.events.constEnd() && data.mapTimeToX(it->time) == mappedX) {
             if (it->type != m_eventType) {
                 ++it;
                 continue;
