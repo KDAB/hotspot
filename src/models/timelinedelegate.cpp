@@ -244,30 +244,28 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
         const auto time = data.mapXToTime(mappedX);
         auto it = std::lower_bound(data.events.begin(), data.events.end(), time,
                                    [](const Data::Event& event, quint64 time) {
-                                       // TODO: support multiple cost types somehow
-                                       return event.type == 0 && event.time < time;
+                                       return event.time < time;
                                    });
         // find the maximum sample cost in the range spanned by one pixel
-        auto firstIt = it;
-        auto lastIt = it;
-        auto maxIt = it;
+        uint numSamples = 0;
+        quint64 maxCost = 0;
         quint64 totalCost = 0;
         while (it != data.events.end() && data.mapTimeToX(it->time) == mappedX) {
-            if (it->cost > maxIt->cost) {
-                maxIt = it;
+            if (it->type != m_eventType) {
+                ++it;
+                continue;
             }
-            if (it != data.events.end()) {
-                lastIt = it;
-            }
+            ++numSamples;
+            maxCost = std::max(maxCost, it->cost);
             totalCost += it->cost;
             ++it;
         }
 
         const auto formattedTime = Util::formatTimeString(time - data.minTime);
-        if (totalCost > 0) {
+        if (numSamples > 0) {
             QToolTip::showText(event->globalPos(), tr("time: %1\nsamples: %2\ntotal sample cost: %3\nmax sample cost: %4")
-                .arg(formattedTime).arg(std::distance(firstIt, lastIt) + 1)
-                .arg(totalCost).arg(maxIt->cost));
+                .arg(formattedTime).arg(numSamples)
+                .arg(totalCost).arg(maxCost));
         } else {
             QToolTip::showText(event->globalPos(), tr("time: %1 (no sample)")
                 .arg(formattedTime));
