@@ -132,20 +132,20 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
     } else if (role == InclusiveCostsRole) {
         return QVariant::fromValue(m_results.inclusiveCosts);
     } else if (role == Qt::ToolTipRole) {
-        QString toolTip = QObject::tr("%1 in %2")
+        QString toolTip = tr("%1 in %2")
                             .arg(Util::formatString(symbol.symbol), Util::formatString(symbol.binary))
                         + QLatin1Char('\n');
         Q_ASSERT(m_results.selfCosts.numTypes() == m_results.inclusiveCosts.numTypes());
         for (int i = 0, c = m_results.selfCosts.numTypes(); i < c; ++i) {
             const auto selfCost = m_results.selfCosts.cost(i, entry.id);
             const auto selfTotal = m_results.selfCosts.totalCost(i);
-            toolTip += QObject::tr("%1 (self): %2 out of %3 total (%4%)")
+            toolTip += tr("%1 (self): %2 out of %3 total (%4%)")
                         .arg(m_results.selfCosts.typeName(i), Util::formatCost(selfCost), Util::formatCost(selfTotal),
                             Util::formatCostRelative(selfCost, selfTotal))
                     + QLatin1Char('\n');
             const auto inclusiveCost = m_results.inclusiveCosts.cost(i, entry.id);
             const auto inclusiveTotal = m_results.inclusiveCosts.totalCost(i);
-            toolTip += QObject::tr("%1 (incl.): %2 out of %3 total (%4%)")
+            toolTip += tr("%1 (incl.): %2 out of %3 total (%4%)")
                         .arg(m_results.inclusiveCosts.typeName(i), Util::formatCost(inclusiveCost), Util::formatCost(inclusiveTotal),
                             Util::formatCostRelative(inclusiveCost, inclusiveTotal))
                     + QLatin1Char('\n');

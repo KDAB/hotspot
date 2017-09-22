@@ -114,17 +114,17 @@ public:
                 case Symbol:
                     return symbolHeader();
                 case Binary:
-                    return QObject::tr("Binary");
+                    return ModelImpl::tr("Binary");
             }
             return m_costs.typeName(column - NUM_BASE_COLUMNS);
         } else if (role == Qt::ToolTipRole) {
             switch (column) {
                 case Symbol:
-                    return QObject::tr("The function name of the %1. May be empty when debug information is missing.").arg(symbolHeader());
+                    return ModelImpl::tr("The function name of the %1. May be empty when debug information is missing.").arg(symbolHeader());
                 case Binary:
-                    return QObject::tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
+                    return ModelImpl::tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
             }
-            return QObject::tr("The symbol's inclusive cost, i.e. the aggregated sample costs attributed to this symbol, both directly and indirectly.");
+            return ModelImpl::tr("The symbol's inclusive cost, i.e. the aggregated sample costs attributed to this symbol, both directly and indirectly.");
         }
 
         return {};
@@ -149,7 +149,7 @@ public:
         } else if (role == Qt::DisplayRole) {
             switch (column) {
                 case Symbol:
-                    return symbol.symbol.isEmpty() ? QObject::tr("??") : symbol.symbol;
+                    return symbol.symbol.isEmpty() ? ModelImpl::tr("??") : symbol.symbol;
                 case Binary:
                     return symbol.binary;
             }
@@ -158,14 +158,14 @@ public:
         } else if (role == SymbolRole) {
             return QVariant::fromValue(symbol);
         } else if (role == Qt::ToolTipRole) {
-            QString toolTip = QObject::tr("%1 in %2")
+            QString toolTip = ModelImpl::tr("%1 in %2")
                                 .arg(Util::formatString(symbol.symbol), Util::formatString(symbol.binary))
                             + QLatin1Char('\n');
             Q_ASSERT(static_cast<quint32>(m_costs.numTypes()) == costs.size());
             for (int i = 0, c = m_costs.numTypes(); i < c; ++i) {
                 const auto cost = costs[i];
                 const auto total = m_costs.totalCost(i);
-                toolTip += QObject::tr("%1: %2 out of %3 total (%4%)")
+                toolTip += ModelImpl::tr("%1: %2 out of %3 total (%4%)")
                             .arg(m_costs.typeName(i), Util::formatCost(cost), Util::formatCost(total),
                                 Util::formatCostRelative(cost, total))
                         + QLatin1Char('\n');
@@ -245,14 +245,14 @@ public:
             return Qt::DescendingOrder;
         } else if (role == Qt::DisplayRole) {
             if (column == Location) {
-                return QObject::tr("Location");
+                return ModelImpl::tr("Location");
             }
             return m_costs.typeName(column - NUM_BASE_COLUMNS);
         } else if (role == Qt::ToolTipRole) {
             if (column == Location) {
-                return QObject::tr("The source file name and line number where the cost was measured. May be empty when debug information is missing.");
+                return ModelImpl::tr("The source file name and line number where the cost was measured. May be empty when debug information is missing.");
             }
-            return QObject::tr("The aggregated sample costs directly attributed to this code location.");
+            return ModelImpl::tr("The aggregated sample costs directly attributed to this code location.");
         }
 
         return {};
@@ -273,7 +273,7 @@ public:
         } else if (role == Qt::DisplayRole) {
             if (column == Location) {
                 if (location.isEmpty()) {
-                    return QObject::tr("??");
+                    return ModelImpl::tr("??");
                 }
                 // only show the file name, not the full path
                 auto slashIdx = location.lastIndexOf(QLatin1Char('/')) + 1;
@@ -289,7 +289,7 @@ public:
             for (int i = 0, c = m_costs.numTypes(); i < c; ++i) {
                 const auto cost = costs[i];
                 const auto total = m_costs.totalCost(i);
-                toolTip += QObject::tr("%1: %2 out of %3 total (%4%)")
+                toolTip += ModelImpl::tr("%1: %2 out of %3 total (%4%)")
                             .arg(m_costs.typeName(i), Util::formatCost(cost), Util::formatCost(total),
                                 Util::formatCostRelative(cost, total))
                         + QLatin1Char('\n');
