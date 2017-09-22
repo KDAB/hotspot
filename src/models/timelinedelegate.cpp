@@ -262,13 +262,14 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
         }
 
         const auto formattedTime = Util::formatTimeString(time - data.minTime);
+        const auto eventTypes = index.data(EventModel::EventTypesRole).value<QVector<QString>>();
         if (numSamples > 0) {
-            QToolTip::showText(event->globalPos(), tr("time: %1\nsamples: %2\ntotal sample cost: %3\nmax sample cost: %4")
+            QToolTip::showText(event->globalPos(), tr("time: %1\n%5 samples: %2\ntotal sample cost: %3\nmax sample cost: %4")
                 .arg(formattedTime).arg(numSamples)
-                .arg(totalCost).arg(maxCost));
+                .arg(totalCost).arg(maxCost).arg(eventTypes.value(m_eventType)));
         } else {
-            QToolTip::showText(event->globalPos(), tr("time: %1 (no sample)")
-                .arg(formattedTime));
+            QToolTip::showText(event->globalPos(), tr("time: %1 (no %2 samples)")
+                .arg(formattedTime, eventTypes.value(m_eventType)));
         }
         return true;
     }

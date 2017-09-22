@@ -54,6 +54,7 @@ public:
         ProcessIdRole,
         MaxCostRole,
         SortRole,
+        EventTypesRole,
     };
 
     int rowCount(const QModelIndex& parent = {}) const override;
