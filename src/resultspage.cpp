@@ -91,7 +91,7 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
             parser, &PerfParser::filterResults);
 
     connect(ui->timeLineEventSource, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, [this, timeLineDelegate] (int eventType) {
+            this, [timeLineDelegate] (int eventType) {
                 timeLineDelegate->setEventType(eventType);
             });
 
