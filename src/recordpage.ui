@@ -238,7 +238,7 @@
          <string>Optional perf event type flags to use while recording perf data</string>
         </property>
         <property name="text">
-         <string>cycles,instructions</string>
+         <string>cycles:P,instructions:P</string>
         </property>
        </widget>
       </item>
