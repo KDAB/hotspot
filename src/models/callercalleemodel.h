@@ -158,19 +158,7 @@ public:
         } else if (role == SymbolRole) {
             return QVariant::fromValue(symbol);
         } else if (role == Qt::ToolTipRole) {
-            QString toolTip = ModelImpl::tr("%1 in %2")
-                                .arg(Util::formatString(symbol.symbol), Util::formatString(symbol.binary))
-                            + QLatin1Char('\n');
-            Q_ASSERT(static_cast<quint32>(m_costs.numTypes()) == costs.size());
-            for (int i = 0, c = m_costs.numTypes(); i < c; ++i) {
-                const auto cost = costs[i];
-                const auto total = m_costs.totalCost(i);
-                toolTip += ModelImpl::tr("%1: %2 out of %3 total (%4%)")
-                            .arg(m_costs.typeName(i), Util::formatCost(cost), Util::formatCost(total),
-                                Util::formatCostRelative(cost, total))
-                        + QLatin1Char('\n');
-            }
-            return toolTip;
+            return Util::formatTooltip(symbol, costs, m_costs);
         }
 
         return {};
@@ -284,17 +272,7 @@ public:
         } else if (role == LocationRole) {
             return QVariant::fromValue(location);
         } else if (role == Qt::ToolTipRole) {
-            QString toolTip = location + QLatin1Char('\n');
-            Q_ASSERT(static_cast<quint32>(m_costs.numTypes()) == costs.size());
-            for (int i = 0, c = m_costs.numTypes(); i < c; ++i) {
-                const auto cost = costs[i];
-                const auto total = m_costs.totalCost(i);
-                toolTip += ModelImpl::tr("%1: %2 out of %3 total (%4%)")
-                            .arg(m_costs.typeName(i), Util::formatCost(cost), Util::formatCost(total),
-                                Util::formatCostRelative(cost, total))
-                        + QLatin1Char('\n');
-            }
-            return toolTip;
+            return Util::formatTooltip(location, costs, m_costs);
         }
 
         return {};

@@ -29,12 +29,14 @@
 
 #include <QtGlobal>
 #include <QHashFunctions>
+#include <valarray>
 
 class QString;
 
 namespace Data {
 struct Symbol;
 class Costs;
+using ItemCost = std::valarray<qint64>;
 }
 
 namespace Util {
@@ -62,4 +64,8 @@ QString formatTooltip(int id, const Data::Symbol& symbol,
                       const Data::Costs& costs);
 QString formatTooltip(int id, const Data::Symbol& symbol,
                       const Data::Costs& selfCosts, const Data::Costs& inclusiveCosts);
+QString formatTooltip(const Data::Symbol& symbol, const Data::ItemCost& itemCost,
+                      const Data::Costs& totalCosts);
+QString formatTooltip(const QString& location, const Data::ItemCost& itemCost,
+                      const Data::Costs& totalCosts);
 }
