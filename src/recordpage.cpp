@@ -357,7 +357,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         }
 
         if (ui->recordTypeComboBox->currentData() == LaunchApplication) {
-            const auto applicationName = ui->applicationName->text();
+            const auto applicationName = KShell::tildeExpand(ui->applicationName->text());
             const auto appParameters = ui->applicationParametersBox->text();
             auto workingDir = ui->workingDirectory->text();
             if (workingDir.isEmpty()) {
@@ -391,7 +391,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
 
 void RecordPage::onApplicationNameChanged(const QString& filePath)
 {
-    QFileInfo application(QStandardPaths::findExecutable(filePath));
+    QFileInfo application(QStandardPaths::findExecutable(KShell::tildeExpand(filePath)));
 
     if (!application.exists()) {
         ui->applicationRecordErrorMessage->setText(tr("Application file cannot be found: %1").arg(filePath));
