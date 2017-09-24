@@ -60,113 +60,161 @@
      <property name="title">
       <string>Target Application</string>
      </property>
-     <layout class="QGridLayout" name="formLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="applicationLabel">
-        <property name="toolTip">
-         <string>Path to the application to be recorded</string>
+     <layout class="QFormLayout" name="formLayout_2">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
+      <item row="0" column="0" colspan="2">
+       <widget class="QStackedWidget" name="stackedWidget">
+        <property name="currentIndex">
+         <number>0</number>
         </property>
-        <property name="text">
-         <string>Application:</string>
-        </property>
-        <property name="buddy">
-         <cstring>applicationName</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="KUrlRequester" name="applicationName">
-        <property name="toolTip">
-         <string>Path to the application to be recorded</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
+        <widget class="QWidget" name="launchAppPage">
+         <layout class="QFormLayout" name="formLayout">
+          <property name="fieldGrowthPolicy">
+           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="applicationLabel">
+            <property name="toolTip">
+             <string>Path to the application to be recorded</string>
+            </property>
+            <property name="text">
+             <string>Application:</string>
+            </property>
+            <property name="buddy">
+             <cstring>applicationName</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="KUrlRequester" name="applicationName">
+            <property name="toolTip">
+             <string>Path to the application to be recorded</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="applicationParamsLabel">
+            <property name="toolTip">
+             <string>Optional parameters to pass to the application being recorded</string>
+            </property>
+            <property name="text">
+             <string>Application Parameters:</string>
+            </property>
+            <property name="buddy">
+             <cstring>applicationParametersBox</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="applicationParametersBox">
+            <property name="contextMenuPolicy">
+             <enum>Qt::NoContextMenu</enum>
+            </property>
+            <property name="toolTip">
+             <string>Optional parameters to pass to the application being recorded</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="workingDirectoryLabel">
+            <property name="toolTip">
+             <string>Directory to store the perf data file while recording</string>
+            </property>
+            <property name="text">
+             <string>Wor&amp;king Directory:</string>
+            </property>
+            <property name="buddy">
+             <cstring>workingDirectory</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="KUrlRequester" name="workingDirectory">
+            <property name="toolTip">
+             <string>Directory to store the perf data file while recording</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="attachAppPage">
+         <layout class="QFormLayout" name="formLayout_3">
+          <property name="fieldGrowthPolicy">
+           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="processesFilterLabel">
+            <property name="text">
+             <string>Process Filter:</string>
+            </property>
+            <property name="buddy">
+             <cstring>processesFilterBox</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="KFilterProxySearchLine" name="processesFilterBox"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="processesLabel">
+            <property name="text">
+             <string>Processes:</string>
+            </property>
+            <property name="buddy">
+             <cstring>processesTableView</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QTreeView" name="processesTableView"/>
+          </item>
+         </layout>
+        </widget>
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="applicationParamsLabel">
-        <property name="toolTip">
-         <string>Optional parameters to pass to the application being recorded</string>
-        </property>
-        <property name="text">
-         <string>Application Parameters:</string>
-        </property>
-        <property name="buddy">
-         <cstring>applicationParametersBox</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="applicationParametersBox">
-        <property name="contextMenuPolicy">
-         <enum>Qt::NoContextMenu</enum>
-        </property>
-        <property name="toolTip">
-         <string>Optional parameters to pass to the application being recorded</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="processesFilterLabel">
-        <property name="text">
-         <string>Process Filter:</string>
-        </property>
-        <property name="buddy">
-         <cstring>processesFilterBox</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="KFilterProxySearchLine" name="processesFilterBox"/>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="processesLabel">
-        <property name="text">
-         <string>Processes:</string>
-        </property>
-        <property name="buddy">
-         <cstring>processesTableView</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QTreeView" name="processesTableView"/>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="workingDirectoryLabel">
-        <property name="toolTip">
-         <string>Directory to store the perf data file while recording</string>
-        </property>
-        <property name="text">
-         <string>Wor&amp;king Directory:</string>
-        </property>
-        <property name="buddy">
-         <cstring>workingDirectory</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="KUrlRequester" name="workingDirectory">
-        <property name="toolTip">
-         <string>Directory to store the perf data file while recording</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
        <widget class="QLabel" name="outputFileLabel">
         <property name="text">
-         <string>Output File:</string>
+         <string>Output Fi&amp;le:</string>
         </property>
         <property name="buddy">
          <cstring>outputFile</cstring>
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
+      <item row="1" column="1">
        <widget class="KUrlRequester" name="outputFile"/>
       </item>
-      <item row="6" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="unwindingMethodLabel">
         <property name="toolTip">
          <string>Perfered unwinding method to use while recording perf data</string>
@@ -179,14 +227,14 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="2" column="1">
        <widget class="QComboBox" name="callGraphComboBox">
         <property name="toolTip">
          <string>Perfered unwinding method to use while recording perf data</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="eventTypeLabel">
         <property name="toolTip">
          <string>Optional perf event type flags to use while recording perf data</string>
@@ -199,7 +247,7 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="3" column="1">
        <widget class="QLineEdit" name="eventTypeBox">
         <property name="toolTip">
          <string>Optional perf event type flags to use while recording perf data</string>
@@ -209,23 +257,10 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
+      <item row="4" column="1">
        <widget class="KMessageWidget" name="applicationRecordErrorMessage"/>
       </item>
-      <item row="10" column="0">
-       <widget class="QLabel" name="perfResultsLabel">
-        <property name="toolTip">
-         <string>Detailed output from the perf record operation.</string>
-        </property>
-        <property name="text">
-         <string>Perf Output:</string>
-        </property>
-        <property name="buddy">
-         <cstring>perfResultsTextEdit</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="1">
+      <item row="5" column="1">
        <widget class="QPushButton" name="startRecordingButton">
         <property name="toolTip">
          <string>Start recording perf data</string>
@@ -242,7 +277,20 @@
         </property>
        </widget>
       </item>
-      <item row="10" column="1">
+      <item row="6" column="0">
+       <widget class="QLabel" name="perfResultsLabel">
+        <property name="toolTip">
+         <string>Detailed output from the perf record operation.</string>
+        </property>
+        <property name="text">
+         <string>Perf Output:</string>
+        </property>
+        <property name="buddy">
+         <cstring>perfResultsTextEdit</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
        <widget class="QTextEdit" name="perfResultsTextEdit">
         <property name="font">
          <font>
@@ -257,7 +305,7 @@
         </property>
        </widget>
       </item>
-      <item row="11" column="1">
+      <item row="7" column="1">
        <widget class="QPushButton" name="viewPerfRecordResultsButton">
         <property name="enabled">
          <bool>false</bool>
@@ -269,19 +317,6 @@
          <string>View Results</string>
         </property>
        </widget>
-      </item>
-      <item row="12" column="1">
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
       </item>
      </layout>
     </widget>
@@ -305,22 +340,6 @@
    <header>kfilterproxysearchline.h</header>
   </customwidget>
  </customwidgets>
- <tabstops>
-  <tabstop>applicationName</tabstop>
-  <tabstop>applicationParametersBox</tabstop>
-  <tabstop>processesFilterBox</tabstop>
-  <tabstop>processesTableView</tabstop>
-  <tabstop>workingDirectory</tabstop>
-  <tabstop>outputFile</tabstop>
-  <tabstop>callGraphComboBox</tabstop>
-  <tabstop>eventTypeBox</tabstop>
-  <tabstop>applicationRecordErrorMessage</tabstop>
-  <tabstop>startRecordingButton</tabstop>
-  <tabstop>perfResultsTextEdit</tabstop>
-  <tabstop>viewPerfRecordResultsButton</tabstop>
-  <tabstop>recordTypeComboBox</tabstop>
-  <tabstop>homeButton</tabstop>
- </tabstops>
  <resources/>
  <connections/>
 </ui>

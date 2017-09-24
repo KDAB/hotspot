@@ -44,6 +44,7 @@
 #include <KShell>
 #include <KFilterProxySearchLine>
 #include <KRecursiveFilterProxyModel>
+#include <KColumnResizer>
 
 #include "perfrecord.h"
 
@@ -77,29 +78,20 @@ void updateStartRecordingButtonState(const QScopedPointer<Ui::RecordPage> &ui)
     }
 }
 
-void setRecordApplicationVisibility(const QScopedPointer<Ui::RecordPage> &ui, bool visible)
+void updateStackedSizePolicy(const QScopedPointer<Ui::RecordPage> &ui)
 {
-    ui->applicationLabel->setVisible(visible);
-    ui->applicationName->setVisible(visible);
-    ui->applicationParamsLabel->setVisible(visible);
-    ui->applicationParametersBox->setVisible(visible);
-    ui->workingDirectoryLabel->setVisible(visible);
-    ui->workingDirectory->setVisible(visible);
+    // make the stacked widget size to the current page only
+    const auto currentIndex = ui->stackedWidget->currentIndex();
+    for (int i = 0, c = ui->stackedWidget->count (); i < c; ++i) {
+        // determine the vertical size policy
+        QSizePolicy::Policy policy = QSizePolicy::Ignored;
+        if (i == currentIndex) {
+            policy = QSizePolicy::Expanding;
+        }
 
-    if (visible) {
-        ui->startRecordingButton->setEnabled(visible);
-    }
-}
-
-void setRecordProcessesVisibility(const QScopedPointer<Ui::RecordPage> &ui, bool visible)
-{
-    ui->processesFilterLabel->setVisible(visible);
-    ui->processesFilterBox->setVisible(visible);
-    ui->processesLabel->setVisible(visible);
-    ui->processesTableView->setVisible(visible);
-
-    if (visible) {
-        updateStartRecordingButtonState(ui);
+        // update the size policy
+        QWidget* pPage = ui->stackedWidget->widget(i);
+        pPage->setSizePolicy(policy, policy);
     }
 }
 }
@@ -125,6 +117,11 @@ RecordPage::RecordPage(QWidget *parent)
     ui->outputFile->setText(QDir::currentPath() + QDir::separator() + QStringLiteral("perf.data"));
     ui->outputFile->setMode(KFile::File | KFile::LocalOnly);
 
+    auto columnResizer = new KColumnResizer(this);
+    columnResizer->addWidgetsFromLayout(ui->formLayout);
+    columnResizer->addWidgetsFromLayout(ui->formLayout_2);
+    columnResizer->addWidgetsFromLayout(ui->formLayout_3);
+
     connect(ui->homeButton, &QPushButton::clicked, this, &RecordPage::homeButtonClicked);
     connect(ui->applicationName, &KUrlRequester::textChanged, this, &RecordPage::onApplicationNameChanged);
     connect(ui->startRecordingButton, &QPushButton::toggled, this, &RecordPage::onStartRecordingButtonClicked);
@@ -138,20 +135,21 @@ RecordPage::RecordPage(QWidget *parent)
     ui->recordTypeComboBox->addItem(tr("Launch Application"), QVariant::fromValue(LaunchApplication));
     ui->recordTypeComboBox->addItem(tr("Attach To Process(es)"), QVariant::fromValue(AttachToProcess));
     connect(ui->recordTypeComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-        [=](int index){
+        [this](int index){
         switch (index) {
         case LaunchApplication:
-            setRecordApplicationVisibility(ui, true);
-            setRecordProcessesVisibility(ui, false);
+            ui->stackedWidget->setCurrentWidget(ui->launchAppPage);
             break;
         case AttachToProcess:
-            setRecordProcessesVisibility(ui, true);
-            setRecordApplicationVisibility(ui, false);
+            ui->stackedWidget->setCurrentWidget(ui->attachAppPage);
+            updateStartRecordingButtonState(ui);
             break;
         default:
             break;
         }
+        updateStackedSizePolicy(ui);
     });
+    updateStackedSizePolicy(ui);
 
     ui->callGraphComboBox->addItem(tr("None"), QVariant::fromValue(QString()));
     ui->callGraphComboBox->addItem(tr("DWARF"), QVariant::fromValue(QStringLiteral("dwarf")));
@@ -205,9 +203,6 @@ RecordPage::RecordPage(QWidget *parent)
         });
 
     ui->processesFilterBox->setProxy(m_processProxyModel);
-
-    setRecordApplicationVisibility(ui, true);
-    setRecordProcessesVisibility(ui, false);
 
     connect(m_watcher, SIGNAL(finished()), this, SLOT(updateProcessesFinished()));
     updateProcesses();
