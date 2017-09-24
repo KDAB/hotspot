@@ -45,6 +45,8 @@
 #include <KFilterProxySearchLine>
 #include <KRecursiveFilterProxyModel>
 #include <KColumnResizer>
+#include <KComboBox>
+#include <KUrlCompletion>
 
 #include "perfrecord.h"
 
@@ -107,6 +109,11 @@ RecordPage::RecordPage(QWidget *parent)
 {
     ui->setupUi(this);
 
+    auto completion = ui->applicationName->completionObject();
+    ui->applicationName->comboBox()->setEditable(true);
+    // NOTE: workaround until https://phabricator.kde.org/D7966 has landed and we bump the required version
+    ui->applicationName->comboBox()->setCompletionObject(completion);
+
     ui->applicationName->setMode(KFile::File | KFile::ExistingOnly | KFile::LocalOnly);
     // we are only interested in executable files, so set the mime type filter accordingly
     // note that exe's build with PIE are actually "shared libs"...
@@ -127,6 +134,9 @@ RecordPage::RecordPage(QWidget *parent)
 
     connect(ui->homeButton, &QPushButton::clicked, this, &RecordPage::homeButtonClicked);
     connect(ui->applicationName, &KUrlRequester::textChanged, this, &RecordPage::onApplicationNameChanged);
+    // NOTE: workaround until https://phabricator.kde.org/D7968 has landed and we bump the required version
+    connect(ui->applicationName->comboBox()->lineEdit(), &QLineEdit::textChanged,
+            this, &RecordPage::onApplicationNameChanged);
     connect(ui->startRecordingButton, &QPushButton::toggled, this, &RecordPage::onStartRecordingButtonClicked);
     connect(ui->workingDirectory, &KUrlRequester::textChanged, this, &RecordPage::onWorkingDirectoryNameChanged);
     connect(ui->viewPerfRecordResultsButton, &QPushButton::clicked, this, &RecordPage::onViewPerfRecordResultsButtonClicked);
@@ -179,7 +189,6 @@ RecordPage::RecordPage(QWidget *parent)
                 ui->applicationRecordErrorMessage->setText(errorMessage);
                 ui->applicationRecordErrorMessage->show();
                 ui->viewPerfRecordResultsButton->setEnabled(false);
-
     });
 
     connect(m_perfRecord, &PerfRecord::recordingOutput,
@@ -248,8 +257,9 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         }
 
         if (ui->recordTypeComboBox->currentData() == LaunchApplication) {
+            const auto applicationName = ui->applicationName->text();
             m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(),
-                                 ui->applicationName->url().toLocalFile(),
+                                 applicationName,
                                  KShell::splitArgs(ui->applicationParametersBox->text()),
                                  ui->workingDirectory->url().toLocalFile());
         } else {
@@ -273,11 +283,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
 
 void RecordPage::onApplicationNameChanged(const QString& filePath)
 {
-    QFileInfo application(ui->applicationName->url().toLocalFile());
-
-    if (!application.exists()) {
-        application.setFile(QStandardPaths::findExecutable(filePath));
-    }
+    QFileInfo application(QStandardPaths::findExecutable(filePath));
 
     if (!application.exists()) {
         ui->applicationRecordErrorMessage->setText(tr("Application file cannot be found: %1").arg(filePath));
