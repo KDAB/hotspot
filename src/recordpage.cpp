@@ -71,11 +71,14 @@ bool isIntel()
 
 void updateStartRecordingButtonState(const QScopedPointer<Ui::RecordPage> &ui)
 {
-    if (ui->processesTableView->selectionModel()->selectedIndexes().count() > 0) {
-        ui->startRecordingButton->setEnabled(true);
+    bool enabled = false;
+    if (ui->stackedWidget->currentWidget() == ui->launchAppPage) {
+        enabled = ui->applicationName->url().isValid();
     } else {
-        ui->startRecordingButton->setEnabled(false);
+        enabled = ui->processesTableView->selectionModel()->hasSelection();
     }
+    enabled &= ui->applicationRecordErrorMessage->text().isEmpty();
+    ui->startRecordingButton->setEnabled(enabled);
 }
 
 void updateStackedSizePolicy(const QScopedPointer<Ui::RecordPage> &ui)
@@ -142,13 +145,16 @@ RecordPage::RecordPage(QWidget *parent)
             break;
         case AttachToProcess:
             ui->stackedWidget->setCurrentWidget(ui->attachAppPage);
-            updateStartRecordingButtonState(ui);
+
+            updateProcesses();
             break;
         default:
             break;
         }
+        updateStartRecordingButtonState(ui);
         updateStackedSizePolicy(ui);
     });
+    updateStartRecordingButtonState(ui);
     updateStackedSizePolicy(ui);
 
     ui->callGraphComboBox->addItem(tr("None"), QVariant::fromValue(QString()));
@@ -197,16 +203,15 @@ RecordPage::RecordPage(QWidget *parent)
     ui->processesTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->processesTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->processesTableView->setSelectionMode(QAbstractItemView::MultiSelection);
-    connect(ui->processesTableView, &QTreeView::clicked,
-            [=](){
-            updateStartRecordingButtonState(ui);
-        });
+    connect(ui->processesTableView->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, [this](){
+                updateStartRecordingButtonState(ui);
+            });
 
     ui->processesFilterBox->setProxy(m_processProxyModel);
 
     connect(m_watcher, &QFutureWatcher<ProcDataList>::finished,
             this, &RecordPage::updateProcessesFinished);
-    updateProcesses();
 
     showRecordPage();
 }
@@ -284,10 +289,10 @@ void RecordPage::onApplicationNameChanged(const QString& filePath)
         if (ui->workingDirectory->text().isEmpty()) {
             ui->workingDirectory->setPlaceholderText(application.path());
         }
-        ui->applicationRecordErrorMessage->hide();
-        return;
+        ui->applicationRecordErrorMessage->setText({});
     }
-    ui->applicationRecordErrorMessage->show();
+    ui->applicationRecordErrorMessage->setVisible(!ui->applicationRecordErrorMessage->text().isEmpty());
+    updateStartRecordingButtonState(ui);
 }
 
 void RecordPage::onWorkingDirectoryNameChanged(const QString& folderPath)
@@ -301,10 +306,10 @@ void RecordPage::onWorkingDirectoryNameChanged(const QString& folderPath)
     } else if (!folder.isWritable()) {
         ui->applicationRecordErrorMessage->setText(tr("Working directory folder is not writable: %1").arg(folderPath));
     } else {
-        ui->applicationRecordErrorMessage->hide();
-        return;
+        ui->applicationRecordErrorMessage->setText({});
     }
-    ui->applicationRecordErrorMessage->show();
+    ui->applicationRecordErrorMessage->setVisible(!ui->applicationRecordErrorMessage->text().isEmpty());
+    updateStartRecordingButtonState(ui);
 }
 
 void RecordPage::onViewPerfRecordResultsButtonClicked()
@@ -328,10 +333,10 @@ void RecordPage::onOutputFileNameChanged(const QString& /*filePath*/)
     } else if (!file.absoluteFilePath().endsWith(perfDataExtension)) {
         ui->applicationRecordErrorMessage->setText(tr("Output file must end with %1").arg(perfDataExtension));
     } else {
-        ui->applicationRecordErrorMessage->hide();
-        return;
+        ui->applicationRecordErrorMessage->setText({});
     }
-    ui->applicationRecordErrorMessage->show();
+    ui->applicationRecordErrorMessage->setVisible(!ui->applicationRecordErrorMessage->text().isEmpty());
+    updateStartRecordingButtonState(ui);
 }
 
 void RecordPage::onOutputFileNameSelected(const QString& filePath)
@@ -356,6 +361,10 @@ void RecordPage::updateProcesses()
 void RecordPage::updateProcessesFinished()
 {
     m_processModel->mergeProcesses(m_watcher->result());
-    updateStartRecordingButtonState(ui);
-    QTimer::singleShot(1000, this, SLOT(updateProcesses()));
+
+    if (ui->stackedWidget->currentWidget() == ui->attachAppPage) {
+        // only update the state when we show the attach app page
+        updateStartRecordingButtonState(ui);
+        QTimer::singleShot(1000, this, SLOT(updateProcesses()));
+    }
 }
