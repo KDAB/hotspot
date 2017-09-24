@@ -319,6 +319,9 @@
         <property name="text">
          <string>View Results</string>
         </property>
+        <property name="icon">
+         <iconset theme="view-list-symbolic"/>
+        </property>
        </widget>
       </item>
      </layout>
