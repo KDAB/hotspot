@@ -45,6 +45,10 @@
 #include <KFilterProxySearchLine>
 #include <KRecursiveFilterProxyModel>
 #include <KColumnResizer>
+#include <KComboBox>
+#include <KUrlCompletion>
+#include <KSharedConfig>
+#include <KConfigGroup>
 
 #include "perfrecord.h"
 
@@ -97,6 +101,35 @@ void updateStackedSizePolicy(const QScopedPointer<Ui::RecordPage> &ui)
         pPage->setSizePolicy(policy, policy);
     }
 }
+
+KConfigGroup config()
+{
+    return KSharedConfig::openConfig()->group("RecordPage");
+}
+
+constexpr const int MAX_APPLICATIONS = 10;
+
+void rememberApplication(const QString& application, KComboBox* combo)
+{
+    // remove the app if it exists already
+    auto idx = combo->findText(application);
+    if (idx != -1) {
+        combo->removeItem(idx);
+    }
+
+    // insert app on front
+    combo->insertItem(0, application);
+    combo->setCurrentIndex(0);
+
+    // store the applications in the config
+    QStringList applications;
+    applications.reserve(combo->count());
+    for (int i = 0, c = std::min(MAX_APPLICATIONS, combo->count()); i < c; ++i) {
+        applications << combo->itemText(i);
+    }
+    config().writeEntry("applications", applications);
+}
+
 }
 
 RecordPage::RecordPage(QWidget *parent)
@@ -107,6 +140,14 @@ RecordPage::RecordPage(QWidget *parent)
 {
     ui->setupUi(this);
 
+    auto completion = ui->applicationName->completionObject();
+    ui->applicationName->comboBox()->setEditable(true);
+    // NOTE: workaround until https://phabricator.kde.org/D7966 has landed and we bump the required version
+    ui->applicationName->comboBox()->setCompletionObject(completion);
+    ui->applicationName->comboBox()->clear();
+    for (const auto& application : config().readEntry("applications", QStringList())) {
+        ui->applicationName->comboBox()->addItem(application);
+    }
     ui->applicationName->setMode(KFile::File | KFile::ExistingOnly | KFile::LocalOnly);
     // we are only interested in executable files, so set the mime type filter accordingly
     // note that exe's build with PIE are actually "shared libs"...
@@ -127,6 +168,9 @@ RecordPage::RecordPage(QWidget *parent)
 
     connect(ui->homeButton, &QPushButton::clicked, this, &RecordPage::homeButtonClicked);
     connect(ui->applicationName, &KUrlRequester::textChanged, this, &RecordPage::onApplicationNameChanged);
+    // NOTE: workaround until https://phabricator.kde.org/D7968 has landed and we bump the required version
+    connect(ui->applicationName->comboBox()->lineEdit(), &QLineEdit::textChanged,
+            this, &RecordPage::onApplicationNameChanged);
     connect(ui->startRecordingButton, &QPushButton::toggled, this, &RecordPage::onStartRecordingButtonClicked);
     connect(ui->workingDirectory, &KUrlRequester::textChanged, this, &RecordPage::onWorkingDirectoryNameChanged);
     connect(ui->viewPerfRecordResultsButton, &QPushButton::clicked, this, &RecordPage::onViewPerfRecordResultsButtonClicked);
@@ -250,6 +294,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
 
         if (ui->recordTypeComboBox->currentData() == LaunchApplication) {
             const auto applicationName = ui->applicationName->text();
+            rememberApplication(applicationName, ui->applicationName->comboBox());
             m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(),
                                  applicationName,
                                  KShell::splitArgs(ui->applicationParametersBox->text()),
