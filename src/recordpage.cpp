@@ -107,9 +107,15 @@ KConfigGroup config()
     return KSharedConfig::openConfig()->group("RecordPage");
 }
 
+KConfigGroup applicationConfig(const QString& application)
+{
+    return config().group(QLatin1String("Application ") + application);
+}
+
 constexpr const int MAX_APPLICATIONS = 10;
 
-void rememberApplication(const QString& application, KComboBox* combo)
+void rememberApplication(const QString& application, const QString& appParameters,
+                         const QString& workingDir, KComboBox* combo)
 {
     // remove the app if it exists already
     auto idx = combo->findText(application);
@@ -128,6 +134,10 @@ void rememberApplication(const QString& application, KComboBox* combo)
         applications << combo->itemText(i);
     }
     config().writeEntry("applications", applications);
+
+    auto options = applicationConfig(application);
+    options.writeEntry("params", appParameters);
+    options.writeEntry("workingDir", workingDir);
 }
 
 }
@@ -144,10 +154,6 @@ RecordPage::RecordPage(QWidget *parent)
     ui->applicationName->comboBox()->setEditable(true);
     // NOTE: workaround until https://phabricator.kde.org/D7966 has landed and we bump the required version
     ui->applicationName->comboBox()->setCompletionObject(completion);
-    ui->applicationName->comboBox()->clear();
-    for (const auto& application : config().readEntry("applications", QStringList())) {
-        ui->applicationName->comboBox()->addItem(application);
-    }
     ui->applicationName->setMode(KFile::File | KFile::ExistingOnly | KFile::LocalOnly);
     // we are only interested in executable files, so set the mime type filter accordingly
     // note that exe's build with PIE are actually "shared libs"...
@@ -259,6 +265,11 @@ RecordPage::RecordPage(QWidget *parent)
             this, &RecordPage::updateProcessesFinished);
 
     showRecordPage();
+
+    ui->applicationName->comboBox()->clear();
+    for (const auto& application : config().readEntry("applications", QStringList())) {
+        ui->applicationName->comboBox()->addItem(application);
+    }
 }
 
 RecordPage::~RecordPage() = default;
@@ -282,23 +293,27 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         ui->startRecordingButton->setText(tr("Stop Recording"));
 
         QStringList perfOptions;
-        const auto callGraphOption = ui->callGraphComboBox->currentData().toString();
 
+        const auto callGraphOption = ui->callGraphComboBox->currentData().toString();
+        config().writeEntry("eventType", callGraphOption);
         if (!callGraphOption.isEmpty()) {
             perfOptions << QStringLiteral("--call-graph") << callGraphOption;
         }
 
+        config().writeEntry("eventType", ui->eventTypeBox->text());
         if (!ui->eventTypeBox->text().isEmpty()) {
             perfOptions << QStringLiteral("--event") << ui->eventTypeBox->text();
         }
 
         if (ui->recordTypeComboBox->currentData() == LaunchApplication) {
             const auto applicationName = ui->applicationName->text();
-            rememberApplication(applicationName, ui->applicationName->comboBox());
+            const auto appParameters = ui->applicationParametersBox->text();
+            const auto workingDir = ui->workingDirectory->url().toLocalFile();
+            rememberApplication(applicationName, appParameters, workingDir,
+                                ui->applicationName->comboBox());
             m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(),
-                                 applicationName,
-                                 KShell::splitArgs(ui->applicationParametersBox->text()),
-                                 ui->workingDirectory->url().toLocalFile());
+                                 applicationName, KShell::splitArgs(appParameters),
+                                 workingDir);
         } else {
             QItemSelectionModel *selectionModel = ui->processesTableView->selectionModel();
             QStringList pids;
@@ -338,6 +353,12 @@ void RecordPage::onApplicationNameChanged(const QString& filePath)
     }
     ui->applicationRecordErrorMessage->setVisible(!ui->applicationRecordErrorMessage->text().isEmpty());
     updateStartRecordingButtonState(ui);
+
+    auto config = applicationConfig(filePath);
+    if (config.exists()) {
+        ui->workingDirectory->setText(config.readEntry("workingDir", QString()));
+        ui->applicationParametersBox->setText(config.readEntry("params", QString()));
+    }
 }
 
 void RecordPage::onWorkingDirectoryNameChanged(const QString& folderPath)
