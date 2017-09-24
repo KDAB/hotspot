@@ -204,8 +204,10 @@ RecordPage::RecordPage(QWidget *parent)
             this, &RecordPage::onOutputFileNameSelected);
     connect(ui->outputFile, &KUrlRequester::urlSelected, this, &RecordPage::onOutputFileUrlChanged);
 
-    ui->recordTypeComboBox->addItem(tr("Launch Application"), QVariant::fromValue(LaunchApplication));
-    ui->recordTypeComboBox->addItem(tr("Attach To Process(es)"), QVariant::fromValue(AttachToProcess));
+    ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-build")),
+                                    tr("Launch Application"), QVariant::fromValue(LaunchApplication));
+    ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-install")),
+                                    tr("Attach To Process(es)"), QVariant::fromValue(AttachToProcess));
     connect(ui->recordTypeComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
         [this](int index){
         switch (index) {
