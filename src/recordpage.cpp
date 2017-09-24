@@ -112,29 +112,45 @@ KConfigGroup applicationConfig(const QString& application)
     return config().group(QLatin1String("Application ") + application);
 }
 
-constexpr const int MAX_APPLICATIONS = 10;
+constexpr const int MAX_COMBO_ENTRIES = 10;
 
-void rememberApplication(const QString& application, const QString& appParameters,
-                         const QString& workingDir, KComboBox* combo)
+void rememberCombobox(KConfigGroup config, const QString& entryName,
+                      const QString& value, QComboBox* combo)
 {
-    // remove the app if it exists already
-    auto idx = combo->findText(application);
+    // remove the value if it exists already
+    auto idx = combo->findText(value);
     if (idx != -1) {
         combo->removeItem(idx);
     }
 
-    // insert app on front
-    combo->insertItem(0, application);
+    // insert value on front
+    combo->insertItem(0, value);
     combo->setCurrentIndex(0);
 
-    // store the applications in the config
-    QStringList applications;
-    applications.reserve(combo->count());
-    for (int i = 0, c = std::min(MAX_APPLICATIONS, combo->count()); i < c; ++i) {
-        applications << combo->itemText(i);
+    // store the values in the config
+    QStringList values;
+    values.reserve(combo->count());
+    for (int i = 0, c = std::min(MAX_COMBO_ENTRIES, combo->count()); i < c; ++i) {
+        values << combo->itemText(i);
     }
-    config().writeEntry("applications", applications);
+    config.writeEntry(entryName, values);
+}
 
+void restoreCombobox(const KConfigGroup& config, const QString& entryName,
+                     QComboBox* combo, const QStringList& defaults = {})
+{
+    combo->clear();
+    const auto& values = config.readEntry(entryName, defaults);
+    for (const auto& application : values) {
+        combo->addItem(application);
+    }
+}
+
+void rememberApplication(const QString& application, const QString& appParameters,
+                         const QString& workingDir, KComboBox* combo)
+{
+    rememberCombobox(config(), QStringLiteral("applications"),
+                     application, combo);
     auto options = applicationConfig(application);
     options.writeEntry("params", appParameters);
     options.writeEntry("workingDir", workingDir);
@@ -266,10 +282,10 @@ RecordPage::RecordPage(QWidget *parent)
 
     showRecordPage();
 
-    ui->applicationName->comboBox()->clear();
-    for (const auto& application : config().readEntry("applications", QStringList())) {
-        ui->applicationName->comboBox()->addItem(application);
-    }
+    restoreCombobox(config(), QStringLiteral("applications"),
+                    ui->applicationName->comboBox());
+    restoreCombobox(config(), QStringLiteral("eventType"),
+                    ui->eventTypeBox, {ui->eventTypeBox->currentText()});
 }
 
 RecordPage::~RecordPage() = default;
@@ -295,14 +311,16 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         QStringList perfOptions;
 
         const auto callGraphOption = ui->callGraphComboBox->currentData().toString();
-        config().writeEntry("eventType", callGraphOption);
+        config().writeEntry("callGraph", callGraphOption);
         if (!callGraphOption.isEmpty()) {
             perfOptions << QStringLiteral("--call-graph") << callGraphOption;
         }
 
-        config().writeEntry("eventType", ui->eventTypeBox->text());
-        if (!ui->eventTypeBox->text().isEmpty()) {
-            perfOptions << QStringLiteral("--event") << ui->eventTypeBox->text();
+        const auto eventType = ui->eventTypeBox->currentText();
+        rememberCombobox(config(), QStringLiteral("eventType"),
+                         eventType, ui->eventTypeBox);
+        if (!eventType.isEmpty()) {
+            perfOptions << QStringLiteral("--event") << eventType;
         }
 
         if (ui->recordTypeComboBox->currentData() == LaunchApplication) {

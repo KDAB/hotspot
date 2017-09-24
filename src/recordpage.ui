@@ -248,11 +248,14 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="eventTypeBox">
+       <widget class="QComboBox" name="eventTypeBox">
         <property name="toolTip">
          <string>Optional perf event type flags to use while recording perf data</string>
         </property>
-        <property name="text">
+        <property name="editable">
+         <bool>true</bool>
+        </property>
+        <property name="currentText">
          <string>cycles:P,instructions:P</string>
         </property>
        </widget>
@@ -330,12 +333,12 @@
    <header>kmessagewidget.h</header>
   </customwidget>
   <customwidget>
-   <class>KUrlRequester</class>
-   <extends>QWidget</extends>
+   <class>KUrlComboRequester</class>
+   <extends>KUrlRequester</extends>
    <header>kurlrequester.h</header>
   </customwidget>
   <customwidget>
-   <class>KUrlComboRequester</class>
+   <class>KUrlRequester</class>
    <extends>QWidget</extends>
    <header>kurlrequester.h</header>
   </customwidget>
