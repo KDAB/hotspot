@@ -176,7 +176,6 @@ RecordPage::RecordPage(QWidget *parent)
     ui->applicationName->setMimeTypeFilters({QStringLiteral("application/x-executable"),
                                              QStringLiteral("application/x-sharedlib")});
     ui->workingDirectory->setMode(KFile::Directory | KFile::LocalOnly);
-    ui->workingDirectory->setPlaceholderText(QDir::currentPath());
     ui->applicationRecordErrorMessage->setCloseButtonVisible(false);
     ui->applicationRecordErrorMessage->setWordWrap(true);
     ui->applicationRecordErrorMessage->setMessageType(KMessageWidget::Error);
