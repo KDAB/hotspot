@@ -286,6 +286,11 @@ RecordPage::RecordPage(QWidget *parent)
                     ui->applicationName->comboBox());
     restoreCombobox(config(), QStringLiteral("eventType"),
                     ui->eventTypeBox, {ui->eventTypeBox->currentText()});
+    const auto callGraph = config().readEntry("callGraph", ui->callGraphComboBox->currentData());
+    const auto callGraphIdx = ui->callGraphComboBox->findData(callGraph);
+    if (callGraphIdx != -1) {
+        ui->callGraphComboBox->setCurrentIndex(callGraphIdx);
+    }
 }
 
 RecordPage::~RecordPage() = default;
