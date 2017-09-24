@@ -181,6 +181,7 @@ RecordPage::RecordPage(QWidget *parent)
     ui->applicationRecordErrorMessage->setMessageType(KMessageWidget::Error);
     ui->outputFile->setText(QDir::currentPath() + QDir::separator() + QStringLiteral("perf.data"));
     ui->outputFile->setMode(KFile::File | KFile::LocalOnly);
+    ui->eventTypeBox->lineEdit()->setPlaceholderText(tr("perf defaults (usually cycles:Pu)"));
 
     auto columnResizer = new KColumnResizer(this);
     columnResizer->addWidgetsFromLayout(ui->formLayout);
