@@ -100,7 +100,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="KUrlComboRequester" name="applicationName">
+           <widget class="KUrlRequester" name="applicationName">
             <property name="toolTip">
              <string>Path to the application to be recorded</string>
             </property>
@@ -331,11 +331,6 @@
   </customwidget>
   <customwidget>
    <class>KUrlRequester</class>
-   <extends>QWidget</extends>
-   <header>kurlrequester.h</header>
-  </customwidget>
-  <customwidget>
-   <class>KUrlComboRequester</class>
    <extends>QWidget</extends>
    <header>kurlrequester.h</header>
   </customwidget>
