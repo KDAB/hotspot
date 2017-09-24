@@ -204,7 +204,8 @@ RecordPage::RecordPage(QWidget *parent)
 
     ui->processesFilterBox->setProxy(m_processProxyModel);
 
-    connect(m_watcher, SIGNAL(finished()), this, SLOT(updateProcessesFinished()));
+    connect(m_watcher, &QFutureWatcher<ProcDataList>::finished,
+            this, &RecordPage::updateProcessesFinished);
     updateProcesses();
 
     showRecordPage();
