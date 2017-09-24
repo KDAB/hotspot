@@ -156,7 +156,7 @@
       <item row="5" column="0">
        <widget class="QLabel" name="outputFileLabel">
         <property name="text">
-         <string>Output File</string>
+         <string>Output File:</string>
         </property>
         <property name="buddy">
          <cstring>outputFile</cstring>
