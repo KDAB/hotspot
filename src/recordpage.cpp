@@ -176,7 +176,7 @@ RecordPage::RecordPage(QWidget *parent)
     ui->applicationName->setMimeTypeFilters({QStringLiteral("application/x-executable"),
                                              QStringLiteral("application/x-sharedlib")});
     ui->workingDirectory->setMode(KFile::Directory | KFile::LocalOnly);
-    ui->workingDirectory->setText(QDir::currentPath());
+    ui->workingDirectory->setPlaceholderText(QDir::currentPath());
     ui->applicationRecordErrorMessage->setCloseButtonVisible(false);
     ui->applicationRecordErrorMessage->setWordWrap(true);
     ui->applicationRecordErrorMessage->setMessageType(KMessageWidget::Error);
@@ -359,7 +359,10 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         if (ui->recordTypeComboBox->currentData() == LaunchApplication) {
             const auto applicationName = ui->applicationName->text();
             const auto appParameters = ui->applicationParametersBox->text();
-            const auto workingDir = ui->workingDirectory->url().toLocalFile();
+            auto workingDir = ui->workingDirectory->text();
+            if (workingDir.isEmpty()) {
+                workingDir = ui->workingDirectory->placeholderText();
+            }
             rememberApplication(applicationName, appParameters, workingDir,
                                 ui->applicationName->comboBox());
             m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(),
@@ -400,10 +403,7 @@ void RecordPage::onApplicationNameChanged(const QString& filePath)
         const auto config = applicationConfig(filePath);
         ui->workingDirectory->setText(config.readEntry("workingDir", QString()));
         ui->applicationParametersBox->setText(config.readEntry("params", QString()));
-
-        if (ui->workingDirectory->text().isEmpty()) {
-            ui->workingDirectory->setPlaceholderText(application.path());
-        }
+        ui->workingDirectory->setPlaceholderText(application.path());
         ui->applicationRecordErrorMessage->setText({});
     }
     ui->applicationRecordErrorMessage->setVisible(!ui->applicationRecordErrorMessage->text().isEmpty());
