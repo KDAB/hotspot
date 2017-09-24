@@ -149,11 +149,14 @@ void restoreCombobox(const KConfigGroup& config, const QString& entryName,
 void rememberApplication(const QString& application, const QString& appParameters,
                          const QString& workingDir, KComboBox* combo)
 {
-    rememberCombobox(config(), QStringLiteral("applications"),
-                     application, combo);
+    // set the app config early, so when we change the combo box below we can
+    // restore the options as expected
     auto options = applicationConfig(application);
     options.writeEntry("params", appParameters);
     options.writeEntry("workingDir", workingDir);
+
+    rememberCombobox(config(), QStringLiteral("applications"),
+                     application, combo);
 }
 
 }
