@@ -369,6 +369,10 @@ void RecordPage::onApplicationNameChanged(const QString& filePath)
     } else if (!application.isExecutable()) {
         ui->applicationRecordErrorMessage->setText(tr("Application file is not executable: %1").arg(filePath));
     } else {
+        const auto config = applicationConfig(filePath);
+        ui->workingDirectory->setText(config.readEntry("workingDir", QString()));
+        ui->applicationParametersBox->setText(config.readEntry("params", QString()));
+
         if (ui->workingDirectory->text().isEmpty()) {
             ui->workingDirectory->setPlaceholderText(application.path());
         }
@@ -376,12 +380,6 @@ void RecordPage::onApplicationNameChanged(const QString& filePath)
     }
     ui->applicationRecordErrorMessage->setVisible(!ui->applicationRecordErrorMessage->text().isEmpty());
     updateStartRecordingButtonState(ui);
-
-    auto config = applicationConfig(filePath);
-    if (config.exists()) {
-        ui->workingDirectory->setText(config.readEntry("workingDir", QString()));
-        ui->applicationParametersBox->setText(config.readEntry("params", QString()));
-    }
 }
 
 void RecordPage::onWorkingDirectoryNameChanged(const QString& folderPath)
