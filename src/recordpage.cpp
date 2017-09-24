@@ -181,6 +181,7 @@ RecordPage::RecordPage(QWidget *parent)
                 ui->applicationRecordErrorMessage->hide();
                 m_resultsFile = fileLocation;
                 ui->viewPerfRecordResultsButton->setEnabled(true);
+                ui->recordTypeComboBox->setEnabled(true);
     });
 
     connect(m_perfRecord, &PerfRecord::recordingFailed,
@@ -189,6 +190,7 @@ RecordPage::RecordPage(QWidget *parent)
                 ui->applicationRecordErrorMessage->setText(errorMessage);
                 ui->applicationRecordErrorMessage->show();
                 ui->viewPerfRecordResultsButton->setEnabled(false);
+                ui->recordTypeComboBox->setEnabled(true);
     });
 
     connect(m_perfRecord, &PerfRecord::recordingOutput,
@@ -274,10 +276,12 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
 
             m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(), pids);
         }
+        ui->recordTypeComboBox->setEnabled(false);
     } else {
         ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
         ui->startRecordingButton->setText(tr("Start Recording"));
         m_perfRecord->stopRecording();
+        ui->recordTypeComboBox->setEnabled(true);
     }
 }
 
