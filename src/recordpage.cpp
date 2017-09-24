@@ -223,13 +223,41 @@ RecordPage::RecordPage(QWidget *parent)
     updateStartRecordingButtonState(ui);
     updateStackedSizePolicy(ui);
 
-    ui->callGraphComboBox->addItem(tr("None"), QVariant::fromValue(QString()));
-    ui->callGraphComboBox->addItem(tr("DWARF"), QVariant::fromValue(QStringLiteral("dwarf")));
-    ui->callGraphComboBox->addItem(tr("Frame Pointer"), QVariant::fromValue(QStringLiteral("fp")));
-    if (isIntel()) {
-        ui->callGraphComboBox->addItem(tr("Last Branch Record"), QVariant::fromValue(QStringLiteral("lbr")));
+    {
+        ui->callGraphComboBox->addItem(tr("None"), QVariant::fromValue(QString()));
+        ui->callGraphComboBox->setItemData(ui->callGraphComboBox->count() - 1,
+                                           tr("<qt>Do not unwind the call stack. This results in tiny data files. "
+                                              " But the data can be hard to make use of, when hotspots lie "
+                                              " in third party or system libraries not under your direct control.</qt>"),
+                                           Qt::ToolTipRole);
+
+        const auto dwarfIdx = ui->callGraphComboBox->count();
+        ui->callGraphComboBox->addItem(tr("DWARF"), QVariant::fromValue(QStringLiteral("dwarf")));
+        ui->callGraphComboBox->setItemData(dwarfIdx,
+                                           tr("<qt>Use the DWARF unwinder, which requires debug information to be available."
+                                              " This can result in large data files, but is usually the most portable option to use.</qt>"),
+                                           Qt::ToolTipRole);
+
+        ui->callGraphComboBox->addItem(tr("Frame Pointer"), QVariant::fromValue(QStringLiteral("fp")));
+        ui->callGraphComboBox->setItemData(ui->callGraphComboBox->count() - 1,
+                                           tr("<qt>Use the frame pointer for stack unwinding. This only works when your code was compiled"
+                                              " with <tt>-fno-omit-framepointer</tt>, which is usually not the case nowadays."
+                                              " As such, only use this option when you know that you have frame pointers available."
+                                              " If frame pointers are available, this option is the recommended unwinding option,"
+                                              " as it results in smaller data files and has less overhead while recording.</qt>"),
+                                           Qt::ToolTipRole);
+
+        if (isIntel()) {
+            ui->callGraphComboBox->addItem(tr("Last Branch Record"), QVariant::fromValue(QStringLiteral("lbr")));
+            ui->callGraphComboBox->setItemData(ui->callGraphComboBox->count() - 1,
+                                               tr("<qt>Use the Last Branch Record (LBR) for stack unwinding. This only works on newer Intel CPUs"
+                                                  " but does not require any special compile options. The depth of the LBR is relatively limited,"
+                                                  " which makes this option not too useful for many real-world applications.</qt>"),
+                                                Qt::ToolTipRole);
+        }
+
+        ui->callGraphComboBox->setCurrentIndex(dwarfIdx);
     }
-    ui->callGraphComboBox->setCurrentIndex(1);
 
     connect(m_perfRecord, &PerfRecord::recordingFinished,
             this, [this] (const QString& fileLocation) {
