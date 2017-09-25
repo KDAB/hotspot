@@ -48,7 +48,9 @@ public:
                         const QString& arch);
 
     void filterResults(quint64 start, quint64 end,
-                       qint32 processId, qint32 threadId);
+                       qint32 processId, qint32 threadId,
+                       const QVector<qint32>& excludeProcessIds,
+                       const QVector<qint32>& excludeThreadIds);
 
 signals:
     void parsingStarted();

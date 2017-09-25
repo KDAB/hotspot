@@ -74,6 +74,8 @@ struct FilterAction {
     quint64 endTime = 0;
     qint32 processId = 0;
     qint32 threadId = 0;
+    QVector<qint32> excludeProcessIds;
+    QVector<qint32> excludeThreadIds;
 };
 Q_DECLARE_TYPEINFO(FilterAction, Q_MOVABLE_TYPE);
 
@@ -99,7 +101,9 @@ signals:
     // emitted when user wants to filter by time, process id or thread id
     // a zero for any of the values means "show everything"
     void filterRequested(quint64 startTime, quint64 endTime,
-                         qint32 processId, qint32 threadId);
+                         qint32 processId, qint32 threadId,
+                         const QVector<qint32>& excludeProcessIds,
+                         const QVector<qint32>& excludeThreadIds);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
@@ -107,7 +111,9 @@ protected:
 private:
     void filterInByTime(quint64 timeStart, quint64 timeEnd);
     void filterInByProcess(qint32 processId);
+    void filterOutByProcess(qint32 processId);
     void filterInByThread(qint32 threadId);
+    void filterOutByThread(qint32 threadId);
     void applyFilter(FilterAction filter);
     void zoomIn(quint64 startTime, quint64 endTime);
     void updateZoomState();

@@ -1165,16 +1165,22 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
     });
 }
 
-void PerfParser::filterResults(quint64 start, quint64 end, qint32 processId, qint32 threadId)
+void PerfParser::filterResults(quint64 start, quint64 end, qint32 processId, qint32 threadId,
+                               const QVector<qint32>& excludeProcessIds,
+                               const QVector<qint32>& excludeThreadIds)
 {
     emit parsingStarted();
     using namespace ThreadWeaver;
-    stream() << make_job([this, start, end, processId, threadId]() {
+    stream() << make_job([this, start, end, processId, threadId,
+                         excludeProcessIds, excludeThreadIds]()
+    {
         Data::BottomUpResults bottomUp;
         Data::EventResults events = m_events;
         Data::CallerCalleeResults callerCallee;
         const bool filterByTime = start != 0 && end != 0;
-        if (!filterByTime && processId == 0 && threadId == 0) {
+        if (!filterByTime && processId == 0 && threadId == 0
+            && excludeProcessIds.isEmpty() && excludeThreadIds.isEmpty())
+        {
             bottomUp = m_bottomUpResults;
         } else {
             bottomUp.symbols = m_bottomUpResults.symbols;
@@ -1187,7 +1193,9 @@ void PerfParser::filterResults(quint64 start, quint64 end, qint32 processId, qin
             for (auto& thread : events.threads) {
                 if ((processId && thread.pid != processId) ||
                     (threadId && thread.tid != threadId) ||
-                    (filterByTime && (thread.timeStart > end || thread.timeEnd < start)))
+                    (filterByTime && (thread.timeStart > end || thread.timeEnd < start)) ||
+                    excludeProcessIds.contains(thread.pid) ||
+                    excludeThreadIds.contains(thread.tid))
                 {
                     thread.events.clear();
                     continue;
