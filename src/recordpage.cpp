@@ -387,11 +387,16 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         }
         ui->recordTypeComboBox->setEnabled(false);
     } else {
-        ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
-        ui->startRecordingButton->setText(tr("Start Recording"));
-        m_perfRecord->stopRecording();
-        ui->recordTypeComboBox->setEnabled(true);
+        stopRecording();
     }
+}
+
+void RecordPage::stopRecording()
+{
+    ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
+    ui->startRecordingButton->setText(tr("Start Recording"));
+    m_perfRecord->stopRecording();
+    ui->recordTypeComboBox->setEnabled(true);
 }
 
 void RecordPage::onApplicationNameChanged(const QString& filePath)

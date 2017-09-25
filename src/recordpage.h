@@ -56,6 +56,7 @@ public:
     ~RecordPage();
 
     void showRecordPage();
+    void stopRecording();
 
 signals:
     void homeButtonClicked();

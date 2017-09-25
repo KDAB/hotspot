@@ -213,13 +213,15 @@ void MainWindow::clear()
     m_parser->stop();
     m_startPage->showStartPage();
     m_pageStack->setCurrentWidget(m_startPage);
-    m_recordPage->showRecordPage();
+    m_recordPage->stopRecording();
     m_resultsPage->selectSummaryTab();
 }
 
 
 void MainWindow::openFile(const QString& path)
 {
+    clear();
+
     QFileInfo file(path);
     setWindowTitle(tr("%1 - Hotspot").arg(file.fileName()));
 
