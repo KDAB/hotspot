@@ -187,7 +187,7 @@ void MainWindow::setArch(const QString& arch)
 void MainWindow::onOpenFileButtonClicked()
 {
     const auto fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(),
-                                                       tr("Data Files (*.data)"));
+                                                       tr("Data Files (perf.data perf.data.*)"));
     if (fileName.isEmpty()) {
         return;
     }
