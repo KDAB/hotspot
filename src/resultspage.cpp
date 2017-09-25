@@ -100,6 +100,17 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
             this, [this, summaryTabIndex](int index) {
                 ui->timeLineArea->setVisible(index != summaryTabIndex);
             });
+    connect(parser, &PerfParser::parsingStarted,
+            this, [this]() {
+                // disable when we apply a filter
+                // TODO: show some busy indicator?
+                ui->timeLineArea->setEnabled(false);
+            });
+    connect(parser, &PerfParser::parsingFinished,
+            this, [this]() {
+                // re-enable when we finished filtering
+                ui->timeLineArea->setEnabled(true);
+            });
 
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode,
             this, &ResultsPage::onNavigateToCode);

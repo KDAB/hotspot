@@ -80,6 +80,7 @@ signals:
     void openFileError(const QString& errorMessage);
 
 private:
+    void closeEvent(QCloseEvent* event) override;
     void updateBackground();
     void setupCodeNavigationMenu();
     void setupPathSettingsMenu();

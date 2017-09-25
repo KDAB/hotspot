@@ -146,6 +146,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow() = default;
 
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    m_parser->stop();
+    QMainWindow::closeEvent(event);
+}
+
 void MainWindow::setSysroot(const QString& path)
 {
     m_sysroot = path;
@@ -197,12 +203,14 @@ void MainWindow::onHomeButtonClicked()
 
 void MainWindow::onRecordButtonClicked()
 {
+    clear();
     m_recordPage->showRecordPage();
     m_pageStack->setCurrentWidget(m_recordPage);
 }
 
 void MainWindow::clear()
 {
+    m_parser->stop();
     m_startPage->showStartPage();
     m_pageStack->setCurrentWidget(m_startPage);
     m_recordPage->showRecordPage();

@@ -529,8 +529,9 @@ Q_DECLARE_TYPEINFO(AttributesDefinition, Q_MOVABLE_TYPE);
 
 struct PerfParserPrivate
 {
-    PerfParserPrivate(std::function<void(float)> progressHandler)
+    PerfParserPrivate(std::atomic<bool>& stopRequested, std::function<void(float)> progressHandler)
         : progressHandler(progressHandler)
+        , stopRequested(stopRequested)
     {
         buffer.buffer().reserve(1024);
         buffer.open(QIODevice::ReadOnly);
@@ -544,6 +545,10 @@ struct PerfParserPrivate
 
     bool tryParse()
     {
+        if (stopRequested) {
+            process.kill();
+            return false;
+        }
         const auto bytesAvailable = process.bytesAvailable();
         switch (state) {
             case HEADER: {
@@ -1018,10 +1023,13 @@ struct PerfParserPrivate
     QSet<qint32> reportedMissingDebugInfoModules;
     QSet<QString> encounteredErrors;
     QHash<QVector<qint32>, qint32> stacks;
+    std::atomic<bool>& stopRequested;
 };
 
 PerfParser::PerfParser(QObject* parent)
     : QObject(parent)
+    , m_isParsing(false)
+    , m_stopRequested(false)
 {
     connect(this, &PerfParser::bottomUpDataAvailable,
             this, [this](const Data::BottomUpResults& data) {
@@ -1035,6 +1043,19 @@ PerfParser::PerfParser(QObject* parent)
                     m_events = data;
                 }
             });
+    connect(this, &PerfParser::parsingStarted,
+            this, [this]() {
+                m_isParsing = true;
+                m_stopRequested = false;
+            });
+    connect(this, &PerfParser::parsingFailed,
+            this, [this]() {
+                m_isParsing = false;
+            });
+    connect(this, &PerfParser::parsingFinished,
+            this, [this]() {
+                m_isParsing = false;
+            });
 }
 
 PerfParser::~PerfParser() = default;
@@ -1044,6 +1065,8 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
                                 const QString& extraLibPaths, const QString& appPath,
                                 const QString& arch)
 {
+    Q_ASSERT(!m_isParsing);
+
     QFileInfo info(path);
     if (!info.exists()) {
         emit parsingFailed(tr("File '%1' does not exist.").arg(path));
@@ -1093,7 +1116,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
     emit parsingStarted();
     using namespace ThreadWeaver;
     stream() << make_job([parserBinary, parserArgs, this]() {
-        PerfParserPrivate d([this](float percent) {
+        PerfParserPrivate d(m_stopRequested, [this](float percent) {
             emit progress(percent);
         });
 
@@ -1106,6 +1129,10 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
 
         connect(&d.process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
                 [&d, this] (int exitCode, QProcess::ExitStatus exitStatus) {
+                    if (m_stopRequested) {
+                        emit parsingFailed(tr("Parsing stopped."));
+                        return;
+                    }
                     qCDebug(LOG_PERFPARSER) << exitCode << exitStatus;
 
                     enum ErrorCodes {
@@ -1151,6 +1178,11 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
 
         connect(&d.process, &QProcess::errorOccurred,
                 [&d, this] (QProcess::ProcessError error) {
+                    if (m_stopRequested) {
+                        emit parsingFailed(tr("Parsing stopped."));
+                        return;
+                    }
+
                     qCWarning(LOG_PERFPARSER) << error << d.process.errorString();
 
                     emit parsingFailed(d.process.errorString());
@@ -1169,6 +1201,8 @@ void PerfParser::filterResults(quint64 start, quint64 end, qint32 processId, qin
                                const QVector<qint32>& excludeProcessIds,
                                const QVector<qint32>& excludeThreadIds)
 {
+    Q_ASSERT(!m_isParsing);
+
     emit parsingStarted();
     using namespace ThreadWeaver;
     stream() << make_job([this, start, end, processId, threadId,
@@ -1191,6 +1225,11 @@ void PerfParser::filterResults(quint64 start, quint64 end, qint32 processId, qin
             // remove events that lie outside the selected time span
             // TODO: parallelize
             for (auto& thread : events.threads) {
+                if (m_stopRequested) {
+                    emit parsingFailed(tr("Parsing stopped."));
+                    return;
+                }
+
                 if ((processId && thread.pid != processId) ||
                     (threadId && thread.tid != threadId) ||
                     (filterByTime && (thread.timeStart > end || thread.timeEnd < start)) ||
@@ -1208,6 +1247,11 @@ void PerfParser::filterResults(quint64 start, quint64 end, qint32 processId, qin
                                                 return event.time < start || event.time >= end;
                                             });
                     thread.events.erase(it, thread.events.end());
+                }
+
+                if (m_stopRequested) {
+                    emit parsingFailed(tr("Parsing stopped."));
+                    return;
                 }
 
                 // add event data to bottom up and caller callee sets
@@ -1238,9 +1282,25 @@ void PerfParser::filterResults(quint64 start, quint64 end, qint32 processId, qin
             Data::BottomUp::initializeParents(&bottomUp.root);
         }
 
+        if (m_stopRequested) {
+            emit parsingFailed(tr("Parsing stopped."));
+            return;
+        }
+
         // TODO: parallelize
         Data::callerCalleesFromBottomUpData(bottomUp, &callerCallee);
+
+        if (m_stopRequested) {
+            emit parsingFailed(tr("Parsing stopped."));
+            return;
+        }
+
         const auto topDown = Data::TopDownResults::fromBottomUp(bottomUp);
+
+        if (m_stopRequested) {
+            emit parsingFailed(tr("Parsing stopped."));
+            return;
+        }
 
         emit bottomUpDataAvailable(bottomUp);
         emit topDownDataAvailable(topDown);
@@ -1248,4 +1308,9 @@ void PerfParser::filterResults(quint64 start, quint64 end, qint32 processId, qin
         emit eventsAvailable(events);
         emit parsingFinished();
     });
+}
+
+void PerfParser::stop()
+{
+    m_stopRequested = true;
 }

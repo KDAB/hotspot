@@ -29,6 +29,7 @@
 
 #include <QObject>
 #include <memory>
+#include <atomic>
 
 #include <models/data.h>
 
@@ -52,6 +53,8 @@ public:
                        const QVector<qint32>& excludeProcessIds,
                        const QVector<qint32>& excludeThreadIds);
 
+    void stop();
+
 signals:
     void parsingStarted();
     void summaryDataAvailable(const SummaryData& data);
@@ -67,4 +70,6 @@ private:
     // only set once after the initial startParseFile finished
     Data::BottomUpResults m_bottomUpResults;
     Data::EventResults m_events;
+    std::atomic<bool> m_isParsing;
+    std::atomic<bool> m_stopRequested;
 };
