@@ -565,11 +565,18 @@ void FlameGraph::setBottomUpData(const Data::BottomUpResults& bottomUpData)
 
 void FlameGraph::showData()
 {
+    auto showBottomUpData = m_showBottomUpData;
+    if ((showBottomUpData && !m_bottomUpData.costs.numTypes())
+        || (!showBottomUpData && !m_topDownData.selfCosts.numTypes()))
+    {
+        // gammaray asks for the data to be shown too early, ensure we don't crash then
+        return;
+    }
+
     setData(nullptr);
 
     m_buildingScene = true;
     using namespace ThreadWeaver;
-    auto showBottomUpData = m_showBottomUpData;
     auto bottomUpData = m_bottomUpData;
     auto topDownData = m_topDownData;
     bool collapseRecursion = m_collapseRecursion;
