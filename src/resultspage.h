@@ -64,6 +64,9 @@ signals:
     void navigateToCode(const QString &url, int lineNumber, int columnNumber);
 
 private:
+    bool eventFilter(QObject* watched, QEvent* event) override;
+    void repositionFilterBusyIndicator();
+
     QScopedPointer<Ui::ResultsPage> ui;
 
     ResultsSummaryPage* m_resultsSummaryPage;
@@ -71,4 +74,5 @@ private:
     ResultsTopDownPage* m_resultsTopDownPage;
     ResultsFlameGraphPage* m_resultsFlameGraphPage;
     ResultsCallerCalleePage* m_resultsCallerCalleePage;
+    QWidget* m_filterBusyIndicator;
 };

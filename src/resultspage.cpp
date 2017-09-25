@@ -40,6 +40,10 @@
 #include "models/eventproxy.h"
 #include "models/timelinedelegate.h"
 
+#include <QProgressBar>
+#include <QDebug>
+#include <QEvent>
+
 ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ResultsPage)
@@ -48,6 +52,7 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     , m_resultsTopDownPage(new ResultsTopDownPage(parser, this))
     , m_resultsFlameGraphPage(new ResultsFlameGraphPage(parser, this))
     , m_resultsCallerCalleePage(new ResultsCallerCalleePage(parser, this))
+    , m_filterBusyIndicator(nullptr) // create after we setup the UI to keep it on top
 {
     ui->setupUi(this);
 
@@ -105,11 +110,14 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
                 // disable when we apply a filter
                 // TODO: show some busy indicator?
                 ui->timeLineArea->setEnabled(false);
+                repositionFilterBusyIndicator();
+                m_filterBusyIndicator->setVisible(true);
             });
     connect(parser, &PerfParser::parsingFinished,
             this, [this]() {
                 // re-enable when we finished filtering
                 ui->timeLineArea->setEnabled(true);
+                m_filterBusyIndicator->setVisible(false);
             });
 
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode,
@@ -121,6 +129,22 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
             this, &ResultsPage::onJumpToCallerCallee);
     connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::jumpToCallerCallee,
             this, &ResultsPage::onJumpToCallerCallee);
+
+    {
+        // create a busy indicator
+        m_filterBusyIndicator = new QWidget(this);
+        m_filterBusyIndicator->setToolTip(tr("Filtering in progress, please wait..."));
+        m_filterBusyIndicator->setLayout(new QVBoxLayout);
+        m_filterBusyIndicator->setVisible(false);
+        auto progressBar = new QProgressBar;
+        progressBar->setAlignment(Qt::AlignHCenter | Qt::AlignBottom);
+        m_filterBusyIndicator->layout()->addWidget(progressBar);
+        progressBar->setMaximum(0);
+        auto label = new QLabel(m_filterBusyIndicator->toolTip());
+        label->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
+        m_filterBusyIndicator->layout()->addWidget(label);
+        ui->timeLineArea->installEventFilter(this);
+    }
 }
 
 ResultsPage::~ResultsPage() = default;
@@ -149,4 +173,23 @@ void ResultsPage::onJumpToCallerCallee(const Data::Symbol &symbol)
 void ResultsPage::selectSummaryTab()
 {
     ui->resultsTabWidget->setCurrentWidget(m_resultsSummaryPage);
+}
+
+bool ResultsPage::eventFilter(QObject* watched, QEvent* event)
+{
+    if (watched == ui->timeLineArea && event->type() == QEvent::Resize) {
+        repositionFilterBusyIndicator();
+    }
+    return QWidget::eventFilter(watched, event);
+}
+
+void ResultsPage::repositionFilterBusyIndicator()
+{
+    auto rect = ui->timeLineView->geometry();
+    const auto dx = rect.width() / 4;
+    const auto dy = rect.height() / 4;
+    rect.adjust(dx, dy, -dx, -dy);
+    QRect mapped(ui->timeLineView->mapTo(this, rect.topLeft()),
+                 ui->timeLineView->mapTo(this, rect.bottomRight()));
+    m_filterBusyIndicator->setGeometry(mapped);
 }
