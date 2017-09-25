@@ -278,7 +278,7 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
 
 bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
 {
-    if (watched != m_view->viewport()) {
+    if (watched != m_view->viewport() || !m_view->isEnabled()) {
         return false;
     }
 
