@@ -267,6 +267,7 @@ RecordPage::RecordPage(QWidget *parent)
     connect(m_perfRecord, &PerfRecord::recordingFinished,
             this, [this] (const QString& fileLocation) {
                 ui->startRecordingButton->setChecked(false);
+                ui->applicationRecordErrorMessage->setText({});
                 ui->applicationRecordErrorMessage->hide();
                 m_resultsFile = fileLocation;
                 ui->viewPerfRecordResultsButton->setEnabled(true);
@@ -332,6 +333,7 @@ void RecordPage::showRecordPage()
 {
     setWindowTitle(tr("Hotspot - Record"));
     m_resultsFile.clear();
+    ui->applicationRecordErrorMessage->setText({});
     ui->applicationRecordErrorMessage->hide();
     ui->perfResultsTextEdit->clear();
     ui->perfResultsTextEdit->hide();
