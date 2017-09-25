@@ -29,6 +29,8 @@
 
 #include "../util.h"
 
+#include <QSet>
+
 EventModel::EventModel(QObject* parent)
     : QAbstractTableModel(parent)
 {
@@ -94,6 +96,10 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         return QVariant::fromValue(thread.events);
     } else if (role == MaxCostRole) {
         return m_maxCost;
+    } else if (role == NumProcessesRole) {
+        return m_numProcesses;
+    } else if (role == NumThreadsRole) {
+        return m_numThreads;
     } else if (role == SortRole) {
         if (index.column() == ThreadColumn)
             return thread.name;
@@ -136,16 +142,22 @@ void EventModel::setData(const Data::EventResults& data)
     m_data = data;
     m_totalEvents = 0;
     m_maxCost = 0;
+    m_numProcesses = 0;
+    m_numThreads = 0;
     if (m_data.threads.isEmpty()) {
         m_minTime = 0;
         m_maxTime = 0;
     } else {
         m_minTime = m_data.threads.first().timeStart;
         m_maxTime = m_data.threads.first().timeEnd;
+        QSet<quint32> processes;
+        QSet<quint32> threads;
         for (const auto& thread : m_data.threads) {
             m_minTime = std::min(thread.timeStart, m_minTime);
             m_maxTime = std::max(thread.timeEnd, m_maxTime);
             m_totalEvents += thread.events.size();
+            processes.insert(thread.pid);
+            threads.insert(thread.tid);
 
             for (const auto& event : thread.events) {
                 if (event.type != 0) {
@@ -155,6 +167,8 @@ void EventModel::setData(const Data::EventResults& data)
                 m_maxCost = std::max(event.cost, m_maxCost);
             }
         }
+        m_numProcesses = processes.size();
+        m_numThreads = threads.size();
     }
     endResetModel();
 }

@@ -52,6 +52,8 @@ public:
         ThreadNameRole,
         ThreadIdRole,
         ProcessIdRole,
+        NumProcessesRole,
+        NumThreadsRole,
         MaxCostRole,
         SortRole,
         EventTypesRole,
@@ -72,4 +74,6 @@ private:
     quint64 m_maxTime = 0;
     quint64 m_totalEvents = 0;
     quint64 m_maxCost = 0;
+    uint m_numProcesses = 0;
+    uint m_numThreads = 0;
 };

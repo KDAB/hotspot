@@ -330,6 +330,8 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         const auto threadEndTime = index.data(EventModel::ThreadEndRole).value<quint64>();
         const auto processId = index.data(EventModel::ProcessIdRole).value<qint32>();
         const auto threadId = index.data(EventModel::ThreadIdRole).value<qint32>();
+        const auto numProcesses = index.data(EventModel::NumProcessesRole).value<uint>();
+        const auto numThreads = index.data(EventModel::NumThreadsRole).value<uint>();
 
         if (isTimeSpanSelected) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
@@ -338,7 +340,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                                    });
         }
 
-        if (isRightButtonEvent && index.isValid() && threadStartTime != threadEndTime &&
+        if (isRightButtonEvent && index.isValid() && threadStartTime != threadEndTime && numThreads > 1 &&
             (!isZoomed || (m_zoomStack.last().first != threadStartTime && m_zoomStack.last().second != threadEndTime)))
         {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
@@ -362,7 +364,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                                    });
         }
 
-        if (isRightButtonEvent && index.isValid()) {
+        if (isRightButtonEvent && index.isValid() && numThreads > 1) {
             if (!isFiltered || (m_filterStack.last().startTime != threadStartTime && m_filterStack.last().endTime != threadEndTime)) {
                 contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
                                        tr("Filter In On Thread #%1 By Time").arg(threadId),
@@ -376,7 +378,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                                             filterInByThread(threadId);
                                        });
             }
-            if (!isFiltered || (!m_filterStack.last().processId && !m_filterStack.last().threadId)) {
+            if (numProcesses > 1 && (!isFiltered || (!m_filterStack.last().processId && !m_filterStack.last().threadId))) {
                 contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
                                        tr("Filter In On Process #%1").arg(processId), this, [this, processId](){
                                             filterInByProcess(processId);
