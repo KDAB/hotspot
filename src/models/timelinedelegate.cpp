@@ -323,14 +323,19 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         auto contextMenu = new QMenu(m_view->viewport());
         contextMenu->setAttribute(Qt::WA_DeleteOnClose, true);
 
+        const auto minTime = index.data(EventModel::MinTimeRole).value<quint64>();
+        const auto maxTime = index.data(EventModel::MaxTimeRole).value<quint64>();
         const auto threadStartTime = index.data(EventModel::ThreadStartRole).value<quint64>();
         const auto threadEndTime = index.data(EventModel::ThreadEndRole).value<quint64>();
         const auto processId = index.data(EventModel::ProcessIdRole).value<qint32>();
         const auto threadId = index.data(EventModel::ThreadIdRole).value<qint32>();
         const auto numProcesses = index.data(EventModel::NumProcessesRole).value<uint>();
         const auto numThreads = index.data(EventModel::NumThreadsRole).value<uint>();
+        const auto timeSliceStart = std::min(m_timeSliceStart, m_timeSliceEnd);
+        const auto timeSliceEnd = std::max(m_timeSliceStart, m_timeSliceEnd);
+        const auto isMainThread = threadStartTime == minTime && threadEndTime == maxTime;
 
-        if (isTimeSpanSelected) {
+        if (isTimeSpanSelected && (minTime != timeSliceStart || maxTime != timeSliceEnd)) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
                                    tr("Zoom In On Selection"), this, [this](){
                                        zoomIn(m_timeSliceStart, m_timeSliceEnd);
@@ -338,7 +343,8 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         }
 
         if (isRightButtonEvent && index.isValid() && threadStartTime != threadEndTime && numThreads > 1 &&
-            (!isZoomed || (m_zoomStack.last().first != threadStartTime && m_zoomStack.last().second != threadEndTime)))
+            ((!isZoomed && !isMainThread)
+            || (isZoomed && m_zoomStack.last().first != threadStartTime && m_zoomStack.last().second != threadEndTime)))
         {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
                                    tr("Zoom In On Thread #%1 By Time").arg(threadId),
@@ -355,8 +361,8 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         contextMenu->addSeparator();
 
         if (isTimeSpanSelected && (!isFiltered
-                || m_filterStack.last().startTime != std::min(m_timeSliceStart, m_timeSliceEnd)
-                || m_filterStack.last().endTime != std::max(m_timeSliceStart, m_timeSliceEnd)))
+                || m_filterStack.last().startTime != timeSliceStart
+                || m_filterStack.last().endTime != timeSliceEnd))
         {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
                                    tr("Filter In On Selection"), this, [this](){
@@ -365,7 +371,9 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         }
 
         if (isRightButtonEvent && index.isValid() && numThreads > 1) {
-            if (!isFiltered || (m_filterStack.last().startTime != threadStartTime && m_filterStack.last().endTime != threadEndTime)) {
+            if ((!isFiltered && !isMainThread)
+                || (isFiltered && m_filterStack.last().startTime != threadStartTime && m_filterStack.last().endTime != threadEndTime))
+            {
                 contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
                                        tr("Filter In On Thread #%1 By Time").arg(threadId),
                                        this, [this, threadStartTime, threadEndTime](){
