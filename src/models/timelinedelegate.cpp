@@ -212,16 +212,13 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     }
 
     if (m_timeSliceStart != m_timeSliceEnd) {
-        const auto startX = data.mapTimeToX(m_timeSliceStart);
-        const auto endX = data.mapTimeToX(m_timeSliceEnd);
+        // the painter is translated to option.rect.topLeft
+        // clamp to available width to prevent us from painting over the other columns
+        const auto startX = std::max(data.mapTimeToX(m_timeSliceStart), 0);
+        const auto endX = std::min(data.mapTimeToX(m_timeSliceEnd), data.w);
         // undo vertical padding manually to fill complete height
         QRect timeSlice(startX, -data.padding,
                         endX - startX, option.rect.height());
-
-        if (timeSlice.left() < option.rect.left())
-            timeSlice.setLeft(option.rect.left());
-        if (timeSlice.right() > option.rect.right())
-            timeSlice.setRight(option.rect.right());
 
         auto brush = palette.highlight();
         auto color = brush.color();
