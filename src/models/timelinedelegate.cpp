@@ -354,7 +354,10 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
 
         contextMenu->addSeparator();
 
-        if (isTimeSpanSelected) {
+        if (isTimeSpanSelected && (!isFiltered
+                || m_filterStack.last().startTime != std::min(m_timeSliceStart, m_timeSliceEnd)
+                || m_filterStack.last().endTime != std::max(m_timeSliceStart, m_timeSliceEnd)))
+        {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
                                    tr("Filter In On Selection"), this, [this](){
                                        filterInByTime(m_timeSliceStart, m_timeSliceEnd);
