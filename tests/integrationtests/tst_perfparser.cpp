@@ -176,7 +176,7 @@ private slots:
     void testCppRecursionNoOptions()
     {
         const QStringList perfOptions = {"-F", "999"};
-        const QStringList exeOptions = {"45"};
+        const QStringList exeOptions = {"40"};
 
         const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-recursion/cpp-recursion";
         QTemporaryFile tempFile;
@@ -191,7 +191,7 @@ private slots:
     void testCppRecursionCallGraphDwarf()
     {
         const QStringList perfOptions = {"--call-graph", "dwarf"};
-        const QStringList exeOptions = {"45"};
+        const QStringList exeOptions = {"40"};
 
         const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-recursion/cpp-recursion";
         QTemporaryFile tempFile;
@@ -210,8 +210,7 @@ private slots:
     void testCppRecursionEventCycles()
     {
         const QStringList perfOptions = {"--event", "cycles"};
-        QStringList exeOptions;
-        exeOptions << "45";
+        const QStringList exeOptions = {"40"};
 
         const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-recursion/cpp-recursion";
         QTemporaryFile tempFile;
@@ -226,7 +225,7 @@ private slots:
     void testCppRecursionEventCyclesInstructions()
     {
         const QStringList perfOptions = {"--call-graph", "dwarf", "--event", "cycles,instructions"};
-        const QStringList exeOptions = {"45"};
+        const QStringList exeOptions = {"40"};
 
         const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-recursion/cpp-recursion";
         QTemporaryFile tempFile;
