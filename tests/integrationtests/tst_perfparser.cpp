@@ -32,6 +32,7 @@
 #include <QProcess>
 #include <QSignalSpy>
 #include <QTemporaryFile>
+#include <QStandardPaths>
 
 #include "perfrecord.h"
 #include "perfparser.h"
@@ -83,6 +84,10 @@ class TestPerfParser : public QObject
 private slots:
     void initTestCase()
     {
+        if (QStandardPaths::findExecutable(QStringLiteral("perf")).isEmpty()) {
+            QSKIP("perf is not available, cannot run integration tests.");
+        }
+
         qRegisterMetaType<SummaryData>();
         qRegisterMetaType<Data::BottomUp>();
         qRegisterMetaType<Data::TopDown>();
