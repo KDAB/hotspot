@@ -66,7 +66,7 @@ TimeLineData::TimeLineData(const Data::Events& events, quint64 maxCost,
 
 int TimeLineData::mapTimeToX(quint64 time) const
 {
-    return int(double(time - minTime) * xMultiplicator);
+    return minTime > time ? 0 : int(double(time - minTime) * xMultiplicator);
 }
 
 quint64 TimeLineData::mapXToTime(int x) const
