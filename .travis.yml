@@ -58,3 +58,7 @@ script:
   - # Actually create the final image
   - appimagetool ./appdir/
   - curl --upload-file ./Hotspot-*.AppImage https://transfer.sh/Hotspot-git.$(git rev-parse --short HEAD)-x86_64.AppImage
+  - # finally run unit tests (we may want to get access to the app image independently from test failures)
+  - set +e
+  - source /opt/qt*/bin/qt*-env.sh
+  - ctest -VV .
