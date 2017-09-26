@@ -49,6 +49,7 @@
 #include <KUrlCompletion>
 #include <KSharedConfig>
 #include <KConfigGroup>
+#include <kio_version.h>
 
 #include "perfrecord.h"
 
@@ -174,10 +175,12 @@ RecordPage::RecordPage(QWidget *parent)
     // NOTE: workaround until https://phabricator.kde.org/D7966 has landed and we bump the required version
     ui->applicationName->comboBox()->setCompletionObject(completion);
     ui->applicationName->setMode(KFile::File | KFile::ExistingOnly | KFile::LocalOnly);
+#if KIO_VERSION >= QT_VERSION_CHECK(5, 31, 0)
     // we are only interested in executable files, so set the mime type filter accordingly
     // note that exe's build with PIE are actually "shared libs"...
     ui->applicationName->setMimeTypeFilters({QStringLiteral("application/x-executable"),
                                              QStringLiteral("application/x-sharedlib")});
+#endif
     ui->workingDirectory->setMode(KFile::Directory | KFile::LocalOnly);
     ui->applicationRecordErrorMessage->setCloseButtonVisible(false);
     ui->applicationRecordErrorMessage->setWordWrap(true);
