@@ -34,6 +34,12 @@ Here are some screenshots showing some of the hotspot features in action:
 
 ![hotspot top-down page](screenshots/top-down.png?raw=true "hotspot top-down page")
 
+![hotspot timeline filtering by time](screenshots/timeline-filter-time.png?raw=true "hotspot timeline filtering by time")
+
+![hotspot timeline filtering by thread or process](screenshots/timeline-filter-thread.png?raw=true "hotspot timeline filtering by thread or process")
+
+![hotspot timeline filtering applied to FlameGraph](screenshots/top-down.png?raw=true "hotspot timeline filtering also applies to the data views on top, like e.g. the FlameGraph. You can also zoom in on the timeline and inspect individual sample data.")
+
 ## Dependencies
 
 As of now, you will need the following dependencies to build this project:
