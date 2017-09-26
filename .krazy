@@ -7,9 +7,6 @@ EXTRA kdabcopyright,kdabcommercial
 EXTRA defines,null
 #EXTRA style
 
-#exclude checks now being done by clazy
-EXCLUDE foreach
-
 #coding style settings
 STYLE_CPPSTYLE qt
 STYLE_OFFSET 4
