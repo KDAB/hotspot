@@ -348,6 +348,9 @@
         <property name="readOnly">
          <bool>true</bool>
         </property>
+        <property name="placeholderText">
+         <string>Waiting for recording to start...</string>
+        </property>
        </widget>
       </item>
       <item>

@@ -328,8 +328,7 @@ void RecordPage::showRecordPage()
     setWindowTitle(tr("Hotspot - Record"));
     m_resultsFile.clear();
     setError({});
-    ui->perfResultsTextEdit->clear();
-    ui->perfResultsTextEdit->setPlaceholderText(tr("Waiting for recording to start..."));
+    updateRecordType();
     ui->viewPerfRecordResultsButton->setEnabled(false);
 }
 
@@ -343,7 +342,6 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         ui->perfOptionsBox->setEnabled(false);
         ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-stop")));
         ui->startRecordingButton->setText(tr("Stop Recording"));
-        ui->perfResultsTextEdit->setPlaceholderText(tr("Waiting for recording to start..."));
 
         QStringList perfOptions;
 
@@ -523,6 +521,8 @@ void RecordPage::updateRecordType()
     ui->launchAppBox->setVisible(recordType == LaunchApplication);
     ui->attachAppBox->setVisible(recordType == AttachToProcess);
     ui->perfInputEdit->setVisible(recordType == LaunchApplication);
+    ui->perfInputEdit->clear();
+    ui->perfResultsTextEdit->clear();
 
     if (recordType == AttachToProcess) {
         updateProcesses();
