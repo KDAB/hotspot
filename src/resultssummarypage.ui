@@ -75,8 +75,8 @@
          <property name="title">
           <string>Summary</string>
          </property>
-         <layout class="QFormLayout" name="formLayout_3">
-          <item row="0" column="0">
+         <layout class="QVBoxLayout" name="summaryBoxLayout">
+          <item>
            <widget class="QLabel" name="summaryLabel">
             <property name="toolTip">
              <string notr="true"/>
@@ -95,6 +95,9 @@
             </property>
             <property name="text">
              <string notr="true">summary text</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
             </property>
             <property name="textInteractionFlags">
              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
