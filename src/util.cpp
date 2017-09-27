@@ -70,7 +70,7 @@ QString Util::formatCostRelative(quint64 selfCost, quint64 totalCost, bool addPe
         return QString();
     }
 
-    auto ret = QString::number(double(selfCost) * 100. / totalCost, 'g', 3);
+    auto ret = QString::number(static_cast<double>(selfCost) * 100. / totalCost, 'G', 3);
     if (addPercentSign) {
         ret.append(QLatin1Char('%'));
     }
