@@ -75,6 +75,8 @@ private slots:
     void updateProcessesFinished();
 
 private:
+    void setError(const QString& message);
+
     QScopedPointer<Ui::RecordPage> ui;
 
     PerfRecord* m_perfRecord;

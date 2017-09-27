@@ -270,8 +270,7 @@ RecordPage::RecordPage(QWidget *parent)
     connect(m_perfRecord, &PerfRecord::recordingFinished,
             this, [this] (const QString& fileLocation) {
                 ui->startRecordingButton->setChecked(false);
-                ui->applicationRecordErrorMessage->setText({});
-                ui->applicationRecordErrorMessage->hide();
+                setError({});
                 m_resultsFile = fileLocation;
                 ui->viewPerfRecordResultsButton->setEnabled(true);
                 ui->recordTypeComboBox->setEnabled(true);
@@ -280,8 +279,7 @@ RecordPage::RecordPage(QWidget *parent)
     connect(m_perfRecord, &PerfRecord::recordingFailed,
             this, [this] (const QString& errorMessage) {
                 ui->startRecordingButton->setChecked(false);
-                ui->applicationRecordErrorMessage->setText(errorMessage);
-                ui->applicationRecordErrorMessage->show();
+                setError(errorMessage);
                 ui->viewPerfRecordResultsButton->setEnabled(false);
                 ui->recordTypeComboBox->setEnabled(true);
     });
@@ -336,8 +334,7 @@ void RecordPage::showRecordPage()
 {
     setWindowTitle(tr("Hotspot - Record"));
     m_resultsFile.clear();
-    ui->applicationRecordErrorMessage->setText({});
-    ui->applicationRecordErrorMessage->hide();
+    setError({});
     ui->perfResultsTextEdit->clear();
     ui->perfResultsTextEdit->hide();
     ui->perfResultsLabel->hide();
@@ -409,19 +406,18 @@ void RecordPage::onApplicationNameChanged(const QString& filePath)
     QFileInfo application(QStandardPaths::findExecutable(KShell::tildeExpand(filePath)));
 
     if (!application.exists()) {
-        ui->applicationRecordErrorMessage->setText(tr("Application file cannot be found: %1").arg(filePath));
+        setError(tr("Application file cannot be found: %1").arg(filePath));
     } else if (!application.isFile()) {
-        ui->applicationRecordErrorMessage->setText(tr("Application file is not valid: %1").arg(filePath));
+        setError(tr("Application file is not valid: %1").arg(filePath));
     } else if (!application.isExecutable()) {
-        ui->applicationRecordErrorMessage->setText(tr("Application file is not executable: %1").arg(filePath));
+        setError(tr("Application file is not executable: %1").arg(filePath));
     } else {
         const auto config = applicationConfig(filePath);
         ui->workingDirectory->setText(config.readEntry("workingDir", QString()));
         ui->applicationParametersBox->setText(config.readEntry("params", QString()));
         ui->workingDirectory->setPlaceholderText(application.path());
-        ui->applicationRecordErrorMessage->setText({});
+        setError({});
     }
-    ui->applicationRecordErrorMessage->setVisible(!ui->applicationRecordErrorMessage->text().isEmpty());
     updateStartRecordingButtonState(ui);
 }
 
@@ -430,15 +426,14 @@ void RecordPage::onWorkingDirectoryNameChanged(const QString& folderPath)
     QFileInfo folder(ui->workingDirectory->url().toLocalFile());
 
     if (!folder.exists()) {
-        ui->applicationRecordErrorMessage->setText(tr("Working directory folder cannot be found: %1").arg(folderPath));
+        setError(tr("Working directory folder cannot be found: %1").arg(folderPath));
     } else if (!folder.isDir()) {
-        ui->applicationRecordErrorMessage->setText(tr("Working directory folder is not valid: %1").arg(folderPath));
+        setError(tr("Working directory folder is not valid: %1").arg(folderPath));
     } else if (!folder.isWritable()) {
-        ui->applicationRecordErrorMessage->setText(tr("Working directory folder is not writable: %1").arg(folderPath));
+        setError(tr("Working directory folder is not writable: %1").arg(folderPath));
     } else {
-        ui->applicationRecordErrorMessage->setText({});
+        setError({});
     }
-    ui->applicationRecordErrorMessage->setVisible(!ui->applicationRecordErrorMessage->text().isEmpty());
     updateStartRecordingButtonState(ui);
 }
 
@@ -455,17 +450,16 @@ void RecordPage::onOutputFileNameChanged(const QString& /*filePath*/)
     QFileInfo folder(file.absolutePath());
 
     if (!folder.exists()) {
-        ui->applicationRecordErrorMessage->setText(tr("Output file directory folder cannot be found: %1").arg(folder.path()));
+        setError(tr("Output file directory folder cannot be found: %1").arg(folder.path()));
     } else if (!folder.isDir()) {
-        ui->applicationRecordErrorMessage->setText(tr("Output file directory folder is not valid: %1").arg(folder.path()));
+        setError(tr("Output file directory folder is not valid: %1").arg(folder.path()));
     } else if (!folder.isWritable()) {
-        ui->applicationRecordErrorMessage->setText(tr("Output file directory folder is not writable: %1").arg(folder.path()));
+        setError(tr("Output file directory folder is not writable: %1").arg(folder.path()));
     } else if (!file.absoluteFilePath().endsWith(perfDataExtension)) {
-        ui->applicationRecordErrorMessage->setText(tr("Output file must end with %1").arg(perfDataExtension));
+        setError(tr("Output file must end with %1").arg(perfDataExtension));
     } else {
-        ui->applicationRecordErrorMessage->setText({});
+        setError({});
     }
-    ui->applicationRecordErrorMessage->setVisible(!ui->applicationRecordErrorMessage->text().isEmpty());
     updateStartRecordingButtonState(ui);
 }
 
@@ -497,4 +491,10 @@ void RecordPage::updateProcessesFinished()
         updateStartRecordingButtonState(ui);
         QTimer::singleShot(1000, this, SLOT(updateProcesses()));
     }
+}
+
+void RecordPage::setError(const QString& message)
+{
+    ui->applicationRecordErrorMessage->setText(message);
+    ui->applicationRecordErrorMessage->setVisible(!message.isEmpty());
 }
