@@ -499,7 +499,7 @@ void RecordPage::updateProcessesFinished()
     if (selectedRecordType(ui) == AttachToProcess) {
         // only update the state when we show the attach app page
         updateStartRecordingButtonState(ui);
-        QTimer::singleShot(1000, this, SLOT(updateProcesses()));
+        QTimer::singleShot(1000, this, &RecordPage::updateProcesses);
     }
 }
 
