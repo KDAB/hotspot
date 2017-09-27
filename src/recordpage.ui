@@ -214,7 +214,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="unwindingMethodLabel">
         <property name="toolTip">
-         <string>Perfered unwinding method to use while recording perf data</string>
+         <string>Preferred unwinding method to use while recording perf data</string>
         </property>
         <property name="text">
          <string>&amp;Unwinding Method:</string>
@@ -227,7 +227,7 @@
       <item row="1" column="1">
        <widget class="QComboBox" name="callGraphComboBox">
         <property name="toolTip">
-         <string>Perfered unwinding method to use while recording perf data</string>
+         <string>Preferred unwinding method to use while recording perf data</string>
         </property>
        </widget>
       </item>
