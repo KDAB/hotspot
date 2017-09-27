@@ -53,11 +53,6 @@
 #include <KStandardAction>
 
 namespace {
-QString fraction(qint64 cost, qint64 totalCost)
-{
-    return QString::number(double(cost)  * 100. / totalCost, 'g', 3);
-}
-
 enum SearchMatchType
 {
     NoSearch,
@@ -199,7 +194,8 @@ QString FrameGraphicsItem::description() const
     }
 
     return i18nc("%1: aggregated sample costs, %2: relative number, %3: function label, %4: binary",
-        "%1 (%2%) aggregated sample costs in %3 (%4) and below.", m_cost, fraction(m_cost, totalCost), symbol, m_symbol.binary);
+                 "%1 (%2%) aggregated sample costs in %3 (%4) and below.",
+                 Util::formatCost(m_cost), Util::formatCostRelative(m_cost, totalCost), symbol, m_symbol.binary);
 }
 
 void FrameGraphicsItem::setSearchMatchType(SearchMatchType matchType)
@@ -696,7 +692,8 @@ void FlameGraph::setSearchValue(const QString& value)
         m_searchResultsLabel->hide();
     } else {
         m_searchResultsLabel->setText(i18n("%1 (%2% of total of %3) aggregated costs matched by search.",
-                                           match.directCost, fraction(match.directCost, m_rootItem->cost()),
+                                           Util::formatCost(match.directCost),
+                                           Util::formatCostRelative(match.directCost, m_rootItem->cost()),
                                            m_rootItem->cost()));
         m_searchResultsLabel->show();
     }
