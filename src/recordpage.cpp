@@ -38,6 +38,7 @@
 #include <QListView>
 #include <QTimer>
 #include <QtConcurrent/QtConcurrentRun>
+#include <QKeyEvent>
 
 #include <KUrlRequester>
 #include <Solid/Device>
