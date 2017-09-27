@@ -336,6 +336,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
 {
     if (checked) {
         showRecordPage();
+        m_watcher->cancel();
         ui->recordTypeComboBox->setEnabled(false);
         ui->launchAppBox->setEnabled(false);
         ui->attachAppBox->setEnabled(false);
@@ -494,6 +495,10 @@ void RecordPage::updateProcesses()
 
 void RecordPage::updateProcessesFinished()
 {
+    if (ui->startRecordingButton->isChecked()) {
+        return;
+    }
+
     m_processModel->mergeProcesses(m_watcher->result());
 
     if (selectedRecordType(ui) == AttachToProcess) {
