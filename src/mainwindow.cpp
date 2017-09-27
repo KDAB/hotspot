@@ -106,7 +106,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_parser, &PerfParser::progress, m_startPage, &StartPage::onParseFileProgress);
     connect(this, &MainWindow::openFileError, m_startPage, &StartPage::onOpenFileError);
     connect(m_recordPage, &RecordPage::homeButtonClicked, this, &MainWindow::onHomeButtonClicked);
-    connect(m_recordPage, SIGNAL(openFile(QString)), this, SLOT(openFile(QString)));
+    connect(m_recordPage, &RecordPage::openFile,
+            this, static_cast<void (MainWindow::*)(const QString&)>(&MainWindow::openFile));
 
     connect(m_parser, &PerfParser::parsingFinished,
             this, [this] () {
