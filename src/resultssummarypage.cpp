@@ -96,10 +96,10 @@ ResultsSummaryPage::ResultsSummaryPage(PerfParser *parser, QWidget *parent)
                     for (const auto& costSummary : data.costs) {
                         stream << formatSummaryText(indent + costSummary.label.toHtmlEscaped(),
                                                     tr("%1 (%2 samples, %3% of total, %4)")
-                                                        .arg(costSummary.totalPeriod)
-                                                        .arg(costSummary.sampleCount)
-                                                        .arg(Util::formatCostRelative(costSummary.sampleCount, data.sampleCount))
-                                                        .arg(Util::formatFrequency(costSummary.sampleCount, data.applicationRunningTime)));
+                                                        .arg(Util::formatCost(costSummary.totalPeriod),
+                                                             Util::formatCost(costSummary.sampleCount),
+                                                             Util::formatCostRelative(costSummary.sampleCount, data.sampleCount),
+                                                             Util::formatFrequency(costSummary.sampleCount, data.applicationRunningTime)));
                         if ((costSummary.sampleCount * 1E9 / data.applicationRunningTime) < 100) {
                             stream << formatSummaryText(indent + tr("<b>WARNING</b>"), tr("Sampling frequency below 100Hz"));
                         }
