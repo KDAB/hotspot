@@ -96,7 +96,9 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
     connect(m_perfRecordProcess, &QProcess::errorOccurred,
             [this] (QProcess::ProcessError error) {
                 Q_UNUSED(error)
-                emit recordingFailed(m_perfRecordProcess->errorString());
+                if (!m_userTerminated) {
+                    emit recordingFailed(m_perfRecordProcess->errorString());
+                }
             });
 
     connect(m_perfRecordProcess, &QProcess::readyRead,
