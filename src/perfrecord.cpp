@@ -180,3 +180,9 @@ void PerfRecord::stopRecording()
         m_perfRecordProcess->terminate();
     }
 }
+
+void PerfRecord::sendInput(const QByteArray& input)
+{
+    Q_ASSERT(m_perfRecordProcess);
+    m_perfRecordProcess->write(input);
+}

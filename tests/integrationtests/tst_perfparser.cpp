@@ -252,6 +252,28 @@ private slots:
         QVERIFY2(topDownCycleCost != topDownInstructionCost, "Top-Down Cycle Cost should not be equal to Top-Down Instruction Cost");
     }
 
+    void testSendStdIn()
+    {
+        const QStringList perfOptions = {"--call-graph", "dwarf", "--event", "cycles,instructions"};
+        const QStringList exeOptions = {"40"};
+
+        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-stdin/cpp-stdin";
+
+        QTemporaryFile tempFile;
+        tempFile.open();
+
+        PerfRecord perf;
+        QSignalSpy recordingFinishedSpy(&perf, &PerfRecord::recordingFinished);
+        QSignalSpy recordingFailedSpy(&perf, &PerfRecord::recordingFailed);
+
+        perf.record({}, tempFile.fileName(), exePath, exeOptions);
+        perf.sendInput(QByteArrayLiteral("some input\n"));
+        QVERIFY(recordingFinishedSpy.wait(1000));
+
+        QCOMPARE(recordingFailedSpy.count(), 0);
+        QCOMPARE(recordingFinishedSpy.count(), 1);
+    }
+
 private:
     SummaryData m_summaryData;
     Data::BottomUpResults m_bottomUpData;

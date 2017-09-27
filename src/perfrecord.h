@@ -43,6 +43,7 @@ public:
     void record(const QStringList &perfOptions, const QString &outputPath, const QStringList &pids);
     const QString perfCommand();
     void stopRecording();
+    void sendInput(const QByteArray& input);
 
 signals:
     void recordingStarted(const QString &perfBinary, const QStringList &arguments);
