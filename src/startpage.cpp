@@ -38,8 +38,8 @@ StartPage::StartPage(QWidget *parent)
 {
     ui->setupUi(this);
 
-    connect(ui->openFileButton, &QPushButton::clicked, this, &StartPage::openFileButtonClicked);
-    connect(ui->recordDataButton, &QPushButton::clicked, this, &StartPage::recordButtonClicked);
+    connect(ui->openFileButton, &QAbstractButton::clicked, this, &StartPage::openFileButtonClicked);
+    connect(ui->recordDataButton, &QAbstractButton::clicked, this, &StartPage::recordButtonClicked);
 
     ui->openFileButton->setFocus();
 
