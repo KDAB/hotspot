@@ -326,6 +326,8 @@ RecordPage::RecordPage(QWidget *parent)
                     ui->applicationName->comboBox());
     restoreCombobox(config(), QStringLiteral("eventType"),
                     ui->eventTypeBox, {ui->eventTypeBox->currentText()});
+    restoreCombobox(config(), QStringLiteral("customOptions"),
+                    ui->perfParams);
     const auto callGraph = config().readEntry("callGraph", ui->callGraphComboBox->currentData());
     const auto callGraphIdx = ui->callGraphComboBox->findData(callGraph);
     if (callGraphIdx != -1) {
@@ -367,6 +369,11 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         if (!eventType.isEmpty()) {
             perfOptions << QStringLiteral("--event") << eventType;
         }
+
+        const auto customOptions = ui->perfParams->currentText();
+        rememberCombobox(config(), QStringLiteral("customOptions"),
+                         customOptions, ui->perfParams);
+        perfOptions += KShell::splitArgs(customOptions);
 
         m_recordTimer.start();
         if (ui->recordTypeComboBox->currentData() == LaunchApplication) {

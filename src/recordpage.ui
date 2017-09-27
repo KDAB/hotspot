@@ -115,7 +115,7 @@
              <string>Optional parameters to pass to the application being recorded</string>
             </property>
             <property name="text">
-             <string>Application Parameters:</string>
+             <string>Application Para&amp;meters:</string>
             </property>
             <property name="buddy">
              <cstring>applicationParametersBox</cstring>
@@ -261,9 +261,29 @@
        </widget>
       </item>
       <item row="4" column="1">
-       <widget class="KMessageWidget" name="applicationRecordErrorMessage"/>
+       <widget class="QComboBox" name="perfParams">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Free-form entry field for custom perf parameters. Use this field to set advanced options (cf. &lt;tt&gt;man perf record&lt;/tt&gt;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="editable">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="perfParamsLabel">
+        <property name="text">
+         <string>Advanced Options:</string>
+        </property>
+        <property name="buddy">
+         <cstring>perfParams</cstring>
+        </property>
+       </widget>
       </item>
       <item row="5" column="1">
+       <widget class="KMessageWidget" name="applicationRecordErrorMessage"/>
+      </item>
+      <item row="6" column="1">
        <widget class="QPushButton" name="startRecordingButton">
         <property name="toolTip">
          <string>Start recording perf data</string>
@@ -280,7 +300,7 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
+      <item row="7" column="0">
        <widget class="QLabel" name="perfResultsLabel">
         <property name="toolTip">
          <string>Detailed output from the perf record operation.</string>
@@ -293,7 +313,7 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="7" column="1">
        <widget class="QTextEdit" name="perfResultsTextEdit">
         <property name="font">
          <font>
@@ -308,7 +328,7 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
+      <item row="8" column="1">
        <widget class="QPushButton" name="viewPerfRecordResultsButton">
         <property name="enabled">
          <bool>false</bool>
@@ -320,7 +340,8 @@
          <string>View Results</string>
         </property>
         <property name="icon">
-         <iconset theme="view-list-symbolic"/>
+         <iconset theme="view-list-symbolic">
+          <normaloff>.</normaloff>.</iconset>
         </property>
        </widget>
       </item>
