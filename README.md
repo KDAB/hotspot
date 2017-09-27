@@ -22,7 +22,7 @@ performance data formats under this umbrella.
 
 ## Screenshots
 
-Here are some screenshots showing some of the hotspot features in action:
+Here are some screenshots showing the most important features of hotspot in action:
 
 ![hotspot summary page](screenshots/summary.png?raw=true "hotspot summary page")
 
