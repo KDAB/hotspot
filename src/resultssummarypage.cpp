@@ -86,7 +86,7 @@ ResultsSummaryPage::ResultsSummaryPage(PerfParser *parser, QWidget *parent)
                 {
                     QTextStream stream(&summaryText);
                     stream << "<qt><table>"
-                           << formatSummaryText(tr("Command"), QLatin1String("<tt>") + data.command + QLatin1String("</tt>"))
+                           << formatSummaryText(tr("Command"), QLatin1String("<tt>") + data.command.toHtmlEscaped() + QLatin1String("</tt>"))
                            << formatSummaryText(tr("Run Time"), Util::formatTimeString(data.applicationRunningTime))
                            << formatSummaryText(tr("Processes"), QString::number(data.processCount))
                            << formatSummaryText(tr("Threads"), QString::number(data.threadCount))
@@ -94,7 +94,7 @@ ResultsSummaryPage::ResultsSummaryPage(PerfParser *parser, QWidget *parent)
                                 .arg(QString::number(data.sampleCount), Util::formatFrequency(data.sampleCount, data.applicationRunningTime)));
                     const auto indent = QLatin1String("&nbsp;&nbsp;&nbsp;&nbsp;");
                     for (const auto& costSummary : data.costs) {
-                        stream << formatSummaryText(indent + costSummary.label,
+                        stream << formatSummaryText(indent + costSummary.label.toHtmlEscaped(),
                                                     tr("%1 (%2 samples, %3% of total, %4)")
                                                         .arg(costSummary.totalPeriod)
                                                         .arg(costSummary.sampleCount)
