@@ -90,7 +90,7 @@
          <string>Optional parameters to pass to the application being recorded</string>
         </property>
         <property name="text">
-         <string>Application Para&amp;meters:</string>
+         <string>Para&amp;meters:</string>
         </property>
         <property name="buddy">
          <cstring>applicationParametersBox</cstring>
