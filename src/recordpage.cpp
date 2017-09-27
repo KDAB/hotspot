@@ -258,23 +258,19 @@ RecordPage::RecordPage(QWidget *parent)
             this, [this] (const QString& fileLocation) {
                 appendOutput(tr("\nrecording finished after %1")
                     .arg(Util::formatTimeString(m_recordTimer.nsecsElapsed())));
-                ui->startRecordingButton->setChecked(false);
-                setError({});
                 m_resultsFile = fileLocation;
+                setError({});
+                recordingStopped();
                 ui->viewPerfRecordResultsButton->setEnabled(true);
-                ui->recordTypeComboBox->setEnabled(true);
-                ui->perfInputEdit->setEnabled(false);
     });
 
     connect(m_perfRecord, &PerfRecord::recordingFailed,
             this, [this] (const QString& errorMessage) {
                 appendOutput(tr("\nrecording failed after %1")
                     .arg(Util::formatTimeString(m_recordTimer.nsecsElapsed())));
-                ui->startRecordingButton->setChecked(false);
                 setError(errorMessage);
+                recordingStopped();
                 ui->viewPerfRecordResultsButton->setEnabled(false);
-                ui->recordTypeComboBox->setEnabled(true);
-                ui->perfInputEdit->setEnabled(false);
     });
 
     connect(m_perfRecord, &PerfRecord::recordingOutput,
@@ -341,6 +337,10 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
 {
     if (checked) {
         showRecordPage();
+        ui->recordTypeComboBox->setEnabled(false);
+        ui->launchAppBox->setEnabled(false);
+        ui->attachAppBox->setEnabled(false);
+        ui->perfOptionsBox->setEnabled(false);
         ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-stop")));
         ui->startRecordingButton->setText(tr("Stop Recording"));
         ui->perfResultsTextEdit->setPlaceholderText(tr("Waiting for recording to start..."));
@@ -390,18 +390,27 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
 
             m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(), pids);
         }
-        ui->recordTypeComboBox->setEnabled(false);
     } else {
         stopRecording();
     }
 }
 
-void RecordPage::stopRecording()
+void RecordPage::recordingStopped()
 {
+    ui->startRecordingButton->setChecked(false);
     ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
     ui->startRecordingButton->setText(tr("Start Recording"));
-    m_perfRecord->stopRecording();
+
     ui->recordTypeComboBox->setEnabled(true);
+    ui->launchAppBox->setEnabled(true);
+    ui->attachAppBox->setEnabled(true);
+    ui->perfOptionsBox->setEnabled(true);
+    ui->perfInputEdit->setEnabled(false);
+}
+
+void RecordPage::stopRecording()
+{
+    m_perfRecord->stopRecording();
 }
 
 void RecordPage::onApplicationNameChanged(const QString& filePath)

@@ -77,6 +77,7 @@ private slots:
     void updateProcessesFinished();
 
 private:
+    void recordingStopped();
     void updateRecordType();
     void appendOutput(const QString& text);
     void setError(const QString& message);
