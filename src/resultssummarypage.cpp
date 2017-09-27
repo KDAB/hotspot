@@ -86,7 +86,7 @@ ResultsSummaryPage::ResultsSummaryPage(PerfParser *parser, QWidget *parent)
                 {
                     QTextStream stream(&summaryText);
                     stream << "<qt><table>"
-                           << formatSummaryText(tr("Command"), data.command)
+                           << formatSummaryText(tr("Command"), QLatin1String("<tt>") + data.command + QLatin1String("</tt>"))
                            << formatSummaryText(tr("Run Time"), Util::formatTimeString(data.applicationRunningTime))
                            << formatSummaryText(tr("Processes"), QString::number(data.processCount))
                            << formatSummaryText(tr("Threads"), QString::number(data.threadCount))
