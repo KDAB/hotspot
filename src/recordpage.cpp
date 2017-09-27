@@ -268,6 +268,11 @@ RecordPage::RecordPage(QWidget *parent)
         ui->callGraphComboBox->setCurrentIndex(dwarfIdx);
     }
 
+    connect(m_perfRecord, &PerfRecord::recordingStarted,
+            this, [this] (const QStringList& command) {
+                appendOutput(command.join(QLatin1Char(' ')) + QLatin1Char('\n'));
+            });
+
     connect(m_perfRecord, &PerfRecord::recordingFinished,
             this, [this] (const QString& fileLocation) {
                 appendOutput(tr("\nrecording finished after %1")
@@ -346,7 +351,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         showRecordPage();
         ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-stop")));
         ui->startRecordingButton->setText(tr("Stop Recording"));
-        ui->perfResultsTextEdit->setPlaceholderText(tr("Recording started, waiting for output..."));
+        ui->perfResultsTextEdit->setPlaceholderText(tr("Waiting for recording to start..."));
 
         QStringList perfOptions;
 

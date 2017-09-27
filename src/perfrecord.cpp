@@ -107,6 +107,12 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
                 emit recordingOutput(output);
             });
 
+    connect(m_perfRecordProcess, &QProcess::started,
+            this, [this]() {
+                emit recordingStarted(QStringList{m_perfRecordProcess->program()} +
+                                      m_perfRecordProcess->arguments());
+            });
+
     m_outputPath = outputPath;
 
     auto perfBinary = QStringLiteral("perf");
