@@ -29,6 +29,7 @@
 
 #include <QWidget>
 #include <QFutureWatcher>
+#include <QElapsedTimer>
 
 #include "processlist.h"
 
@@ -75,12 +76,14 @@ private slots:
     void updateProcessesFinished();
 
 private:
+    void appendOutput(const QString& text);
     void setError(const QString& message);
 
     QScopedPointer<Ui::RecordPage> ui;
 
     PerfRecord* m_perfRecord;
     QString m_resultsFile;
+    QElapsedTimer m_recordTimer;
 
     ProcessModel *m_processModel;
     ProcessFilterModel *m_processProxyModel;

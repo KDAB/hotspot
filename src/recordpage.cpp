@@ -30,6 +30,7 @@
 
 #include "processfiltermodel.h"
 #include "processmodel.h"
+#include "util.h"
 
 #include <QDebug>
 #include <QStandardPaths>
@@ -269,6 +270,8 @@ RecordPage::RecordPage(QWidget *parent)
 
     connect(m_perfRecord, &PerfRecord::recordingFinished,
             this, [this] (const QString& fileLocation) {
+                appendOutput(tr("\nrecording finished after %1")
+                    .arg(Util::formatTimeString(m_recordTimer.nsecsElapsed())));
                 ui->startRecordingButton->setChecked(false);
                 setError({});
                 m_resultsFile = fileLocation;
@@ -278,6 +281,8 @@ RecordPage::RecordPage(QWidget *parent)
 
     connect(m_perfRecord, &PerfRecord::recordingFailed,
             this, [this] (const QString& errorMessage) {
+                appendOutput(tr("\nrecording failed after %1")
+                    .arg(Util::formatTimeString(m_recordTimer.nsecsElapsed())));
                 ui->startRecordingButton->setChecked(false);
                 setError(errorMessage);
                 ui->viewPerfRecordResultsButton->setEnabled(false);
@@ -285,12 +290,7 @@ RecordPage::RecordPage(QWidget *parent)
     });
 
     connect(m_perfRecord, &PerfRecord::recordingOutput,
-            this, [this] (const QString& outputMessage) {
-                ui->perfResultsTextEdit->insertPlainText(outputMessage);
-                ui->perfResultsTextEdit->show();
-                ui->perfResultsLabel->show();
-                ui->perfResultsTextEdit->moveCursor(QTextCursor::End);
-    });
+            this, &RecordPage::appendOutput);
 
     m_processModel = new ProcessModel(this);
     m_processProxyModel = new ProcessFilterModel(this);
@@ -336,8 +336,7 @@ void RecordPage::showRecordPage()
     m_resultsFile.clear();
     setError({});
     ui->perfResultsTextEdit->clear();
-    ui->perfResultsTextEdit->hide();
-    ui->perfResultsLabel->hide();
+    ui->perfResultsTextEdit->setPlaceholderText(tr("Waiting for recording to start..."));
     ui->viewPerfRecordResultsButton->setEnabled(false);
 }
 
@@ -347,6 +346,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         showRecordPage();
         ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-stop")));
         ui->startRecordingButton->setText(tr("Stop Recording"));
+        ui->perfResultsTextEdit->setPlaceholderText(tr("Recording started, waiting for output..."));
 
         QStringList perfOptions;
 
@@ -363,6 +363,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
             perfOptions << QStringLiteral("--event") << eventType;
         }
 
+        m_recordTimer.start();
         if (ui->recordTypeComboBox->currentData() == LaunchApplication) {
             const auto applicationName = KShell::tildeExpand(ui->applicationName->text());
             const auto appParameters = ui->applicationParametersBox->text();
@@ -491,6 +492,12 @@ void RecordPage::updateProcessesFinished()
         updateStartRecordingButtonState(ui);
         QTimer::singleShot(1000, this, SLOT(updateProcesses()));
     }
+}
+
+void RecordPage::appendOutput(const QString& text)
+{
+    ui->perfResultsTextEdit->insertPlainText(text);
+    ui->perfResultsTextEdit->moveCursor(QTextCursor::End);
 }
 
 void RecordPage::setError(const QString& message)
