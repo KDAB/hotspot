@@ -350,6 +350,16 @@
         </property>
        </widget>
       </item>
+      <item>
+       <widget class="QLineEdit" name="perfInputEdit">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="placeholderText">
+         <string>send input to process...</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

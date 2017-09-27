@@ -251,6 +251,7 @@ RecordPage::RecordPage(QWidget *parent)
                 appendOutput(perfBinary + QLatin1Char(' ')
                                 + arguments.join(QLatin1Char(' '))
                                 + QLatin1Char('\n'));
+                ui->perfInputEdit->setEnabled(true);
             });
 
     connect(m_perfRecord, &PerfRecord::recordingFinished,
@@ -262,6 +263,7 @@ RecordPage::RecordPage(QWidget *parent)
                 m_resultsFile = fileLocation;
                 ui->viewPerfRecordResultsButton->setEnabled(true);
                 ui->recordTypeComboBox->setEnabled(true);
+                ui->perfInputEdit->setEnabled(false);
     });
 
     connect(m_perfRecord, &PerfRecord::recordingFailed,
@@ -272,10 +274,18 @@ RecordPage::RecordPage(QWidget *parent)
                 setError(errorMessage);
                 ui->viewPerfRecordResultsButton->setEnabled(false);
                 ui->recordTypeComboBox->setEnabled(true);
+                ui->perfInputEdit->setEnabled(false);
     });
 
     connect(m_perfRecord, &PerfRecord::recordingOutput,
             this, &RecordPage::appendOutput);
+
+    connect(ui->perfInputEdit, &QLineEdit::returnPressed,
+            this, [this]() {
+                m_perfRecord->sendInput(ui->perfInputEdit->text().toUtf8());
+                m_perfRecord->sendInput(QByteArrayLiteral("\n"));
+                ui->perfInputEdit->clear();
+            });
 
     m_processModel = new ProcessModel(this);
     m_processProxyModel = new ProcessFilterModel(this);
@@ -503,6 +513,7 @@ void RecordPage::updateRecordType()
     const auto recordType = selectedRecordType(ui);
     ui->launchAppBox->setVisible(recordType == LaunchApplication);
     ui->attachAppBox->setVisible(recordType == AttachToProcess);
+    ui->perfInputEdit->setVisible(recordType == LaunchApplication);
 
     if (recordType == AttachToProcess) {
         updateProcesses();
