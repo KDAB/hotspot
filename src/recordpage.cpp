@@ -75,33 +75,26 @@ bool isIntel()
            instructionSets.testFlag(Solid::Processor::IntelSse42);
 }
 
+RecordType selectedRecordType(const QScopedPointer<Ui::RecordPage> &ui)
+{
+    return ui->recordTypeComboBox->currentData().value<RecordType>();
+}
+
 void updateStartRecordingButtonState(const QScopedPointer<Ui::RecordPage> &ui)
 {
     bool enabled = false;
-    if (ui->stackedWidget->currentWidget() == ui->launchAppPage) {
-        enabled = ui->applicationName->url().isValid();
-    } else {
-        enabled = ui->processesTableView->selectionModel()->hasSelection();
+    switch (selectedRecordType(ui)) {
+        case LaunchApplication:
+            enabled = ui->applicationName->url().isValid();
+            break;
+        case AttachToProcess:
+            enabled = ui->processesTableView->selectionModel()->hasSelection();
+            break;
+        case NUM_RECORD_TYPES:
+            break;
     }
     enabled &= ui->applicationRecordErrorMessage->text().isEmpty();
     ui->startRecordingButton->setEnabled(enabled);
-}
-
-void updateStackedSizePolicy(const QScopedPointer<Ui::RecordPage> &ui)
-{
-    // make the stacked widget size to the current page only
-    const auto currentIndex = ui->stackedWidget->currentIndex();
-    for (int i = 0, c = ui->stackedWidget->count (); i < c; ++i) {
-        // determine the vertical size policy
-        QSizePolicy::Policy policy = QSizePolicy::Ignored;
-        if (i == currentIndex) {
-            policy = QSizePolicy::Expanding;
-        }
-
-        // update the size policy
-        QWidget* pPage = ui->stackedWidget->widget(i);
-        pPage->setSizePolicy(policy, policy);
-    }
 }
 
 KConfigGroup config()
@@ -191,7 +184,7 @@ RecordPage::RecordPage(QWidget *parent)
     ui->eventTypeBox->lineEdit()->setPlaceholderText(tr("perf defaults (usually cycles:Pu)"));
 
     auto columnResizer = new KColumnResizer(this);
-    columnResizer->addWidgetsFromLayout(ui->formLayout);
+    columnResizer->addWidgetsFromLayout(ui->formLayout_1);
     columnResizer->addWidgetsFromLayout(ui->formLayout_2);
     columnResizer->addWidgetsFromLayout(ui->formLayout_3);
 
@@ -213,24 +206,8 @@ RecordPage::RecordPage(QWidget *parent)
     ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-install")),
                                     tr("Attach To Process(es)"), QVariant::fromValue(AttachToProcess));
     connect(ui->recordTypeComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-        [this](int index){
-        switch (index) {
-        case LaunchApplication:
-            ui->stackedWidget->setCurrentWidget(ui->launchAppPage);
-            break;
-        case AttachToProcess:
-            ui->stackedWidget->setCurrentWidget(ui->attachAppPage);
-
-            updateProcesses();
-            break;
-        default:
-            break;
-        }
-        updateStartRecordingButtonState(ui);
-        updateStackedSizePolicy(ui);
-    });
-    updateStartRecordingButtonState(ui);
-    updateStackedSizePolicy(ui);
+            this, &RecordPage::updateRecordType);
+    updateRecordType();
 
     {
         ui->callGraphComboBox->addItem(tr("None"), QVariant::fromValue(QString()));
@@ -499,7 +476,7 @@ void RecordPage::updateProcessesFinished()
 {
     m_processModel->mergeProcesses(m_watcher->result());
 
-    if (ui->stackedWidget->currentWidget() == ui->attachAppPage) {
+    if (selectedRecordType(ui) == AttachToProcess) {
         // only update the state when we show the attach app page
         updateStartRecordingButtonState(ui);
         QTimer::singleShot(1000, this, SLOT(updateProcesses()));
@@ -516,4 +493,17 @@ void RecordPage::setError(const QString& message)
 {
     ui->applicationRecordErrorMessage->setText(message);
     ui->applicationRecordErrorMessage->setVisible(!message.isEmpty());
+}
+
+void RecordPage::updateRecordType()
+{
+    const auto recordType = selectedRecordType(ui);
+    ui->launchAppBox->setVisible(recordType == LaunchApplication);
+    ui->attachAppBox->setVisible(recordType == AttachToProcess);
+
+    if (recordType == AttachToProcess) {
+        updateProcesses();
+    }
+
+    updateStartRecordingButtonState(ui);
 }

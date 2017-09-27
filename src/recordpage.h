@@ -43,9 +43,10 @@ class ProcessFilterModel;
 
 enum RecordType
 {
-    LaunchApplication,
+    LaunchApplication = 0,
     AttachToProcess,
-    ProfileSystem
+    // ProfileSystem, TODO
+    NUM_RECORD_TYPES
 };
 Q_DECLARE_METATYPE(RecordType)
 
@@ -76,6 +77,7 @@ private slots:
     void updateProcessesFinished();
 
 private:
+    void updateRecordType();
     void appendOutput(const QString& text);
     void setError(const QString& message);
 
