@@ -50,9 +50,6 @@
     </layout>
    </item>
    <item>
-    <widget class="KMessageWidget" name="applicationRecordErrorMessage"/>
-   </item>
-   <item>
     <widget class="QGroupBox" name="launchAppBox">
      <property name="title">
       <string>Launch Application</string>
@@ -282,6 +279,9 @@
       </item>
      </layout>
     </widget>
+   </item>
+   <item>
+    <widget class="KMessageWidget" name="applicationRecordErrorMessage"/>
    </item>
    <item>
     <widget class="QWidget" name="widget" native="true">
