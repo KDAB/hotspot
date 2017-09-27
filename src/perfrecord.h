@@ -45,7 +45,7 @@ public:
     void stopRecording();
 
 signals:
-    void recordingStarted(const QStringList &command);
+    void recordingStarted(const QString &perfBinary, const QStringList &arguments);
     void recordingFinished(const QString &fileLocation);
     void recordingFailed(const QString &errorMessage);
     void recordingOutput(const QString &errorMessage);
