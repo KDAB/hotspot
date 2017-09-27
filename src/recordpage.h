@@ -80,6 +80,7 @@ private:
     void updateRecordType();
     void appendOutput(const QString& text);
     void setError(const QString& message);
+    void keyReleaseEvent(QKeyEvent* event) override;
 
     QScopedPointer<Ui::RecordPage> ui;
 

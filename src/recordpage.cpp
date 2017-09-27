@@ -257,9 +257,11 @@ RecordPage::RecordPage(QWidget *parent)
                 appendOutput(tr("\nrecording finished after %1")
                     .arg(Util::formatTimeString(m_recordTimer.nsecsElapsed())));
                 ui->startRecordingButton->setChecked(false);
+                ui->startRecordingButton->setDefault(false);
                 setError({});
                 m_resultsFile = fileLocation;
                 ui->viewPerfRecordResultsButton->setEnabled(true);
+                ui->viewPerfRecordResultsButton->setDefault(true);
                 ui->recordTypeComboBox->setEnabled(true);
     });
 
@@ -268,8 +270,10 @@ RecordPage::RecordPage(QWidget *parent)
                 appendOutput(tr("\nrecording failed after %1")
                     .arg(Util::formatTimeString(m_recordTimer.nsecsElapsed())));
                 ui->startRecordingButton->setChecked(false);
+                ui->startRecordingButton->setDefault(true);
                 setError(errorMessage);
                 ui->viewPerfRecordResultsButton->setEnabled(false);
+                ui->viewPerfRecordResultsButton->setDefault(false);
                 ui->recordTypeComboBox->setEnabled(true);
     });
 
@@ -324,6 +328,8 @@ void RecordPage::showRecordPage()
     ui->perfResultsTextEdit->clear();
     ui->perfResultsTextEdit->setPlaceholderText(tr("Waiting for recording to start..."));
     ui->viewPerfRecordResultsButton->setEnabled(false);
+    ui->viewPerfRecordResultsButton->setDefault(false);
+    ui->startRecordingButton->setDefault(true);
 }
 
 void RecordPage::onStartRecordingButtonClicked(bool checked)
@@ -508,4 +514,15 @@ void RecordPage::updateRecordType()
     }
 
     updateStartRecordingButtonState(ui);
+}
+
+void RecordPage::keyReleaseEvent(QKeyEvent* event)
+{
+    if (event->key() == Qt::Key_Return && !event->modifiers()) {
+        if (ui->startRecordingButton->isDefault()) {
+            ui->startRecordingButton->click();
+        } else {
+            ui->viewPerfRecordResultsButton->click();
+        }
+    }
 }
