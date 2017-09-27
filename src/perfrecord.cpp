@@ -80,7 +80,7 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
     }
 
     connect(m_perfRecordProcess, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-            [this] (int exitCode, QProcess::ExitStatus exitStatus) {
+            this, [this] (int exitCode, QProcess::ExitStatus exitStatus) {
                 Q_UNUSED(exitStatus)
 
                 QFileInfo outputFileInfo(m_outputPath);
@@ -94,7 +94,7 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
             });
 
     connect(m_perfRecordProcess, &QProcess::errorOccurred,
-            [this] (QProcess::ProcessError error) {
+            this, [this] (QProcess::ProcessError error) {
                 Q_UNUSED(error)
                 if (!m_userTerminated) {
                     emit recordingFailed(m_perfRecordProcess->errorString());
@@ -102,7 +102,7 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
             });
 
     connect(m_perfRecordProcess, &QProcess::readyRead,
-            [this] () {
+            this, [this] () {
                 QString output = QString::fromUtf8(m_perfRecordProcess->readAll());
                 emit recordingOutput(output);
             });
