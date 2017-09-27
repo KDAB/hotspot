@@ -107,7 +107,7 @@ QString Util::formatFrequency(quint64 occurrences, quint64 nanoseconds)
         hz /= 1000.;
         ++unit;
     }
-    return QString::number(hz, 'g', 4) + QLatin1String(*unit);
+    return QString::number(hz, 'G', 4) + QLatin1String(*unit);
 }
 
 static QString formatTooltipImpl(int id, const Data::Symbol& symbol,
