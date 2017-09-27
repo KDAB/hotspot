@@ -60,7 +60,8 @@ QString Util::formatString(const QString& input)
 
 QString Util::formatCost(quint64 cost)
 {
-    return QString::number(cost);
+    // resulting format: 1.234E56
+    return QString::number(static_cast<double>(cost), 'G', 4);
 }
 
 QString Util::formatCostRelative(quint64 selfCost, quint64 totalCost, bool addPercentSign)
