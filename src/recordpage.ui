@@ -141,14 +141,14 @@
       </property>
       <item row="0" column="0">
        <widget class="QLabel" name="processesFilterLabel">
+        <property name="toolTip">
+         <string>Filter the process list by process name or process ID</string>
+        </property>
         <property name="text">
          <string>Process Filter:</string>
         </property>
         <property name="buddy">
          <cstring>processesFilterBox</cstring>
-        </property>
-        <property name="toolTip">
-         <string>Filter the process list by process name or process ID</string>
         </property>
        </widget>
       </item>
@@ -161,14 +161,14 @@
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="processesLabel">
+        <property name="toolTip">
+         <string>List of processes. Select at least one to attach to.</string>
+        </property>
         <property name="text">
          <string>Processes:</string>
         </property>
         <property name="buddy">
          <cstring>processesTableView</cstring>
-        </property>
-        <property name="toolTip">
-         <string>List of processes. Select at least one to attach to.</string>
         </property>
        </widget>
       </item>
@@ -193,14 +193,14 @@
       </property>
       <item row="0" column="0">
        <widget class="QLabel" name="outputFileLabel">
+        <property name="toolTip">
+         <string>Path to the file location, where perf will write its output to</string>
+        </property>
         <property name="text">
          <string>O&amp;utput File:</string>
         </property>
         <property name="buddy">
          <cstring>outputFile</cstring>
-        </property>
-        <property name="toolTip">
-         <string>Path to the file location, where perf will write its output to</string>
         </property>
        </widget>
       </item>
@@ -259,14 +259,14 @@
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="perfParamsLabel">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Free-form entry field for custom perf parameters. Use this field to set advanced options (cf. &lt;tt&gt;man perf record&lt;/tt&gt;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
          <string>Advanced Options:</string>
         </property>
         <property name="buddy">
          <cstring>perfParams</cstring>
-        </property>
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Free-form entry field for custom perf parameters. Use this field to set advanced options (cf. &lt;tt&gt;man perf record&lt;/tt&gt;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
       </item>
