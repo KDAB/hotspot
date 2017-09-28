@@ -1121,14 +1121,14 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
         });
 
         connect(&d.process, &QProcess::readyRead,
-                [&d] {
+                &d.process, [&d] {
                     while (d.tryParse()) {
                         // just call tryParse until it fails
                     }
                 });
 
         connect(&d.process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-                [&d, this] (int exitCode, QProcess::ExitStatus exitStatus) {
+                &d.process, [&d, this] (int exitCode, QProcess::ExitStatus exitStatus) {
                     if (m_stopRequested) {
                         emit parsingFailed(tr("Parsing stopped."));
                         return;
@@ -1177,7 +1177,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
                 });
 
         connect(&d.process, &QProcess::errorOccurred,
-                [&d, this] (QProcess::ProcessError error) {
+                &d.process, [&d, this] (QProcess::ProcessError error) {
                     if (m_stopRequested) {
                         emit parsingFailed(tr("Parsing stopped."));
                         return;
