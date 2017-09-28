@@ -445,7 +445,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
 
         QToolTip::showText(mouseEvent->globalPos(),
                            tr("ΔT: %1\n"
-                              "Events: %2 (%3) from %4 threads, %5 processes\n"
+                              "Events: %2 (%3) from %4 thread(s), %5 process(es)\n"
                               "sum of %6: %7 (%8)")
                                 .arg(Util::formatTimeString(timeDelta),
                                      Util::formatCost(numEvents), Util::formatFrequency(numEvents, timeDelta),
