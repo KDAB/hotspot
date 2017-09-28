@@ -221,7 +221,6 @@ notably, unwinding will fail when:
         perf record --call-graph dwarf,32768
 
     Note that this can dramatically increase the size of the `perf.data` files - use it with care. Also have a look at `man perf record`.
-- frames pointing to the PLT/GOT section do not get a pretty-printed pseudo-symbol referencing the dynamic function call. This is a current limitation of elfutils, see also: http://www.mail-archive.com/elfutils-devel@sourceware.org/msg00019.html
 
 ### Missing Features
 
