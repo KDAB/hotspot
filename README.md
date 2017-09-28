@@ -9,9 +9,16 @@ performance data formats under this umbrella.
 
 ## Table of Contents
 
-   * [Hotspot](#hotspot)
+   * [Hotspot](#hotspot---the-linux-perf-gui-for-performance-analysis)
+      * [Table of Contents](#table-of-contents)
       * [Screenshots](#screenshots)
+         * [Visualize Data](#visualize-data)
+         * [Time Line](#time-line)
+         * [Record Data](#record-data)
       * [Dependencies](#dependencies)
+         * [On Debian/Ubuntu](#on-debianubuntu)
+         * [On Fedora](#on-fedora)
+         * [Arch Linux](#arch-linux)
       * [Building](#building)
       * [Using](#using)
          * [Embedded Systems](#embedded-systems)
