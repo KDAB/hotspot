@@ -144,7 +144,9 @@ void ResultsCallerCalleePage::onSourceMapContextMenu(const QPoint &point)
         return;
     }
 
-    auto showMenu = [this] (const QString& pathName, const QStringRef& fileName, int lineNumber) -> bool {
+    auto showMenu = [this] (const QString& pathName, const QStringRef& fileName,
+                            int lineNumber) -> bool
+    {
         if (QFileInfo::exists(pathName + fileName)) {
             QMenu contextMenu;
             auto *viewCallerCallee = contextMenu.addAction(tr("Open in editor"));
