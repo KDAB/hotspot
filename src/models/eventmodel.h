@@ -35,7 +35,7 @@ class EventModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    EventModel(QObject* parent = nullptr);
+    explicit EventModel(QObject* parent = nullptr);
     virtual ~EventModel();
 
     enum Columns {
