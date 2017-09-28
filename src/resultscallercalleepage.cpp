@@ -138,13 +138,13 @@ void ResultsCallerCalleePage::onSourceMapContextMenu(const QPoint &point)
         return;
     }
 
-    const auto sourceMap = index.data(SourceMapModel::LocationRole).value<QString>();
-    auto separator = sourceMap.lastIndexOf(QLatin1Char(':'));
+    const auto location = index.data(SourceMapModel::LocationRole).toString();
+    const auto separator = location.lastIndexOf(QLatin1Char(':'));
     if (separator <= 0) {
         return;
     }
 
-    auto showMenu = [this] (const QString& pathName, const QString& fileName, int lineNumber) -> bool {
+    auto showMenu = [this] (const QString& pathName, const QStringRef& fileName, int lineNumber) -> bool {
         if (QFileInfo::exists(pathName + fileName)) {
             QMenu contextMenu;
             auto *viewCallerCallee = contextMenu.addAction(tr("Open in editor"));
@@ -157,8 +157,8 @@ void ResultsCallerCalleePage::onSourceMapContextMenu(const QPoint &point)
         return false;
     };
 
-    QString fileName = sourceMap.left(separator);
-    int lineNumber = sourceMap.mid(separator+1).toInt();
+    const auto fileName = location.leftRef(separator);
+    const int lineNumber = location.mid(separator+1).toInt();
     if (!showMenu(m_sysroot, fileName, lineNumber)) {
          showMenu(m_appPath, fileName, lineNumber);
     }
