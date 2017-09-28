@@ -158,7 +158,7 @@ void ResultsCallerCalleePage::onSourceMapContextMenu(const QPoint &point)
     };
 
     const auto fileName = location.leftRef(separator);
-    const int lineNumber = location.mid(separator+1).toInt();
+    const int lineNumber = location.midRef(separator+1).toInt();
     if (!showMenu(m_sysroot, fileName, lineNumber)) {
          showMenu(m_appPath, fileName, lineNumber);
     }
