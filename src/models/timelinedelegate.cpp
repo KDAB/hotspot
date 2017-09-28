@@ -106,6 +106,16 @@ TimeLineData dataFromIndex(const QModelIndex& index, QRect rect,
     return data;
 }
 
+Data::Events::const_iterator findEvent(Data::Events::const_iterator begin,
+                                       Data::Events::const_iterator end,
+                                       quint64 time)
+{
+    return std::lower_bound(begin, end, time,
+                            [](const Data::Event& event, quint64 time) {
+                                return event.time < time;
+                            });
+}
+
 }
 
 TimeLineDelegate::TimeLineDelegate(QAbstractItemView* view)
@@ -239,10 +249,7 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
         const auto localX = event->pos().x();
         const auto mappedX = localX - option.rect.x() - data.padding;
         const auto time = data.mapXToTime(mappedX);
-        auto it = std::lower_bound(data.events.constBegin(), data.events.constEnd(), time,
-                                   [](const Data::Event& event, quint64 time) {
-                                       return event.time < time;
-                                   });
+        auto it = findEvent(data.events.constBegin(), data.events.constEnd(), time);
         // find the maximum sample cost in the range spanned by one pixel
         uint numSamples = 0;
         quint64 maxCost = 0;
@@ -414,9 +421,37 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         contextMenu->popup(mouseEvent->globalPos());
         return true;
     } else if (isTimeSpanSelected && isLeftButtonEvent) {
+        const auto& data = alwaysValidIndex.data(EventModel::EventResultsRole).value<Data::EventResults>();
+        const auto timeDelta = timeSliceEnd - timeSliceStart;
+        quint64 cost = 0;
+        quint64 numEvents = 0;
+        QSet<qint32> threads;
+        QSet<qint32> processes;
+        for (const auto& thread : data.threads) {
+            const auto start = findEvent(thread.events.begin(), thread.events.end(), timeSliceStart);
+            const auto end = findEvent(start, thread.events.end(), timeSliceEnd);
+            if (start != end) {
+                threads.insert(thread.tid);
+                processes.insert(thread.pid);
+            }
+            for (auto it = start; it != end; ++it) {
+                if (it->type != m_eventType) {
+                    continue;
+                }
+                cost += it->cost;
+                ++numEvents;
+            }
+        }
+
         QToolTip::showText(mouseEvent->globalPos(),
-                           tr("ΔT = %1")
-                                .arg(Util::formatTimeString(timeSliceEnd - timeSliceStart)),
+                           tr("ΔT: %1\n"
+                              "Events: %2 (%3) from %4 threads, %5 processes\n"
+                              "sum of %6: %7 (%8)")
+                                .arg(Util::formatTimeString(timeDelta),
+                                     Util::formatCost(numEvents), Util::formatFrequency(numEvents, timeDelta),
+                                     QString::number(threads.size()), QString::number(processes.size()),
+                                     data.eventTypes.value(m_eventType),
+                                     Util::formatCost(cost), Util::formatFrequency(cost, timeDelta)),
                            m_view);
     }
 

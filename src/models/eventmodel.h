@@ -57,6 +57,7 @@ public:
         MaxCostRole,
         SortRole,
         EventTypesRole,
+        EventResultsRole,
     };
 
     int rowCount(const QModelIndex& parent = {}) const override;

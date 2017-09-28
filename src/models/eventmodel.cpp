@@ -107,6 +107,8 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
             return thread.events.size();
     } else if (role == EventTypesRole) {
         return QVariant::fromValue(m_data.eventTypes);
+    } else if (role == EventResultsRole) {
+        return QVariant::fromValue(m_data);
     }
 
     switch (static_cast<Columns>(index.column())) {
