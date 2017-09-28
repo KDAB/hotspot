@@ -25,6 +25,7 @@ performance data formats under this umbrella.
       * [Known Issues](#known-issues)
          * [Broken Backtraces](#broken-backtraces)
          * [Missing Features](#missing-features)
+         * [Recording with perf without super user rights](#recording-with-perf-without-super-user-rights)
       * [Qt Creator](#qt-creator)
 
 ## Screenshots
@@ -57,7 +58,9 @@ The time line allows filtering the results by time, process or thread. The data 
 
 ### Record Data
 
-You can also launch `perf` from hotspot, to profile a newly started application or to attach to already running process(es). Note the caveats below though.
+You can also launch `perf` from hotspot, to profile a newly started application
+or to attach to already running process(es). Do take the [caveats below](#recording-with-perf-without-super-user-rights)
+into account though.
 
 ![hotspot launch application](screenshots/record-launch.png?raw=true "hotspot can launch a new application and profile it with perf from the record page.")
 
@@ -230,6 +233,27 @@ are _not_ available in hotspot currently:
 - annotate: the caller/callee view shows cost attributed to individual source lines. But a proper annotation view like `perf annotate`, esp. on the instruction level, is currently missing.
 - the columns in the tables are currently hardcoded, while potentially a user may want to change this to show e.g. cost per-process or thread and so forth
 - many of the more advanced features, such as `--itrace`, `--mem-mode`, `--branch-stack` and `--branch-history`, are unsupported
+
+### Recording with perf without super user rights
+
+It is a good idea to launch hotspot with `sudo` or as `root` user. See e.g.
+[Editing Files As Root](https://blog.martin-graesslin.com/blog/2017/02/editing-files-as-root/)
+for an article on that matter. [Issue #83](https://github.com/KDAB/hotspot/issues/83) is
+also relevant in this contact.
+
+But without superuser rights, you will probably see error messages such as the following
+when using hotspot's record feature:
+
+    You may not have permission to collect stats.
+    Consider tweaking /proc/sys/kernel/perf_event_paranoid:
+      -1 - Not paranoid at all
+       0 - Disallow raw tracepoint access for unpriv
+       1 - Disallow cpu events for unpriv
+       2 - Disallow kernel profiling for unpriv
+
+If that is the case, follow [these steps](https://superuser.com/questions/980632/run-perf-without-root-right)
+to temporarily elevate your capabilities. See also [issue #90](https://github.com/KDAB/hotspot/issues/90)
+for our plan to improve this situation in the future.
 
 ## Qt Creator
 
