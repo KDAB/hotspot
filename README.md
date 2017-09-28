@@ -24,6 +24,10 @@ performance data formats under this umbrella.
 
 Here are some screenshots showing the most important features of hotspot in action:
 
+### Visualize Data
+
+The main feature of hotspot is visualizing a `perf.data` file graphically.
+
 ![hotspot summary page](screenshots/summary.png?raw=true "hotspot summary page")
 
 ![hotspot FlameGraph page](screenshots/flamegraph.png?raw=true "hotspot FlameGraph page")
@@ -34,11 +38,23 @@ Here are some screenshots showing the most important features of hotspot in acti
 
 ![hotspot top-down page](screenshots/top-down.png?raw=true "hotspot top-down page")
 
+### Time Line
+
+The time line allows filtering the results by time, process or thread. The data views will update accordingly.
+
 ![hotspot timeline filtering by time](screenshots/timeline-filter-time.png?raw=true "hotspot timeline filtering by time")
 
 ![hotspot timeline filtering by thread or process](screenshots/timeline-filter-thread.png?raw=true "hotspot timeline filtering by thread or process")
 
 ![hotspot timeline filtering applied to FlameGraph](screenshots/timeline-flamegraph.png?raw=true "hotspot timeline filtering also applies to the data views on top, like e.g. the FlameGraph. You can also zoom in on the timeline and inspect individual sample data.")
+
+### Record Data
+
+You can also launch `perf` from hotspot, to profile a newly started application or to attach to already running process(es). Note the caveats below though.
+
+![hotspot launch application](screenshots/record-launch.png?raw=true "hotspot can launch a new application and profile it with perf from the record page.")
+
+![hotspot attach to process](screenshots/record-attach.png?raw=true "hotspot also allows runtime-attaching of perf to existing applications to profile them.")
 
 ## Dependencies
 
