@@ -314,6 +314,8 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         m_view->viewport()->update();
     }
 
+    const auto timeSliceStart = std::min(m_timeSliceStart, m_timeSliceEnd);
+    const auto timeSliceEnd = std::max(m_timeSliceStart, m_timeSliceEnd);
     const bool isTimeSpanSelected = m_timeSliceStart != m_timeSliceEnd;
     const auto index = m_view->indexAt(pos.toPoint());
     const bool haveContextInfo = index.isValid() || isZoomed || isFiltered;
@@ -331,8 +333,6 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         const auto threadId = index.data(EventModel::ThreadIdRole).value<qint32>();
         const auto numProcesses = index.data(EventModel::NumProcessesRole).value<uint>();
         const auto numThreads = index.data(EventModel::NumThreadsRole).value<uint>();
-        const auto timeSliceStart = std::min(m_timeSliceStart, m_timeSliceEnd);
-        const auto timeSliceEnd = std::max(m_timeSliceStart, m_timeSliceEnd);
         const auto isMainThread = threadStartTime == minTime && threadEndTime == maxTime;
 
         if (isTimeSpanSelected && (minTime != timeSliceStart || maxTime != timeSliceEnd)) {
@@ -413,6 +413,11 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         }
         contextMenu->popup(mouseEvent->globalPos());
         return true;
+    } else if (isTimeSpanSelected && isLeftButtonEvent) {
+        QToolTip::showText(mouseEvent->globalPos(),
+                           tr("ΔT = %1")
+                                .arg(Util::formatTimeString(timeSliceEnd - timeSliceStart)),
+                           m_view);
     }
 
     return false;
