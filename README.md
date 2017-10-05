@@ -90,6 +90,8 @@ As of now, you will need the following dependencies to build this project:
 ### On Debian/Ubuntu
 
 ```
+add-apt-repository ppa:kubuntu-ppa/backports 
+apt-get update
 apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev \
     libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libkf5kio-dev \
     libkf5solid-dev libelf-dev libdw-dev cmake extra-cmake-modules gettext
@@ -111,7 +113,7 @@ pacman -Sy cmake gcc extra-cmake-modules threadweaver ki18n kconfigwidgets \
 ## Building
 
 ```
-git clone --recurse-submodules git@github.com:KDAB/hotspot.git
+git clone --recurse-submodules https://github.com/KDAB/hotspot.git
 mkdir build-hotspot
 cd build-hotspot
 cmake ../hotspot
