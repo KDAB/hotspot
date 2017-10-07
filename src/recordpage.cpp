@@ -58,27 +58,28 @@
 namespace {
 bool isIntel()
 {
-    const auto list = Solid::Device::listFromType(Solid::DeviceInterface::Processor, QString());
+    using namespace Solid;
+    const auto list = Device::listFromType(DeviceInterface::Processor, QString());
     if (list.isEmpty()) {
         return false;
     }
 
     const auto& device = list[0];
-    if (!device.is<Solid::Processor>()) {
+    if (!device.is<Processor>()) {
         return false;
     }
 
-    const auto *processor= device.as<Solid::Processor>();
+    const auto *processor= device.as<Processor>();
     const auto instructionSets = processor->instructionSets();
 
-    return instructionSets.testFlag(Solid::Processor::IntelMmx) ||
-           instructionSets.testFlag(Solid::Processor::IntelSse) ||
-           instructionSets.testFlag(Solid::Processor::IntelSse2) ||
-           instructionSets.testFlag(Solid::Processor::IntelSse3) ||
-           instructionSets.testFlag(Solid::Processor::IntelSsse3) ||
-           instructionSets.testFlag(Solid::Processor::IntelSse4) ||
-           instructionSets.testFlag(Solid::Processor::IntelSse41) ||
-           instructionSets.testFlag(Solid::Processor::IntelSse42);
+    return instructionSets.testFlag(Processor::IntelMmx) ||
+           instructionSets.testFlag(Processor::IntelSse) ||
+           instructionSets.testFlag(Processor::IntelSse2) ||
+           instructionSets.testFlag(Processor::IntelSse3) ||
+           instructionSets.testFlag(Processor::IntelSsse3) ||
+           instructionSets.testFlag(Processor::IntelSse4) ||
+           instructionSets.testFlag(Processor::IntelSse41) ||
+           instructionSets.testFlag(Processor::IntelSse42);
 }
 
 RecordType selectedRecordType(const QScopedPointer<Ui::RecordPage> &ui)
