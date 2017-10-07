@@ -59,10 +59,15 @@ namespace {
 bool isIntel()
 {
     const auto list = Solid::Device::listFromType(Solid::DeviceInterface::Processor, QString());
-    Solid::Device device = list[0];
-    if(list.empty() || !device.is<Solid::Processor>()) {
+    if (list.isEmpty()) {
         return false;
     }
+
+    const auto& device = list[0];
+    if (!device.is<Solid::Processor>()) {
+        return false;
+    }
+
     const auto *processor= device.as<Solid::Processor>();
     const auto instructionSets = processor->instructionSets();
 
