@@ -111,6 +111,15 @@ pacman -Sy cmake gcc extra-cmake-modules threadweaver ki18n kconfigwidgets \
     kitemviews kitemmodels kio solid libelf gettext qt5-base
 ```
 
+### OpenSUSE
+
+```
+zypper in cmake gcc-c++ extra-cmake-modules threadweaver-devel ki18n-devel kio-devel \
+    solid-devel kcoreaddons-devel threadweaver-devel kconfigwidgets-devel \
+    kitemmodels-devel kitemviews-devel libqt5-qtbase-devel libelf-devel \
+    libdw-devel gettext glibc-devel-static
+```
+
 ## Building
 
 ```
