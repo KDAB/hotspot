@@ -17,6 +17,7 @@ add_executable(hotspot-perfparser
     perfparser/app/perfsymboltable.cpp
     perfparser/app/perfelfmap.cpp
     perfparser/app/perfkallsyms.cpp
+    perfparser/app/perfaddresscache.cpp
 )
 
 target_link_libraries(hotspot-perfparser
@@ -44,6 +45,20 @@ ecm_add_test(
         ${LIBELF_LIBRARIES}
     TEST_NAME
         tst_elfmap
+)
+
+ecm_add_test(
+    perfparser/tests/auto/addresscache/tst_addresscache.cpp
+    perfparser/app/perfelfmap.cpp
+    perfparser/app/perfaddresscache.cpp
+    LINK_LIBRARIES
+        Qt5::Core
+        Qt5::Network
+        Qt5::Test
+        ${LIBDW_LIBRARIES}
+        ${LIBELF_LIBRARIES}
+    TEST_NAME
+        tst_addresscache
 )
 
 ecm_add_test(
