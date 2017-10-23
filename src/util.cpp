@@ -162,9 +162,18 @@ QString Util::formatTooltip(const Data::Symbol& symbol,
                             const Data::ItemCost& itemCost,
                             const Data::Costs& totalCosts)
 {
-    return formatTooltip(QCoreApplication::translate("Util", "symbol: <tt>%1</tt><br/>binary: <tt>%2</tt>")
-                        .arg(Util::formatString(symbol.symbol), Util::formatString(symbol.binary)),
-                         itemCost, totalCosts);
+    Q_ASSERT(static_cast<quint32>(totalCosts.numTypes()) == itemCost.size());
+    auto toolTip = QCoreApplication::translate("Util", "symbol: <tt>%1</tt><br/>binary: <tt>%2</tt>")
+                    .arg(Util::formatString(symbol.symbol), Util::formatString(symbol.binary));
+    for (int i = 0, c = totalCosts.numTypes(); i < c; ++i) {
+        const auto cost = itemCost[i];
+        const auto total = totalCosts.totalCost(i);
+        toolTip += QLatin1String("<hr/>")
+                + QCoreApplication::translate("Util", "%1: %2<br/>&nbsp;&nbsp;%4% out of %3 total")
+                    .arg(totalCosts.typeName(i), Util::formatCost(cost),
+                         Util::formatCost(total), Util::formatCostRelative(cost, total));
+    }
+    return QString(QLatin1String("<qt>") + toolTip + QLatin1String("</qt>"));
 }
 
 QString Util::formatTooltip(const QString& location,
