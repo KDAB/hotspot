@@ -206,9 +206,9 @@ public:
 
     virtual ~LocationCostModelImpl() = default;
 
-    void setResults(const Data::LocationCostMap& map, const Data::Costs& costs)
+    void setResults(const Data::LocationCostMap& map, const Data::Costs& totalCosts)
     {
-        m_costs = costs;
+        m_totalCosts = totalCosts;
         HashModel<Data::LocationCostMap, ModelImpl>::setRows(map);
     }
 
@@ -235,27 +235,46 @@ public:
             if (column == Location) {
                 return ModelImpl::tr("Location");
             }
-            return m_costs.typeName(column - NUM_BASE_COLUMNS);
+            column -= NUM_BASE_COLUMNS;
+            if (column < m_totalCosts.numTypes()) {
+                return ModelImpl::tr("%1 (self)").arg(m_totalCosts.typeName(column));
+            }
+            column -= m_totalCosts.numTypes();
+            return ModelImpl::tr("%1 (incl.)").arg(m_totalCosts.typeName(column));
         } else if (role == Qt::ToolTipRole) {
             if (column == Location) {
                 return ModelImpl::tr("The source file name and line number where the cost was measured. May be empty when debug information is missing.");
             }
-            return ModelImpl::tr("The aggregated sample costs directly attributed to this code location.");
+            column -= NUM_BASE_COLUMNS;
+            if (column < m_totalCosts.numTypes()) {
+                return ModelImpl::tr("The aggregated sample costs directly attributed to this code location.");
+            }
+            return ModelImpl::tr("The aggregated sample costs attributed to this code location, both directly and indirectly."
+                                 " This includes the costs of all functions called from this location plus its self cost.");
         }
 
         return {};
     }
 
     QVariant cell(int column, int role, const QString& location,
-                  const Data::ItemCost& costs) const final override
+                  const Data::LocationCost& costs) const final override
     {
         if (role == SortRole) {
             if (column == Location) {
                 return location;
             }
-            return costs[column - NUM_BASE_COLUMNS];
+            column -= NUM_BASE_COLUMNS;
+            if (column < m_totalCosts.numTypes()) {
+                return costs.selfCost[column];
+            }
+            column -= m_totalCosts.numTypes();
+            return costs.inclusiveCost[column];
         } else if (role == TotalCostRole && column >= NUM_BASE_COLUMNS) {
-            return m_costs.totalCost(column - NUM_BASE_COLUMNS);
+            column -= NUM_BASE_COLUMNS;
+            if (column >= m_totalCosts.numTypes()) {
+                column -= m_totalCosts.numTypes();
+            }
+            return m_totalCosts.totalCost(column);
         } else if (role == FilterRole) {
             return location;
         } else if (role == Qt::DisplayRole) {
@@ -267,12 +286,20 @@ public:
                 auto slashIdx = location.lastIndexOf(QLatin1Char('/')) + 1;
                 return location.mid(slashIdx);
             }
-            return Util::formatCostRelative(costs[column - NUM_BASE_COLUMNS],
-                                            m_costs.totalCost(column - NUM_BASE_COLUMNS), true);
+            column -= NUM_BASE_COLUMNS;
+            if (column < m_totalCosts.numTypes()) {
+                return Util::formatCostRelative(costs.selfCost[column],
+                                                m_totalCosts.totalCost(column),
+                                                true);
+            }
+            column -= m_totalCosts.numTypes();
+            return Util::formatCostRelative(costs.inclusiveCost[column],
+                                            m_totalCosts.totalCost(column),
+                                            true);
         } else if (role == LocationRole) {
             return QVariant::fromValue(location);
         } else if (role == Qt::ToolTipRole) {
-            return Util::formatTooltip(location, costs, m_costs);
+            return Util::formatTooltip(location, costs, m_totalCosts);
         }
 
         return {};
@@ -280,11 +307,11 @@ public:
 
     int numColumns() const final override
     {
-        return 1 + m_costs.numTypes();
+        return 1 + m_totalCosts.numTypes() * 2;
     }
 
 private:
-    Data::Costs m_costs;
+    Data::Costs m_totalCosts;
 };
 
 class SourceMapModel : public LocationCostModelImpl<SourceMapModel>

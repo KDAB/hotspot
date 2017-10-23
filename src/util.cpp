@@ -168,19 +168,25 @@ QString Util::formatTooltip(const Data::Symbol& symbol,
 }
 
 QString Util::formatTooltip(const QString& location,
-                            const Data::ItemCost& itemCost,
+                            const Data::LocationCost& cost,
                             const Data::Costs& totalCosts)
 {
     QString toolTip = location;
 
-    Q_ASSERT(static_cast<quint32>(totalCosts.numTypes()) == itemCost.size());
+    Q_ASSERT(static_cast<quint32>(totalCosts.numTypes()) == cost.inclusiveCost.size());
+    Q_ASSERT(static_cast<quint32>(totalCosts.numTypes()) == cost.selfCost.size());
     for (int i = 0, c = totalCosts.numTypes(); i < c; ++i) {
-        const auto cost = itemCost[i];
+        const auto selfCost = cost.selfCost[i];
+        const auto inclusiveCost = cost.inclusiveCost[i];
         const auto total = totalCosts.totalCost(i);
         toolTip += QLatin1String("<hr/>")
-                + QCoreApplication::translate("Util", "%1: %2<br/>&nbsp;&nbsp;%4% out of %3 total")
-                    .arg(totalCosts.typeName(i), Util::formatCost(cost), Util::formatCost(total),
-                        Util::formatCostRelative(cost, total));
+                + QCoreApplication::translate("Util", "%1 (self): %2<br/>&nbsp;&nbsp;%4% out of %3 total")
+                    .arg(totalCosts.typeName(i), Util::formatCost(selfCost),
+                         Util::formatCost(total), Util::formatCostRelative(selfCost, total))
+                + QLatin1String("<br/>")
+                + QCoreApplication::translate("Util", "%1 (inclusive): %2<br/>&nbsp;&nbsp;%4% out of %3 total")
+                    .arg(totalCosts.typeName(i), Util::formatCost(inclusiveCost),
+                         Util::formatCost(total), Util::formatCostRelative(inclusiveCost, total));
     }
     return QString(QLatin1String("<qt>") + toolTip + QLatin1String("</qt>"));
 }

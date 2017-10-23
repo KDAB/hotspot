@@ -367,17 +367,29 @@ struct TopDownResults
 using SymbolCostMap = QHash<Symbol, ItemCost>;
 using CalleeMap = SymbolCostMap;
 using CallerMap = SymbolCostMap;
-using LocationCostMap = QHash<QString, ItemCost>;
+
+struct LocationCost
+{
+    LocationCost(int numTypes = 0)
+        : selfCost(numTypes)
+        , inclusiveCost(numTypes)
+    {}
+
+    ItemCost selfCost;
+    ItemCost inclusiveCost;
+};
+
+using LocationCostMap = QHash<QString, LocationCost>;
 
 struct CallerCalleeEntry
 {
     quint32 id = 0;
 
-    ItemCost& source(const QString& location, int numTypes)
+    LocationCost& source(const QString& location, int numTypes)
     {
         auto it = sourceMap.find(location);
         if (it == sourceMap.end()) {
-            it = sourceMap.insert(location, ItemCost(numTypes));
+            it = sourceMap.insert(location, {numTypes});
         }
         return *it;
     }
