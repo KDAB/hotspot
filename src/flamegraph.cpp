@@ -482,6 +482,10 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
                 m_selectionHistory.push_back(item);
                 updateNavigationActions();
             }
+        } else if (mouseEvent->button() == Qt::BackButton) {
+            m_backAction->trigger();
+        } else if (mouseEvent->button() == Qt::ForwardButton) {
+            m_forwardAction->trigger();
         }
     } else if (event->type() == QEvent::MouseMove) {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
