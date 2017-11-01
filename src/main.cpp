@@ -42,7 +42,7 @@ int main(int argc, char** argv)
     QCoreApplication::setApplicationVersion(QStringLiteral(HOTSPOT_VERSION_STRING));
 
     QApplication app(argc, argv);
-    app.setWindowIcon(QIcon::fromTheme(QStringLiteral("hotspot"), app.windowIcon()));
+    app.setWindowIcon(QIcon(QStringLiteral(":/images/icons/512-hotspot_app_icon.png")));
     qRegisterMetaType<SummaryData>();
     qRegisterMetaType<Data::BottomUp>();
     qRegisterMetaType<Data::TopDown>();
