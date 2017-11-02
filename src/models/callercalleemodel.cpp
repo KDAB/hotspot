@@ -72,7 +72,6 @@ QVariant CallerCalleeModel::headerCell(int column, int role) const
         if (column < m_results.selfCosts.numTypes()) {
             return tr("The aggregated sample costs directly attributed to this symbol.");
         }
-        column -= m_results.selfCosts.numTypes();
         return tr("The aggregated sample costs attributed to this symbol, both directly and indirectly. This includes the costs of all functions called by this symbol plus its self cost.");
     }
 
