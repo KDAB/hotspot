@@ -1,0 +1,23 @@
+---
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-clang-analyzer-alpha*,*,-google-build-using-namespace,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-readability-else-after-return,-google-readability-braces-around-statements,-readability-implicit-bool-cast,-llvm-include-order,-cppcoreguidelines-pro-type-reinterpret-cast,-readability-named-parameter,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-google-readability-namespace-comments,-readabilty-namespace-comments,-google-default-arguments,-cppcoreguidelines-pro-type-const-cast,-google-readability-todo,-google-runtime-references,-llvm-namespace-comment,-cppcoreguidelines-pro-bounds-constant-array-index,-clang-analyzer-alpha.core.CastToStruct,-modernize-use-override,-modernize-use-bool-literals,-clang-analyzer-cplusplus.NewDeleteLeaks,-clang-analyzer-alpha.deadcode.UnreachableCode,-cppcoreguidelines-pro-type-static-cast-downcast,-modernize-use-default,-clang-analyzer-core.CallAndMessage,-modernize-pass-by-value,-clang-analyzer-core.NonNullParamChecker,-modernize-raw-string-literal,-modernize-use-using,-modernize-loop-convert,-modernize-use-emplace'
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+AnalyzeTemporaryDtors: false
+CheckOptions:
+  - key:             cert-oop11-cpp.UseCERTSemantics
+    value:           '1'
+  - key:             modernize-loop-convert.MaxCopySize
+    value:           '16'
+  - key:             modernize-loop-convert.MinConfidence
+    value:           reasonable
+  - key:             modernize-loop-convert.NamingStyle
+    value:           CamelCase
+  - key:             modernize-pass-by-value.IncludeStyle
+    value:           llvm
+  - key:             modernize-replace-auto-ptr.IncludeStyle
+    value:           llvm
+  - key:             modernize-use-nullptr.NullMacros
+    value:           'NULL'
+  - key:             readability-braces-around-statements.ShortStatementLines
+    value:           '0'
+...
