@@ -146,15 +146,15 @@ void EventModel::setData(const Data::EventResults& data)
     m_maxCost = 0;
     m_numProcesses = 0;
     m_numThreads = 0;
-    if (m_data.threads.isEmpty()) {
+    if (data.threads.isEmpty()) {
         m_minTime = 0;
         m_maxTime = 0;
     } else {
-        m_minTime = m_data.threads.first().timeStart;
-        m_maxTime = m_data.threads.first().timeEnd;
+        m_minTime = data.threads.first().timeStart;
+        m_maxTime = data.threads.first().timeEnd;
         QSet<quint32> processes;
         QSet<quint32> threads;
-        for (const auto& thread : m_data.threads) {
+        for (const auto& thread : data.threads) {
             m_minTime = std::min(thread.timeStart, m_minTime);
             m_maxTime = std::max(thread.timeEnd, m_maxTime);
             m_totalEvents += thread.events.size();
