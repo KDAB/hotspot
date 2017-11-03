@@ -829,7 +829,9 @@ struct PerfParserPrivate
         const auto symbolString = strings.value(symbol.symbol.name.id);
         const auto binaryString = strings.value(symbol.symbol.binary.id);
         bottomUpResult.symbols[symbol.id] = {symbolString, binaryString};
-        if (symbolString.isEmpty() && !reportedMissingDebugInfoModules.contains(symbol.symbol.binary.id)) {
+        if (symbolString.isEmpty() && !binaryString.isEmpty()
+            && !reportedMissingDebugInfoModules.contains(symbol.symbol.binary.id))
+        {
             reportedMissingDebugInfoModules.insert(symbol.symbol.binary.id);
             summaryResult.errors << PerfParser::tr("Module \"%1\" is missing (some) debug symbols.").arg(binaryString);
         }
