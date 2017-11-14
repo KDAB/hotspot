@@ -652,6 +652,7 @@ struct PerfParserPrivate
                 ThreadStart threadStart;
                 stream >> threadStart;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << threadStart;
+                // override start time explicitly
                 addThread(threadStart)->timeStart = threadStart.time;
                 break;
             }
@@ -780,6 +781,9 @@ struct PerfParserPrivate
         Data::ThreadEvents thread;
         thread.pid = record.pid;
         thread.tid = record.tid;
+        // when we encounter a thread the first time it was probably alive when
+        // we started the application, otherwise we override the start time when
+        // we encounter a ThreadStart event
         thread.timeStart = applicationStartTime;
         thread.name = commands.value(thread.pid)
                               .value(thread.tid);
