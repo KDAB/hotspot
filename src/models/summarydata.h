@@ -49,6 +49,9 @@ struct SummaryData
     QString cpuSiblingCores;
     QString cpuSiblingThreads;
     quint64 totalMemoryInKiB = 0;
+    // only non-zero when perf record --switch-events was used
+    quint64 onCpuTime = 0;
+    quint64 offCpuTime = 0;
 
     // total number of samples
     quint64 sampleCount = 0;

@@ -450,14 +450,24 @@ struct Event
 
 using Events = QVector<Event>;
 
+constexpr auto MAX_TIME = std::numeric_limits<quint64>::max();
+
 struct ThreadEvents
 {
     qint32 pid = 0;
     qint32 tid = 0;
     quint64 timeStart = 0;
-    quint64 timeEnd = std::numeric_limits<quint64>::max();
+    quint64 timeEnd = MAX_TIME;
     Events events;
     QString name;
+    quint64 lastSwitchTime = MAX_TIME;
+    quint64 offCpuTime = 0;
+    enum State {
+        Unknown,
+        OnCpu,
+        OffCpu
+    };
+    State state = Unknown;
 };
 
 struct EventResults

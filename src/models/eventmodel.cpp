@@ -116,14 +116,28 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
             if (role == Qt::DisplayRole) {
                 return tr("%1 (#%2)").arg(thread.name, QString::number(thread.tid));
             } else if (role == Qt::ToolTipRole) {
-                return tr("Thread %1 (tid=%2, pid=%3) ran for %4 (%5% of total runtime).\n"
-                        "It produced %6 events (%7% of the total events).")
-                        .arg(thread.name, QString::number(thread.tid), QString::number(thread.pid),
-                             Util::formatTimeString(thread.timeEnd - thread.timeStart),
-                             Util::formatCostRelative(thread.timeEnd - thread.timeStart,
-                                                      m_maxTime - m_minTime),
-                             QString::number(thread.events.size()),
-                             Util::formatCostRelative(thread.events.size(), m_totalEvents));
+                QString tooltip = tr("Thread %1, tid = %2, pid = %3\n")
+                                    .arg(thread.name, QString::number(thread.tid), QString::number(thread.pid));
+                const auto runtime = thread.timeEnd - thread.timeStart;
+                const auto totalRuntime = m_maxTime - m_minTime;
+                tooltip += tr("Runtime: %1 (%2% of total runtime)\n")
+                                .arg(Util::formatTimeString(runtime),
+                                     Util::formatCostRelative(runtime, totalRuntime));
+                if (m_totalOffCpuTime > 0) {
+                    const auto onCpuTime = runtime - thread.offCpuTime;
+                    tooltip += tr("On-CPU time: %1 (%2% of thread runtime, %3% of total On-CPU time)\n")
+                                    .arg(Util::formatTimeString(onCpuTime),
+                                         Util::formatCostRelative(onCpuTime, runtime),
+                                         Util::formatCostRelative(onCpuTime, m_totalOnCpuTime));
+                    tooltip += tr("Off-CPU time: %1 (%2% of thread runtime, %3% of total Off-CPU time)\n")
+                                    .arg(Util::formatTimeString(thread.offCpuTime),
+                                         Util::formatCostRelative(thread.offCpuTime, runtime),
+                                         Util::formatCostRelative(thread.offCpuTime, m_totalOffCpuTime));
+                }
+                tooltip += tr("Number of Events: %1 (%2% of the total)")
+                                .arg(QString::number(thread.events.size()),
+                                     Util::formatCostRelative(thread.events.size(), m_totalEvents));
+                return tooltip;
             }
             break;
         case EventsColumn:
@@ -146,6 +160,8 @@ void EventModel::setData(const Data::EventResults& data)
     m_maxCost = 0;
     m_numProcesses = 0;
     m_numThreads = 0;
+    m_totalOnCpuTime = 0;
+    m_totalOffCpuTime = 0;
     if (data.threads.isEmpty()) {
         m_minTime = 0;
         m_maxTime = 0;
@@ -157,6 +173,8 @@ void EventModel::setData(const Data::EventResults& data)
         for (const auto& thread : data.threads) {
             m_minTime = std::min(thread.timeStart, m_minTime);
             m_maxTime = std::max(thread.timeEnd, m_maxTime);
+            m_totalOffCpuTime += thread.offCpuTime;
+            m_totalOnCpuTime += thread.timeEnd - thread.timeStart - thread.offCpuTime;
             m_totalEvents += thread.events.size();
             processes.insert(thread.pid);
             threads.insert(thread.tid);

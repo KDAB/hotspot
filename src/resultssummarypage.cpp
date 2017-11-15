@@ -87,8 +87,12 @@ ResultsSummaryPage::ResultsSummaryPage(PerfParser *parser, QWidget *parent)
                     QTextStream stream(&summaryText);
                     stream << "<qt><table>"
                            << formatSummaryText(tr("Command"), QLatin1String("<tt>") + data.command.toHtmlEscaped() + QLatin1String("</tt>"))
-                           << formatSummaryText(tr("Run Time"), Util::formatTimeString(data.applicationRunningTime))
-                           << formatSummaryText(tr("Processes"), QString::number(data.processCount))
+                           << formatSummaryText(tr("Run Time"), Util::formatTimeString(data.applicationRunningTime));
+                    if (data.offCpuTime > 0 || data.onCpuTime > 0) {
+                        stream << formatSummaryText(tr("On CPU Time"), Util::formatTimeString(data.onCpuTime))
+                               << formatSummaryText(tr("Off CPU Time"), Util::formatTimeString(data.offCpuTime));
+                    }
+                    stream << formatSummaryText(tr("Processes"), QString::number(data.processCount))
                            << formatSummaryText(tr("Threads"), QString::number(data.threadCount))
                            << formatSummaryText(tr("Total Samples"), tr("%1 (%4)")
                                 .arg(QString::number(data.sampleCount), Util::formatFrequency(data.sampleCount, data.applicationRunningTime)));

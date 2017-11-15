@@ -293,6 +293,26 @@ QDebug operator<<(QDebug stream, const Sample& sample)
     return stream;
 }
 
+struct ContextSwitchDefinition : Record
+{
+    bool switchOut = false;
+};
+
+QDataStream& operator>>(QDataStream& stream, ContextSwitchDefinition& contextSwitch)
+{
+    return stream >> static_cast<Record&>(contextSwitch)
+        >> contextSwitch.switchOut;
+}
+
+QDebug operator<<(QDebug stream, const ContextSwitchDefinition& contextSwitch)
+{
+    stream.noquote().nospace() << "ContextSwitchDefinition{"
+        << static_cast<const Record&>(contextSwitch) << ", "
+        << "switchOut=" << contextSwitch.switchOut
+        << "}";
+    return stream.space();
+}
+
 struct StringDefinition
 {
     qint32 id = 0;
@@ -722,6 +742,13 @@ struct PerfParserPrivate
                 addError(error);
                 break;
             }
+            case EventType::ContextSwitchDefinition: {
+                ContextSwitchDefinition contextSwitch;
+                stream >> contextSwitch;
+                qCDebug(LOG_PERFPARSER) << "parsed:" << contextSwitch;
+                addContextSwitch(contextSwitch);
+                break;
+            }
             case EventType::Progress: {
                 float progress = 0;
                 stream >> progress;
@@ -746,7 +773,9 @@ struct PerfParserPrivate
     {
         Data::BottomUp::initializeParents(&bottomUpResult.root);
 
-        calculateSummary();
+        summaryResult.applicationRunningTime = applicationEndTime - applicationStartTime;
+        summaryResult.threadCount = uniqueThreads.size();
+        summaryResult.processCount = uniqueProcess.size();
 
         buildTopDownResult();
         buildCallerCalleeResult();
@@ -764,6 +793,16 @@ struct PerfParserPrivate
             if (thread.name.isEmpty()) {
                 thread.name = PerfParser::tr("#%1").arg(thread.tid);
             }
+
+            // we may have been switched out before detaching perf, so increment
+            // the off-CPU time in this case
+            if (thread.state == Data::ThreadEvents::OffCpu) {
+                thread.offCpuTime += thread.timeEnd - thread.lastSwitchTime;
+            }
+
+            const auto runTime = thread.timeEnd - thread.timeStart;
+            summaryResult.offCpuTime += thread.offCpuTime;
+            summaryResult.onCpuTime += runTime - thread.offCpuTime;
         }
     }
 
@@ -947,11 +986,20 @@ struct PerfParserPrivate
         }
     }
 
-    void calculateSummary()
+    void addContextSwitch(const ContextSwitchDefinition& contextSwitch)
     {
-        summaryResult.applicationRunningTime = applicationEndTime - applicationStartTime;
-        summaryResult.threadCount = uniqueThreads.size();
-        summaryResult.processCount = uniqueProcess.size();
+        auto* thread = eventResult.findThread(contextSwitch.pid, contextSwitch.tid);
+        if (!thread) {
+            return;
+        }
+
+        if (!contextSwitch.switchOut && thread->state == Data::ThreadEvents::OffCpu) {
+            thread->offCpuTime += contextSwitch.time - thread->lastSwitchTime;
+        }
+        thread->lastSwitchTime = contextSwitch.time;
+        thread->state = contextSwitch.switchOut
+                            ? Data::ThreadEvents::OffCpu
+                            : Data::ThreadEvents::OnCpu;
     }
 
     void addLost(const LostDefinition& /*lost*/)
@@ -1012,6 +1060,7 @@ struct PerfParserPrivate
         Error,
         Sample,
         Progress,
+        ContextSwitchDefinition,
         InvalidType
     };
 
