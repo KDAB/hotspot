@@ -27,6 +27,7 @@ performance data formats under this umbrella.
          * [Missing Features](#missing-features)
          * [Recording with perf without super user rights](#recording-with-perf-without-super-user-rights)
       * [Qt Creator](#qt-creator)
+      * [License](#license)
 
 ## Screenshots
 
@@ -272,3 +273,9 @@ for our plan to improve this situation in the future.
 This project leverages the excellent `perfparser` utility created by The Qt Company
 for their Qt Creator IDE. If you are already using Qt Creator, consider leveraging
 its integrated [CPU Usage Analyzer](http://doc.qt.io/qtcreator/creator-cpu-usage-analyzer.html).
+
+## License
+
+Hotspot is dual-licensed under the GPL v2+ or under a commercial KDAB license.
+See [LICENSE.GPL.txt](LICENSE.GPL.txt), [LICENSE.txt](LICENSE.txt) and [LICENSE.US.txt](LICENSE.US.txt)
+for more information, or contact info@kdab.com if any conditions of this licensing are not clear to you.
