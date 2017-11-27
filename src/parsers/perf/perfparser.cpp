@@ -808,11 +808,24 @@ struct PerfParserPrivate
 
     void addAttributes(const AttributesDefinition& attributesDefinition)
     {
-        const auto label = strings.value(attributesDefinition.name.id);
-        summaryResult.costs.push_back({label, 0, 0});
-        bottomUpResult.costs.addType(attributesDefinition.id, label);
+        qint32 costId = attributeNameToCostIds.value(attributesDefinition.name.id, -1);
+
+        if (costId == -1) {
+            costId = attributeNameToCostIds.size();
+            attributeNameToCostIds.insert(attributesDefinition.name.id, costId);
+
+            const auto label = strings.value(attributesDefinition.name.id);
+            Q_ASSERT(summaryResult.costs.size() == costId);
+            summaryResult.costs.push_back({label, 0, 0});
+            Q_ASSERT(bottomUpResult.costs.numTypes() == costId);
+            bottomUpResult.costs.addType(costId, label);
+            Q_ASSERT(eventResult.eventTypes.size() == costId);
+            eventResult.eventTypes.push_back(label);
+        }
+
+        attributeIdsToCostIds[attributesDefinition.id] = costId;
+        Q_ASSERT(attributes.size() == attributesDefinition.id);
         attributes.push_back(attributesDefinition);
-        eventResult.eventTypes.push_back(label);
     }
 
     Data::ThreadEvents* addThread(const Record& record)
@@ -900,7 +913,7 @@ struct PerfParserPrivate
         Data::Event event;
         event.time = sample.time;
         event.cost = sample.period;
-        event.type = sample.attributeId;
+        event.type = attributeIdsToCostIds.value(sample.attributeId, -1);
         event.stackId = internStack(sample.frames);
         auto* thread = eventResult.findThread(sample.pid, sample.tid);
         if (!thread) {
@@ -930,10 +943,10 @@ struct PerfParserPrivate
         }
 
         QSet<Data::Symbol> recursionGuard;
-        auto frameCallback = [this, &recursionGuard, &sample] (const Data::Symbol& symbol, const Data::Location& location)
+        const auto type = attributeIdsToCostIds.value(sample.attributeId, -1);
+        auto frameCallback = [this, &recursionGuard, &sample, type] (const Data::Symbol& symbol, const Data::Location& location)
         {
-            addCallerCalleeEvent(symbol, location,
-                                 sample.attributeId, sample.period,
+            addCallerCalleeEvent(symbol, location, type, sample.period,
                                  &recursionGuard, &callerCalleeResult,
                                  bottomUpResult.costs.numTypes());
 
@@ -946,7 +959,7 @@ struct PerfParserPrivate
             }
         };
 
-        bottomUpResult.addEvent(sample.attributeId, sample.period, sample.frames, frameCallback);
+        bottomUpResult.addEvent(type, sample.period, sample.frames, frameCallback);
 
         if (perfScriptOutput) {
             *perfScriptOutput << "\n";
@@ -976,11 +989,12 @@ struct PerfParserPrivate
         uniqueProcess.insert(sample.pid);
         ++summaryResult.sampleCount;
 
-        if (sample.attributeId < 0 || sample.attributeId >= summaryResult.costs.size()) {
+        const auto type = attributeIdsToCostIds.value(sample.attributeId, -1);
+        if (type < 0) {
             qWarning() << "Unexpected attribute id:" << sample.attributeId
-                       << "Only know about" << summaryResult.costs.size() << "attributes so far";
+                       << "Only know about" << attributeIdsToCostIds.size() << "attributes so far";
         } else {
-            auto& costSummary = summaryResult.costs[sample.attributeId];
+            auto& costSummary = summaryResult.costs[type];
             ++costSummary.sampleCount;
             costSummary.totalPeriod += sample.period;
         }
@@ -1087,6 +1101,8 @@ struct PerfParserPrivate
     QSet<QString> encounteredErrors;
     QHash<QVector<qint32>, qint32> stacks;
     std::atomic<bool>& stopRequested;
+    QHash<qint32, qint32> attributeIdsToCostIds;
+    QHash<int, qint32> attributeNameToCostIds;
 };
 
 PerfParser::PerfParser(QObject* parent)
