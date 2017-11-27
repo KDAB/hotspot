@@ -470,6 +470,47 @@ struct ThreadEvents
     State state = Unknown;
 };
 
+struct CostSummary
+{
+    CostSummary() = default;
+    CostSummary(const QString &label, quint64 sampleCount, quint64 totalPeriod)
+        : label(label), sampleCount(sampleCount), totalPeriod(totalPeriod)
+    {}
+
+    QString label;
+    quint64 sampleCount = 0;
+    quint64 totalPeriod = 0;
+};
+
+struct Summary
+{
+    quint64 applicationRunningTime = 0;
+    quint32 threadCount = 0;
+    quint32 processCount = 0;
+    QString command;
+    quint64 lostChunks = 0;
+    QString hostName;
+    QString linuxKernelVersion;
+    QString perfVersion;
+    QString cpuDescription;
+    QString cpuId;
+    QString cpuArchitecture;
+    quint32 cpusOnline = 0;
+    quint32 cpusAvailable = 0;
+    QString cpuSiblingCores;
+    QString cpuSiblingThreads;
+    quint64 totalMemoryInKiB = 0;
+    // only non-zero when perf record --switch-events was used
+    quint64 onCpuTime = 0;
+    quint64 offCpuTime = 0;
+
+    // total number of samples
+    quint64 sampleCount = 0;
+    QVector<CostSummary> costs;
+
+    QStringList errors;
+};
+
 struct EventResults
 {
     QVector<ThreadEvents> threads;
@@ -518,6 +559,10 @@ Q_DECLARE_TYPEINFO(Data::Event, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::ThreadEvents)
 Q_DECLARE_TYPEINFO(Data::ThreadEvents, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::Summary)
+Q_DECLARE_TYPEINFO(Data::Summary, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Data::CostSummary, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::EventResults)
 Q_DECLARE_TYPEINFO(Data::EventResults, Q_MOVABLE_TYPE);

@@ -32,7 +32,6 @@
 #include "hotspot-config.h"
 #include "mainwindow.h"
 #include "models/data.h"
-#include "models/summarydata.h"
 
 int main(int argc, char** argv)
 {
@@ -43,7 +42,7 @@ int main(int argc, char** argv)
 
     QApplication app(argc, argv);
     app.setWindowIcon(QIcon(QStringLiteral(":/images/icons/512-hotspot_app_icon.png")));
-    qRegisterMetaType<SummaryData>();
+    qRegisterMetaType<Data::Summary>();
     qRegisterMetaType<Data::BottomUp>();
     qRegisterMetaType<Data::TopDown>();
     qRegisterMetaType<Data::CallerCalleeEntryMap>("Data::CallerCalleeEntryMap");

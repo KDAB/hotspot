@@ -37,7 +37,6 @@
 
 #include <ThreadWeaver/ThreadWeaver>
 
-#include <models/summarydata.h>
 #include <util.h>
 
 #include <functional>
@@ -1117,7 +1116,7 @@ struct PerfParserPrivate
     QVector<AttributesDefinition> attributes;
     QVector<QString> strings;
     QProcess process;
-    SummaryData summaryResult;
+    Data::Summary summaryResult;
     quint64 applicationStartTime = 0;
     quint64 applicationEndTime = 0;
     QSet<quint32> uniqueThreads;

@@ -40,7 +40,6 @@
 #include "util.h"
 #include "resultsutil.h"
 
-#include "models/summarydata.h"
 #include "models/hashmodel.h"
 #include "models/costdelegate.h"
 #include "models/treemodel.h"
@@ -76,7 +75,7 @@ ResultsSummaryPage::ResultsSummaryPage(PerfParser *parser, QWidget *parent)
     ui->parserErrorsView->setModel(parserErrorsModel);
 
     connect(parser, &PerfParser::summaryDataAvailable,
-            this, [this, parserErrorsModel] (const SummaryData& data) {
+            this, [this, parserErrorsModel] (const Data::Summary& data) {
                 auto formatSummaryText = [] (const QString& description, const QString& value) -> QString {
                     return QString(QLatin1String("<tr><td>") + description + QLatin1String(": </td><td>")
                                    + value + QLatin1String("</td></tr>"));

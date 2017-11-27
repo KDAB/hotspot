@@ -39,7 +39,6 @@
 #include "util.h"
 #include "data.h"
 #include "unistd.h"
-#include "summarydata.h"
 
 namespace {
 template<typename T>
@@ -88,7 +87,7 @@ private slots:
             QSKIP("perf is not available, cannot run integration tests.");
         }
 
-        qRegisterMetaType<SummaryData>();
+        qRegisterMetaType<Data::Summary>();
         qRegisterMetaType<Data::BottomUp>();
         qRegisterMetaType<Data::TopDown>();
         qRegisterMetaType<Data::CallerCalleeEntryMap>("Data::CallerCalleeEntryMap");
@@ -275,7 +274,7 @@ private slots:
     }
 
 private:
-    SummaryData m_summaryData;
+    Data::Summary m_summaryData;
     Data::BottomUpResults m_bottomUpData;
     Data::TopDownResults m_topDownData;
     Data::CallerCalleeResults m_callerCalleeData;
@@ -322,7 +321,7 @@ private:
         // Verify the summary data isn't empty
         QCOMPARE(summaryDataSpy.count(), 1);
         QList<QVariant> summaryDataArgs = summaryDataSpy.takeFirst();
-        m_summaryData = qvariant_cast<SummaryData>(summaryDataArgs.at(0));
+        m_summaryData = qvariant_cast<Data::Summary>(summaryDataArgs.at(0));
         QCOMPARE(m_perfCommand, m_summaryData.command);
         QVERIFY(m_summaryData.sampleCount > 0);
         QVERIFY(m_summaryData.applicationRunningTime > 0);

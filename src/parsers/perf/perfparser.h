@@ -33,8 +33,6 @@
 
 #include <models/data.h>
 
-struct SummaryData;
-
 // TODO: create a parser interface
 class PerfParser : public QObject
 {
@@ -57,7 +55,7 @@ public:
 
 signals:
     void parsingStarted();
-    void summaryDataAvailable(const SummaryData& data);
+    void summaryDataAvailable(const Data::Summary& data);
     void bottomUpDataAvailable(const Data::BottomUpResults& data);
     void topDownDataAvailable(const Data::TopDownResults& data);
     void callerCalleeDataAvailable(const Data::CallerCalleeResults& data);
