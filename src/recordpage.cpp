@@ -420,7 +420,10 @@ void RecordPage::stopRecording()
 
 void RecordPage::onApplicationNameChanged(const QString& filePath)
 {
-    QFileInfo application(QStandardPaths::findExecutable(KShell::tildeExpand(filePath)));
+    QFileInfo application(KShell::tildeExpand(filePath));
+    if (!application.exists()) {
+        application.setFile(QStandardPaths::findExecutable(filePath));
+    }
 
     if (!application.exists()) {
         setError(tr("Application file cannot be found: %1").arg(filePath));

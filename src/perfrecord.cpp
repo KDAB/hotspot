@@ -143,7 +143,11 @@ void PerfRecord::record(const QStringList &perfOptions, const QString &outputPat
 void PerfRecord::record(const QStringList &perfOptions, const QString &outputPath, const QString &exePath,
                         const QStringList &exeOptions, const QString &workingDirectory)
 {
-    QFileInfo exeFileInfo(QStandardPaths::findExecutable(exePath));
+    QFileInfo exeFileInfo(exePath);
+
+    if (!exeFileInfo.exists()) {
+        exeFileInfo.setFile(QStandardPaths::findExecutable(exePath));
+    }
 
     if (!exeFileInfo.exists()) {
         emit recordingFailed(tr("File '%1' does not exist.").arg(exePath));
