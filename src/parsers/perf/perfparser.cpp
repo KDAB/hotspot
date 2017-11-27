@@ -264,20 +264,37 @@ QDebug operator<<(QDebug stream, const SymbolDefinition& symbolDefinition)
     return stream;
 }
 
+struct SampleCost
+{
+    qint32 attributeId = 0;
+    quint64 cost = 0;
+};
+
+QDataStream& operator>>(QDataStream& stream, SampleCost& sampleCost)
+{
+    return stream >> sampleCost.attributeId >> sampleCost.cost;
+}
+
+QDebug operator<<(QDebug stream, const SampleCost& sampleCost)
+{
+    stream.noquote().nospace() << "SampleCost{"
+        << "attributeId=" << sampleCost.attributeId << ", "
+        << "cost=" << sampleCost.cost
+        << "}";
+    return stream;
+}
+
 struct Sample : Record
 {
     QVector<qint32> frames;
     quint8 guessedFrames = 0;
-    qint32 attributeId = 0;
-    quint64 period = 0;
-    quint64 weight = 0;
+    QVector<SampleCost> costs;
 };
 
 QDataStream& operator>>(QDataStream& stream, Sample& sample)
 {
     return stream >> static_cast<Record&>(sample)
-        >> sample.frames >> sample.guessedFrames >> sample.attributeId
-        >> sample.period >> sample.weight;
+        >> sample.frames >> sample.guessedFrames >> sample.costs;
 }
 
 QDebug operator<<(QDebug stream, const Sample& sample)
@@ -286,9 +303,7 @@ QDebug operator<<(QDebug stream, const Sample& sample)
         << static_cast<const Record&>(sample) << ", "
         << "frames=" << sample.frames << ", "
         << "guessedFrames=" << sample.guessedFrames << ", "
-        << "attributeId=" << sample.attributeId << ", "
-        << "period=" << sample.period << ", "
-        << "weight=" << sample.weight
+        << "costs=" << sample.costs
         << "}";
     return stream;
 }
@@ -550,6 +565,7 @@ void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& loca
 }
 
 Q_DECLARE_TYPEINFO(AttributesDefinition, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(SampleCost, Q_MOVABLE_TYPE);
 
 struct PerfParserPrivate
 {
@@ -658,10 +674,12 @@ struct PerfParserPrivate
                 Sample sample;
                 stream >> sample;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << sample;
-                if (!sample.period) {
-                    const auto& attribute = attributes.value(sample.attributeId);
-                    if (!attribute.usesFrequency) {
-                        sample.period = attribute.frequencyOrPeriod;
+                for (auto& sampleCost : sample.costs) {
+                    if (!sampleCost.cost) {
+                        const auto& attribute = attributes.value(sampleCost.attributeId);
+                        if (!attribute.usesFrequency) {
+                            sampleCost.cost = attribute.frequencyOrPeriod;
+                        }
                     }
                 }
                 addSample(sample);
@@ -910,16 +928,19 @@ struct PerfParserPrivate
 
     void addSample(const Sample& sample)
     {
-        Data::Event event;
-        event.time = sample.time;
-        event.cost = sample.period;
-        event.type = attributeIdsToCostIds.value(sample.attributeId, -1);
-        event.stackId = internStack(sample.frames);
         auto* thread = eventResult.findThread(sample.pid, sample.tid);
         if (!thread) {
             thread = addThread(sample);
         }
-        thread->events.push_back(event);
+
+        for (const auto& sampleCost : sample.costs) {
+            Data::Event event;
+            event.time = sample.time;
+            event.cost = sampleCost.cost;
+            event.type = attributeIdsToCostIds.value(sampleCost.attributeId, -1);
+            event.stackId = internStack(sample.frames);
+            thread->events.push_back(event);
+        }
 
         addSampleToBottomUp(sample);
         addSampleToSummary(sample);
@@ -933,20 +954,28 @@ struct PerfParserPrivate
 
     void addSampleToBottomUp(const Sample& sample)
     {
+        // TODO: optimize for groups, don't repeat the same lookup multiple times
+        for (const auto& sampleCost : sample.costs) {
+            addSampleToBottomUp(sample, sampleCost);
+        }
+    }
+
+    void addSampleToBottomUp(const Sample& sample, const SampleCost& sampleCost)
+    {
         if (perfScriptOutput) {
             *perfScriptOutput << commands.value(sample.pid).value(sample.pid) << '\t' << sample.pid << '\t'
                               << sample.time / 1000000000 << '.'
                               << qSetFieldWidth(9) << qSetPadChar(QLatin1Char('0'))
                               << sample.time % 1000000000
                               << qSetFieldWidth(0)
-                              << ":\t" << sample.period << '\n';
+                              << ":\t" << sampleCost.cost << ' ' << strings.value(attributes.value(sampleCost.attributeId).name.id) << '\n';
         }
 
         QSet<Data::Symbol> recursionGuard;
-        const auto type = attributeIdsToCostIds.value(sample.attributeId, -1);
-        auto frameCallback = [this, &recursionGuard, &sample, type] (const Data::Symbol& symbol, const Data::Location& location)
+        const auto type = attributeIdsToCostIds.value(sampleCost.attributeId, -1);
+        auto frameCallback = [this, &recursionGuard, &sampleCost, type] (const Data::Symbol& symbol, const Data::Location& location)
         {
-            addCallerCalleeEvent(symbol, location, type, sample.period,
+            addCallerCalleeEvent(symbol, location, type, sampleCost.cost,
                                  &recursionGuard, &callerCalleeResult,
                                  bottomUpResult.costs.numTypes());
 
@@ -959,7 +988,7 @@ struct PerfParserPrivate
             }
         };
 
-        bottomUpResult.addEvent(type, sample.period, sample.frames, frameCallback);
+        bottomUpResult.addEvent(type, sampleCost.cost, sample.frames, frameCallback);
 
         if (perfScriptOutput) {
             *perfScriptOutput << "\n";
@@ -989,14 +1018,16 @@ struct PerfParserPrivate
         uniqueProcess.insert(sample.pid);
         ++summaryResult.sampleCount;
 
-        const auto type = attributeIdsToCostIds.value(sample.attributeId, -1);
-        if (type < 0) {
-            qWarning() << "Unexpected attribute id:" << sample.attributeId
-                       << "Only know about" << attributeIdsToCostIds.size() << "attributes so far";
-        } else {
-            auto& costSummary = summaryResult.costs[type];
-            ++costSummary.sampleCount;
-            costSummary.totalPeriod += sample.period;
+        for (const auto& sampleCost : sample.costs) {
+            const auto type = attributeIdsToCostIds.value(sampleCost.attributeId, -1);
+            if (type < 0) {
+                qWarning() << "Unexpected attribute id:" << sampleCost.attributeId
+                        << "Only know about" << attributeIdsToCostIds.size() << "attributes so far";
+            } else {
+                auto& costSummary = summaryResult.costs[type];
+                ++costSummary.sampleCount;
+                costSummary.totalPeriod += sampleCost.cost;
+            }
         }
     }
 
@@ -1072,9 +1103,10 @@ struct PerfParserPrivate
         LostDefinition,
         FeaturesDefinition,
         Error,
-        Sample,
+        Sample45, // backwards compatibility
         Progress,
         ContextSwitchDefinition,
+        Sample,
         InvalidType
     };
 
