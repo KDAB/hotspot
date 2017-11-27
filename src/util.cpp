@@ -130,6 +130,10 @@ static QString formatTooltipImpl(int id, const Data::Symbol& symbol,
 
     const auto numTypes = selfCosts ? selfCosts->numTypes() : inclusiveCosts->numTypes();
     for (int i = 0; i < numTypes; ++i) {
+        if (!inclusiveCosts->totalCost(i)) {
+            continue;
+        }
+
         toolTip += QLatin1String("<hr/>");
         if (selfCosts) {
             extendTooltip(i, *selfCosts,
@@ -168,6 +172,9 @@ QString Util::formatTooltip(const Data::Symbol& symbol,
     for (int i = 0, c = totalCosts.numTypes(); i < c; ++i) {
         const auto cost = itemCost[i];
         const auto total = totalCosts.totalCost(i);
+        if (!total) {
+            continue;
+        }
         toolTip += QLatin1String("<hr/>")
                 + QCoreApplication::translate("Util", "%1: %2<br/>&nbsp;&nbsp;%4% out of %3 total")
                     .arg(totalCosts.typeName(i), Util::formatCost(cost),
@@ -188,6 +195,9 @@ QString Util::formatTooltip(const QString& location,
         const auto selfCost = cost.selfCost[i];
         const auto inclusiveCost = cost.inclusiveCost[i];
         const auto total = totalCosts.totalCost(i);
+        if (!total) {
+            continue;
+        }
         toolTip += QLatin1String("<hr/>")
                 + QCoreApplication::translate("Util", "%1 (self): %2<br/>&nbsp;&nbsp;%4% out of %3 total")
                     .arg(totalCosts.typeName(i), Util::formatCost(selfCost),
