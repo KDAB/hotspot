@@ -87,8 +87,13 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     connect(parser, &PerfParser::eventsAvailable,
             this, [this, eventModel] (const Data::EventResults& data) {
                 ui->timeLineEventSource->clear();
-                for (const auto& type : data.eventTypes) {
-                    ui->timeLineEventSource->addItem(type);
+                int typeId = -1;
+                for (const auto& type : data.totalCosts) {
+                    ++typeId;
+                    if (!type.sampleCount) {
+                        continue;
+                    }
+                    ui->timeLineEventSource->addItem(type.label, typeId);
                 }
                 eventModel->setData(data);
             });
@@ -96,8 +101,9 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
             parser, &PerfParser::filterResults);
 
     connect(ui->timeLineEventSource, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, [timeLineDelegate] (int eventType) {
-                timeLineDelegate->setEventType(eventType);
+            this, [this, timeLineDelegate] (int index) {
+                const auto typeId = ui->timeLineEventSource->itemData(index).toInt();
+                timeLineDelegate->setEventType(typeId);
             });
 
     ui->timeLineArea->hide();

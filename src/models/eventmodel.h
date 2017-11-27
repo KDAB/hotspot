@@ -56,7 +56,7 @@ public:
         NumThreadsRole,
         MaxCostRole,
         SortRole,
-        EventTypesRole,
+        TotalCostsRole,
         EventResultsRole,
     };
 

@@ -514,8 +514,8 @@ struct Summary
 struct EventResults
 {
     QVector<ThreadEvents> threads;
-    QVector<QString> eventTypes;
     QVector<QVector<qint32>> stacks;
+    QVector<CostSummary> totalCosts;
 
     ThreadEvents* findThread(qint32 pid, qint32 tid);
 };
@@ -562,6 +562,8 @@ Q_DECLARE_TYPEINFO(Data::ThreadEvents, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::Summary)
 Q_DECLARE_TYPEINFO(Data::Summary, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::CostSummary)
 Q_DECLARE_TYPEINFO(Data::CostSummary, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::EventResults)

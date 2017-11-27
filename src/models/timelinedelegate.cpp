@@ -266,14 +266,14 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
         }
 
         const auto formattedTime = Util::formatTimeString(time - data.minTime);
-        const auto eventTypes = index.data(EventModel::EventTypesRole).value<QVector<QString>>();
+        const auto totalCosts = index.data(EventModel::TotalCostsRole).value<QVector<Data::CostSummary>>();
         if (numSamples > 0) {
             QToolTip::showText(event->globalPos(), tr("time: %1\n%5 samples: %2\ntotal sample cost: %3\nmax sample cost: %4")
                 .arg(formattedTime).arg(numSamples)
-                .arg(totalCost).arg(maxCost).arg(eventTypes.value(m_eventType)));
+                .arg(totalCost).arg(maxCost).arg(totalCosts.value(m_eventType).label));
         } else {
             QToolTip::showText(event->globalPos(), tr("time: %1 (no %2 samples)")
-                .arg(formattedTime, eventTypes.value(m_eventType)));
+                .arg(formattedTime, totalCosts.value(m_eventType).label));
         }
         return true;
     }
@@ -450,7 +450,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                                 .arg(Util::formatTimeString(timeDelta),
                                      Util::formatCost(numEvents), Util::formatFrequency(numEvents, timeDelta),
                                      QString::number(threads.size()), QString::number(processes.size()),
-                                     data.eventTypes.value(m_eventType),
+                                     data.totalCosts.value(m_eventType).label,
                                      Util::formatCost(cost), Util::formatFrequency(cost, timeDelta)),
                            m_view);
     }

@@ -821,6 +821,8 @@ struct PerfParserPrivate
             summaryResult.offCpuTime += thread.offCpuTime;
             summaryResult.onCpuTime += runTime - thread.offCpuTime;
         }
+
+        eventResult.totalCosts = summaryResult.costs;
     }
 
     void addAttributes(const AttributesDefinition& attributesDefinition)
@@ -836,8 +838,6 @@ struct PerfParserPrivate
             summaryResult.costs.push_back({label, 0, 0});
             Q_ASSERT(bottomUpResult.costs.numTypes() == costId);
             bottomUpResult.costs.addType(costId, label);
-            Q_ASSERT(eventResult.eventTypes.size() == costId);
-            eventResult.eventTypes.push_back(label);
         }
 
         attributeIdsToCostIds[attributesDefinition.id] = costId;
