@@ -669,6 +669,9 @@ struct PerfParserPrivate
 
         switch (static_cast<EventType>(eventType)) {
             case EventType::Sample43: // fall-through
+            case EventType::Sample45:
+                qCWarning(LOG_PERFPARSER) << "unexpected legacy type encountered" << eventType;
+                break;
             case EventType::Sample: {
                 Sample sample;
                 stream >> sample;
