@@ -98,6 +98,9 @@ ResultsSummaryPage::ResultsSummaryPage(PerfParser *parser, QWidget *parent)
                                 .arg(QString::number(data.sampleCount), Util::formatFrequency(data.sampleCount, data.applicationRunningTime)));
                     const auto indent = QLatin1String("&nbsp;&nbsp;&nbsp;&nbsp;");
                     for (const auto& costSummary : data.costs) {
+                        if (!costSummary.sampleCount) {
+                            continue;
+                        }
                         stream << formatSummaryText(indent + costSummary.label.toHtmlEscaped(),
                                                     tr("%1 (%2 samples, %3% of total, %4)")
                                                         .arg(Util::formatCost(costSummary.totalPeriod),
