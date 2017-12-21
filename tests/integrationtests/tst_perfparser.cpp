@@ -179,7 +179,7 @@ private slots:
 
     void testCppRecursionNoOptions()
     {
-        const QStringList perfOptions = {"-F", "999"};
+        const QStringList perfOptions;
         const QStringList exeOptions = {"40"};
 
         const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-recursion/cpp-recursion";
