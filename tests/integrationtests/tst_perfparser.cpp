@@ -324,6 +324,31 @@ private:
         m_perfCommand = perf.perfCommand();
     }
 
+    static void validateCosts(const Data::Costs& costs, const Data::BottomUp& row)
+    {
+        if (row.parent) {
+            bool hasCost = false;
+            for (int i = 0; i < costs.numTypes(); ++i) {
+                if (costs.cost(i, row.id) > 0) {
+                    hasCost = true;
+                    break;
+                }
+            }
+            if (!hasCost) {
+                qWarning() << "row without cost: " << row.id << row.symbol << row.parent;
+                auto* r = &row;
+                while (auto p = r->parent) {
+                    qWarning() << p->symbol;
+                    r = p;
+                }
+            }
+            VERIFY_OR_THROW(hasCost);
+        }
+        for (const auto& child : row.children) {
+            validateCosts(costs, child);
+        }
+    }
+
     void testPerfData(const Data::Symbol &topBottomUpSymbol, const Data::Symbol &topTopDownSymbol, const QString &fileName)
     {
         PerfParser parser(this);
@@ -364,6 +389,7 @@ private:
         COMPARE_OR_THROW(bottomUpDataSpy.count(), 1);
         QList<QVariant> bottomUpDataArgs = bottomUpDataSpy.takeFirst();
         m_bottomUpData = bottomUpDataArgs.at(0).value<Data::BottomUpResults>();
+        validateCosts(m_bottomUpData.costs, m_bottomUpData.root);
         VERIFY_OR_THROW(m_bottomUpData.root.children.count() > 0);
 
         int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData);
