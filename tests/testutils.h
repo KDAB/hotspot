@@ -47,7 +47,13 @@ QString printCost(const Data& node, const Results& results)
 
 inline QString printCost(const Data::BottomUp& node, const Data::BottomUpResults& results)
 {
-    return QString::number(results.costs.cost(0, node.id));
+    QString ret;
+    for (int i = 0; i < results.costs.numTypes(); ++i) {
+        if (i != 0)
+            ret += QLatin1String(", ");
+        ret += QString::number(results.costs.cost(0, node.id));
+    }
+    return ret;
 }
 
 template<typename Tree, typename Results>

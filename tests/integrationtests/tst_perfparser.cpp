@@ -229,8 +229,11 @@ private slots:
         QVERIFY(!m_topDownData.root.children.isEmpty());
 
         QVERIFY(searchForChildSymbol(m_bottomUpData.root.children.at(maxElementTopIndex(m_bottomUpData)), "main"));
-        QEXPECT_FAIL("", "unwinding often fails from the fibonacci function, unclear why - increasing the stack dump size doesn't help", Continue);
-        QVERIFY(searchForChildSymbol(m_topDownData.root.children.at(maxElementTopIndex(m_topDownData)), "main"));
+        const auto maxTop = m_topDownData.root.children.at(maxElementTopIndex(m_topDownData));
+        if (!maxTop.symbol.isValid()) {
+            QSKIP("unwinding failed from the fibonacci function, unclear why - increasing the stack dump size doesn't help");
+        }
+        QVERIFY(searchForChildSymbol(maxTop, "main"));
     }
 
     void testCppRecursionEventCycles()
@@ -375,11 +378,12 @@ private:
 
         if (topTopDownSymbol.isValid()) {
             int topDownTopIndex = maxElementTopIndex(m_topDownData);
-            if (QTest::currentTestFunction() == QLatin1String("testCppRecursionCallGraphDwarf")) {
-                QEXPECT_FAIL("", "unwinding often fails from the fibonacci function, unclear why - increasing the stack dump size doesn't help", Continue);
+            if (QTest::currentTestFunction() != QLatin1String("testCppRecursionCallGraphDwarf")
+                || m_topDownData.root.children[topDownTopIndex].symbol.isValid())
+            {
+                VERIFY_OR_THROW(m_topDownData.root.children[topDownTopIndex].symbol.symbol.contains(topTopDownSymbol.symbol));
+                VERIFY_OR_THROW(m_topDownData.root.children[topDownTopIndex].symbol.binary.contains(topTopDownSymbol.binary));
             }
-            VERIFY_OR_THROW(m_topDownData.root.children[topDownTopIndex].symbol.symbol.contains(topTopDownSymbol.symbol));
-            VERIFY_OR_THROW(m_topDownData.root.children[topDownTopIndex].symbol.binary.contains(topTopDownSymbol.binary));
         }
 
         // Verify the Caller/Callee data isn't empty
