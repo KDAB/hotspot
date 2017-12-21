@@ -41,9 +41,7 @@
 QString Util::findLibexecBinary(const QString& name)
 {
     QDir dir(qApp->applicationDirPath());
-    qDebug() << qApp->applicationDirPath() << name << HOTSPOT_LIBEXEC_REL_PATH;
     if (!dir.cd(QStringLiteral(HOTSPOT_LIBEXEC_REL_PATH))) {
-        qDebug() << "cd failed";
         return {};
     }
     QFileInfo info(dir.filePath(name));
