@@ -51,7 +51,7 @@ inline QString printCost(const Data::BottomUp& node, const Data::BottomUpResults
     for (int i = 0; i < results.costs.numTypes(); ++i) {
         if (i != 0)
             ret += QLatin1String(", ");
-        ret += QString::number(results.costs.cost(0, node.id));
+        ret += QString::number(results.costs.cost(i, node.id));
     }
     return ret;
 }
