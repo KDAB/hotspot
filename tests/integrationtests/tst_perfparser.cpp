@@ -40,6 +40,26 @@
 #include "data.h"
 #include "unistd.h"
 
+#include <exception>
+
+#define VERIFY_OR_THROW(statement) \
+do {\
+    if (!QTest::qVerify(static_cast<bool>(statement), #statement, "", __FILE__, __LINE__))\
+        throw std::logic_error("verify failed: " #statement);\
+} while (false)
+
+#define VERIFY_OR_THROW2(statement, description) \
+do {\
+    if (!QTest::qVerify(static_cast<bool>(statement), #statement, description, __FILE__, __LINE__))\
+        throw std::logic_error(description);\
+} while (false)
+
+#define COMPARE_OR_THROW(actual, expected) \
+do {\
+    if (!QTest::qCompare(actual, expected, #actual, #expected, __FILE__, __LINE__))\
+        throw std::logic_error("compare failed: " #actual #expected);\
+} while (false)
+
 namespace {
 template<typename T>
 bool searchForChildSymbol(const T& root, const QString& searchString)
@@ -290,11 +310,11 @@ private:
         perf.record(perfOptions + QStringList{QStringLiteral("-c"), QStringLiteral("1000000")},
                     fileName, exePath, exeOptions);
 
-        QVERIFY(recordingFinishedSpy.wait(10000));
+        VERIFY_OR_THROW(recordingFinishedSpy.wait(10000));
 
-        QCOMPARE(recordingFailedSpy.count(), 0);
-        QCOMPARE(recordingFinishedSpy.count(), 1);
-        QCOMPARE(QFileInfo::exists(fileName), true);
+        COMPARE_OR_THROW(recordingFailedSpy.count(), 0);
+        COMPARE_OR_THROW(recordingFinishedSpy.count(), 1);
+        COMPARE_OR_THROW(QFileInfo::exists(fileName), true);
 
         m_perfCommand = perf.perfCommand();
     }
@@ -312,63 +332,63 @@ private:
 
         parser.startParseFile(fileName, "", "", "", "", "", "");
 
-        QVERIFY(parsingFinishedSpy.wait(6000));
+        VERIFY_OR_THROW(parsingFinishedSpy.wait(6000));
 
         // Verify that the test passed
-        QCOMPARE(parsingFailedSpy.count(), 0);
-        QCOMPARE(parsingFinishedSpy.count(), 1);
+        COMPARE_OR_THROW(parsingFailedSpy.count(), 0);
+        COMPARE_OR_THROW(parsingFinishedSpy.count(), 1);
 
         // Verify the summary data isn't empty
-        QCOMPARE(summaryDataSpy.count(), 1);
+        COMPARE_OR_THROW(summaryDataSpy.count(), 1);
         QList<QVariant> summaryDataArgs = summaryDataSpy.takeFirst();
         m_summaryData = qvariant_cast<Data::Summary>(summaryDataArgs.at(0));
-        QCOMPARE(m_perfCommand, m_summaryData.command);
-        QVERIFY(m_summaryData.sampleCount > 0);
-        QVERIFY(m_summaryData.applicationRunningTime > 0);
-        QVERIFY(m_summaryData.cpusAvailable > 0);
-        QVERIFY(m_summaryData.processCount > 0);
-        QCOMPARE(m_summaryData.cpuArchitecture, QSysInfo::currentCpuArchitecture());
-        QCOMPARE(m_summaryData.linuxKernelVersion, QSysInfo::kernelVersion());
-        QCOMPARE(m_summaryData.hostName, QSysInfo::machineHostName());
+        COMPARE_OR_THROW(m_perfCommand, m_summaryData.command);
+        VERIFY_OR_THROW(m_summaryData.sampleCount > 0);
+        VERIFY_OR_THROW(m_summaryData.applicationRunningTime > 0);
+        VERIFY_OR_THROW(m_summaryData.cpusAvailable > 0);
+        VERIFY_OR_THROW(m_summaryData.processCount > 0);
+        COMPARE_OR_THROW(m_summaryData.cpuArchitecture, QSysInfo::currentCpuArchitecture());
+        COMPARE_OR_THROW(m_summaryData.linuxKernelVersion, QSysInfo::kernelVersion());
+        COMPARE_OR_THROW(m_summaryData.hostName, QSysInfo::machineHostName());
 
         // Verify the sample frequency is acceptable, greater than 500Hz
         double frequency = (1E9 * m_summaryData.sampleCount) / m_summaryData.applicationRunningTime;
-        QVERIFY2(frequency > 500, qPrintable("Low Frequency: " + QString::number(frequency)));
+        VERIFY_OR_THROW2(frequency > 500, qPrintable("Low Frequency: " + QString::number(frequency)));
 
         // Verify the top Bottom-Up symbol result contains the expected data
-        QCOMPARE(bottomUpDataSpy.count(), 1);
+        COMPARE_OR_THROW(bottomUpDataSpy.count(), 1);
         QList<QVariant> bottomUpDataArgs = bottomUpDataSpy.takeFirst();
         m_bottomUpData = bottomUpDataArgs.at(0).value<Data::BottomUpResults>();
-        QVERIFY(m_bottomUpData.root.children.count() > 0);
+        VERIFY_OR_THROW(m_bottomUpData.root.children.count() > 0);
 
         int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData);
-        QVERIFY(m_bottomUpData.root.children[bottomUpTopIndex].symbol.symbol.contains(topBottomUpSymbol.symbol));
-        QVERIFY(m_bottomUpData.root.children[bottomUpTopIndex].symbol.binary.contains(topBottomUpSymbol.binary));
+        VERIFY_OR_THROW(m_bottomUpData.root.children[bottomUpTopIndex].symbol.symbol.contains(topBottomUpSymbol.symbol));
+        VERIFY_OR_THROW(m_bottomUpData.root.children[bottomUpTopIndex].symbol.binary.contains(topBottomUpSymbol.binary));
 
         // Verify the top Top-Down symbol result contains the expected data
-        QCOMPARE(topDownDataSpy.count(), 1);
+        COMPARE_OR_THROW(topDownDataSpy.count(), 1);
         QList<QVariant> topDownDataArgs = topDownDataSpy.takeFirst();
         m_topDownData = topDownDataArgs.at(0).value<Data::TopDownResults>();
-        QVERIFY(m_topDownData.root.children.count() > 0);
+        VERIFY_OR_THROW(m_topDownData.root.children.count() > 0);
 
         if (topTopDownSymbol.isValid()) {
             int topDownTopIndex = maxElementTopIndex(m_topDownData);
             if (QTest::currentTestFunction() == QLatin1String("testCppRecursionCallGraphDwarf")) {
                 QEXPECT_FAIL("", "unwinding often fails from the fibonacci function, unclear why - increasing the stack dump size doesn't help", Continue);
             }
-            QVERIFY(m_topDownData.root.children[topDownTopIndex].symbol.symbol.contains(topTopDownSymbol.symbol));
-            QVERIFY(m_topDownData.root.children[topDownTopIndex].symbol.binary.contains(topTopDownSymbol.binary));
+            VERIFY_OR_THROW(m_topDownData.root.children[topDownTopIndex].symbol.symbol.contains(topTopDownSymbol.symbol));
+            VERIFY_OR_THROW(m_topDownData.root.children[topDownTopIndex].symbol.binary.contains(topTopDownSymbol.binary));
         }
 
         // Verify the Caller/Callee data isn't empty
-        QCOMPARE(callerCalleeDataSpy.count(), 1);
+        COMPARE_OR_THROW(callerCalleeDataSpy.count(), 1);
         QList<QVariant> callerCalleeDataArgs = callerCalleeDataSpy.takeFirst();
         m_callerCalleeData = callerCalleeDataArgs.at(0).value<Data::CallerCalleeResults>();
-        QVERIFY(m_callerCalleeData.entries.count() > 0);
+        VERIFY_OR_THROW(m_callerCalleeData.entries.count() > 0);
 
         // Verify that no individual cost in the Caller/Callee data is greater than the total cost of all samples
         for (const auto &entry : m_callerCalleeData.entries) {
-            QVERIFY(m_callerCalleeData.inclusiveCosts.cost(0, entry.id) <= m_summaryData.costs[0].totalPeriod);
+            VERIFY_OR_THROW(m_callerCalleeData.inclusiveCosts.cost(0, entry.id) <= m_summaryData.costs[0].totalPeriod);
         }
     }
 };
