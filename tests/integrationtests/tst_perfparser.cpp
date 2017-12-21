@@ -40,6 +40,8 @@
 #include "data.h"
 #include "unistd.h"
 
+#include "../testutils.h"
+
 #include <exception>
 
 #define VERIFY_OR_THROW(statement) \
