@@ -176,7 +176,8 @@ private slots:
 
     void testCppInliningEventCyclesInstructions()
     {
-        const QStringList perfOptions = {"--call-graph", "dwarf", "--event", "cycles,instructions"};
+        QFETCH(QString, eventSpec);
+        const QStringList perfOptions = {"--call-graph", "dwarf", "--event", eventSpec};
         QStringList exeOptions;
 
         const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-inlining/cpp-inlining";
@@ -188,6 +189,12 @@ private slots:
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
 
+        QCOMPARE(m_bottomUpData.costs.numTypes(), 2);
+        QCOMPARE(m_topDownData.inclusiveCosts.numTypes(), 2);
+        QCOMPARE(m_topDownData.selfCosts.numTypes(), 2);
+        QCOMPARE(m_bottomUpData.costs.typeName(0), QStringLiteral("cycles:u"));
+        QCOMPARE(m_bottomUpData.costs.typeName(1), QStringLiteral("instructions:u"));
+
         int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData);
         qint64 bottomUpCycleCost = m_bottomUpData.costs.cost(0, m_bottomUpData.root.children.at(bottomUpTopIndex).id);
         qint64 bottomUpInstructionCost = m_bottomUpData.costs.cost(1, m_bottomUpData.root.children.at(bottomUpTopIndex).id);
@@ -197,6 +204,15 @@ private slots:
         qint64 topDownCycleCost = m_topDownData.inclusiveCosts.cost(0, m_topDownData.root.children.at(topDownTopIndex).id);
         qint64 topDownInstructionCost = m_topDownData.inclusiveCosts.cost(1, m_topDownData.root.children.at(topDownTopIndex).id);
         QVERIFY2(topDownCycleCost != topDownInstructionCost, "Top-Down Cycle Cost should not be equal to Top-Down Instruction Cost");
+    }
+
+    void testCppInliningEventCyclesInstructions_data()
+    {
+        QTest::addColumn<QString>("eventSpec");
+
+        QTest::newRow("separate-events") << QStringLiteral("cycles,instructions");
+        QTest::newRow("group") << QStringLiteral("{cycles,instructions}");
+        QTest::newRow("leader-sampling") << QStringLiteral("{cycles,instructions}:S");
     }
 
     void testCppRecursionNoOptions()
