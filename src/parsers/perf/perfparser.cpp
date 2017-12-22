@@ -688,7 +688,6 @@ struct PerfParserPrivate
                 addSample(sample);
                 break;
             }
-            // WARNING: this event is not time-sorted
             case EventType::ThreadStart: {
                 ThreadStart threadStart;
                 stream >> threadStart;
@@ -698,7 +697,6 @@ struct PerfParserPrivate
                 addThread(threadStart)->timeStart = threadStart.time;
                 break;
             }
-            // WARNING: this event is not time-sorted
             case EventType::ThreadEnd: {
                 ThreadEnd threadEnd;
                 stream >> threadEnd;
@@ -707,7 +705,6 @@ struct PerfParserPrivate
                 addThreadEnd(threadEnd);
                 break;
             }
-            // WARNING: this event is not time-sorted
             case EventType::Command: {
                 Command command;
                 stream >> command;
@@ -744,7 +741,6 @@ struct PerfParserPrivate
                 addString(stringDefinition);
                 break;
             }
-            // WARNING: this event is not time-sorted
             case EventType::LostDefinition: {
                 LostDefinition lostDefinition;
                 stream >> lostDefinition;
