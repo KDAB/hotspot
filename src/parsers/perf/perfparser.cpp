@@ -684,6 +684,7 @@ struct PerfParserPrivate
                         }
                     }
                 }
+                updateApplicationTime(sample.time);
                 addSample(sample);
                 break;
             }
@@ -692,6 +693,7 @@ struct PerfParserPrivate
                 ThreadStart threadStart;
                 stream >> threadStart;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << threadStart;
+                updateApplicationTime(threadStart.time);
                 // override start time explicitly
                 addThread(threadStart)->timeStart = threadStart.time;
                 break;
@@ -701,6 +703,7 @@ struct PerfParserPrivate
                 ThreadEnd threadEnd;
                 stream >> threadEnd;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << threadEnd;
+                updateApplicationTime(threadEnd.time);
                 addThreadEnd(threadEnd);
                 break;
             }
@@ -709,6 +712,7 @@ struct PerfParserPrivate
                 Command command;
                 stream >> command;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << command;
+                updateApplicationTime(command.time);
                 addCommand(command);
                 break;
             }
@@ -745,6 +749,7 @@ struct PerfParserPrivate
                 LostDefinition lostDefinition;
                 stream >> lostDefinition;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << lostDefinition;
+                updateApplicationTime(lostDefinition.time);
                 addLost(lostDefinition);
                 break;
             }
@@ -766,6 +771,7 @@ struct PerfParserPrivate
                 ContextSwitchDefinition contextSwitch;
                 stream >> contextSwitch;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << contextSwitch;
+                updateApplicationTime(contextSwitch.time);
                 addContextSwitch(contextSwitch);
                 break;
             }
@@ -1008,14 +1014,18 @@ struct PerfParserPrivate
         Data::callerCalleesFromBottomUpData(bottomUpResult, &callerCalleeResult);
     }
 
+    void updateApplicationTime(quint64 time)
+    {
+        if (time < applicationStartTime || applicationStartTime == 0) {
+            applicationStartTime = time;
+        }
+        if (time > applicationEndTime || applicationEndTime == 0) {
+            applicationEndTime = time;
+        }
+    }
+
     void addSampleToSummary(const Sample& sample)
     {
-        if (sample.time < applicationStartTime || applicationStartTime == 0) {
-            applicationStartTime = sample.time;
-        }
-        else if (sample.time > applicationEndTime || applicationEndTime == 0) {
-            applicationEndTime = sample.time;
-        }
         uniqueThreads.insert(sample.tid);
         uniqueProcess.insert(sample.pid);
         ++summaryResult.sampleCount;
