@@ -336,6 +336,7 @@ private:
     Data::BottomUpResults m_bottomUpData;
     Data::TopDownResults m_topDownData;
     Data::CallerCalleeResults m_callerCalleeData;
+    Data::EventResults m_eventData;
     QString m_perfCommand;
 
     void perfRecord(const QStringList &perfOptions, const QString &exePath, const QStringList &exeOptions, const QString &fileName)
@@ -393,6 +394,7 @@ private:
         QSignalSpy bottomUpDataSpy(&parser, &PerfParser::bottomUpDataAvailable);
         QSignalSpy topDownDataSpy(&parser, &PerfParser::topDownDataAvailable);
         QSignalSpy callerCalleeDataSpy(&parser, &PerfParser::callerCalleeDataAvailable);
+        QSignalSpy eventsDataSpy(&parser, &PerfParser::eventsAvailable);
 
         parser.startParseFile(fileName, "", "", "", "", "", "");
 
@@ -459,6 +461,27 @@ private:
         // Verify that no individual cost in the Caller/Callee data is greater than the total cost of all samples
         for (const auto &entry : m_callerCalleeData.entries) {
             VERIFY_OR_THROW(m_callerCalleeData.inclusiveCosts.cost(0, entry.id) <= m_summaryData.costs[0].totalPeriod);
+        }
+
+        // Verify that the events data is not empty and somewhat sane
+        COMPARE_OR_THROW(eventsDataSpy.count(), 1);
+        m_eventData = eventsDataSpy.first().first().value<Data::EventResults>();
+        VERIFY_OR_THROW(!m_eventData.stacks.isEmpty());
+        VERIFY_OR_THROW(!m_eventData.threads.isEmpty());
+        for (const auto& thread : m_eventData.threads) {
+            VERIFY_OR_THROW(!thread.events.isEmpty());
+            VERIFY_OR_THROW(!thread.name.isEmpty());
+            VERIFY_OR_THROW(thread.pid != 0);
+            VERIFY_OR_THROW(thread.tid != 0);
+            VERIFY_OR_THROW(thread.timeStart != 0);
+            VERIFY_OR_THROW(thread.timeEnd > thread.timeStart);
+            VERIFY_OR_THROW(thread.offCpuTime == 0 || thread.offCpuTime < (thread.timeEnd - thread.timeStart));
+        }
+        VERIFY_OR_THROW(!m_eventData.totalCosts.isEmpty());
+        for (const auto& costs : m_eventData.totalCosts) {
+            VERIFY_OR_THROW(!costs.label.isEmpty());
+            VERIFY_OR_THROW(costs.sampleCount > 0);
+            VERIFY_OR_THROW(costs.totalPeriod > 0);
         }
     }
 };
