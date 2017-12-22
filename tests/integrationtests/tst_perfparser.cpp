@@ -314,6 +314,23 @@ private slots:
         QCOMPARE(recordingFinishedSpy.count(), 1);
     }
 
+    void testSwitchEvents()
+    {
+        const QStringList perfOptions = {"--call-graph", "dwarf", "--switch-events"};
+
+        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-sleep/cpp-sleep";
+
+        QTemporaryFile tempFile;
+        tempFile.open();
+
+        perfRecord(perfOptions, exePath, {}, tempFile.fileName());
+        testPerfData(Data::Symbol{"hypot", "libm"}, Data::Symbol{"start", "cpp-sleep"}, tempFile.fileName());
+
+        QVERIFY(m_summaryData.offCpuTime > 1E9); // it should sleep at least 1s in total
+        QVERIFY(m_summaryData.onCpuTime > 0); // there's some CPU time, but not sure how much
+        QCOMPARE(m_summaryData.applicationRunningTime, m_summaryData.offCpuTime + m_summaryData.onCpuTime);
+    }
+
 private:
     Data::Summary m_summaryData;
     Data::BottomUpResults m_bottomUpData;
