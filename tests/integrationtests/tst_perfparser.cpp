@@ -428,9 +428,11 @@ private:
         validateCosts(m_bottomUpData.costs, m_bottomUpData.root);
         VERIFY_OR_THROW(m_bottomUpData.root.children.count() > 0);
 
-        int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData);
-        VERIFY_OR_THROW(m_bottomUpData.root.children[bottomUpTopIndex].symbol.symbol.contains(topBottomUpSymbol.symbol));
-        VERIFY_OR_THROW(m_bottomUpData.root.children[bottomUpTopIndex].symbol.binary.contains(topBottomUpSymbol.binary));
+        if (topBottomUpSymbol.isValid()) {
+            int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData);
+            VERIFY_OR_THROW(m_bottomUpData.root.children[bottomUpTopIndex].symbol.symbol.contains(topBottomUpSymbol.symbol));
+            VERIFY_OR_THROW(m_bottomUpData.root.children[bottomUpTopIndex].symbol.binary.contains(topBottomUpSymbol.binary));
+        }
 
         // Verify the top Top-Down symbol result contains the expected data
         COMPARE_OR_THROW(topDownDataSpy.count(), 1);
