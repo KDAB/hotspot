@@ -324,7 +324,7 @@ private slots:
         tempFile.open();
 
         perfRecord(perfOptions, exePath, {}, tempFile.fileName());
-        testPerfData(Data::Symbol{"hypot", "libm"}, Data::Symbol{"start", "cpp-sleep"}, tempFile.fileName());
+        testPerfData(Data::Symbol{"hypot", "libm"}, Data::Symbol{"start", "cpp-sleep"}, tempFile.fileName(), false);
 
         QVERIFY(m_summaryData.offCpuTime > 1E9); // it should sleep at least 1s in total
         QVERIFY(m_summaryData.onCpuTime > 0); // there's some CPU time, but not sure how much
@@ -382,7 +382,8 @@ private:
         }
     }
 
-    void testPerfData(const Data::Symbol &topBottomUpSymbol, const Data::Symbol &topTopDownSymbol, const QString &fileName)
+    void testPerfData(const Data::Symbol &topBottomUpSymbol, const Data::Symbol &topTopDownSymbol, const QString &fileName,
+                      bool checkFrequency = true)
     {
         PerfParser parser(this);
 
@@ -414,9 +415,11 @@ private:
         COMPARE_OR_THROW(m_summaryData.linuxKernelVersion, QSysInfo::kernelVersion());
         COMPARE_OR_THROW(m_summaryData.hostName, QSysInfo::machineHostName());
 
-        // Verify the sample frequency is acceptable, greater than 500Hz
-        double frequency = (1E9 * m_summaryData.sampleCount) / m_summaryData.applicationRunningTime;
-        VERIFY_OR_THROW2(frequency > 500, qPrintable("Low Frequency: " + QString::number(frequency)));
+        if (checkFrequency) {
+            // Verify the sample frequency is acceptable, greater than 500Hz
+            double frequency = (1E9 * m_summaryData.sampleCount) / m_summaryData.applicationRunningTime;
+            VERIFY_OR_THROW2(frequency > 500, qPrintable("Low Frequency: " + QString::number(frequency)));
+        }
 
         // Verify the top Bottom-Up symbol result contains the expected data
         COMPARE_OR_THROW(bottomUpDataSpy.count(), 1);
