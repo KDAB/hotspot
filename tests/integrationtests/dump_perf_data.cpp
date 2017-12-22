@@ -44,6 +44,7 @@ int main(int argc, char** argv)
 
     qRegisterMetaType<Data::BottomUpResults>();
     qRegisterMetaType<Data::EventResults>();
+    qRegisterMetaType<Data::Summary>();
 
     int runningParsers = 0;
     for (const auto& arg : args) {
@@ -67,6 +68,13 @@ int main(int argc, char** argv)
                          parser, [arg](const Data::BottomUpResults& data) {
                             qDebug() << arg;
                             dumpList(printTree(data));
+                        });
+        QObject::connect(parser, &PerfParser::summaryDataAvailable,
+                         parser, [arg](const Data::Summary& data) {
+                            qDebug() << "summary for" << arg;
+                            qDebug() << "runtime:" << Util::formatTimeString(data.applicationRunningTime);
+                            qDebug() << "on-CPU:" << Util::formatTimeString(data.onCpuTime);
+                            qDebug() << "off-CPU:" << Util::formatTimeString(data.offCpuTime);
                         });
     }
 
