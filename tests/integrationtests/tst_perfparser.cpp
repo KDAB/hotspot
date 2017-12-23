@@ -192,8 +192,8 @@ private slots:
         QCOMPARE(m_bottomUpData.costs.numTypes(), 2);
         QCOMPARE(m_topDownData.inclusiveCosts.numTypes(), 2);
         QCOMPARE(m_topDownData.selfCosts.numTypes(), 2);
-        QCOMPARE(m_bottomUpData.costs.typeName(0), QStringLiteral("cycles:u"));
-        QCOMPARE(m_bottomUpData.costs.typeName(1), QStringLiteral("instructions:u"));
+        QVERIFY(m_bottomUpData.costs.typeName(0).startsWith(QStringLiteral("cycles")));
+        QVERIFY(m_bottomUpData.costs.typeName(1).startsWith(QStringLiteral("instructions")));
 
         int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData);
         qint64 bottomUpCycleCost = m_bottomUpData.costs.cost(0, m_bottomUpData.root.children.at(bottomUpTopIndex).id);
