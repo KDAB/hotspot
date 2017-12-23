@@ -331,6 +331,44 @@ private slots:
         QCOMPARE(m_summaryData.applicationRunningTime, m_summaryData.offCpuTime + m_summaryData.onCpuTime);
     }
 
+    void testThreadNames()
+    {
+        const QStringList perfOptions = {"--call-graph", "dwarf", "--switch-events"};
+
+        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-threadnames/cpp-threadnames";
+
+        QTemporaryFile tempFile;
+        tempFile.open();
+
+        perfRecord(perfOptions, exePath, {}, tempFile.fileName());
+        testPerfData({}, {}, tempFile.fileName(), false);
+
+        // in total, there should only be about 1s runtime
+        QVERIFY(m_summaryData.applicationRunningTime > 1E9);
+        // and it should be less than the total sleep time
+        QVERIFY(m_summaryData.applicationRunningTime < m_summaryData.offCpuTime);
+        // which is about 2s since the main thread sleeps most of the time, and every one of the others, too
+        QVERIFY(m_summaryData.offCpuTime > 2E9);
+        // there's some CPU time, but not sure how much
+        QVERIFY(m_summaryData.onCpuTime > 0 && m_summaryData.onCpuTime < m_summaryData.offCpuTime);
+
+        QCOMPARE(m_eventData.threads.size(), 11);
+        quint64 lastTime = 0;
+        for (int i = 0; i < 11; ++i) {
+            const auto& thread = m_eventData.threads[i];
+            QVERIFY(thread.timeStart > lastTime);
+            lastTime = thread.timeStart;
+            if (i == 0) {
+                QCOMPARE(thread.name, QStringLiteral("cpp-threadnames"));
+                QVERIFY(thread.offCpuTime > 1E9); // sleeps about 1s in total
+            } else {
+                QCOMPARE(thread.name, QString("threadname%1").arg(i - 1));
+                QVERIFY(thread.offCpuTime > 1E8);
+                QVERIFY(thread.offCpuTime < 1E9);
+            }
+            QVERIFY((thread.timeEnd - thread.timeStart) > thread.offCpuTime);
+        }
+    }
 private:
     Data::Summary m_summaryData;
     Data::BottomUpResults m_bottomUpData;
@@ -469,7 +507,6 @@ private:
         VERIFY_OR_THROW(!m_eventData.stacks.isEmpty());
         VERIFY_OR_THROW(!m_eventData.threads.isEmpty());
         for (const auto& thread : m_eventData.threads) {
-            VERIFY_OR_THROW(!thread.events.isEmpty());
             VERIFY_OR_THROW(!thread.name.isEmpty());
             VERIFY_OR_THROW(thread.pid != 0);
             VERIFY_OR_THROW(thread.tid != 0);

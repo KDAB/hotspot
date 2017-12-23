@@ -802,13 +802,6 @@ struct PerfParserPrivate
         buildTopDownResult();
         buildCallerCalleeResult();
 
-        auto emptyThreadIt = std::remove_if(eventResult.threads.begin(),
-                                            eventResult.threads.end(),
-                                            [](const Data::ThreadEvents& thread) {
-                                                return thread.events.isEmpty();
-                                            });
-        eventResult.threads.erase(emptyThreadIt, eventResult.threads.end());
-
         for (auto& thread : eventResult.threads) {
             thread.timeStart = std::max(thread.timeStart, applicationStartTime);
             thread.timeEnd = std::min(thread.timeEnd, applicationEndTime);
