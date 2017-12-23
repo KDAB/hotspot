@@ -684,7 +684,8 @@ struct PerfParserPrivate
                         }
                     }
                 }
-                updateApplicationTime(sample.time);
+
+                addRecord(sample);
                 addSample(sample);
                 break;
             }
@@ -692,7 +693,7 @@ struct PerfParserPrivate
                 ThreadStart threadStart;
                 stream >> threadStart;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << threadStart;
-                updateApplicationTime(threadStart.time);
+                addRecord(threadStart);
                 // override start time explicitly
                 addThread(threadStart)->timeStart = threadStart.time;
                 break;
@@ -701,7 +702,7 @@ struct PerfParserPrivate
                 ThreadEnd threadEnd;
                 stream >> threadEnd;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << threadEnd;
-                updateApplicationTime(threadEnd.time);
+                addRecord(threadEnd);
                 addThreadEnd(threadEnd);
                 break;
             }
@@ -709,7 +710,7 @@ struct PerfParserPrivate
                 Command command;
                 stream >> command;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << command;
-                updateApplicationTime(command.time);
+                addRecord(command);
                 addCommand(command);
                 break;
             }
@@ -745,7 +746,7 @@ struct PerfParserPrivate
                 LostDefinition lostDefinition;
                 stream >> lostDefinition;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << lostDefinition;
-                updateApplicationTime(lostDefinition.time);
+                addRecord(lostDefinition);
                 addLost(lostDefinition);
                 break;
             }
@@ -767,7 +768,7 @@ struct PerfParserPrivate
                 ContextSwitchDefinition contextSwitch;
                 stream >> contextSwitch;
                 qCDebug(LOG_PERFPARSER) << "parsed:" << contextSwitch;
-                updateApplicationTime(contextSwitch.time);
+                addRecord(contextSwitch);
                 addContextSwitch(contextSwitch);
                 break;
             }
@@ -1003,20 +1004,21 @@ struct PerfParserPrivate
         Data::callerCalleesFromBottomUpData(bottomUpResult, &callerCalleeResult);
     }
 
-    void updateApplicationTime(quint64 time)
+    void addRecord(const Record& record)
     {
-        if (time < applicationStartTime || applicationStartTime == 0) {
-            applicationStartTime = time;
+        uniqueProcess.insert(record.pid);
+        uniqueThreads.insert(record.tid);
+
+        if (record.time < applicationStartTime || applicationStartTime == 0) {
+            applicationStartTime = record.time;
         }
-        if (time > applicationEndTime || applicationEndTime == 0) {
-            applicationEndTime = time;
+        if (record.time > applicationEndTime || applicationEndTime == 0) {
+            applicationEndTime = record.time;
         }
     }
 
     void addSampleToSummary(const Sample& sample)
     {
-        uniqueThreads.insert(sample.tid);
-        uniqueProcess.insert(sample.pid);
         ++summaryResult.sampleCount;
 
         for (const auto& sampleCost : sample.costs) {

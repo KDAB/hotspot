@@ -450,7 +450,8 @@ private:
         VERIFY_OR_THROW(m_summaryData.sampleCount > 0);
         VERIFY_OR_THROW(m_summaryData.applicationRunningTime > 0);
         VERIFY_OR_THROW(m_summaryData.cpusAvailable > 0);
-        VERIFY_OR_THROW(m_summaryData.processCount > 0);
+        COMPARE_OR_THROW(m_summaryData.processCount, 1); // for now we always have a single process
+        VERIFY_OR_THROW(m_summaryData.threadCount > 0); // and at least one thread
         COMPARE_OR_THROW(m_summaryData.cpuArchitecture, QSysInfo::currentCpuArchitecture());
         COMPARE_OR_THROW(m_summaryData.linuxKernelVersion, QSysInfo::kernelVersion());
         COMPARE_OR_THROW(m_summaryData.hostName, QSysInfo::machineHostName());
@@ -506,6 +507,7 @@ private:
         m_eventData = eventsDataSpy.first().first().value<Data::EventResults>();
         VERIFY_OR_THROW(!m_eventData.stacks.isEmpty());
         VERIFY_OR_THROW(!m_eventData.threads.isEmpty());
+        COMPARE_OR_THROW(m_eventData.threads.size(), m_summaryData.threadCount);
         for (const auto& thread : m_eventData.threads) {
             VERIFY_OR_THROW(!thread.name.isEmpty());
             VERIFY_OR_THROW(thread.pid != 0);
