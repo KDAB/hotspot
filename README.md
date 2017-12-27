@@ -9,25 +9,37 @@ performance data formats under this umbrella.
 
 ## Table of Contents
 
-   * [Hotspot](#hotspot---the-linux-perf-gui-for-performance-analysis)
-      * [Table of Contents](#table-of-contents)
-      * [Screenshots](#screenshots)
-         * [Visualize Data](#visualize-data)
-         * [Time Line](#time-line)
-         * [Record Data](#record-data)
-      * [Dependencies](#dependencies)
-         * [On Debian/Ubuntu](#on-debianubuntu)
-         * [On Fedora](#on-fedora)
-         * [Arch Linux](#arch-linux)
-      * [Building](#building)
-      * [Using](#using)
-         * [Embedded Systems](#embedded-systems)
-      * [Known Issues](#known-issues)
-         * [Broken Backtraces](#broken-backtraces)
-         * [Missing Features](#missing-features)
-         * [Recording with perf without super user rights](#recording-with-perf-without-super-user-rights)
-      * [Qt Creator](#qt-creator)
-      * [License](#license)
+<!--
+    TOC generated with https://github.com/jonschlinkert/markdown-toc
+    To update, run `markdown-toc -i README.md`
+-->
+
+<!-- toc -->
+
+- [Screenshots](#screenshots)
+  * [Visualize Data](#visualize-data)
+  * [Time Line](#time-line)
+  * [Record Data](#record-data)
+- [Building Hotspot](#building-hotspot)
+  * [Required Dependencies](#required-dependencies)
+  * [On Debian/Ubuntu](#on-debianubuntu)
+  * [On Fedora](#on-fedora)
+  * [Arch Linux](#arch-linux)
+  * [OpenSUSE](#opensuse)
+  * [Building Hotspot itself](#building-hotspot-itself)
+- [Getting Hotspot](#getting-hotspot)
+  * [ArchLinux](#archlinux)
+  * [For any Linux distro: AppImage](#for-any-linux-distro-appimage)
+- [Using](#using)
+  * [Embedded Systems](#embedded-systems)
+- [Known Issues](#known-issues)
+  * [Broken Backtraces](#broken-backtraces)
+  * [Missing Features](#missing-features)
+  * [Recording with perf without super user rights](#recording-with-perf-without-super-user-rights)
+- [Qt Creator](#qt-creator)
+- [License](#license)
+
+<!-- tocstop -->
 
 ## Screenshots
 
