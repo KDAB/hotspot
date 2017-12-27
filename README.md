@@ -9,25 +9,37 @@ performance data formats under this umbrella.
 
 ## Table of Contents
 
-   * [Hotspot](#hotspot---the-linux-perf-gui-for-performance-analysis)
-      * [Table of Contents](#table-of-contents)
-      * [Screenshots](#screenshots)
-         * [Visualize Data](#visualize-data)
-         * [Time Line](#time-line)
-         * [Record Data](#record-data)
-      * [Dependencies](#dependencies)
-         * [On Debian/Ubuntu](#on-debianubuntu)
-         * [On Fedora](#on-fedora)
-         * [Arch Linux](#arch-linux)
-      * [Building](#building)
-      * [Using](#using)
-         * [Embedded Systems](#embedded-systems)
-      * [Known Issues](#known-issues)
-         * [Broken Backtraces](#broken-backtraces)
-         * [Missing Features](#missing-features)
-         * [Recording with perf without super user rights](#recording-with-perf-without-super-user-rights)
-      * [Qt Creator](#qt-creator)
-      * [License](#license)
+<!--
+    TOC generated with https://github.com/jonschlinkert/markdown-toc
+    To update, run `markdown-toc -i README.md`
+-->
+
+<!-- toc -->
+
+- [Screenshots](#screenshots)
+  * [Visualize Data](#visualize-data)
+  * [Time Line](#time-line)
+  * [Record Data](#record-data)
+- [Building Hotspot](#building-hotspot)
+  * [Required Dependencies](#required-dependencies)
+  * [On Debian/Ubuntu](#on-debianubuntu)
+  * [On Fedora](#on-fedora)
+  * [Arch Linux](#arch-linux)
+  * [OpenSUSE](#opensuse)
+  * [Building Hotspot itself](#building-hotspot-itself)
+- [Getting Hotspot](#getting-hotspot)
+  * [ArchLinux](#archlinux)
+  * [For any Linux distro: AppImage](#for-any-linux-distro-appimage)
+- [Using](#using)
+  * [Embedded Systems](#embedded-systems)
+- [Known Issues](#known-issues)
+  * [Broken Backtraces](#broken-backtraces)
+  * [Missing Features](#missing-features)
+  * [Recording with perf without super user rights](#recording-with-perf-without-super-user-rights)
+- [Qt Creator](#qt-creator)
+- [License](#license)
+
+<!-- tocstop -->
 
 ## Screenshots
 
@@ -67,7 +79,9 @@ into account though.
 
 ![hotspot attach to process](screenshots/record-attach.png?raw=true "hotspot also allows runtime-attaching of perf to existing applications to profile them.")
 
-## Dependencies
+## Building Hotspot
+
+### Required Dependencies
 
 As of now, you will need the following dependencies to build this project:
 
@@ -121,7 +135,7 @@ zypper in cmake gcc-c++ extra-cmake-modules threadweaver-devel ki18n-devel kio-d
     libdw-devel gettext glibc-devel-static
 ```
 
-## Building
+### Building Hotspot itself
 
 ```
 git clone --recurse-submodules https://github.com/KDAB/hotspot.git
@@ -135,6 +149,32 @@ make
 ```
 
 If you need help building this project for your platform, [contact us for help](https://www.kdab.com/about/contact/).
+
+## Getting Hotspot
+
+*Note: Hotspot is not packaged for most Linux distributions yet -- you'll likely have to resort to using the AppImage which will work on any recent Linux distro just fine*
+
+### ArchLinux
+
+Install hotspot via AUR (https://aur.archlinux.org/packages/hotspot)
+
+```
+pacman -S hotspot
+```
+
+### For any Linux distro: AppImage
+
+Head over to our [download page](https://github.com/KDAB/hotspot/releases) and download the latest [AppImage](http://appimage.org/) release and just run it.
+
+Command-line instructions:
+
+```
+wget https://github.com/KDAB/hotspot/releases/download/v1.1.0/hotspot-v1.1.0-x86_64.AppImage
+chmod +x hotspot-v1.1.0-x86_64.AppImage
+./hotspot-v1.1.0-x86_64.AppImage
+```
+
+*Note: Your system libraries or preferences are not altered. In case you'd like to remove Hotspot again, simply delete the downloaded file. Learn more about AppImage [here](http://appimage.org/).*
 
 ## Using
 
