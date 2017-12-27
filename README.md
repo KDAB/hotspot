@@ -67,7 +67,9 @@ into account though.
 
 ![hotspot attach to process](screenshots/record-attach.png?raw=true "hotspot also allows runtime-attaching of perf to existing applications to profile them.")
 
-## Dependencies
+## Building Hotspot
+
+### Required Dependencies
 
 As of now, you will need the following dependencies to build this project:
 
@@ -121,7 +123,7 @@ zypper in cmake gcc-c++ extra-cmake-modules threadweaver-devel ki18n-devel kio-d
     libdw-devel gettext glibc-devel-static
 ```
 
-## Building
+### Building Hotspot itself
 
 ```
 git clone --recurse-submodules https://github.com/KDAB/hotspot.git
@@ -135,6 +137,32 @@ make
 ```
 
 If you need help building this project for your platform, [contact us for help](https://www.kdab.com/about/contact/).
+
+## Getting Hotspot
+
+*Note: Hotspot is not packaged for most Linux distributions yet -- you'll likely have to resort to using the AppImage which will work on any recent Linux distro just fine*
+
+### ArchLinux
+
+Install hotspot via AUR (https://aur.archlinux.org/packages/hotspot)
+
+```
+pacman -S hotspot
+```
+
+### For any Linux distro: AppImage
+
+Head over to our [download page](https://github.com/KDAB/hotspot/releases) and download the latest [AppImage](http://appimage.org/) release and just run it.
+
+Command-line instructions:
+
+```
+wget https://github.com/KDAB/hotspot/releases/download/v1.1.0/hotspot-v1.1.0-x86_64.AppImage
+chmod +x hotspot-v1.1.0-x86_64.AppImage
+./hotspot-v1.1.0-x86_64.AppImage
+```
+
+*Note: Your system libraries or preferences are not altered. In case you'd like to remove Hotspot again, simply delete the downloaded file. Learn more about AppImage [here](http://appimage.org/).*
 
 ## Using
 
