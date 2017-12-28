@@ -824,19 +824,31 @@ struct PerfParserPrivate
         eventResult.totalCosts = summaryResult.costs;
     }
 
+    qint32 addCostType(const QString& label)
+    {
+        auto costId = m_nextCostId;
+        m_nextCostId++;
+
+        if (label == QLatin1String("sched:sched_switch")) {
+            m_schedSwitchCostId = costId;
+        }
+
+        Q_ASSERT(summaryResult.costs.size() == costId);
+        summaryResult.costs.push_back({label, 0, 0});
+        Q_ASSERT(bottomUpResult.costs.numTypes() == costId);
+        bottomUpResult.costs.addType(costId, label);
+
+        return costId;
+    }
+
     void addAttributes(const AttributesDefinition& attributesDefinition)
     {
         qint32 costId = attributeNameToCostIds.value(attributesDefinition.name.id, -1);
 
         if (costId == -1) {
-            costId = attributeNameToCostIds.size();
-            attributeNameToCostIds.insert(attributesDefinition.name.id, costId);
-
             const auto label = strings.value(attributesDefinition.name.id);
-            Q_ASSERT(summaryResult.costs.size() == costId);
-            summaryResult.costs.push_back({label, 0, 0});
-            Q_ASSERT(bottomUpResult.costs.numTypes() == costId);
-            bottomUpResult.costs.addType(costId, label);
+            costId = addCostType(label);
+            attributeNameToCostIds.insert(attributesDefinition.name.id, costId);
         }
 
         attributeIdsToCostIds[attributesDefinition.id] = costId;
@@ -1138,6 +1150,7 @@ struct PerfParserPrivate
     std::atomic<bool>& stopRequested;
     QHash<qint32, qint32> attributeIdsToCostIds;
     QHash<int, qint32> attributeNameToCostIds;
+    qint32 m_nextCostId = 0;
 };
 
 PerfParser::PerfParser(QObject* parent)
