@@ -77,16 +77,31 @@ QString Util::formatCostRelative(quint64 selfCost, quint64 totalCost, bool addPe
 
 QString Util::formatTimeString(quint64 nanoseconds)
 {
+    if (nanoseconds < 1000) {
+        return QString::number(nanoseconds) + QLatin1String("ns");
+    }
+
+    auto format = [] (quint64 fragment, int precision) -> QString {
+        return QString::number(fragment).rightJustified(precision, QLatin1Char('0'));
+    };
+
+    quint64 microseconds = nanoseconds / 1000;
+    if (nanoseconds < 1000000) {
+        quint64 nanos = nanoseconds % 1000;
+        return format(microseconds, 3) + QLatin1Char('.') + format(nanos, 3) + QStringLiteral("µs");
+    }
+
+    quint64 milliseconds = (nanoseconds / 1000000) % 1000;
+    if (nanoseconds < 1000000000) {
+        return format(milliseconds, 2) + QLatin1Char('.') + format(microseconds, 3) + QLatin1String("ms");
+    }
+
     quint64 totalSeconds = nanoseconds / 1000000000;
     quint64 days = totalSeconds / 60 / 60 / 24;
     quint64 hours = (totalSeconds / 60 / 60) % 24;
     quint64 minutes = (totalSeconds / 60) % 60;
     quint64 seconds = totalSeconds % 60;
-    quint64 milliseconds = (nanoseconds / 1000000) % 1000;
 
-    auto format = [] (quint64 fragment, int precision) -> QString {
-        return QString::number(fragment).rightJustified(precision, QLatin1Char('0'));
-    };
     auto optional = [format] (quint64 fragment) -> QString {
         return fragment > 0 ? format(fragment, 2) + QLatin1Char(':') : QString();
     };
