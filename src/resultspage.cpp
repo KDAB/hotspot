@@ -90,7 +90,7 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
                 int typeId = -1;
                 for (const auto& type : data.totalCosts) {
                     ++typeId;
-                    if (!type.sampleCount) {
+                    if (!type.sampleCount || typeId == data.offCpuTimeCostId) {
                         continue;
                     }
                     ui->timeLineEventSource->addItem(type.label, typeId);

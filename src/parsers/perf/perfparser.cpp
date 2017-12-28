@@ -1054,8 +1054,49 @@ struct PerfParserPrivate
         }
 
         if (!contextSwitch.switchOut && thread->state == Data::ThreadEvents::OffCpu) {
-            thread->offCpuTime += contextSwitch.time - thread->lastSwitchTime;
+            const auto switchTime = contextSwitch.time - thread->lastSwitchTime;
+            thread->offCpuTime += switchTime;
+
+            if (eventResult.offCpuTimeCostId == -1) {
+                eventResult.offCpuTimeCostId = addCostType(PerfParser::tr("off-CPU Time"));
+            }
+
+            auto& totalCost = summaryResult.costs[eventResult.offCpuTimeCostId];
+            totalCost.sampleCount++;
+            totalCost.totalPeriod += switchTime;
+
+            qint32 stackId = -1;
+            if (!thread->events.isEmpty() && m_schedSwitchCostId != -1) {
+                auto it = std::find_if(thread->events.rbegin(), thread->events.rend(),
+                                       [this](const Data::Event& event) {
+                                           return event.type == m_schedSwitchCostId;
+                                       });
+                if (it != thread->events.rend()) {
+                    stackId = it->stackId;
+                }
+            }
+            if (stackId != -1) {
+                const auto& frames = eventResult.stacks[stackId];
+                QSet<Data::Symbol> recursionGuard;
+                auto frameCallback = [this, &recursionGuard, switchTime]
+                        (const Data::Symbol& symbol, const Data::Location& location)
+                {
+                    addCallerCalleeEvent(symbol, location,
+                                         eventResult.offCpuTimeCostId, switchTime,
+                                         &recursionGuard, &callerCalleeResult,
+                                         bottomUpResult.costs.numTypes());
+                };
+                bottomUpResult.addEvent(eventResult.offCpuTimeCostId, switchTime, frames, frameCallback);
+            }
+
+            Data::Event event;
+            event.time = thread->lastSwitchTime;
+            event.cost = switchTime;
+            event.type = eventResult.offCpuTimeCostId;
+            event.stackId = stackId;
+            thread->events.push_back(event);
         }
+
         thread->lastSwitchTime = contextSwitch.time;
         thread->state = contextSwitch.switchOut
                             ? Data::ThreadEvents::OffCpu
@@ -1151,6 +1192,7 @@ struct PerfParserPrivate
     QHash<qint32, qint32> attributeIdsToCostIds;
     QHash<int, qint32> attributeNameToCostIds;
     qint32 m_nextCostId = 0;
+    qint32 m_schedSwitchCostId = -1;
 };
 
 PerfParser::PerfParser(QObject* parent)

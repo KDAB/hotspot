@@ -153,6 +153,7 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
                              const QModelIndex& index) const
 {
     const auto data = dataFromIndex(index, option.rect, m_zoomStack);
+    const auto offCpuCostId = index.data(EventModel::EventResultsRole).value<Data::EventResults>().offCpuTimeCostId;
     const bool is_alternate = option.features & QStyleOptionViewItem::Alternate;
     const auto& palette = option.palette;
 
@@ -192,9 +193,21 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         QPen pen(scheme.foreground(KColorScheme::NeutralText), 1);
         painter->setPen(pen);
         painter->setBrush({});
+        auto offCpuColor = scheme.background(KColorScheme::NegativeBackground).color();
+
+        if (offCpuCostId != -1) {
+            for (const auto& event : data.events) {
+                if (event.type != offCpuCostId) {
+                    continue;
+                }
+
+                const auto x = data.mapTimeToX(event.time);
+                const auto x2 = data.mapTimeToX(event.time + event.cost);
+                painter->fillRect(x, 0, x2 - x, data.h, offCpuColor);
+            }
+        }
 
         int last_x = -1;
-
         // TODO: accumulate cost for events that fall to the same pixel somehow
         // but how to then sync the y scale across different delegates?
         // somehow deduce threshold via min time delta and max cost?
@@ -249,28 +262,66 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
         const auto localX = event->pos().x();
         const auto mappedX = localX - option.rect.x() - data.padding;
         const auto time = data.mapXToTime(mappedX);
-        auto it = findEvent(data.events.constBegin(), data.events.constEnd(), time);
+        const auto start = findEvent(data.events.constBegin(), data.events.constEnd(), time);
         // find the maximum sample cost in the range spanned by one pixel
-        uint numSamples = 0;
-        quint64 maxCost = 0;
-        quint64 totalCost = 0;
-        while (it != data.events.constEnd() && data.mapTimeToX(it->time) == mappedX) {
-            if (it->type != m_eventType) {
-                ++it;
-                continue;
+        struct FoundSamples {
+            uint numSamples = 0;
+            quint64 maxCost = 0;
+            quint64 totalCost = 0;
+            int type = -1;
+        };
+        auto findSamples = [&](int costType, bool contains) -> FoundSamples {
+            FoundSamples ret;
+            ret.type = costType;
+            auto it = start;
+            if (contains) {
+                // for a contains check, we must only include events for the correct type
+                // otherwise we might skip the sched switch e.g.
+                while (it->type != costType && it != data.events.constBegin()) {
+                    --it;
+                }
             }
-            ++numSamples;
-            maxCost = std::max(maxCost, it->cost);
-            totalCost += it->cost;
-            ++it;
+            while (it != data.events.constEnd()) {
+                if (it->type != costType) {
+                    ++it;
+                    continue;
+                }
+                const auto timeX = data.mapTimeToX(it->time);
+                if (timeX > mappedX) {
+                    // event lies to the right of the selected time
+                    break;
+                } else if (contains && mappedX > data.mapTimeToX(it->time + it->cost)) {
+                    // event lies to the left of the selected time
+                    ++it;
+                    continue;
+                }
+                Q_ASSERT(contains || mappedX == timeX);
+                ++ret.numSamples;
+                ret.maxCost = std::max(ret.maxCost, it->cost);
+                ret.totalCost += it->cost;
+                ++it;
+            }
+            return ret;
+        };
+        auto found = findSamples(m_eventType, false);
+        const auto offCpuCostId = index.data(EventModel::EventResultsRole).value<Data::EventResults>().offCpuTimeCostId;
+        if (offCpuCostId != -1 && !found.numSamples) {
+            // check whether we are hovering an off-CPU area
+            found = findSamples(offCpuCostId, true);
         }
 
         const auto formattedTime = Util::formatTimeString(time - data.minTime);
         const auto totalCosts = index.data(EventModel::TotalCostsRole).value<QVector<Data::CostSummary>>();
-        if (numSamples > 0) {
+        if (found.numSamples > 0 && found.type == offCpuCostId) {
+            QToolTip::showText(event->globalPos(), tr("time: %1\nsched switches: %2\ntotal off-CPU time: %3\nlongest sched switch: %4")
+                .arg(formattedTime, QString::number(found.numSamples),
+                     Util::formatTimeString(found.totalCost),
+                     Util::formatTimeString(found.maxCost)));
+        } else if (found.numSamples > 0) {
             QToolTip::showText(event->globalPos(), tr("time: %1\n%5 samples: %2\ntotal sample cost: %3\nmax sample cost: %4")
-                .arg(formattedTime).arg(numSamples)
-                .arg(totalCost).arg(maxCost).arg(totalCosts.value(m_eventType).label));
+                .arg(formattedTime, QString::number(found.numSamples),
+                     Util::formatCost(found.totalCost), Util::formatCost(found.maxCost),
+                     totalCosts.value(found.type).label));
         } else {
             QToolTip::showText(event->globalPos(), tr("time: %1 (no %2 samples)")
                 .arg(formattedTime, totalCosts.value(m_eventType).label));

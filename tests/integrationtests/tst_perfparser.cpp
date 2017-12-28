@@ -64,13 +64,15 @@ do {\
 
 namespace {
 template<typename T>
-bool searchForChildSymbol(const T& root, const QString& searchString)
+bool searchForChildSymbol(const T& root, const QString& searchString, bool exact = true)
 {
-    if (root.symbol.symbol == searchString) {
+    if (exact && root.symbol.symbol == searchString) {
+        return true;
+    } else if (!exact && root.symbol.symbol.contains(searchString)) {
         return true;
     } else {
         for (auto entry : root.children) {
-            if (searchForChildSymbol(entry, searchString)) {
+            if (searchForChildSymbol(entry, searchString, exact)) {
                 return true;
             }
         }
@@ -78,23 +80,25 @@ bool searchForChildSymbol(const T& root, const QString& searchString)
     return false;
 }
 
-bool compareCosts(const Data::TopDown &lhs, const Data::TopDown &rhs, const Data::TopDownResults &results)
+bool compareCosts(const Data::TopDown &lhs, const Data::TopDown &rhs, const Data::TopDownResults &results,
+                  int costIndex)
 {
-    return results.inclusiveCosts.cost(0, lhs.id) < results.inclusiveCosts.cost(0, rhs.id);
+    return results.inclusiveCosts.cost(costIndex, lhs.id) < results.inclusiveCosts.cost(costIndex, rhs.id);
 }
 
-bool compareCosts(const Data::BottomUp &lhs, const Data::BottomUp &rhs, const Data::BottomUpResults &results)
+bool compareCosts(const Data::BottomUp &lhs, const Data::BottomUp &rhs, const Data::BottomUpResults &results,
+                  int costIndex)
 {
-    return results.costs.cost(0, lhs.id) < results.costs.cost(0, rhs.id);
+    return results.costs.cost(costIndex, lhs.id) < results.costs.cost(costIndex, rhs.id);
 }
 
 template<typename Results>
-int maxElementTopIndex(const Results &collection)
+int maxElementTopIndex(const Results &collection, int costIndex = 0)
 {
     using DataType = decltype(*collection.root.children.begin());
     auto topResult = std::max_element(collection.root.children.constBegin(), collection.root.children.constEnd(),
-                                                [collection](const DataType &lhs, const DataType &rhs) {
-                                                    return compareCosts(lhs, rhs, collection);
+                                                [collection, costIndex](const DataType &lhs, const DataType &rhs) {
+                                                    return compareCosts(lhs, rhs, collection, costIndex);
                                                 });
     return std::distance(collection.root.children.begin(), topResult);
 }
@@ -369,7 +373,52 @@ private slots:
             QVERIFY((thread.timeEnd - thread.timeStart) > thread.offCpuTime);
         }
     }
+
+    void testOffCpu()
+    {
+        if (!canTrace("events/sched/sched_switch")) {
+            QSKIP("cannot access sched_switch trace points. execute the following to run this test:\n"
+                  "    sudo mount -o remount,mode=755 /sys/kernel/debug{,/tracing} with mode=755");
+        }
+
+        const QStringList perfOptions = {"--call-graph", "dwarf", "--switch-events", "-e", "cycles", "-e", "sched:sched_switch"};
+
+        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-sleep/cpp-sleep";
+
+        QTemporaryFile tempFile;
+        tempFile.open();
+
+        perfRecord(perfOptions, exePath, {}, tempFile.fileName());
+        testPerfData(Data::Symbol{"hypot", "libm"}, Data::Symbol{"start", "cpp-sleep"}, tempFile.fileName(), false);
+
+        QCOMPARE(m_bottomUpData.costs.numTypes(), 3);
+        QCOMPARE(m_bottomUpData.costs.typeName(0), "cycles");
+        QCOMPARE(m_bottomUpData.costs.typeName(1), "sched:sched_switch");
+        QCOMPARE(m_bottomUpData.costs.typeName(2), "off-CPU Time");
+
+        // find sched switch hotspot
+        int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData, 1);
+        QVERIFY(bottomUpTopIndex != -1);
+
+        // should be the same as off-cpu hotspot
+        QCOMPARE(bottomUpTopIndex, maxElementTopIndex(m_bottomUpData, 2));
+
+        const auto topBottomUp = m_bottomUpData.root.children[bottomUpTopIndex];
+        QVERIFY(topBottomUp.symbol.symbol.contains("schedule"));
+        QVERIFY(topBottomUp.symbol.binary.contains("kernel"));
+        QVERIFY(searchForChildSymbol(topBottomUp, "std::this_thread::sleep_for", false));
+
+        QVERIFY(m_bottomUpData.costs.cost(1, topBottomUp.id) >= 10); // at least 10 sched switches
+        QVERIFY(m_bottomUpData.costs.cost(2, topBottomUp.id) >= 1E9); // at least 1s sleep time
+    }
+
 private:
+    static bool canTrace(const QString& path)
+    {
+        QFileInfo info("/sys/kernel/debug/tracing/" + path);
+        return info.isDir() && info.isReadable();
+    }
+
     Data::Summary m_summaryData;
     Data::BottomUpResults m_bottomUpData;
     Data::TopDownResults m_topDownData;
