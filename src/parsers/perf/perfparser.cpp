@@ -824,7 +824,7 @@ struct PerfParserPrivate
         eventResult.totalCosts = summaryResult.costs;
     }
 
-    qint32 addCostType(const QString& label)
+    qint32 addCostType(const QString& label, Data::Costs::Unit unit)
     {
         auto costId = m_nextCostId;
         m_nextCostId++;
@@ -836,7 +836,7 @@ struct PerfParserPrivate
         Q_ASSERT(summaryResult.costs.size() == costId);
         summaryResult.costs.push_back({label, 0, 0});
         Q_ASSERT(bottomUpResult.costs.numTypes() == costId);
-        bottomUpResult.costs.addType(costId, label);
+        bottomUpResult.costs.addType(costId, label, unit);
 
         return costId;
     }
@@ -847,7 +847,7 @@ struct PerfParserPrivate
 
         if (costId == -1) {
             const auto label = strings.value(attributesDefinition.name.id);
-            costId = addCostType(label);
+            costId = addCostType(label, Data::Costs::Unit::Unknown);
             attributeNameToCostIds.insert(attributesDefinition.name.id, costId);
         }
 
@@ -1058,7 +1058,7 @@ struct PerfParserPrivate
             thread->offCpuTime += switchTime;
 
             if (eventResult.offCpuTimeCostId == -1) {
-                eventResult.offCpuTimeCostId = addCostType(PerfParser::tr("off-CPU Time"));
+                eventResult.offCpuTimeCostId = addCostType(PerfParser::tr("off-CPU Time"), Data::Costs::Unit::Time);
             }
 
             auto& totalCost = summaryResult.costs[eventResult.offCpuTimeCostId];

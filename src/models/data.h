@@ -143,6 +143,11 @@ QDebug operator<<(QDebug stream, const ItemCost& cost);
 class Costs
 {
 public:
+    enum class Unit {
+        Unknown,
+        Time
+    };
+
     void increment(int type, quint32 id)
     {
         add(type, id, 1);
@@ -169,14 +174,16 @@ public:
         return m_typeNames.size();
     }
 
-    void addType(int type, const QString& name)
+    void addType(int type, const QString& name, Unit unit)
     {
         if (m_costs.size() <= type) {
             m_costs.resize(type + 1);
             m_typeNames.resize(type + 1);
             m_totalCosts.resize(type + 1);
+            m_units.resize(type + 1);
         }
         m_typeNames[type] = name;
+        m_units[type] = unit;
     }
 
     QString typeName(int type) const
@@ -238,6 +245,22 @@ public:
         m_totalCosts.resize(rhs.m_totalCosts.size());
     }
 
+    QString formatCost(int type, quint64 cost) const
+    {
+        switch (m_units[type]) {
+            case Unit::Time:
+                return Util::formatTimeString(cost);
+            case Unit::Unknown:
+                break;
+        }
+        return Util::formatCost(cost);
+    }
+
+    Unit unit(int type) const
+    {
+        return m_units[type];
+    }
+
 private:
     void ensureSpaceAvailable(int type, quint32 id)
     {
@@ -249,6 +272,7 @@ private:
     QVector<QString> m_typeNames;
     QVector<QVector<qint64>> m_costs;
     QVector<qint64> m_totalCosts;
+    QVector<Unit> m_units;
 };
 
 template<typename T>

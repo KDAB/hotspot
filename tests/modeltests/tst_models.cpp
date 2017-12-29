@@ -38,7 +38,7 @@ namespace {
 Data::BottomUpResults buildBottomUpTree(const QByteArray& stacks)
 {
     Data::BottomUpResults ret;
-    ret.costs.addType(0, "samples");
+    ret.costs.addType(0, "samples", Data::Costs::Unit::Unknown);
     ret.root.symbol = {"<root>", {}};
     const auto& lines = stacks.split('\n');
     QHash<quint32, Data::Symbol> ids;

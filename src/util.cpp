@@ -136,8 +136,8 @@ static QString formatTooltipImpl(int id, const Data::Symbol& symbol,
     auto extendTooltip = [&toolTip, id](int i, const Data::Costs& costs, const QString& formatting) {
         const auto currentCost = costs.cost(i, id);
         const auto totalCost = costs.totalCost(i);
-        toolTip += formatting.arg(costs.typeName(i), Util::formatCost(currentCost),
-                                  Util::formatCost(totalCost),
+        toolTip += formatting.arg(costs.typeName(i), costs.formatCost(i, currentCost),
+                                  costs.formatCost(i, totalCost),
                                   Util::formatCostRelative(currentCost, totalCost));
     };
 
@@ -190,8 +190,8 @@ QString Util::formatTooltip(const Data::Symbol& symbol,
         }
         toolTip += QLatin1String("<hr/>")
                 + QCoreApplication::translate("Util", "%1: %2<br/>&nbsp;&nbsp;%4% out of %3 total")
-                    .arg(totalCosts.typeName(i), Util::formatCost(cost),
-                         Util::formatCost(total), Util::formatCostRelative(cost, total));
+                    .arg(totalCosts.typeName(i), totalCosts.formatCost(i, cost),
+                         totalCosts.formatCost(i, total), Util::formatCostRelative(cost, total));
     }
     return QString(QLatin1String("<qt>") + toolTip + QLatin1String("</qt>"));
 }
@@ -213,12 +213,12 @@ QString Util::formatTooltip(const QString& location,
         }
         toolTip += QLatin1String("<hr/>")
                 + QCoreApplication::translate("Util", "%1 (self): %2<br/>&nbsp;&nbsp;%4% out of %3 total")
-                    .arg(totalCosts.typeName(i), Util::formatCost(selfCost),
-                         Util::formatCost(total), Util::formatCostRelative(selfCost, total))
+                    .arg(totalCosts.typeName(i), totalCosts.formatCost(i, selfCost),
+                         totalCosts.formatCost(i, total), Util::formatCostRelative(selfCost, total))
                 + QLatin1String("<br/>")
                 + QCoreApplication::translate("Util", "%1 (inclusive): %2<br/>&nbsp;&nbsp;%4% out of %3 total")
-                    .arg(totalCosts.typeName(i), Util::formatCost(inclusiveCost),
-                         Util::formatCost(total), Util::formatCostRelative(inclusiveCost, total));
+                    .arg(totalCosts.typeName(i), totalCosts.formatCost(i, inclusiveCost),
+                         totalCosts.formatCost(i, total), Util::formatCostRelative(inclusiveCost, total));
     }
     return QString(QLatin1String("<qt>") + toolTip + QLatin1String("</qt>"));
 }
