@@ -72,11 +72,11 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="KUrlComboRequester" name="applicationName">
+       <widget class="KUrlComboRequester" name="applicationName" native="true">
         <property name="toolTip">
          <string>Path to the application to be recorded</string>
         </property>
-        <property name="text">
+        <property name="text" stdset="0">
          <string/>
         </property>
        </widget>
@@ -118,7 +118,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="KUrlRequester" name="workingDirectory">
+       <widget class="KUrlRequester" name="workingDirectory" native="true">
         <property name="toolTip">
          <string>Directory to store the perf data file while recording</string>
         </property>
@@ -150,7 +150,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="KFilterProxySearchLine" name="processesFilterBox">
+       <widget class="KFilterProxySearchLine" name="processesFilterBox" native="true">
         <property name="toolTip">
          <string>Filter the process list by process name or process ID</string>
         </property>
@@ -202,7 +202,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="KUrlRequester" name="outputFile">
+       <widget class="KUrlRequester" name="outputFile" native="true">
         <property name="toolTip">
          <string>Path to the file location, where perf will write its output to</string>
         </property>
@@ -250,7 +250,7 @@
          <bool>true</bool>
         </property>
         <property name="currentText">
-         <string>{cycles,instructions}:uPS</string>
+         <string>cycles,instructions</string>
         </property>
        </widget>
       </item>
@@ -277,11 +277,28 @@
         </property>
        </widget>
       </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="recordAsSudoLabel">
+        <property name="text">
+         <string>Record as Sudo:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="recordAsSudoCheckBox">
+        <property name="text">
+         <string>(Recommended)</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>
    <item>
-    <widget class="KMessageWidget" name="applicationRecordErrorMessage"/>
+    <widget class="KMessageWidget" name="applicationRecordErrorMessage" native="true"/>
    </item>
    <item>
     <widget class="QWidget" name="widget" native="true">
@@ -370,24 +387,24 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>KMessageWidget</class>
-   <extends>QFrame</extends>
-   <header>kmessagewidget.h</header>
-  </customwidget>
-  <customwidget>
-   <class>KUrlComboRequester</class>
-   <extends>KUrlRequester</extends>
-   <header>kurlrequester.h</header>
-  </customwidget>
-  <customwidget>
    <class>KUrlRequester</class>
    <extends>QWidget</extends>
    <header>kurlrequester.h</header>
   </customwidget>
   <customwidget>
+   <class>KMessageWidget</class>
+   <extends>QWidget</extends>
+   <header>kmessagewidget.h</header>
+  </customwidget>
+  <customwidget>
    <class>KFilterProxySearchLine</class>
    <extends>QWidget</extends>
    <header>kfilterproxysearchline.h</header>
+  </customwidget>
+  <customwidget>
+   <class>KUrlComboRequester</class>
+   <extends>KUrlRequester</extends>
+   <header>kurlrequester.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

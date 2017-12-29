@@ -69,6 +69,7 @@ target_link_libraries(hotspot
     KF5::ThreadWeaver
     KF5::I18n
     KF5::ConfigWidgets
+    KF5::CoreAddons
     KF5::ItemViews
     KF5::ItemModels
     KF5::KIOCore

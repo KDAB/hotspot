@@ -310,7 +310,7 @@ private slots:
         QSignalSpy recordingFinishedSpy(&perf, &PerfRecord::recordingFinished);
         QSignalSpy recordingFailedSpy(&perf, &PerfRecord::recordingFailed);
 
-        perf.record({}, tempFile.fileName(), exePath, exeOptions);
+        perf.record({}, tempFile.fileName(), false, exePath, exeOptions);
         perf.sendInput(QByteArrayLiteral("some input\n"));
         QVERIFY(recordingFinishedSpy.wait(1000));
 
@@ -434,7 +434,7 @@ private:
 
         // always add `-c 1000000`, as perf's frequency mode is too unreliable for testing purposes
         perf.record(perfOptions + QStringList{QStringLiteral("-c"), QStringLiteral("1000000")},
-                    fileName, exePath, exeOptions);
+                    fileName, false, exePath, exeOptions);
 
         VERIFY_OR_THROW(recordingFinishedSpy.wait(10000));
 
