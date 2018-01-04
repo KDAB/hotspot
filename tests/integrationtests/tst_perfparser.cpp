@@ -392,9 +392,9 @@ private slots:
         testPerfData(Data::Symbol{"hypot", "libm"}, Data::Symbol{"start", "cpp-sleep"}, tempFile.fileName(), false);
 
         QCOMPARE(m_bottomUpData.costs.numTypes(), 3);
-        QCOMPARE(m_bottomUpData.costs.typeName(0), "cycles");
-        QCOMPARE(m_bottomUpData.costs.typeName(1), "sched:sched_switch");
-        QCOMPARE(m_bottomUpData.costs.typeName(2), "off-CPU Time");
+        QCOMPARE(m_bottomUpData.costs.typeName(0), QStringLiteral("cycles"));
+        QCOMPARE(m_bottomUpData.costs.typeName(1), QStringLiteral("sched:sched_switch"));
+        QCOMPARE(m_bottomUpData.costs.typeName(2), QStringLiteral("off-CPU Time"));
 
         // find sched switch hotspot
         int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData, 1);
@@ -499,7 +499,7 @@ private:
         VERIFY_OR_THROW(m_summaryData.sampleCount > 0);
         VERIFY_OR_THROW(m_summaryData.applicationRunningTime > 0);
         VERIFY_OR_THROW(m_summaryData.cpusAvailable > 0);
-        COMPARE_OR_THROW(m_summaryData.processCount, 1); // for now we always have a single process
+        COMPARE_OR_THROW(m_summaryData.processCount, quint32(1)); // for now we always have a single process
         VERIFY_OR_THROW(m_summaryData.threadCount > 0); // and at least one thread
         COMPARE_OR_THROW(m_summaryData.cpuArchitecture, QSysInfo::currentCpuArchitecture());
         COMPARE_OR_THROW(m_summaryData.linuxKernelVersion, QSysInfo::kernelVersion());
@@ -556,7 +556,7 @@ private:
         m_eventData = eventsDataSpy.first().first().value<Data::EventResults>();
         VERIFY_OR_THROW(!m_eventData.stacks.isEmpty());
         VERIFY_OR_THROW(!m_eventData.threads.isEmpty());
-        COMPARE_OR_THROW(m_eventData.threads.size(), m_summaryData.threadCount);
+        COMPARE_OR_THROW(static_cast<quint32>(m_eventData.threads.size()), m_summaryData.threadCount);
         for (const auto& thread : m_eventData.threads) {
             VERIFY_OR_THROW(!thread.name.isEmpty());
             VERIFY_OR_THROW(thread.pid != 0);
