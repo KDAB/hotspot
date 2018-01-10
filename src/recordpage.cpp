@@ -312,6 +312,15 @@ RecordPage::RecordPage(QWidget *parent)
     connect(m_watcher, &QFutureWatcher<ProcDataList>::finished,
             this, &RecordPage::updateProcessesFinished);
 
+    if (m_perfRecord->currentUsername() == QLatin1String("root")) {
+        ui->recordAsSudoCheckBox->setChecked(true);
+        ui->recordAsSudoCheckBox->setEnabled(false);
+    } else if (m_perfRecord->sudoUtil().isEmpty()) {
+        ui->recordAsSudoCheckBox->setChecked(false);
+        ui->recordAsSudoCheckBox->setEnabled(false);
+        ui->recordAsSudoCheckBox->setText(tr("(Recommended: Install kdesudo or gksudo to record perf data as sudo.)"));
+    }
+
     showRecordPage();
 
     restoreCombobox(config(), QStringLiteral("applications"),
@@ -381,6 +390,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
             rememberApplication(applicationName, appParameters, workingDir,
                                 ui->applicationName->comboBox());
             m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(),
+                                 ui->recordAsSudoCheckBox->isChecked(),
                                  applicationName, KShell::splitArgs(appParameters),
                                  workingDir);
         } else {
@@ -393,7 +403,8 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
                 }
             }
 
-            m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(), pids);
+            m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(), 
+                                 ui->recordAsSudoCheckBox->isChecked(), pids);
         }
     } else {
         stopRecording();
@@ -459,6 +470,10 @@ void RecordPage::onWorkingDirectoryNameChanged(const QString& folderPath)
 
 void RecordPage::onViewPerfRecordResultsButtonClicked()
 {
+    if (!m_perfRecord->checkFilePermissions(m_resultsFile)) {
+        ui->applicationRecordErrorMessage->setText(tr("Unable able to open results file due to file permissions error."));
+        return;
+    }
     emit openFile(m_resultsFile);
 }
 

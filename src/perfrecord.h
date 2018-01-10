@@ -38,12 +38,18 @@ public:
     explicit PerfRecord(QObject* parent = nullptr);
     ~PerfRecord();
 
-    void record(const QStringList &perfOptions, const QString &outputPath, const QString &exePath,
-                const QStringList &exeOptions, const QString &workingDirectory = QString());
-    void record(const QStringList &perfOptions, const QString &outputPath, const QStringList &pids);
+    void record(const QStringList &perfOptions, const QString &outputPath,
+                bool recordAsSudo, const QString &exePath, const QStringList &exeOptions,
+                const QString &workingDirectory = QString());
+    void record(const QStringList &perfOptions, const QString &outputPath,
+                bool recordAsSudo, const QStringList &pids);
     const QString perfCommand();
     void stopRecording();
     void sendInput(const QByteArray& input);
+    bool checkFilePermissions(const QString &filePath);
+
+    QString sudoUtil() const;
+    QString currentUsername() const;
 
 signals:
     void recordingStarted(const QString &perfBinary, const QStringList &arguments);
@@ -56,6 +62,7 @@ private:
     QString m_outputPath;
     bool m_userTerminated;
 
-    void startRecording(const QStringList &perfOptions, const QString &outputPath, const QStringList &recordOptions,
+    void startRecording(const QStringList &perfOptions, const QString &outputPath,
+                        bool recordAsSudo, const QStringList &recordOptions,
                         const QString &workingDirectory = QString());
 };
