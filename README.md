@@ -101,6 +101,7 @@ As of now, you will need the following dependencies to build this project:
   - itemmodels
   - kio
   - solid
+  - windowsystem
 
 ### On Debian/Ubuntu
 
@@ -109,7 +110,8 @@ add-apt-repository ppa:kubuntu-ppa/backports
 apt-get update
 apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev \
     libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libkf5kio-dev \
-    libkf5solid-dev libelf-dev libdw-dev cmake extra-cmake-modules gettext
+    libkf5solid-dev libkf5windowsystem-dev libelf-dev libdw-dev cmake \
+    extra-cmake-modules gettext
 ```
 
 ### On Fedora
@@ -123,7 +125,7 @@ dnf install cmake gcc glibc-static gcc-c++ libstdc++-static qt5 qt5-devel \
 ### Arch Linux
 ```
 pacman -Sy cmake gcc extra-cmake-modules threadweaver ki18n kconfigwidgets \
-    kitemviews kitemmodels kio solid libelf gettext qt5-base
+    kitemviews kitemmodels kwindowsystem kio solid libelf gettext qt5-base
 ```
 
 ### OpenSUSE
@@ -131,8 +133,8 @@ pacman -Sy cmake gcc extra-cmake-modules threadweaver ki18n kconfigwidgets \
 ```
 zypper in cmake gcc-c++ extra-cmake-modules threadweaver-devel ki18n-devel kio-devel \
     solid-devel kcoreaddons-devel threadweaver-devel kconfigwidgets-devel \
-    kitemmodels-devel kitemviews-devel libqt5-qtbase-devel libelf-devel \
-    libdw-devel gettext glibc-devel-static
+    kitemmodels-devel kitemviews-devel kwindowsystem-devel \
+    libqt5-qtbase-devel libelf-devel libdw-devel gettext glibc-devel-static
 ```
 
 ### Building Hotspot itself

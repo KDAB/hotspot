@@ -13,6 +13,7 @@ ecm_add_test(
         Qt5::Test
         KF5::ThreadWeaver
         KF5::CoreAddons
+        KF5::WindowSystem
     TEST_NAME
         tst_perfparser
 )

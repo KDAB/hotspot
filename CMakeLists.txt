@@ -59,6 +59,7 @@ if(Qt5_FOUND AND ECM_FOUND)
         ItemModels
         KIO
         Solid
+        WindowSystem
         REQUIRED
     )
 endif()

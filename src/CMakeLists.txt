@@ -77,6 +77,7 @@ target_link_libraries(hotspot
     KF5::KIOWidgets
     KF5::KIONTLM
     KF5::Solid
+    KF5::WindowSystem
     models
 )
 

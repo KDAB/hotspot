@@ -36,6 +36,7 @@
 #include <csignal>
 
 #include <KUser>
+#include <KWindowSystem>
 
 PerfRecord::PerfRecord(QObject* parent)
     : QObject(parent)
@@ -63,6 +64,9 @@ static QStringList sudoOptions(const QString& sudoBinary)
     if (sudoBinary.endsWith(QLatin1String("/kdesu"))) {
         // enable command line output
         options.append(QStringLiteral("-t"));
+        // make the dialog transient for the current window
+        options.append(QStringLiteral("--attach"));
+        options.append(QString::number(KWindowSystem::activeWindow()));
     }
     return options;
 }
