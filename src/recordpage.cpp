@@ -321,6 +321,10 @@ RecordPage::RecordPage(QWidget *parent)
         ui->recordAsSudoCheckBox->setText(tr("(Note: Install kdesu or gksu to record perf data as root.)"));
     }
 
+    connect(ui->recordAsSudoCheckBox, &QCheckBox::toggled,
+            this, &RecordPage::updateOffCpuCheckboxState);
+    updateOffCpuCheckboxState();
+
     showRecordPage();
 
     restoreCombobox(config(), QStringLiteral("applications"),
@@ -350,6 +354,9 @@ void RecordPage::showRecordPage()
 void RecordPage::onStartRecordingButtonClicked(bool checked)
 {
     if (checked) {
+        // check enabled flag early, before disabling the form
+        const bool offCpuProfilingEnabled = ui->offCpuCheckBox->isEnabled()
+                                         && ui->offCpuCheckBox->isChecked();
         showRecordPage();
         m_watcher->cancel();
         ui->recordTypeComboBox->setEnabled(false);
@@ -378,6 +385,10 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         rememberCombobox(config(), QStringLiteral("customOptions"),
                          customOptions, ui->perfParams);
         perfOptions += KShell::splitArgs(customOptions);
+
+        if (offCpuProfilingEnabled) {
+            perfOptions += PerfRecord::offCpuProfilingOptions();
+        }
 
         m_recordTimer.start();
         if (ui->recordTypeComboBox->currentData() == LaunchApplication) {
@@ -554,4 +565,10 @@ void RecordPage::updateRecordType()
     }
 
     updateStartRecordingButtonState(ui);
+}
+
+void RecordPage::updateOffCpuCheckboxState()
+{
+    ui->offCpuCheckBox->setEnabled(ui->recordAsSudoCheckBox->isChecked()
+        || PerfRecord::canProfileOffCpu());
 }

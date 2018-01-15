@@ -278,6 +278,29 @@
        </widget>
       </item>
       <item row="4" column="0">
+       <widget class="QLabel" name="offCpuLabel">
+        <property name="toolTip">
+         <string>Record scheduler switch events. This enables off-CPU profiling to measure sleep times etc. This requires elevated rights, so you may need to record as root.</string>
+        </property>
+        <property name="text">
+         <string>Off-CPU Profilin&amp;g:</string>
+        </property>
+        <property name="buddy">
+         <cstring>offCpuCheckBox</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="offCpuCheckBox">
+        <property name="toolTip">
+         <string>Record scheduler switch events. This enables off-CPU profiling to measure sleep times etc. This requires elevated rights, so you may need to record as root.</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
        <widget class="QLabel" name="recordAsSudoLabel">
         <property name="toolTip">
          <string>Enable this to run perf as root. This gives access to advanced event types such as kernel tracepoints.</string>
@@ -290,7 +313,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="5" column="1">
        <widget class="QCheckBox" name="recordAsSudoCheckBox">
         <property name="toolTip">
          <string>Enable this to run perf as root. This gives access to advanced event types such as kernel tracepoints.</string>

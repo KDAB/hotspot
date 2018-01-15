@@ -72,6 +72,7 @@ private slots:
     void onOutputFileNameChanged(const QString& filePath);
     void onOutputFileUrlChanged(const QUrl& fileUrl);
     void onOutputFileNameSelected(const QString& filePath);
+    void updateOffCpuCheckboxState();
 
     void updateProcesses();
     void updateProcessesFinished();
