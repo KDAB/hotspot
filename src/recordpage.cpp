@@ -470,10 +470,6 @@ void RecordPage::onWorkingDirectoryNameChanged(const QString& folderPath)
 
 void RecordPage::onViewPerfRecordResultsButtonClicked()
 {
-    if (!m_perfRecord->checkFilePermissions(m_resultsFile)) {
-        ui->applicationRecordErrorMessage->setText(tr("Unable able to open results file due to file permissions error."));
-        return;
-    }
     emit openFile(m_resultsFile);
 }
 

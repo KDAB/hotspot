@@ -105,7 +105,11 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
                 QFileInfo outputFileInfo(m_outputPath);
                 if ((exitCode == EXIT_SUCCESS || (exitCode == SIGTERM && m_userTerminated)
                      || outputFileInfo.size() > 0) && outputFileInfo.exists()) {
-                    emit recordingFinished(m_outputPath);
+                    if (!ensureFileReadable(m_outputPath)) {
+                        emit recordingFailed(tr("Unable to make data file readable."));
+                    } else {
+                        emit recordingFinished(m_outputPath);
+                    }
                 } else {
                     emit recordingFailed(tr("Failed to record perf data, error code %1.").arg(exitCode));
                 }
@@ -239,7 +243,7 @@ void PerfRecord::sendInput(const QByteArray& input)
     m_perfRecordProcess->write(input);
 }
 
-bool PerfRecord::checkFilePermissions(const QString &filePath)
+bool PerfRecord::ensureFileReadable(const QString &filePath)
 {
     QFileInfo outputFile(filePath);
     QString username = currentUsername();

@@ -46,7 +46,6 @@ public:
     const QString perfCommand();
     void stopRecording();
     void sendInput(const QByteArray& input);
-    bool checkFilePermissions(const QString &filePath);
 
     QString sudoUtil() const;
     QString currentUsername() const;
@@ -65,4 +64,5 @@ private:
     void startRecording(const QStringList &perfOptions, const QString &outputPath,
                         bool recordAsSudo, const QStringList &recordOptions,
                         const QString &workingDirectory = QString());
+    bool ensureFileReadable(const QString &filePath);
 };
