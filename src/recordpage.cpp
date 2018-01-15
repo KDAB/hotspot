@@ -318,7 +318,7 @@ RecordPage::RecordPage(QWidget *parent)
     } else if (m_perfRecord->sudoUtil().isEmpty()) {
         ui->recordAsSudoCheckBox->setChecked(false);
         ui->recordAsSudoCheckBox->setEnabled(false);
-        ui->recordAsSudoCheckBox->setText(tr("(Recommended: Install kdesu or gksu to record perf data as root.)"));
+        ui->recordAsSudoCheckBox->setText(tr("(Note: Install kdesu or gksu to record perf data as root.)"));
     }
 
     showRecordPage();

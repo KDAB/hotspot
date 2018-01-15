@@ -72,11 +72,11 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="KUrlComboRequester" name="applicationName" native="true">
+       <widget class="KUrlComboRequester" name="applicationName">
         <property name="toolTip">
          <string>Path to the application to be recorded</string>
         </property>
-        <property name="text" stdset="0">
+        <property name="text">
          <string/>
         </property>
        </widget>
@@ -118,7 +118,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="KUrlRequester" name="workingDirectory" native="true">
+       <widget class="KUrlRequester" name="workingDirectory">
         <property name="toolTip">
          <string>Directory to store the perf data file while recording</string>
         </property>
@@ -150,7 +150,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="KFilterProxySearchLine" name="processesFilterBox" native="true">
+       <widget class="KFilterProxySearchLine" name="processesFilterBox">
         <property name="toolTip">
          <string>Filter the process list by process name or process ID</string>
         </property>
@@ -202,7 +202,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="KUrlRequester" name="outputFile" native="true">
+       <widget class="KUrlRequester" name="outputFile">
         <property name="toolTip">
          <string>Path to the file location, where perf will write its output to</string>
         </property>
@@ -279,18 +279,21 @@
       </item>
       <item row="4" column="0">
        <widget class="QLabel" name="recordAsSudoLabel">
+        <property name="toolTip">
+         <string>Enable this to run perf as root. This gives access to advanced event types such as kernel tracepoints.</string>
+        </property>
         <property name="text">
-         <string>Record as Sudo:</string>
+         <string>Record as Root:</string>
+        </property>
+        <property name="buddy">
+         <cstring>recordAsSudoCheckBox</cstring>
         </property>
        </widget>
       </item>
       <item row="4" column="1">
        <widget class="QCheckBox" name="recordAsSudoCheckBox">
-        <property name="text">
-         <string>(Recommended)</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
+        <property name="toolTip">
+         <string>Enable this to run perf as root. This gives access to advanced event types such as kernel tracepoints.</string>
         </property>
        </widget>
       </item>
@@ -298,7 +301,7 @@
     </widget>
    </item>
    <item>
-    <widget class="KMessageWidget" name="applicationRecordErrorMessage" native="true"/>
+    <widget class="KMessageWidget" name="applicationRecordErrorMessage"/>
    </item>
    <item>
     <widget class="QWidget" name="widget" native="true">
@@ -387,16 +390,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>KUrlRequester</class>
-   <extends>QWidget</extends>
-   <header>kurlrequester.h</header>
-  </customwidget>
-  <customwidget>
-   <class>KMessageWidget</class>
-   <extends>QWidget</extends>
-   <header>kmessagewidget.h</header>
-  </customwidget>
-  <customwidget>
    <class>KFilterProxySearchLine</class>
    <extends>QWidget</extends>
    <header>kfilterproxysearchline.h</header>
@@ -404,6 +397,16 @@
   <customwidget>
    <class>KUrlComboRequester</class>
    <extends>KUrlRequester</extends>
+   <header>kurlrequester.h</header>
+  </customwidget>
+  <customwidget>
+   <class>KMessageWidget</class>
+   <extends>QFrame</extends>
+   <header>kmessagewidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>KUrlRequester</class>
+   <extends>QWidget</extends>
    <header>kurlrequester.h</header>
   </customwidget>
  </customwidgets>
