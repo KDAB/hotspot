@@ -54,6 +54,19 @@ PerfRecord::~PerfRecord()
     }
 }
 
+static QStringList sudoOptions(const QString& sudoBinary)
+{
+    QStringList options = {
+        QStringLiteral("-u"),
+        QStringLiteral("root")
+    };
+    if (sudoBinary.endsWith(QLatin1String("/kdesu"))) {
+        // enable command line output
+        options.append(QStringLiteral("-t"));
+    }
+    return options;
+}
+
 void PerfRecord::startRecording(const QStringList &perfOptions, const QString &outputPath, bool recordAsSudo,
                                 const QStringList &recordOptions, const QString &workingDirectory)
 {
@@ -119,10 +132,11 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
     if (recordAsSudo) {
         // launch perf as root
         auto sudoBinary = sudoUtil();
-        auto username = currentUsername();
+        auto options = sudoOptions(sudoBinary);
 
         // perf and options
-        QStringList options =  {
+        options += {
+            QStringLiteral("--"),
             perfBinary,
             QStringLiteral("record"),
             QStringLiteral("-o"),
@@ -131,22 +145,19 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
         options += perfOptions;
 
         // use runuser to launch command as original user
-        options += QStringLiteral("-- runuser");
-        options += username;
-        options += QStringLiteral("-c");
-        QString recordCommand = QLatin1Char('"') +
-                recordOptions.join(QLatin1Char(' ')) + QLatin1Char('"');
-        options += recordCommand;
+        options += QStringList {
+            QStringLiteral("--"),
+            QStringLiteral("runuser"),
+            QStringLiteral("-u"),
+            currentUsername(),
+            QStringLiteral("--"),
+        };
 
         // finally the actual client application and arguments
-        QStringList sudoCommand =  {
-            QStringLiteral("-u"),
-            QStringLiteral("root")
-        };
-        sudoCommand += options.join(QLatin1Char(' '));
+        options += recordOptions;
 
-        emit recordingStarted(sudoBinary, sudoCommand);
-        m_perfRecordProcess->start(sudoBinary, sudoCommand);
+        emit recordingStarted(sudoBinary, options);
+        m_perfRecordProcess->start(sudoBinary, options);
     } else {
         QStringList perfCommand =  {
             QStringLiteral("record"),
@@ -235,9 +246,8 @@ bool PerfRecord::checkFilePermissions(const QString &filePath)
             return false;
         }
 
-        QStringList options =  {
-            QStringLiteral("-u"),
-            QStringLiteral("root"),
+        QStringList options = sudoOptions(sudoExe);
+        options += QStringList{
             QStringLiteral("--"),
             QStringLiteral("chown"),
             username + QLatin1Char(':') + KUserGroup().name(),
@@ -254,12 +264,17 @@ bool PerfRecord::checkFilePermissions(const QString &filePath)
 
 QString PerfRecord::sudoUtil() const
 {
-    QString util = QStandardPaths::findExecutable(QStringLiteral("kdesudo"));
-
-    if (util.isEmpty()) {
-        util = QStandardPaths::findExecutable(QStringLiteral("gksudo"));
+    const auto commands = {
+        QStringLiteral("kdesu"),
+        QStringLiteral("gksu")
+    };
+    for (const auto& cmd : commands) {
+        QString util = QStandardPaths::findExecutable(cmd);
+        if (!util.isEmpty()) {
+            return util;
+        }
     }
-    return util;
+    return {};
 }
 
 QString PerfRecord::currentUsername() const
