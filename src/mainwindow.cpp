@@ -130,8 +130,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_recentFilesAction = KStandardAction::openRecent(this, SLOT(openFile(QUrl)), this);
     m_recentFilesAction->loadEntries(m_config->group("RecentFiles"));
     ui->fileMenu->addAction(m_recentFilesAction);
-    ui->fileMenu->addAction(KStandardAction::clear(this, SLOT(clear()), this));
-    ui->fileMenu->addAction(KStandardAction::close(this, SLOT(close()), this));
+    ui->fileMenu->addAction(KStandardAction::close(this, SLOT(clear()), this));
+    ui->fileMenu->addAction(KStandardAction::quit(this, SLOT(close()), this));
     connect(ui->actionAbout_Qt, &QAction::triggered,
             qApp, &QApplication::aboutQt);
     connect(ui->actionAbout_KDAB, &QAction::triggered,
