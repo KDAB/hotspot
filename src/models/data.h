@@ -414,6 +414,9 @@ struct CallerCalleeEntry
         auto it = sourceMap.find(location);
         if (it == sourceMap.end()) {
             it = sourceMap.insert(location, {numTypes});
+        } else if (it->inclusiveCost.size() < static_cast<size_t>(numTypes)) {
+            it->inclusiveCost.resize(numTypes);
+            it->selfCost.resize(numTypes);
         }
         return *it;
     }
