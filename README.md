@@ -119,7 +119,7 @@ apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev \
 dnf install cmake gcc glibc-static gcc-c++ libstdc++-static qt5 qt5-devel \
     extra-cmake-modules elfutils-devel kf5-threadweaver-devel kf5-ki18n-devel \
     kf5-kconfigwidgets-devel kf5-kitemviews-devel kf5-kitemmodels-devel \
-    kf5-kio-devel kf5-solid-devel kf5-kwindowsystem
+    kf5-kio-devel kf5-solid-devel kf5-kwindowsystem-devel
 ```
 
 ### Arch Linux
