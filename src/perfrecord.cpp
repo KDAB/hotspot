@@ -270,7 +270,7 @@ bool PerfRecord::ensureFileReadable(const QString &filePath)
     return outputFile.isReadable();
 }
 
-QString PerfRecord::sudoUtil() const
+QString PerfRecord::sudoUtil()
 {
     const auto commands = {
         QStringLiteral("kdesu"),
@@ -285,7 +285,7 @@ QString PerfRecord::sudoUtil() const
     return {};
 }
 
-QString PerfRecord::currentUsername() const
+QString PerfRecord::currentUsername()
 {
     return KUser().loginName();
 }
