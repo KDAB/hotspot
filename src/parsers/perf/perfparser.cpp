@@ -620,7 +620,7 @@ struct PerfParserPrivate
                 break;
             }
             case EVENT_HEADER:
-                if (bytesAvailable >= static_cast<qint64>((eventSize))) {
+                if (bytesAvailable >= static_cast<qint64>(sizeof(eventSize))) {
                     process.read(buffer.buffer().data(), sizeof(eventSize));
                     eventSize = qFromLittleEndian(*reinterpret_cast<quint32*>(buffer.buffer().data()));
                     qCDebug(LOG_PERFPARSER) << "next event size is:" << eventSize;
@@ -638,6 +638,7 @@ struct PerfParserPrivate
                     }
                     // await next event
                     state = EVENT_HEADER;
+                    eventSize = 0;
                     return true;
                 }
                 break;

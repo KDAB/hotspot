@@ -413,6 +413,35 @@ private slots:
         QVERIFY(m_bottomUpData.costs.cost(2, topBottomUp.id) >= 1E9); // at least 1s sleep time
     }
 
+
+    void testOffCpuSleep()
+    {
+        const auto sleep = QStandardPaths::findExecutable("sleep");
+        if (sleep.isEmpty()) {
+            QSKIP("no sleep command available");
+        }
+
+        if (!PerfRecord::canProfileOffCpu()) {
+            QSKIP("cannot access sched_switch trace points. execute the following to run this test:\n"
+                  "    sudo mount -o remount,mode=755 /sys/kernel/debug{,/tracing} with mode=755");
+        }
+
+        QStringList perfOptions = {"--call-graph", "dwarf", "-e", "cycles"};
+        perfOptions += PerfRecord::offCpuProfilingOptions();
+
+        QTemporaryFile tempFile;
+        tempFile.open();
+
+        perfRecord(perfOptions, sleep, {".5"}, tempFile.fileName());
+        testPerfData(Data::Symbol{}, Data::Symbol{}, tempFile.fileName(), false);
+
+        QCOMPARE(m_bottomUpData.costs.numTypes(), 3);
+        QCOMPARE(m_bottomUpData.costs.typeName(0), QStringLiteral("cycles"));
+        QCOMPARE(m_bottomUpData.costs.typeName(1), QStringLiteral("sched:sched_switch"));
+        QCOMPARE(m_bottomUpData.costs.typeName(2), QStringLiteral("off-CPU Time"));
+        QVERIFY(m_bottomUpData.costs.totalCost(1) >= 1); // at least 1 sched switch
+        QVERIFY(m_bottomUpData.costs.totalCost(2) >= 5E8); // at least .5s sleep time
+    }
 private:
     Data::Summary m_summaryData;
     Data::BottomUpResults m_bottomUpData;
