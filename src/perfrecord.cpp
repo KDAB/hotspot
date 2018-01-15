@@ -293,5 +293,24 @@ QString PerfRecord::currentUsername()
 bool PerfRecord::canTrace(const QString& path)
 {
     QFileInfo info(QLatin1String("/sys/kernel/debug/tracing/") + path);
-    return info.isDir() && info.isReadable();
+    if (!info.isDir() || !info.isReadable()) {
+        return false;
+    }
+    QFile paranoid(QStringLiteral("/proc/sys/kernel/perf_event_paranoid"));
+    return paranoid.open(QIODevice::ReadOnly)
+        && paranoid.readAll().trimmed() == "-1";
+}
+
+bool PerfRecord::canProfileOffCpu()
+{
+    return canTrace(QStringLiteral("events/sched/sched_switch"));
+}
+
+QStringList PerfRecord::offCpuProfilingOptions()
+{
+    return {
+        QStringLiteral("--switch-events"),
+        QStringLiteral("--event"),
+        QStringLiteral("sched:sched_switch")
+    };
 }

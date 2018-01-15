@@ -376,12 +376,13 @@ private slots:
 
     void testOffCpu()
     {
-        if (!PerfRecord::canTrace("events/sched/sched_switch")) {
+        if (!PerfRecord::canProfileOffCpu()) {
             QSKIP("cannot access sched_switch trace points. execute the following to run this test:\n"
                   "    sudo mount -o remount,mode=755 /sys/kernel/debug{,/tracing} with mode=755");
         }
 
-        const QStringList perfOptions = {"--call-graph", "dwarf", "--switch-events", "-e", "cycles", "-e", "sched:sched_switch"};
+        QStringList perfOptions = {"--call-graph", "dwarf", "-e", "cycles"};
+        perfOptions += PerfRecord::offCpuProfilingOptions();
 
         const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-sleep/cpp-sleep";
 

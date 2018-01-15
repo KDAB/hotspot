@@ -51,6 +51,9 @@ public:
     static QString currentUsername();
 
     static bool canTrace(const QString& path);
+    static bool canProfileOffCpu();
+
+    static QStringList offCpuProfilingOptions();
 
 signals:
     void recordingStarted(const QString &perfBinary, const QStringList &arguments);
