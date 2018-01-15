@@ -238,8 +238,9 @@ bool PerfRecord::checkFilePermissions(const QString &filePath)
         QStringList options =  {
             QStringLiteral("-u"),
             QStringLiteral("root"),
+            QStringLiteral("--"),
             QStringLiteral("chown"),
-            username + QLatin1Char(':') + username,
+            username + QLatin1Char(':') + KUserGroup().name(),
             filePath
         };
 
