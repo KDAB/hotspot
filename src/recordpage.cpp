@@ -333,6 +333,9 @@ RecordPage::RecordPage(QWidget *parent)
                     ui->eventTypeBox, {ui->eventTypeBox->currentText()});
     restoreCombobox(config(), QStringLiteral("customOptions"),
                     ui->perfParams);
+    ui->recordAsSudoCheckBox->setChecked(config().readEntry(QStringLiteral("recordAsSudo"), false));
+    ui->offCpuCheckBox->setChecked(config().readEntry(QStringLiteral("offCpuProfiling"), false));
+
     const auto callGraph = config().readEntry("callGraph", ui->callGraphComboBox->currentData());
     const auto callGraphIdx = ui->callGraphComboBox->findData(callGraph);
     if (callGraphIdx != -1) {
@@ -389,6 +392,10 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         if (offCpuProfilingEnabled) {
             perfOptions += PerfRecord::offCpuProfilingOptions();
         }
+        config().writeEntry(QStringLiteral("offCpuProfiling"), offCpuProfilingEnabled);
+
+        const bool recordAsSudo = ui->recordAsSudoCheckBox->isChecked();
+        config().writeEntry(QStringLiteral("recordAsSudo"), recordAsSudo);
 
         m_recordTimer.start();
         if (ui->recordTypeComboBox->currentData() == LaunchApplication) {
@@ -401,7 +408,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
             rememberApplication(applicationName, appParameters, workingDir,
                                 ui->applicationName->comboBox());
             m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(),
-                                 ui->recordAsSudoCheckBox->isChecked(),
+                                 recordAsSudo,
                                  applicationName, KShell::splitArgs(appParameters),
                                  workingDir);
         } else {
@@ -415,7 +422,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
             }
 
             m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(), 
-                                 ui->recordAsSudoCheckBox->isChecked(), pids);
+                                 recordAsSudo, pids);
         }
     } else {
         stopRecording();
