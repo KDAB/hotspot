@@ -248,7 +248,7 @@ bool PerfRecord::ensureFileReadable(const QString &filePath)
     QFileInfo outputFile(filePath);
     QString username = currentUsername();
 
-    if (outputFile.owner() != username) {
+    if (!outputFile.isReadable()) {
         QString sudoExe = sudoUtil();
         if (sudoExe.isEmpty() || username.isEmpty()) {
             return false;
