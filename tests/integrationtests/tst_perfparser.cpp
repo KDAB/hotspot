@@ -376,7 +376,7 @@ private slots:
 
     void testOffCpu()
     {
-        if (!canTrace("events/sched/sched_switch")) {
+        if (!PerfRecord::canTrace("events/sched/sched_switch")) {
             QSKIP("cannot access sched_switch trace points. execute the following to run this test:\n"
                   "    sudo mount -o remount,mode=755 /sys/kernel/debug{,/tracing} with mode=755");
         }
@@ -413,12 +413,6 @@ private slots:
     }
 
 private:
-    static bool canTrace(const QString& path)
-    {
-        QFileInfo info("/sys/kernel/debug/tracing/" + path);
-        return info.isDir() && info.isReadable();
-    }
-
     Data::Summary m_summaryData;
     Data::BottomUpResults m_bottomUpData;
     Data::TopDownResults m_topDownData;

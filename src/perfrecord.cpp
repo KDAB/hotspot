@@ -289,3 +289,9 @@ QString PerfRecord::currentUsername() const
 {
     return KUser().loginName();
 }
+
+bool PerfRecord::canTrace(const QString& path)
+{
+    QFileInfo info(QLatin1String("/sys/kernel/debug/tracing/") + path);
+    return info.isDir() && info.isReadable();
+}
