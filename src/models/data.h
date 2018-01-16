@@ -241,6 +241,7 @@ public:
     void initializeCostsFrom(const Costs& rhs)
     {
         m_typeNames = rhs.m_typeNames;
+        m_units = rhs.m_units;
         m_costs.resize(rhs.m_costs.size());
         m_totalCosts.resize(rhs.m_totalCosts.size());
     }
