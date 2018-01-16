@@ -50,11 +50,12 @@ struct Record
     quint32 pid = 0;
     quint32 tid = 0;
     quint64 time = 0;
+    quint32 cpu = 0;
 };
 
 QDataStream& operator>>(QDataStream& stream, Record& record)
 {
-    return stream >> record.pid >> record.tid >> record.time;
+    return stream >> record.pid >> record.tid >> record.time >> record.cpu;
 }
 
 QDebug operator<<(QDebug stream, const Record& record)
@@ -62,7 +63,8 @@ QDebug operator<<(QDebug stream, const Record& record)
     stream.noquote().nospace() << "Record{"
         << "pid=" << record.pid << ", "
         << "tid=" << record.tid << ", "
-        << "time=" << record.time
+        << "time=" << record.time << ", "
+        << "cpu=" << record.cpu
         << "}";
     return stream;
 }
@@ -823,6 +825,19 @@ struct PerfParserPrivate
             summaryResult.onCpuTime += runTime - thread.offCpuTime;
         }
 
+        {
+            uint cpuId = 0;
+            for (auto& cpu : eventResult.cpus) {
+                cpu.cpuId = cpuId++;
+            }
+            auto it = std::remove_if(eventResult.cpus.begin(),
+                                     eventResult.cpus.end(),
+                                     [](const Data::CpuEvents& cpuEvents) {
+                                         return cpuEvents.events.isEmpty();
+                                    });
+            eventResult.cpus.erase(it, eventResult.cpus.end());
+        }
+
         eventResult.totalCosts = summaryResult.costs;
     }
 
@@ -944,6 +959,10 @@ struct PerfParserPrivate
         if (!thread) {
             thread = addThread(sample);
         }
+        if (static_cast<uint>(eventResult.cpus.size()) <= sample.cpu) {
+            eventResult.cpus.resize(sample.cpu + 1);
+        }
+        auto& cpu = eventResult.cpus[sample.cpu];
 
         for (const auto& sampleCost : sample.costs) {
             Data::Event event;
@@ -951,7 +970,9 @@ struct PerfParserPrivate
             event.cost = sampleCost.cost;
             event.type = attributeIdsToCostIds.value(sampleCost.attributeId, -1);
             event.stackId = internStack(sample.frames);
+            event.cpuId = sample.cpu;
             thread->events.push_back(event);
+            cpu.events.push_back(event);
         }
 
         addSampleToBottomUp(sample);
@@ -1096,6 +1117,7 @@ struct PerfParserPrivate
             event.cost = switchTime;
             event.type = eventResult.offCpuTimeCostId;
             event.stackId = stackId;
+            event.cpuId = contextSwitch.cpu;
             thread->events.push_back(event);
         }
 
@@ -1131,6 +1153,8 @@ struct PerfParserPrivate
         summaryResult.cpuSiblingCores = formatCpuList(features.siblingCores);
         summaryResult.cpuSiblingThreads = formatCpuList(features.siblingThreads);
         summaryResult.totalMemoryInKiB = features.totalMem;
+
+        eventResult.cpus.resize(features.nrCpusAvailable);
     }
 
     void addError(const Error& error)
@@ -1368,30 +1392,36 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
     });
 }
 
-void PerfParser::filterResults(quint64 start, quint64 end, qint32 processId, qint32 threadId,
-                               const QVector<qint32>& excludeProcessIds,
-                               const QVector<qint32>& excludeThreadIds)
+void PerfParser::filterResults(const Data::FilterAction& filter)
 {
     Q_ASSERT(!m_isParsing);
 
     emit parsingStarted();
     using namespace ThreadWeaver;
-    stream() << make_job([this, start, end, processId, threadId,
-                         excludeProcessIds, excludeThreadIds]()
+    stream() << make_job([this, filter]()
     {
         Data::BottomUpResults bottomUp;
         Data::EventResults events = m_events;
         Data::CallerCalleeResults callerCallee;
-        const bool filterByTime = start != 0 && end != 0;
-        if (!filterByTime && processId == 0 && threadId == 0
-            && excludeProcessIds.isEmpty() && excludeThreadIds.isEmpty())
+        const bool filterByTime = filter.startTime != 0 && filter.endTime != 0;
+        const bool filterByCpu = filter.cpuId != std::numeric_limits<quint32>::max();
+        const bool excludeByCpu = !filter.excludeCpuIds.isEmpty();
+        if (!filterByTime && filter.processId == 0 && filter.threadId == 0 && !filterByCpu && !excludeByCpu
+            && filter.excludeProcessIds.isEmpty() && filter.excludeThreadIds.isEmpty())
         {
             bottomUp = m_bottomUpResults;
         } else {
             bottomUp.symbols = m_bottomUpResults.symbols;
             bottomUp.locations = m_bottomUpResults.locations;
             bottomUp.costs.initializeCostsFrom(m_bottomUpResults.costs);
+            callerCallee.inclusiveCosts.initializeCostsFrom(m_bottomUpResults.costs);
+            callerCallee.selfCosts.initializeCostsFrom(m_bottomUpResults.costs);
             const int numCosts = m_bottomUpResults.costs.numTypes();
+
+            // rebuild per-CPU data, i.e. wipe all the events and then re-add them
+            for (auto& cpu : events.cpus) {
+                cpu.events.clear();
+            }
 
             // remove events that lie outside the selected time span
             // TODO: parallelize
@@ -1401,32 +1431,43 @@ void PerfParser::filterResults(quint64 start, quint64 end, qint32 processId, qin
                     return;
                 }
 
-                if ((processId && thread.pid != processId) ||
-                    (threadId && thread.tid != threadId) ||
-                    (filterByTime && (thread.timeStart > end || thread.timeEnd < start)) ||
-                    excludeProcessIds.contains(thread.pid) ||
-                    excludeThreadIds.contains(thread.tid))
+                if ((filter.processId && thread.pid != filter.processId) ||
+                    (filter.threadId && thread.tid != filter.threadId) ||
+                    (filterByTime && (thread.timeStart > filter.endTime || thread.timeEnd < filter.startTime)) ||
+                    filter.excludeProcessIds.contains(thread.pid) ||
+                    filter.excludeThreadIds.contains(thread.tid))
                 {
                     thread.events.clear();
                     continue;
                 }
 
-                if (filterByTime) {
+                if (filterByTime || filterByCpu || excludeByCpu) {
                     auto it = std::remove_if(thread.events.begin(),
                                             thread.events.end(),
-                                            [start, end] (const Data::Event& event) {
-                                                return event.time < start || event.time >= end;
+                                            [filter, filterByTime, filterByCpu, excludeByCpu] (const Data::Event& event) {
+                                                if (filterByTime && (event.time < filter.startTime || event.time >= filter.endTime)) {
+                                                    return true;
+                                                } else if (filterByCpu && event.cpuId != filter.cpuId) {
+                                                    return true;
+                                                } else if (excludeByCpu && filter.excludeCpuIds.contains(filter.cpuId)) {
+                                                    return true;
+                                                }
+                                                return false;
                                             });
                     thread.events.erase(it, thread.events.end());
                 }
-
                 if (m_stopRequested) {
                     emit parsingFailed(tr("Parsing stopped."));
                     return;
                 }
 
-                // add event data to bottom up and caller callee sets
+                // add event data to cpus, bottom up and caller callee sets
                 for (const auto& event : thread.events) {
+                    // only add non-time events to the cpu line, context switches shouldn't show up there
+                    if (bottomUp.costs.unit(event.type) != Data::Costs::Unit::Time) {
+                        events.cpus[event.cpuId].events.push_back(event);
+                    }
+
                     QSet<Data::Symbol> recursionGuard;
                     auto frameCallback = [&callerCallee, &recursionGuard, &event, numCosts]
                         (const Data::Symbol& symbol, const Data::Location& location)
@@ -1451,6 +1492,15 @@ void PerfParser::filterResults(quint64 start, quint64 end, qint32 processId, qin
             events.threads.erase(it, events.threads.end());
 
             Data::BottomUp::initializeParents(&bottomUp.root);
+
+            // remove cpus that have no events
+            {
+                auto it = std::remove_if(events.cpus.begin(), events.cpus.end(),
+                                        [](const Data::CpuEvents& cpuEvents) {
+                                            return cpuEvents.events.isEmpty();
+                                        });
+                events.cpus.erase(it, events.cpus.end());
+            }
         }
 
         if (m_stopRequested) {

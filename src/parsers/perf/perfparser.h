@@ -46,10 +46,7 @@ public:
                         const QString& extraLibPaths, const QString& appPath,
                         const QString& arch);
 
-    void filterResults(quint64 start, quint64 end,
-                       qint32 processId, qint32 threadId,
-                       const QVector<qint32>& excludeProcessIds,
-                       const QVector<qint32>& excludeThreadIds);
+    void filterResults(const Data::FilterAction& filter);
 
     void stop();
 

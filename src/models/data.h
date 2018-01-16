@@ -468,17 +468,20 @@ struct CallerCalleeResults
 
 void callerCalleesFromBottomUpData(const BottomUpResults& data, CallerCalleeResults* results);
 
+const constexpr auto INVALID_CPU_ID = std::numeric_limits<quint32>::max();
+
 struct Event
 {
     quint64 time = 0;
     quint64 cost = 0;
     qint32 type = -1;
     qint32 stackId = -1;
+    quint32 cpuId = INVALID_CPU_ID;
 };
 
 using Events = QVector<Event>;
 
-constexpr auto MAX_TIME = std::numeric_limits<quint64>::max();
+const constexpr auto MAX_TIME = std::numeric_limits<quint64>::max();
 
 struct ThreadEvents
 {
@@ -496,6 +499,12 @@ struct ThreadEvents
         OffCpu
     };
     State state = Unknown;
+};
+
+struct CpuEvents
+{
+    quint32 cpuId = INVALID_CPU_ID;
+    QVector<Event> events;
 };
 
 struct CostSummary
@@ -542,6 +551,7 @@ struct Summary
 struct EventResults
 {
     QVector<ThreadEvents> threads;
+    QVector<CpuEvents> cpus;
     QVector<QVector<qint32>> stacks;
     QVector<CostSummary> totalCosts;
     qint32 offCpuTimeCostId = -1;
@@ -549,6 +559,16 @@ struct EventResults
     ThreadEvents* findThread(qint32 pid, qint32 tid);
 };
 
+struct FilterAction {
+    quint64 startTime = 0;
+    quint64 endTime = 0;
+    qint32 processId = 0;
+    qint32 threadId = 0;
+    quint32 cpuId = INVALID_CPU_ID;
+    QVector<qint32> excludeProcessIds;
+    QVector<qint32> excludeThreadIds;
+    QVector<quint32> excludeCpuIds;
+};
 }
 
 Q_DECLARE_METATYPE(Data::Symbol)
@@ -589,6 +609,9 @@ Q_DECLARE_TYPEINFO(Data::Event, Q_MOVABLE_TYPE);
 Q_DECLARE_METATYPE(Data::ThreadEvents)
 Q_DECLARE_TYPEINFO(Data::ThreadEvents, Q_MOVABLE_TYPE);
 
+Q_DECLARE_METATYPE(Data::CpuEvents)
+Q_DECLARE_TYPEINFO(Data::CpuEvents, Q_MOVABLE_TYPE);
+
 Q_DECLARE_METATYPE(Data::Summary)
 Q_DECLARE_TYPEINFO(Data::Summary, Q_MOVABLE_TYPE);
 
@@ -597,3 +620,5 @@ Q_DECLARE_TYPEINFO(Data::CostSummary, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::EventResults)
 Q_DECLARE_TYPEINFO(Data::EventResults, Q_MOVABLE_TYPE);
+
+Q_DECLARE_TYPEINFO(Data::FilterAction, Q_MOVABLE_TYPE);

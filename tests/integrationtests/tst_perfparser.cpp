@@ -442,6 +442,24 @@ private slots:
         QVERIFY(m_bottomUpData.costs.totalCost(1) >= 1); // at least 1 sched switch
         QVERIFY(m_bottomUpData.costs.totalCost(2) >= 5E8); // at least .5s sleep time
     }
+
+    void testSampleCpu()
+    {
+        const QStringList perfOptions = {"--call-graph", "dwarf", "--sample-cpu"};
+
+        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-parallel/cpp-parallel";
+        const int numThreads = QThread::idealThreadCount();
+        const QStringList exeArgs = {QString::number(numThreads)};
+
+        QTemporaryFile tempFile;
+        tempFile.open();
+
+        perfRecord(perfOptions, exePath, exeArgs, tempFile.fileName());
+        testPerfData({}, {}, tempFile.fileName(), false);
+
+        QCOMPARE(m_eventData.threads.size(), numThreads + 1);
+        QCOMPARE(m_eventData.cpus.size(), numThreads);
+    }
 private:
     Data::Summary m_summaryData;
     Data::BottomUpResults m_bottomUpData;

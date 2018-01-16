@@ -392,6 +392,8 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         const auto numProcesses = index.data(EventModel::NumProcessesRole).value<uint>();
         const auto numThreads = index.data(EventModel::NumThreadsRole).value<uint>();
         const auto isMainThread = threadStartTime == minTime && threadEndTime == maxTime;
+        const auto cpuId = index.data(EventModel::CpuIdRole).value<quint32>();
+        const auto numCpus = index.data(EventModel::NumCpusRole).value<uint>();
 
         if (isTimeSpanSelected && (minTime != timeSliceStart || maxTime != timeSliceEnd)) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
@@ -400,7 +402,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                                    });
         }
 
-        if (isRightButtonEvent && index.isValid() && threadStartTime != threadEndTime && numThreads > 1 &&
+        if (isRightButtonEvent && index.isValid() && threadStartTime != threadEndTime && numThreads > 1 && threadId &&
             ((!isZoomed && !isMainThread)
             || (isZoomed && m_zoomStack.last().first != threadStartTime && m_zoomStack.last().second != threadEndTime)))
         {
@@ -428,7 +430,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                                    });
         }
 
-        if (isRightButtonEvent && index.isValid() && numThreads > 1) {
+        if (isRightButtonEvent && index.isValid() && numThreads > 1 && threadId) {
             if ((!isFiltered && !isMainThread)
                 || (isFiltered && m_filterStack.last().startTime != threadStartTime && m_filterStack.last().endTime != threadEndTime))
             {
@@ -438,7 +440,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                                             filterInByTime(threadStartTime, threadEndTime);
                                        });
             }
-            if (!isFiltered || !m_filterStack.last().threadId) {
+            if ((!isFiltered || !m_filterStack.last().threadId)) {
                 contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
                                        tr("Filter In On Thread #%1").arg(threadId), this, [this, threadId](){
                                             filterInByThread(threadId);
@@ -458,6 +460,19 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                                             filterOutByProcess(processId);
                                        });
             }
+        }
+
+        if (isRightButtonEvent && index.isValid() && cpuId != Data::INVALID_CPU_ID && numCpus > 1
+            && (!isFiltered || m_filterStack.last().cpuId != cpuId))
+        {
+            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                                    tr("Filter In On CPU #%1").arg(cpuId), this, [this, cpuId](){
+                                        filterInByCpu(cpuId);
+                                    });
+            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                                    tr("Exclude CPU #%1").arg(cpuId), this, [this, cpuId](){
+                                        filterOutByCpu(cpuId);
+                                    });
         }
 
         if (isRightButtonEvent && isFiltered) {
@@ -514,7 +529,7 @@ void TimeLineDelegate::filterInByTime(quint64 startTime, quint64 endTime)
     if (endTime < startTime)
         std::swap(endTime, startTime);
 
-    FilterAction filter;
+    Data::FilterAction filter;
     filter.startTime = startTime;
     filter.endTime = endTime;
     applyFilter(filter);
@@ -522,33 +537,47 @@ void TimeLineDelegate::filterInByTime(quint64 startTime, quint64 endTime)
 
 void TimeLineDelegate::filterInByProcess(qint32 processId)
 {
-    FilterAction filter;
+    Data::FilterAction filter;
     filter.processId = processId;
     applyFilter(filter);
 }
 
 void TimeLineDelegate::filterOutByProcess(qint32 processId)
 {
-    FilterAction filter;
+    Data::FilterAction filter;
     filter.excludeThreadIds.push_back(processId);
     applyFilter(filter);
 }
 
 void TimeLineDelegate::filterInByThread(qint32 threadId)
 {
-    FilterAction filter;
+    Data::FilterAction filter;
     filter.threadId = threadId;
     applyFilter(filter);
 }
 
 void TimeLineDelegate::filterOutByThread(qint32 threadId)
 {
-    FilterAction filter;
+    Data::FilterAction filter;
     filter.excludeThreadIds.push_back(threadId);
     applyFilter(filter);
 }
 
-void TimeLineDelegate::applyFilter(FilterAction filter)
+void TimeLineDelegate::filterInByCpu(quint32 cpuId)
+{
+    Data::FilterAction filter;
+    filter.cpuId = cpuId;
+    applyFilter(filter);
+}
+
+void TimeLineDelegate::filterOutByCpu(quint32 cpuId)
+{
+    Data::FilterAction filter;
+    filter.excludeCpuIds.push_back(cpuId);
+    applyFilter(filter);
+}
+
+void TimeLineDelegate::applyFilter(Data::FilterAction filter)
 {
     if (!m_filterStack.isEmpty()) {
         // apply previous filter state
@@ -561,17 +590,17 @@ void TimeLineDelegate::applyFilter(FilterAction filter)
             filter.processId = lastFilter.processId;
         if (!filter.threadId)
             filter.threadId = lastFilter.threadId;
+        if (filter.cpuId == Data::INVALID_CPU_ID)
+            filter.cpuId = lastFilter.cpuId;
         filter.excludeProcessIds += lastFilter.excludeProcessIds;
         filter.excludeThreadIds += lastFilter.excludeThreadIds;
+        filter.excludeCpuIds += lastFilter.excludeCpuIds;
     }
 
     m_filterStack.push_back(filter);
     updateFilterActions();
 
-    emit filterRequested(filter.startTime, filter.endTime,
-                         filter.processId, filter.threadId,
-                         filter.excludeProcessIds,
-                         filter.excludeThreadIds);
+    emit filterRequested(filter);
 }
 
 void TimeLineDelegate::zoomIn(quint64 startTime, quint64 endTime)
@@ -600,7 +629,7 @@ void TimeLineDelegate::setEventType(int type)
 void TimeLineDelegate::resetFilter()
 {
     m_filterStack.clear();
-    emit filterRequested(0, 0, 0, 0, {}, {});
+    emit filterRequested({});
     updateFilterActions();
 }
 
@@ -608,13 +637,9 @@ void TimeLineDelegate::filterOut()
 {
     m_filterStack.removeLast();
     if (m_filterStack.isEmpty()) {
-        emit filterRequested(0, 0, 0, 0, {}, {});
+        emit filterRequested({});
     } else {
-        const auto filter = m_filterStack.last();
-        emit filterRequested(filter.startTime, filter.endTime,
-                             filter.processId, filter.threadId,
-                             filter.excludeProcessIds,
-                             filter.excludeThreadIds);
+        emit filterRequested(m_filterStack.last());
     }
     updateFilterActions();
 }
