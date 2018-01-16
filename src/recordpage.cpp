@@ -323,9 +323,6 @@ RecordPage::RecordPage(QWidget *parent)
 
     connect(ui->recordAsSudoCheckBox, &QCheckBox::toggled,
             this, &RecordPage::updateOffCpuCheckboxState);
-    updateOffCpuCheckboxState();
-
-    showRecordPage();
 
     restoreCombobox(config(), QStringLiteral("applications"),
                     ui->applicationName->comboBox());
@@ -341,6 +338,11 @@ RecordPage::RecordPage(QWidget *parent)
     if (callGraphIdx != -1) {
         ui->callGraphComboBox->setCurrentIndex(callGraphIdx);
     }
+
+    updateOffCpuCheckboxState();
+
+    showRecordPage();
+
 }
 
 RecordPage::~RecordPage() = default;
@@ -357,9 +359,6 @@ void RecordPage::showRecordPage()
 void RecordPage::onStartRecordingButtonClicked(bool checked)
 {
     if (checked) {
-        // check enabled flag early, before disabling the form
-        const bool offCpuProfilingEnabled = ui->offCpuCheckBox->isEnabled()
-                                         && ui->offCpuCheckBox->isChecked();
         showRecordPage();
         m_watcher->cancel();
         ui->recordTypeComboBox->setEnabled(false);
@@ -389,6 +388,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
                          customOptions, ui->perfParams);
         perfOptions += KShell::splitArgs(customOptions);
 
+        const bool offCpuProfilingEnabled = ui->offCpuCheckBox->isChecked();
         if (offCpuProfilingEnabled) {
             perfOptions += PerfRecord::offCpuProfilingOptions();
         }
@@ -576,6 +576,21 @@ void RecordPage::updateRecordType()
 
 void RecordPage::updateOffCpuCheckboxState()
 {
-    ui->offCpuCheckBox->setEnabled(ui->recordAsSudoCheckBox->isChecked()
-        || PerfRecord::canProfileOffCpu());
+    const bool enableOffCpuProfiling = ui->recordAsSudoCheckBox->isChecked()
+        || PerfRecord::canProfileOffCpu();
+
+    if (enableOffCpuProfiling == ui->offCpuCheckBox->isEnabled()) {
+        return;
+    }
+
+    ui->offCpuCheckBox->setEnabled(enableOffCpuProfiling);
+
+    // prevent user confusion: don't show the value as checked when the checkbox is disabled
+    if (!enableOffCpuProfiling) {
+        // remember the current value
+        config().writeEntry(QStringLiteral("offCpuProfiling"), ui->offCpuCheckBox->isChecked());
+        ui->offCpuCheckBox->setChecked(false);
+    } else {
+        ui->offCpuCheckBox->setChecked(config().readEntry(QStringLiteral("offCpuProfiling"), false));
+    }
 }
