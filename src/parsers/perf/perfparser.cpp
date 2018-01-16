@@ -820,9 +820,11 @@ struct PerfParserPrivate
                 thread.offCpuTime += thread.timeEnd - thread.lastSwitchTime;
             }
 
-            const auto runTime = thread.timeEnd - thread.timeStart;
-            summaryResult.offCpuTime += thread.offCpuTime;
-            summaryResult.onCpuTime += runTime - thread.offCpuTime;
+            if (thread.offCpuTime > 0) {
+                const auto runTime = thread.timeEnd - thread.timeStart;
+                summaryResult.offCpuTime += thread.offCpuTime;
+                summaryResult.onCpuTime += runTime - thread.offCpuTime;
+            }
         }
 
         {

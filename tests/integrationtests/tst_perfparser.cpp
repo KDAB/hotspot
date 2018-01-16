@@ -143,6 +143,10 @@ private slots:
         testPerfData(Data::Symbol{"hypot", "libm"}, {}, tempFile.fileName());
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
+
+        // we don't know the on/off CPU time
+        QCOMPARE(m_summaryData.onCpuTime, 0);
+        QCOMPARE(m_summaryData.offCpuTime, 0);
     }
 
     void testCppInliningCallGraphDwarf()
