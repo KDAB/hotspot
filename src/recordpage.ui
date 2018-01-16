@@ -249,9 +249,6 @@
         <property name="editable">
          <bool>true</bool>
         </property>
-        <property name="currentText">
-         <string>{cycles,instructions}:PS</string>
-        </property>
        </widget>
       </item>
       <item row="3" column="0">
