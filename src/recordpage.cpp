@@ -332,6 +332,7 @@ RecordPage::RecordPage(QWidget *parent)
                     ui->perfParams);
     ui->recordAsSudoCheckBox->setChecked(config().readEntry(QStringLiteral("recordAsSudo"), false));
     ui->offCpuCheckBox->setChecked(config().readEntry(QStringLiteral("offCpuProfiling"), false));
+    ui->sampleCpuCheckBox->setChecked(config().readEntry(QStringLiteral("sampleCpu"), true));
 
     const auto callGraph = config().readEntry("callGraph", ui->callGraphComboBox->currentData());
     const auto callGraphIdx = ui->callGraphComboBox->findData(callGraph);
@@ -396,6 +397,12 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
 
         const bool recordAsSudo = ui->recordAsSudoCheckBox->isChecked();
         config().writeEntry(QStringLiteral("recordAsSudo"), recordAsSudo);
+
+        const bool sampleCpuEnabled = ui->sampleCpuCheckBox->isChecked();
+        config().writeEntry(QStringLiteral("sampleCpu"), sampleCpuEnabled);
+        if (sampleCpuEnabled) {
+            perfOptions += QStringLiteral("--sample-cpu");
+        }
 
         m_recordTimer.start();
         if (ui->recordTypeComboBox->currentData() == LaunchApplication) {

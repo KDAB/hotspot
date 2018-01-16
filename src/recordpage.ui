@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1120</width>
-    <height>876</height>
+    <height>880</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -317,6 +317,29 @@
         </property>
         <property name="text">
          <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="sampleCpuLabel">
+        <property name="toolTip">
+         <string>Record the CPU where an event occurred. This enables the per-CPU event timeline. When this setting is disabled, all events will appear to be associated with CPU #0.</string>
+        </property>
+        <property name="text">
+         <string>Per-CPU Events:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QCheckBox" name="sampleCpuCheckBox">
+        <property name="toolTip">
+         <string>Record the CPU where an event occurred. This enables the per-CPU event timeline. When this setting is disabled, all events will appear to be associated with CPU #0.</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
