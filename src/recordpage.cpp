@@ -333,6 +333,8 @@ RecordPage::RecordPage(QWidget *parent)
     ui->recordAsSudoCheckBox->setChecked(config().readEntry(QStringLiteral("recordAsSudo"), false));
     ui->offCpuCheckBox->setChecked(config().readEntry(QStringLiteral("offCpuProfiling"), false));
     ui->sampleCpuCheckBox->setChecked(config().readEntry(QStringLiteral("sampleCpu"), true));
+    ui->mmapPagesSpinBox->setValue(config().readEntry(QStringLiteral("mmapPages"), 0));
+    ui->mmapPagesUnitComboBox->setCurrentIndex(config().readEntry(QStringLiteral("mmapPagesUnit"), 2));
 
     const auto callGraph = config().readEntry("callGraph", ui->callGraphComboBox->currentData());
     const auto callGraphIdx = ui->callGraphComboBox->findData(callGraph);
@@ -343,7 +345,6 @@ RecordPage::RecordPage(QWidget *parent)
     updateOffCpuCheckboxState();
 
     showRecordPage();
-
 }
 
 RecordPage::~RecordPage() = default;
@@ -403,6 +404,36 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         if (sampleCpuEnabled) {
             perfOptions += QStringLiteral("--sample-cpu");
         }
+
+        const int mmapPages = ui->mmapPagesSpinBox->value();
+        const int mmapPagesUnit = ui->mmapPagesUnitComboBox->currentIndex();
+        if (mmapPages > 0) {
+            auto mmapPagesArg = QString::number(mmapPages);
+            switch (mmapPagesUnit) {
+            case 0:
+                mmapPagesArg.append(QLatin1Char('B'));
+                break;
+            case 1:
+                mmapPagesArg.append(QLatin1Char('K'));
+                break;
+            case 2:
+                mmapPagesArg.append(QLatin1Char('M'));
+                break;
+            case 3:
+                mmapPagesArg.append(QLatin1Char('G'));
+                break;
+            case 4:
+                // pages, no unit
+                break;
+            default:
+                qWarning() << "Unhandled mmap pages unit";
+                break;
+            }
+            perfOptions += QStringLiteral("--mmap-pages");
+            perfOptions += mmapPagesArg;
+        }
+        config().writeEntry(QStringLiteral("mmapPages"), mmapPages);
+        config().writeEntry(QStringLiteral("mmapPagesUnit"), mmapPagesUnit);
 
         m_recordTimer.start();
         if (ui->recordTypeComboBox->currentData() == LaunchApplication) {
