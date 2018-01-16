@@ -304,29 +304,6 @@
           </widget>
          </item>
          <item row="2" column="0">
-          <widget class="QLabel" name="perfParamsLabel">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Free-form entry field for custom perf parameters. Use this field to set advanced options (cf. &lt;tt&gt;man perf record&lt;/tt&gt;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="text">
-            <string>Advanced Options:</string>
-           </property>
-           <property name="buddy">
-            <cstring>perfParams</cstring>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QComboBox" name="perfParams">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Free-form entry field for custom perf parameters. Use this field to set advanced options (cf. &lt;tt&gt;man perf record&lt;/tt&gt;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="editable">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
           <widget class="QLabel" name="sampleCpuLabel">
            <property name="toolTip">
             <string>Record the CPU where an event occurred. This enables the per-CPU event timeline. When this setting is disabled, all events will appear to be associated with CPU #0.</string>
@@ -339,7 +316,7 @@
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="2" column="1">
           <widget class="QCheckBox" name="sampleCpuCheckBox">
            <property name="toolTip">
             <string>Record the CPU where an event occurred. This enables the per-CPU event timeline. When this setting is disabled, all events will appear to be associated with CPU #0.</string>
@@ -352,7 +329,7 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="0">
+         <item row="3" column="0">
           <widget class="QLabel" name="bufferSizeLabel">
            <property name="toolTip">
             <string>Set the event buffer size. Increase this value when events are lost during recording. When a byte units is selected, the size is rounded up to have nearest pages power of two value. The number of data pages gets rounded up to the nearest power of two.</string>
@@ -365,7 +342,7 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
+         <item row="3" column="1">
           <widget class="QWidget" name="mmapPagesContainer" native="true">
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <property name="leftMargin">
@@ -442,6 +419,29 @@
              </spacer>
             </item>
            </layout>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="perfParamsLabel">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Free-form entry field for custom perf parameters. Use this field to set advanced options (cf. &lt;tt&gt;man perf record&lt;/tt&gt;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Advanced Options:</string>
+           </property>
+           <property name="buddy">
+            <cstring>perfParams</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QComboBox" name="perfParams">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Free-form entry field for custom perf parameters. Use this field to set advanced options (cf. &lt;tt&gt;man perf record&lt;/tt&gt;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="editable">
+            <bool>true</bool>
+           </property>
           </widget>
          </item>
         </layout>
