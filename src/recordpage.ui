@@ -87,7 +87,7 @@
          <string>Optional parameters to pass to the application being recorded</string>
         </property>
         <property name="text">
-         <string>Para&amp;meters:</string>
+         <string>Parame&amp;ters:</string>
         </property>
         <property name="buddy">
          <cstring>applicationParametersBox</cstring>
@@ -184,51 +184,11 @@
      <property name="title">
       <string>Perf Options</string>
      </property>
-     <layout class="QFormLayout" name="formLayout_3">
+     <layout class="QFormLayout" name="formLayout">
       <property name="fieldGrowthPolicy">
        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
       </property>
       <item row="0" column="0">
-       <widget class="QLabel" name="outputFileLabel">
-        <property name="toolTip">
-         <string>Path to the file location, where perf will write its output to</string>
-        </property>
-        <property name="text">
-         <string>O&amp;utput File:</string>
-        </property>
-        <property name="buddy">
-         <cstring>outputFile</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="KUrlRequester" name="outputFile">
-        <property name="toolTip">
-         <string>Path to the file location, where perf will write its output to</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="unwindingMethodLabel">
-        <property name="toolTip">
-         <string>Preferred unwinding method to use while recording perf data</string>
-        </property>
-        <property name="text">
-         <string>&amp;Unwinding Method:</string>
-        </property>
-        <property name="buddy">
-         <cstring>callGraphComboBox</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="callGraphComboBox">
-        <property name="toolTip">
-         <string>Preferred unwinding method to use while recording perf data</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
        <widget class="QLabel" name="eventTypeLabel">
         <property name="toolTip">
          <string>Optional perf event type flags to use while recording perf data</string>
@@ -241,7 +201,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="0" column="1">
        <widget class="QComboBox" name="eventTypeBox">
         <property name="toolTip">
          <string>Optional perf event type flags to use while recording perf data</string>
@@ -251,30 +211,7 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="perfParamsLabel">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Free-form entry field for custom perf parameters. Use this field to set advanced options (cf. &lt;tt&gt;man perf record&lt;/tt&gt;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>Advanced Options:</string>
-        </property>
-        <property name="buddy">
-         <cstring>perfParams</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QComboBox" name="perfParams">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Free-form entry field for custom perf parameters. Use this field to set advanced options (cf. &lt;tt&gt;man perf record&lt;/tt&gt;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="editable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
+      <item row="1" column="0">
        <widget class="QLabel" name="recordAsSudoLabel">
         <property name="toolTip">
          <string>Enable this to run perf as root. This gives access to advanced event types such as kernel tracepoints.</string>
@@ -287,14 +224,14 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="1" column="1">
        <widget class="QCheckBox" name="recordAsSudoCheckBox">
         <property name="toolTip">
          <string>Enable this to run perf as root. This gives access to advanced event types such as kernel tracepoints.</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
+      <item row="2" column="0">
        <widget class="QLabel" name="offCpuLabel">
         <property name="toolTip">
          <string>Record scheduler switch events. This enables off-CPU profiling to measure sleep times etc. This requires elevated rights, so you may need to record as root.</string>
@@ -307,7 +244,7 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
+      <item row="2" column="1">
        <widget class="QCheckBox" name="offCpuCheckBox">
         <property name="toolTip">
          <string>Record scheduler switch events. This enables off-CPU profiling to measure sleep times etc. This requires elevated rights, so you may need to record as root.</string>
@@ -317,120 +254,195 @@
         </property>
        </widget>
       </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="sampleCpuLabel">
-        <property name="toolTip">
-         <string>Record the CPU where an event occurred. This enables the per-CPU event timeline. When this setting is disabled, all events will appear to be associated with CPU #0.</string>
+      <item row="3" column="0" colspan="2">
+       <widget class="KCollapsibleGroupBox" name="perfOptionsBox2">
+        <property name="title">
+         <string>Advanced</string>
         </property>
-        <property name="text">
-         <string>Per-CPU Events:</string>
-        </property>
-        <property name="buddy">
-         <cstring>sampleCpuCheckBox</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="1">
-       <widget class="QCheckBox" name="sampleCpuCheckBox">
-        <property name="toolTip">
-         <string>Record the CPU where an event occurred. This enables the per-CPU event timeline. When this setting is disabled, all events will appear to be associated with CPU #0.</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="label">
-        <property name="toolTip">
-         <string>Set the event buffer size. Increase this value when events are lost during recording. When a byte units is selected, the size is rounded up to have nearest pages power of two value. The number of data pages gets rounded up to the nearest power of two.</string>
-        </property>
-        <property name="text">
-         <string>Buffer Si&amp;ze:</string>
-        </property>
-        <property name="buddy">
-         <cstring>mmapPagesSpinBox</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="1">
-       <widget class="QWidget" name="mmapPagesContainer" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <property name="leftMargin">
-          <number>0</number>
+        <layout class="QFormLayout" name="formLayout_3">
+         <property name="fieldGrowthPolicy">
+          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
          </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QSpinBox" name="mmapPagesSpinBox">
+         <item row="0" column="0">
+          <widget class="QLabel" name="outputFileLabel">
+           <property name="toolTip">
+            <string>Path to the file location, where perf will write its output to</string>
+           </property>
+           <property name="text">
+            <string>O&amp;utput File:</string>
+           </property>
+           <property name="buddy">
+            <cstring>outputFile</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="KUrlRequester" name="outputFile">
+           <property name="toolTip">
+            <string>Path to the file location, where perf will write its output to</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="unwindingMethodLabel">
+           <property name="toolTip">
+            <string>Preferred unwinding method to use while recording perf data</string>
+           </property>
+           <property name="text">
+            <string>&amp;Unwinding Method:</string>
+           </property>
+           <property name="buddy">
+            <cstring>callGraphComboBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="callGraphComboBox">
+           <property name="toolTip">
+            <string>Preferred unwinding method to use while recording perf data</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="perfParamsLabel">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Free-form entry field for custom perf parameters. Use this field to set advanced options (cf. &lt;tt&gt;man perf record&lt;/tt&gt;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="text">
+            <string>Advanced Options:</string>
+           </property>
+           <property name="buddy">
+            <cstring>perfParams</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QComboBox" name="perfParams">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Free-form entry field for custom perf parameters. Use this field to set advanced options (cf. &lt;tt&gt;man perf record&lt;/tt&gt;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="sampleCpuLabel">
+           <property name="toolTip">
+            <string>Record the CPU where an event occurred. This enables the per-CPU event timeline. When this setting is disabled, all events will appear to be associated with CPU #0.</string>
+           </property>
+           <property name="text">
+            <string>Per-CPU Events:</string>
+           </property>
+           <property name="buddy">
+            <cstring>sampleCpuCheckBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QCheckBox" name="sampleCpuCheckBox">
+           <property name="toolTip">
+            <string>Record the CPU where an event occurred. This enables the per-CPU event timeline. When this setting is disabled, all events will appear to be associated with CPU #0.</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="bufferSizeLabel">
            <property name="toolTip">
             <string>Set the event buffer size. Increase this value when events are lost during recording. When a byte units is selected, the size is rounded up to have nearest pages power of two value. The number of data pages gets rounded up to the nearest power of two.</string>
            </property>
-           <property name="specialValueText">
-            <string>automatic</string>
+           <property name="text">
+            <string>Buffer Si&amp;ze:</string>
            </property>
-           <property name="maximum">
-            <number>999</number>
+           <property name="buddy">
+            <cstring>mmapPagesSpinBox</cstring>
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QComboBox" name="mmapPagesUnitComboBox">
-           <property name="toolTip">
-            <string>Select the unit of buffer size. When a byte units is selected, the size is rounded up to have nearest pages power of two value. The number of data pages gets rounded up to the nearest power of two.</string>
-           </property>
-           <property name="currentIndex">
-            <number>2</number>
-           </property>
-           <item>
-            <property name="text">
-             <string>B</string>
+         <item row="4" column="1">
+          <widget class="QWidget" name="mmapPagesContainer" native="true">
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <property name="leftMargin">
+             <number>0</number>
             </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>KB</string>
+            <property name="topMargin">
+             <number>0</number>
             </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>MB</string>
+            <property name="rightMargin">
+             <number>0</number>
             </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>GB</string>
+            <property name="bottomMargin">
+             <number>0</number>
             </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Pages</string>
-            </property>
-           </item>
+            <item>
+             <widget class="QSpinBox" name="mmapPagesSpinBox">
+              <property name="toolTip">
+               <string>Set the event buffer size. Increase this value when events are lost during recording. When a byte units is selected, the size is rounded up to have nearest pages power of two value. The number of data pages gets rounded up to the nearest power of two.</string>
+              </property>
+              <property name="specialValueText">
+               <string>automatic</string>
+              </property>
+              <property name="maximum">
+               <number>999</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="mmapPagesUnitComboBox">
+              <property name="toolTip">
+               <string>Select the unit of buffer size. When a byte units is selected, the size is rounded up to have nearest pages power of two value. The number of data pages gets rounded up to the nearest power of two.</string>
+              </property>
+              <property name="currentIndex">
+               <number>2</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>B</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>KB</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>MB</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>GB</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Pages</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
          </item>
         </layout>
        </widget>
@@ -541,6 +553,12 @@
    <class>KMessageWidget</class>
    <extends>QFrame</extends>
    <header>kmessagewidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>KCollapsibleGroupBox</class>
+   <extends>QWidget</extends>
+   <header>kcollapsiblegroupbox.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>KUrlRequester</class>

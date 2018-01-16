@@ -191,6 +191,7 @@ RecordPage::RecordPage(QWidget *parent)
     ui->eventTypeBox->lineEdit()->setPlaceholderText(tr("perf defaults (usually cycles:Pu)"));
 
     auto columnResizer = new KColumnResizer(this);
+    columnResizer->addWidgetsFromLayout(ui->formLayout);
     columnResizer->addWidgetsFromLayout(ui->formLayout_1);
     columnResizer->addWidgetsFromLayout(ui->formLayout_2);
     columnResizer->addWidgetsFromLayout(ui->formLayout_3);
