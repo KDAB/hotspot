@@ -204,6 +204,14 @@ void EventModel::setData(const Data::EventResults& data)
         }
         m_numProcesses = processes.size();
         m_numThreads = threads.size();
+
+        // don't show timeline for CPU cores that did not receive any events
+        auto it = std::remove_if(m_data.cpus.begin(),
+                                m_data.cpus.end(),
+                                [](const Data::CpuEvents& cpuEvents) {
+                                    return cpuEvents.events.isEmpty();
+                                });
+        m_data.cpus.erase(it, m_data.cpus.end());
     }
     endResetModel();
 }

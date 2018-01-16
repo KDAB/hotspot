@@ -832,12 +832,6 @@ struct PerfParserPrivate
             for (auto& cpu : eventResult.cpus) {
                 cpu.cpuId = cpuId++;
             }
-            auto it = std::remove_if(eventResult.cpus.begin(),
-                                     eventResult.cpus.end(),
-                                     [](const Data::CpuEvents& cpuEvents) {
-                                         return cpuEvents.events.isEmpty();
-                                    });
-            eventResult.cpus.erase(it, eventResult.cpus.end());
         }
 
         eventResult.totalCosts = summaryResult.costs;
@@ -1494,15 +1488,6 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
             events.threads.erase(it, events.threads.end());
 
             Data::BottomUp::initializeParents(&bottomUp.root);
-
-            // remove cpus that have no events
-            {
-                auto it = std::remove_if(events.cpus.begin(), events.cpus.end(),
-                                        [](const Data::CpuEvents& cpuEvents) {
-                                            return cpuEvents.events.isEmpty();
-                                        });
-                events.cpus.erase(it, events.cpus.end());
-            }
         }
 
         if (m_stopRequested) {
