@@ -8,7 +8,6 @@ add_library(models STATIC
     processfiltermodel.cpp
     timelinedelegate.cpp
     eventmodel.cpp
-    eventproxy.cpp
     ../util.cpp
 )
 

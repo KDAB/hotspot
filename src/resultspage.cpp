@@ -37,9 +37,9 @@
 #include "resultscallercalleepage.h"
 
 #include "models/eventmodel.h"
-#include "models/eventproxy.h"
 #include "models/timelinedelegate.h"
 
+#include <QSortFilterProxyModel>
 #include <QProgressBar>
 #include <QDebug>
 #include <QEvent>
@@ -69,8 +69,11 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     }
 
     auto *eventModel = new EventModel(this);
-    auto *timeLineProxy = new EventProxy(this);
+    auto *timeLineProxy = new QSortFilterProxyModel(this);
     timeLineProxy->setSourceModel(eventModel);
+    timeLineProxy->setSortRole(EventModel::SortRole);
+    timeLineProxy->setFilterKeyColumn(EventModel::ThreadColumn);
+    timeLineProxy->setFilterRole(Qt::DisplayRole);
     ui->timeLineSearch->setProxy(timeLineProxy);
     ui->timeLineView->setModel(timeLineProxy);
     ui->timeLineView->setSortingEnabled(true);
