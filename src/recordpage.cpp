@@ -392,6 +392,11 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
 
         const bool offCpuProfilingEnabled = ui->offCpuCheckBox->isChecked();
         if (offCpuProfilingEnabled) {
+            if (eventType.isEmpty()) {
+                // TODO: use clock event in VM context
+                perfOptions += QStringLiteral("--event");
+                perfOptions += QStringLiteral("cycles");
+            }
             perfOptions += PerfRecord::offCpuProfilingOptions();
         }
         config().writeEntry(QStringLiteral("offCpuProfiling"), offCpuProfilingEnabled);
