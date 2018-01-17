@@ -145,8 +145,8 @@ private slots:
         QVERIFY(!m_topDownData.root.children.isEmpty());
 
         // we don't know the on/off CPU time
-        QCOMPARE(m_summaryData.onCpuTime, 0);
-        QCOMPARE(m_summaryData.offCpuTime, 0);
+        QCOMPARE(m_summaryData.onCpuTime, quint64(0));
+        QCOMPARE(m_summaryData.offCpuTime, quint64(0));
     }
 
     void testCppInliningCallGraphDwarf()
