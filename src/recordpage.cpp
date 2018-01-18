@@ -255,7 +255,7 @@ RecordPage::RecordPage(QWidget *parent)
 
     connect(m_perfRecord, &PerfRecord::recordingStarted,
             this, [this] (const QString& perfBinary, const QStringList& arguments) {
-                appendOutput(perfBinary + QLatin1Char(' ')
+                appendOutput(QLatin1String("$ ") + perfBinary + QLatin1Char(' ')
                                 + arguments.join(QLatin1Char(' '))
                                 + QLatin1Char('\n'));
                 ui->perfInputEdit->setEnabled(true);
