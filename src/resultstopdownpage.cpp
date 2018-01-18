@@ -49,7 +49,10 @@ ResultsTopDownPage::ResultsTopDownPage(PerfParser *parser, QWidget *parent)
     auto topDownCostModel = new TopDownModel(this);
     ResultsUtil::setupTreeView(ui->topDownTreeView, ui->topDownSearch, topDownCostModel);
     ResultsUtil::setupCostDelegate(topDownCostModel, ui->topDownTreeView);
-    connect(ui->topDownTreeView, &QTreeView::customContextMenuRequested, this, &ResultsTopDownPage::onContextMenu);
+    connect(ui->topDownTreeView, &QTreeView::customContextMenuRequested,
+            this, [this](const QPoint &point) {
+                customContextMenu(point, ui->topDownTreeView, TopDownModel::SymbolRole);
+            });
 
     connect(parser, &PerfParser::topDownDataAvailable,
             this, [this, topDownCostModel] (const Data::TopDownResults& data) {
@@ -75,9 +78,4 @@ void ResultsTopDownPage::customContextMenu(const QPoint &point, QTreeView* view,
         const auto symbol = index.data(symbolRole).value<Data::Symbol>();
         emit jumpToCallerCallee(symbol);
     }
-}
-
-void ResultsTopDownPage::onContextMenu(const QPoint &point)
-{
-    customContextMenu(point, ui->topDownTreeView, TopDownModel::SymbolRole);
 }
