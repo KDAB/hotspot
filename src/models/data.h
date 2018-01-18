@@ -477,6 +477,12 @@ struct Event
     qint32 type = -1;
     qint32 stackId = -1;
     quint32 cpuId = INVALID_CPU_ID;
+
+    bool operator==(const Event& rhs) const
+    {
+        return std::tie(time, cost, type, stackId, cpuId)
+            == std::tie(rhs.time, rhs.cost, rhs.type, rhs.stackId, rhs.cpuId);
+    }
 };
 
 using Events = QVector<Event>;
@@ -499,12 +505,26 @@ struct ThreadEvents
         OffCpu
     };
     State state = Unknown;
+
+    bool operator==(const ThreadEvents& rhs) const
+    {
+        return std::tie(pid, tid, timeStart, timeEnd, events,
+                        name, lastSwitchTime, offCpuTime, state)
+            == std::tie(rhs.pid, rhs.tid, rhs.timeStart, rhs.timeEnd, rhs.events,
+                        rhs.name, rhs.lastSwitchTime, rhs.offCpuTime, rhs.state);
+    }
 };
 
 struct CpuEvents
 {
     quint32 cpuId = INVALID_CPU_ID;
     QVector<Event> events;
+
+    bool operator==(const CpuEvents& rhs) const
+    {
+        return std::tie(cpuId, events)
+            == std::tie(rhs.cpuId, rhs.events);
+    }
 };
 
 struct CostSummary
@@ -517,6 +537,12 @@ struct CostSummary
     QString label;
     quint64 sampleCount = 0;
     quint64 totalPeriod = 0;
+
+    bool operator==(const CostSummary& rhs) const
+    {
+        return std::tie(label, sampleCount, totalPeriod)
+            == std::tie(rhs.label, rhs.sampleCount, rhs.totalPeriod);
+    }
 };
 
 struct Summary
@@ -557,6 +583,12 @@ struct EventResults
     qint32 offCpuTimeCostId = -1;
 
     ThreadEvents* findThread(qint32 pid, qint32 tid);
+
+    bool operator==(const EventResults& rhs) const
+    {
+        return std::tie(threads, cpus, stacks, totalCosts, offCpuTimeCostId)
+            == std::tie(rhs.threads, rhs.cpus, rhs.stacks, rhs.totalCosts, rhs.offCpuTimeCostId);
+    }
 };
 
 struct FilterAction {

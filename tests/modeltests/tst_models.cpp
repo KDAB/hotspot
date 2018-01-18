@@ -32,6 +32,8 @@
 
 #include "modeltest.h"
 
+#include <models/eventmodel.h>
+
 #include "../testutils.h"
 
 namespace {
@@ -235,6 +237,121 @@ private slots:
                 ModelTest tester(&model);
                 model.setResults(entry.sourceMap, results.selfCosts);
             }
+        }
+    }
+
+    void testEventModel()
+    {
+        Data::EventResults events;
+        events.cpus.resize(3);
+        events.cpus[0].cpuId = 0;
+        events.cpus[1].cpuId = 1; // empty
+        events.cpus[2].cpuId = 2;
+        const int nonEmptyCpus = 2;
+
+        const quint64 endTime = 1000;
+        const quint64 deltaTime = 10;
+        events.threads.resize(2);
+        auto& thread1 = events.threads[0];
+        {
+            thread1.pid = 1234;
+            thread1.tid = 1234;
+            thread1.timeStart = 0;
+            thread1.timeEnd = endTime;
+            thread1.name = "foobar";
+        }
+        auto& thread2 = events.threads[1];
+        {
+            thread2.pid = 1234;
+            thread2.tid = 1235;
+            thread2.timeStart = deltaTime;
+            thread2.timeEnd = endTime - deltaTime;
+            thread2.name = "asdf";
+        }
+
+        Data::CostSummary costSummary("cycles", 0, 0);
+        auto generateEvent = [&costSummary, &events](quint64 time, quint32 cpuId) -> Data::Event {
+            Data::Event event;
+            event.cost = 10;
+            event.cpuId = cpuId;
+            event.type = 0;
+            event.time = time;
+            ++costSummary.sampleCount;
+            costSummary.totalPeriod += event.cost;
+            events.cpus[cpuId].events << event;
+            return event;
+        };
+        for (quint64 time = 0; time < endTime; time += deltaTime) {
+            thread1.events << generateEvent(time, 0);
+            if (time >= thread2.timeStart && time <= thread2.timeEnd) {
+                thread2.events << generateEvent(time, 2);
+            }
+        }
+        events.totalCosts = {costSummary};
+
+        EventModel model;
+        ModelTest tester(&model);
+        model.setData(events);
+
+        QCOMPARE(model.columnCount(), EventModel::NUM_COLUMNS);
+        QCOMPARE(model.rowCount(), nonEmptyCpus + events.threads.size());
+
+        auto simplifiedEvents = events;
+        simplifiedEvents.cpus.remove(1);
+
+        for (int i = 0, c = model.rowCount(); i < c; ++i) {
+            const auto isCpuIndex = i < nonEmptyCpus;
+            auto idx = model.index(i, EventModel::ThreadColumn);
+
+            const auto eventResults = idx.data(EventModel::EventResultsRole).value<Data::EventResults>();
+            QCOMPARE(eventResults, simplifiedEvents);
+            const auto maxTime = idx.data(EventModel::MaxTimeRole).value<quint64>();
+            QCOMPARE(maxTime, endTime);
+            const auto minTime = idx.data(EventModel::MinTimeRole).value<quint64>();
+            QCOMPARE(minTime, quint64(0));
+            const auto numProcesses = idx.data(EventModel::NumProcessesRole).value<uint>();
+            QCOMPARE(numProcesses, 1u);
+            const auto numThreads = idx.data(EventModel::NumThreadsRole).value<uint>();
+            QCOMPARE(numThreads, 2u);
+            const auto numCpus = idx.data(EventModel::NumCpusRole).value<uint>();
+            QCOMPARE(numCpus, 2u);
+            const auto maxCost = idx.data(EventModel::MaxCostRole).value<quint64>();
+            QCOMPARE(maxCost, 10);
+            const auto totalCost = idx.data(EventModel::TotalCostsRole).value<QVector<Data::CostSummary>>();
+            QCOMPARE(totalCost, events.totalCosts);
+
+            const auto rowEvents = idx.data(EventModel::EventsRole).value<Data::Events>();
+            const auto threadStart = idx.data(EventModel::ThreadStartRole).value<quint64>();
+            const auto threadEnd = idx.data(EventModel::ThreadEndRole).value<quint64>();
+            const auto threadName = idx.data(EventModel::ThreadNameRole).value<QString>();
+            const auto threadId = idx.data(EventModel::ThreadIdRole).value<qint32>();
+            const auto processId = idx.data(EventModel::ProcessIdRole).value<qint32>();
+            const auto cpuId = idx.data(EventModel::CpuIdRole).value<quint32>();
+
+            if (isCpuIndex) {
+                const auto& cpu = simplifiedEvents.cpus[i];
+                QCOMPARE(rowEvents, cpu.events);
+                QCOMPARE(threadStart, 0);
+                QCOMPARE(threadEnd, endTime);
+                QCOMPARE(threadId, 0);
+                QCOMPARE(processId, 0);
+                QVERIFY(threadName.contains(QString::number(cpu.cpuId)));
+                QCOMPARE(cpuId, cpu.cpuId);
+                QCOMPARE(idx.data(EventModel::SortRole).value<quint32>(), cpu.cpuId);
+            } else {
+                const auto& thread = events.threads[i - nonEmptyCpus];
+                QCOMPARE(rowEvents, thread.events);
+                QCOMPARE(threadStart, thread.timeStart);
+                QCOMPARE(threadEnd, thread.timeEnd);
+                QCOMPARE(threadId, thread.tid);
+                QCOMPARE(processId, thread.pid);
+                QCOMPARE(cpuId, Data::INVALID_CPU_ID);
+                QCOMPARE(threadName, thread.name);
+                QCOMPARE(idx.data(EventModel::SortRole).value<qint32>(), thread.tid);
+            }
+
+            auto idx2 = model.index(i, EventModel::EventsColumn);
+            QCOMPARE(idx2.data(EventModel::SortRole).value<int>(), rowEvents.size());
         }
     }
 };
