@@ -49,10 +49,8 @@ ResultsBottomUpPage::ResultsBottomUpPage(PerfParser *parser, QWidget *parent)
     auto bottomUpCostModel = new BottomUpModel(this);
     ResultsUtil::setupTreeView(ui->bottomUpTreeView,  ui->bottomUpSearch, bottomUpCostModel);
     ResultsUtil::setupCostDelegate(bottomUpCostModel, ui->bottomUpTreeView);
-    connect(ui->bottomUpTreeView, &QTreeView::customContextMenuRequested,
-            this, [this] (const QPoint &point) {
-                customContextMenu(point, ui->bottomUpTreeView, BottomUpModel::SymbolRole);
-            });
+    ResultsUtil::setupContextMenu(ui->bottomUpTreeView, bottomUpCostModel,
+                                  [this] (const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
 
     auto topHotspotsProxy = new TopProxy(this);
     topHotspotsProxy->setSourceModel(bottomUpCostModel);
@@ -65,19 +63,3 @@ ResultsBottomUpPage::ResultsBottomUpPage(PerfParser *parser, QWidget *parent)
 }
 
 ResultsBottomUpPage::~ResultsBottomUpPage() = default;
-
-void ResultsBottomUpPage::customContextMenu(const QPoint &point, QTreeView* view, int symbolRole)
-{
-    const auto index = view->indexAt(point);
-    if (!index.isValid()) {
-        return;
-    }
-
-    QMenu contextMenu;
-    auto *viewCallerCallee = contextMenu.addAction(tr("View Caller/Callee"));
-    auto *action = contextMenu.exec(QCursor::pos());
-    if (action == viewCallerCallee) {
-        const auto symbol = index.data(symbolRole).value<Data::Symbol>();
-        emit jumpToCallerCallee(symbol);
-    }
-}

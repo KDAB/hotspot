@@ -30,6 +30,7 @@
 #include <QTreeView>
 #include <QHeaderView>
 #include <QMenu>
+#include <QCoreApplication>
 
 #include <KRecursiveFilterProxyModel>
 #include <KFilterProxySearchLine>
@@ -46,8 +47,8 @@ void stretchFirstColumn(QTreeView* view)
 }
 
 void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter,
-                   QAbstractItemModel* model, int sortRole, int filterRole,
-                   int initialSortColumn)
+                   QAbstractItemModel* model, int initialSortColumn,
+                   int sortRole, int filterRole)
 {
     auto proxy = new KRecursiveFilterProxyModel(view);
     proxy->setSortRole(sortRole);
@@ -59,8 +60,30 @@ void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter,
     view->sortByColumn(initialSortColumn);
     view->setModel(proxy);
     stretchFirstColumn(view);
+}
 
+void setupContextMenu(QTreeView* view, int symbolRole,
+                      std::function<void(const Data::Symbol&)> callback)
+{
     view->setContextMenuPolicy(Qt::CustomContextMenu);
+    QObject::connect(view, &QTreeView::customContextMenuRequested,
+                     view, [view, symbolRole, callback](const QPoint &point) {
+                        const auto index = view->indexAt(point);
+                        if (!index.isValid()) {
+                            return;
+                        }
+
+                        QMenu contextMenu;
+                        auto *viewCallerCallee = contextMenu.addAction(QCoreApplication::translate("Util", "View Caller/Callee"));
+                        auto *action = contextMenu.exec(QCursor::pos());
+                        if (action == viewCallerCallee) {
+                            const auto symbol = index.data(symbolRole).value<Data::Symbol>();
+
+                            if (symbol.isValid()) {
+                                callback(symbol);
+                            }
+                        }
+                    });
 }
 
 void setupCostDelegate(QAbstractItemModel* model, QTreeView* view,

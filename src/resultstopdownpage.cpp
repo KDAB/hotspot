@@ -28,16 +28,10 @@
 #include "resultstopdownpage.h"
 #include "ui_resultstopdownpage.h"
 
-#include <QSortFilterProxyModel>
-#include <QMenu>
-
-#include <KRecursiveFilterProxyModel>
-
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
 
 #include "models/hashmodel.h"
-#include "models/costdelegate.h"
 #include "models/treemodel.h"
 
 ResultsTopDownPage::ResultsTopDownPage(PerfParser *parser, QWidget *parent)
@@ -49,10 +43,8 @@ ResultsTopDownPage::ResultsTopDownPage(PerfParser *parser, QWidget *parent)
     auto topDownCostModel = new TopDownModel(this);
     ResultsUtil::setupTreeView(ui->topDownTreeView, ui->topDownSearch, topDownCostModel);
     ResultsUtil::setupCostDelegate(topDownCostModel, ui->topDownTreeView);
-    connect(ui->topDownTreeView, &QTreeView::customContextMenuRequested,
-            this, [this](const QPoint &point) {
-                customContextMenu(point, ui->topDownTreeView, TopDownModel::SymbolRole);
-            });
+    ResultsUtil::setupContextMenu(ui->topDownTreeView, topDownCostModel,
+                                  [this] (const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
 
     connect(parser, &PerfParser::topDownDataAvailable,
             this, [this, topDownCostModel] (const Data::TopDownResults& data) {
@@ -63,19 +55,3 @@ ResultsTopDownPage::ResultsTopDownPage(PerfParser *parser, QWidget *parent)
 }
 
 ResultsTopDownPage::~ResultsTopDownPage() = default;
-
-void ResultsTopDownPage::customContextMenu(const QPoint &point, QTreeView* view, int symbolRole)
-{
-    const auto index = view->indexAt(point);
-    if (!index.isValid()) {
-        return;
-    }
-
-    QMenu contextMenu;
-    auto *viewCallerCallee = contextMenu.addAction(tr("View Caller/Callee"));
-    auto *action = contextMenu.exec(QCursor::pos());
-    if (action == viewCallerCallee) {
-        const auto symbol = index.data(symbolRole).value<Data::Symbol>();
-        emit jumpToCallerCallee(symbol);
-    }
-}

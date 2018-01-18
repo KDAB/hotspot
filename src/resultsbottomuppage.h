@@ -48,9 +48,6 @@ public:
     explicit ResultsBottomUpPage(PerfParser *parser, QWidget *parent = nullptr);
     ~ResultsBottomUpPage();
 
-private slots:
-    void customContextMenu(const QPoint &point, QTreeView* view, int symbolRole);
-
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
 
