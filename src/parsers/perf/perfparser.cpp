@@ -1445,7 +1445,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                                                     return true;
                                                 } else if (filterByCpu && event.cpuId != filter.cpuId) {
                                                     return true;
-                                                } else if (excludeByCpu && filter.excludeCpuIds.contains(filter.cpuId)) {
+                                                } else if (excludeByCpu && filter.excludeCpuIds.contains(event.cpuId)) {
                                                     return true;
                                                 }
                                                 return false;
