@@ -30,9 +30,34 @@
 #include "../util.h"
 
 #include <QSet>
+#include <QDebug>
+
+namespace {
+enum class Tag : quintptr {
+    Invalid = 0,
+    Root = 1,
+    Overview = 2,
+    Cpus = 3,
+    Threads = 4
+};
+Tag dataTag(const QModelIndex& idx)
+{
+    if (!idx.isValid() || idx.internalId() == static_cast<quintptr>(Tag::Root)) {
+        return Tag::Root;
+    } else if (idx.internalId() == static_cast<quintptr>(Tag::Overview)) {
+        return Tag::Overview;
+    } else if (idx.internalId() == static_cast<quintptr>(Tag::Cpus)) {
+        return Tag::Cpus;
+    } else if (idx.internalId() == static_cast<quintptr>(Tag::Threads)) {
+        return Tag::Threads;
+    } else {
+        return Tag::Invalid;
+    }
+}
+}
 
 EventModel::EventModel(QObject* parent)
-    : QAbstractTableModel(parent)
+    : QAbstractItemModel(parent)
 {
 }
 
@@ -40,12 +65,26 @@ EventModel::~EventModel() = default;
 
 int EventModel::columnCount(const QModelIndex& parent) const
 {
-    return parent.isValid() ? 0 : NUM_COLUMNS;
+    return (dataTag(parent) == Tag::Invalid) ? 0 : NUM_COLUMNS;
 }
 
 int EventModel::rowCount(const QModelIndex& parent) const
 {
-    return parent.isValid() ? 0 : (m_data.threads.size() + m_data.cpus.size());
+    if (parent.column() > 0)
+        return 0;
+
+    switch (dataTag(parent)) {
+    case Tag::Invalid:
+    case Tag::Cpus:
+    case Tag::Threads:
+        break;
+    case Tag::Overview:
+        return (parent.row() == 0) ? m_data.cpus.size() : m_data.threads.size();
+    case Tag::Root:
+        return 2;
+    };
+
+    return 0;
 }
 
 QVariant EventModel::headerData(int section, Qt::Orientation orientation,
@@ -59,7 +98,7 @@ QVariant EventModel::headerData(int section, Qt::Orientation orientation,
 
     switch (static_cast<Columns>(section)) {
     case ThreadColumn:
-        return tr("Thread");
+        return tr("Source");
     case EventsColumn:
         return tr("Events");
     case NUM_COLUMNS:
@@ -76,14 +115,51 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         return {};
     }
 
+    if (role == MaxTimeRole) {
+        return m_maxTime;
+    } else if (role == MinTimeRole) {
+        return m_minTime;
+    } else if (role == MaxCostRole) {
+        return m_maxCost;
+    } else if (role == NumProcessesRole) {
+        return m_numProcesses;
+    } else if (role == NumThreadsRole) {
+        return m_numThreads;
+    } else if (role == NumCpusRole) {
+        return static_cast<uint>(m_data.cpus.size());
+    } else if (role == TotalCostsRole) {
+        return QVariant::fromValue(m_data.totalCosts);
+    } else if (role == EventResultsRole) {
+        return QVariant::fromValue(m_data);
+    }
+
+    auto tag = dataTag(index);
+
+    if (tag == Tag::Invalid || tag == Tag::Root) {
+        return {};
+    } else if (tag == Tag::Overview) {
+        if (role == Qt::DisplayRole) {
+            return index.row() == 0 ? tr("CPUs") : tr("Threads");
+        } else if (role == Qt::ToolTipRole) {
+            if (index.row() == 0) {
+                return tr("Event timelines for all CPUs. This shows you which, and how many CPUs where leveraged."
+                          "Note that this feature relies on perf data files recorded with <tt>--sample-cpu</tt>.");
+            } else {
+                return tr("Event timelines for the individual threads and processes.");
+            }
+        } else if (role == SortRole) {
+            return index.row();
+        }
+        return {};
+    }
+
     const Data::ThreadEvents* thread = nullptr;
     const Data::CpuEvents* cpu = nullptr;
-    int row = index.row();
-    if (row < m_data.cpus.size()) {
-        cpu = &m_data.cpus[row];
+
+    if (tag == Tag::Cpus) {
+        cpu = &m_data.cpus[index.row()];
     } else {
-        row -= m_data.cpus.size();
-        thread = &m_data.threads[row];
+        thread = &m_data.threads[index.row()];
     }
 
     if (role == ThreadStartRole) {
@@ -98,29 +174,13 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         return thread ? thread->pid : QVariant();
     } else if (role == CpuIdRole) {
         return cpu ? cpu->cpuId : Data::INVALID_CPU_ID;
-    } else if (role == MaxTimeRole) {
-        return m_maxTime;
-    } else if (role == MinTimeRole) {
-        return m_minTime;
     } else if (role == EventsRole) {
         return QVariant::fromValue(thread ? thread->events : cpu->events);
-    } else if (role == MaxCostRole) {
-        return m_maxCost;
-    } else if (role == NumProcessesRole) {
-        return m_numProcesses;
-    } else if (role == NumThreadsRole) {
-        return m_numThreads;
-    } else if (role == NumCpusRole) {
-        return static_cast<uint>(m_data.cpus.size());
     } else if (role == SortRole) {
         if (index.column() == ThreadColumn)
             return thread ? thread->tid : cpu->cpuId;
         else
             return thread ? thread->events.size() : cpu->events.size();
-    } else if (role == TotalCostsRole) {
-        return QVariant::fromValue(m_data.totalCosts);
-    } else if (role == EventResultsRole) {
-        return QVariant::fromValue(m_data);
     }
 
     switch (static_cast<Columns>(index.column())) {
@@ -214,4 +274,53 @@ void EventModel::setData(const Data::EventResults& data)
         m_data.cpus.erase(it, m_data.cpus.end());
     }
     endResetModel();
+}
+
+QModelIndex EventModel::index(int row, int column, const QModelIndex& parent) const
+{
+    if (row < 0 || column < 0 || column >= NUM_COLUMNS) {
+        return {};
+    }
+
+    switch (dataTag(parent)) {
+    case Tag::Invalid: // leaf / invalid -> no children
+    case Tag::Cpus:
+    case Tag::Threads:
+        break;
+    case Tag::Root: // root has the 1st level children: Overview
+        if (row >= 2) {
+            return {};
+        }
+        return createIndex(row, column, static_cast<quintptr>(Tag::Overview));
+    case Tag::Overview: // 2nd level children: Cpus and the Threads
+        if (parent.row() == 0) {
+            if (row >= m_data.cpus.size()) {
+                return {};
+            }
+            return createIndex(row, column, static_cast<quintptr>(Tag::Cpus));
+        } else {
+            if (row >= m_data.threads.size()) {
+                return {};
+            }
+            return createIndex(row, column, static_cast<quintptr>(Tag::Threads));
+        }
+    }
+
+    return {};
+}
+
+QModelIndex EventModel::parent(const QModelIndex& child) const
+{
+    switch (dataTag(child)) {
+    case Tag::Invalid:
+    case Tag::Root:
+    case Tag::Overview:
+        break;
+    case Tag::Cpus:
+        return createIndex(0, 0, static_cast<quintptr>(Tag::Overview));
+    case Tag::Threads:
+        return createIndex(1, 0, static_cast<quintptr>(Tag::Overview));
+    }
+
+    return {};
 }

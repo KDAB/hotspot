@@ -294,15 +294,12 @@ private slots:
         model.setData(events);
 
         QCOMPARE(model.columnCount(), EventModel::NUM_COLUMNS);
-        QCOMPARE(model.rowCount(), nonEmptyCpus + events.threads.size());
+        QCOMPARE(model.rowCount(), 2);
 
         auto simplifiedEvents = events;
         simplifiedEvents.cpus.remove(1);
 
-        for (int i = 0, c = model.rowCount(); i < c; ++i) {
-            const auto isCpuIndex = i < nonEmptyCpus;
-            auto idx = model.index(i, EventModel::ThreadColumn);
-
+        auto verifyCommonData = [&] (const QModelIndex& idx) {
             const auto eventResults = idx.data(EventModel::EventResultsRole).value<Data::EventResults>();
             QCOMPARE(eventResults, simplifiedEvents);
             const auto maxTime = idx.data(EventModel::MaxTimeRole).value<quint64>();
@@ -319,39 +316,55 @@ private slots:
             QCOMPARE(maxCost, 10);
             const auto totalCost = idx.data(EventModel::TotalCostsRole).value<QVector<Data::CostSummary>>();
             QCOMPARE(totalCost, events.totalCosts);
+        };
 
-            const auto rowEvents = idx.data(EventModel::EventsRole).value<Data::Events>();
-            const auto threadStart = idx.data(EventModel::ThreadStartRole).value<quint64>();
-            const auto threadEnd = idx.data(EventModel::ThreadEndRole).value<quint64>();
-            const auto threadName = idx.data(EventModel::ThreadNameRole).value<QString>();
-            const auto threadId = idx.data(EventModel::ThreadIdRole).value<qint32>();
-            const auto processId = idx.data(EventModel::ProcessIdRole).value<qint32>();
-            const auto cpuId = idx.data(EventModel::CpuIdRole).value<quint32>();
+        for (int i = 0; i < 2; ++i) {
+            const auto isCpuIndex = i == 0;
+            const auto parent = model.index(i, EventModel::ThreadColumn);
+            verifyCommonData(parent);
+            QCOMPARE(parent.data(EventModel::SortRole).value<int>(), i);
 
-            if (isCpuIndex) {
-                const auto& cpu = simplifiedEvents.cpus[i];
-                QCOMPARE(rowEvents, cpu.events);
-                QCOMPARE(threadStart, 0);
-                QCOMPARE(threadEnd, endTime);
-                QCOMPARE(threadId, 0);
-                QCOMPARE(processId, 0);
-                QVERIFY(threadName.contains(QString::number(cpu.cpuId)));
-                QCOMPARE(cpuId, cpu.cpuId);
-                QCOMPARE(idx.data(EventModel::SortRole).value<quint32>(), cpu.cpuId);
-            } else {
-                const auto& thread = events.threads[i - nonEmptyCpus];
-                QCOMPARE(rowEvents, thread.events);
-                QCOMPARE(threadStart, thread.timeStart);
-                QCOMPARE(threadEnd, thread.timeEnd);
-                QCOMPARE(threadId, thread.tid);
-                QCOMPARE(processId, thread.pid);
-                QCOMPARE(cpuId, Data::INVALID_CPU_ID);
-                QCOMPARE(threadName, thread.name);
-                QCOMPARE(idx.data(EventModel::SortRole).value<qint32>(), thread.tid);
+            const auto numRows = model.rowCount(parent);
+
+            QCOMPARE(numRows, isCpuIndex ? nonEmptyCpus : events.threads.size());
+
+            for (int j = 0; j < numRows; ++j) {
+                const auto idx = model.index(j, EventModel::ThreadColumn, parent);
+                verifyCommonData(idx);
+                QVERIFY(!model.rowCount(idx));
+                const auto rowEvents = idx.data(EventModel::EventsRole).value<Data::Events>();
+                const auto threadStart = idx.data(EventModel::ThreadStartRole).value<quint64>();
+                const auto threadEnd = idx.data(EventModel::ThreadEndRole).value<quint64>();
+                const auto threadName = idx.data(EventModel::ThreadNameRole).value<QString>();
+                const auto threadId = idx.data(EventModel::ThreadIdRole).value<qint32>();
+                const auto processId = idx.data(EventModel::ProcessIdRole).value<qint32>();
+                const auto cpuId = idx.data(EventModel::CpuIdRole).value<quint32>();
+
+                if (isCpuIndex) {
+                    const auto& cpu = simplifiedEvents.cpus[j];
+                    QCOMPARE(rowEvents, cpu.events);
+                    QCOMPARE(threadStart, 0);
+                    QCOMPARE(threadEnd, endTime);
+                    QCOMPARE(threadId, 0);
+                    QCOMPARE(processId, 0);
+                    QVERIFY(threadName.contains(QString::number(cpu.cpuId)));
+                    QCOMPARE(cpuId, cpu.cpuId);
+                    QCOMPARE(idx.data(EventModel::SortRole).value<quint32>(), cpu.cpuId);
+                } else {
+                    const auto& thread = events.threads[j];
+                    QCOMPARE(rowEvents, thread.events);
+                    QCOMPARE(threadStart, thread.timeStart);
+                    QCOMPARE(threadEnd, thread.timeEnd);
+                    QCOMPARE(threadId, thread.tid);
+                    QCOMPARE(processId, thread.pid);
+                    QCOMPARE(cpuId, Data::INVALID_CPU_ID);
+                    QCOMPARE(threadName, thread.name);
+                    QCOMPARE(idx.data(EventModel::SortRole).value<qint32>(), thread.tid);
+                }
+
+                auto idx2 = model.index(j, EventModel::EventsColumn, parent);
+                QCOMPARE(idx2.data(EventModel::SortRole).value<int>(), rowEvents.size());
             }
-
-            auto idx2 = model.index(i, EventModel::EventsColumn);
-            QCOMPARE(idx2.data(EventModel::SortRole).value<int>(), rowEvents.size());
         }
     }
 };

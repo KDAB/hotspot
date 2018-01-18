@@ -39,7 +39,7 @@
 #include "models/eventmodel.h"
 #include "models/timelinedelegate.h"
 
-#include <QSortFilterProxyModel>
+#include <KRecursiveFilterProxyModel>
 #include <QProgressBar>
 #include <QDebug>
 #include <QEvent>
@@ -69,7 +69,7 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     }
 
     auto *eventModel = new EventModel(this);
-    auto *timeLineProxy = new QSortFilterProxyModel(this);
+    auto *timeLineProxy = new KRecursiveFilterProxyModel(this);
     timeLineProxy->setSourceModel(eventModel);
     timeLineProxy->setSortRole(EventModel::SortRole);
     timeLineProxy->setFilterKeyColumn(EventModel::ThreadColumn);
@@ -86,6 +86,11 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     auto* timeLineDelegate = new TimeLineDelegate(ui->timeLineView);
     ui->timeLineEventFilterButton->setMenu(timeLineDelegate->filterMenu());
     ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, timeLineDelegate);
+
+    connect(timeLineProxy, &QAbstractItemModel::rowsInserted,
+            this, [this]() { ui->timeLineView->expandToDepth(1); });
+    connect(timeLineProxy, &QAbstractItemModel::modelReset,
+            this, [this]() { ui->timeLineView->expandToDepth(1); });
 
     connect(parser, &PerfParser::eventsAvailable,
             this, [this, eventModel] (const Data::EventResults& data) {
