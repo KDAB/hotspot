@@ -348,7 +348,7 @@ RecordPage::RecordPage(QWidget *parent)
 
     showRecordPage();
 
-    m_updateRuntimeTimer->setInterval(std::chrono::seconds(1));
+    m_updateRuntimeTimer->setInterval(1000);
     connect(m_updateRuntimeTimer, &QTimer::timeout,
             this, [this] {
                 ui->startRecordingButton->setText(tr("Stop Recording (%1)")
