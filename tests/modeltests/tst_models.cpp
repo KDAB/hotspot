@@ -313,7 +313,7 @@ private slots:
             const auto numCpus = idx.data(EventModel::NumCpusRole).value<uint>();
             QCOMPARE(numCpus, 2u);
             const auto maxCost = idx.data(EventModel::MaxCostRole).value<quint64>();
-            QCOMPARE(maxCost, 10);
+            QCOMPARE(maxCost, quint64(10));
             const auto totalCost = idx.data(EventModel::TotalCostsRole).value<QVector<Data::CostSummary>>();
             QCOMPARE(totalCost, events.totalCosts);
         };
