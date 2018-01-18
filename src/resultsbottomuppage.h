@@ -50,7 +50,6 @@ public:
 
 private slots:
     void customContextMenu(const QPoint &point, QTreeView* view, int symbolRole);
-    void onContextMenu(const QPoint &pos);
 
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);

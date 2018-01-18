@@ -49,7 +49,10 @@ ResultsBottomUpPage::ResultsBottomUpPage(PerfParser *parser, QWidget *parent)
     auto bottomUpCostModel = new BottomUpModel(this);
     ResultsUtil::setupTreeView(ui->bottomUpTreeView,  ui->bottomUpSearch, bottomUpCostModel);
     ResultsUtil::setupCostDelegate(bottomUpCostModel, ui->bottomUpTreeView);
-    connect(ui->bottomUpTreeView, &QTreeView::customContextMenuRequested, this, &ResultsBottomUpPage::onContextMenu);
+    connect(ui->bottomUpTreeView, &QTreeView::customContextMenuRequested,
+            this, [this] (const QPoint &point) {
+                customContextMenu(point, ui->bottomUpTreeView, BottomUpModel::SymbolRole);
+            });
 
     auto topHotspotsProxy = new TopProxy(this);
     topHotspotsProxy->setSourceModel(bottomUpCostModel);
@@ -77,9 +80,4 @@ void ResultsBottomUpPage::customContextMenu(const QPoint &point, QTreeView* view
         const auto symbol = index.data(symbolRole).value<Data::Symbol>();
         emit jumpToCallerCallee(symbol);
     }
-}
-
-void ResultsBottomUpPage::onContextMenu(const QPoint &point)
-{
-    customContextMenu(point, ui->bottomUpTreeView, BottomUpModel::SymbolRole);
 }
