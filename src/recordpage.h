@@ -33,6 +33,8 @@
 
 #include "processlist.h"
 
+class QTimer;
+
 namespace Ui {
 class RecordPage;
 }
@@ -88,6 +90,7 @@ private:
     PerfRecord* m_perfRecord;
     QString m_resultsFile;
     QElapsedTimer m_recordTimer;
+    QTimer* m_updateRuntimeTimer;
 
     ProcessModel *m_processModel;
     ProcessFilterModel *m_processProxyModel;

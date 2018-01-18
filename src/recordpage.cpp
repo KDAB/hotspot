@@ -167,6 +167,7 @@ RecordPage::RecordPage(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::RecordPage)
     , m_perfRecord(new PerfRecord(this))
+    , m_updateRuntimeTimer(new QTimer(this))
     , m_watcher(new QFutureWatcher<ProcDataList>(this))
 {
     ui->setupUi(this);
@@ -346,6 +347,13 @@ RecordPage::RecordPage(QWidget *parent)
     updateOffCpuCheckboxState();
 
     showRecordPage();
+
+    m_updateRuntimeTimer->setInterval(std::chrono::seconds(1));
+    connect(m_updateRuntimeTimer, &QTimer::timeout,
+            this, [this] {
+                ui->startRecordingButton->setText(tr("Stop Recording (%1)")
+                    .arg(Util::formatTimeString(m_recordTimer.nsecsElapsed(), true)));
+            });
 }
 
 RecordPage::~RecordPage() = default;
@@ -442,6 +450,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         config().writeEntry(QStringLiteral("mmapPagesUnit"), mmapPagesUnit);
 
         m_recordTimer.start();
+        m_updateRuntimeTimer->start();
         if (ui->recordTypeComboBox->currentData() == LaunchApplication) {
             const auto applicationName = KShell::tildeExpand(ui->applicationName->text());
             const auto appParameters = ui->applicationParametersBox->text();
@@ -475,6 +484,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
 
 void RecordPage::recordingStopped()
 {
+    m_updateRuntimeTimer->stop();
     ui->startRecordingButton->setChecked(false);
     ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
     ui->startRecordingButton->setText(tr("Start Recording"));

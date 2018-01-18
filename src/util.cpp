@@ -75,7 +75,7 @@ QString Util::formatCostRelative(quint64 selfCost, quint64 totalCost, bool addPe
     return ret;
 }
 
-QString Util::formatTimeString(quint64 nanoseconds)
+QString Util::formatTimeString(quint64 nanoseconds, bool shortForm)
 {
     if (nanoseconds < 1000) {
         return QString::number(nanoseconds) + QLatin1String("ns");
@@ -88,12 +88,18 @@ QString Util::formatTimeString(quint64 nanoseconds)
     quint64 microseconds = nanoseconds / 1000;
     if (nanoseconds < 1000000) {
         quint64 nanos = nanoseconds % 1000;
-        return format(microseconds, 3) + QLatin1Char('.') + format(nanos, 3) + QStringLiteral("µs");
+        if (shortForm) {
+            return QString::number(microseconds) + QLatin1String("µs");
+        }
+        return format(microseconds, 3) + QLatin1Char('.') + format(nanos, 3) + QLatin1String("µs");
     }
 
     quint64 milliseconds = (nanoseconds / 1000000) % 1000;
     if (nanoseconds < 1000000000) {
-        return format(milliseconds, 2) + QLatin1Char('.') + format(microseconds, 3) + QLatin1String("ms");
+        if (shortForm) {
+            return QString::number(milliseconds)+ QLatin1String("ms");
+        }
+        return format(milliseconds, 3) + QLatin1Char('.') + format(microseconds, 3) + QLatin1String("ms");
     }
 
     quint64 totalSeconds = nanoseconds / 1000000000;
@@ -105,6 +111,10 @@ QString Util::formatTimeString(quint64 nanoseconds)
     auto optional = [format] (quint64 fragment) -> QString {
         return fragment > 0 ? format(fragment, 2) + QLatin1Char(':') : QString();
     };
+    if (shortForm) {
+        return optional(days) + optional(hours) + optional(minutes)
+            + QString::number(seconds) + QLatin1Char('s');
+    }
     return optional(days) + optional(hours) + optional(minutes)
             + format(seconds, 2) + QLatin1Char('.') + format(milliseconds, 3) + QLatin1Char('s');
 }
