@@ -29,6 +29,10 @@
 
 #include <QWidget>
 
+namespace Data {
+struct Symbol;
+}
+
 namespace Ui {
 class ResultsSummaryPage;
 }
@@ -41,6 +45,9 @@ class ResultsSummaryPage : public QWidget
 public:
     explicit ResultsSummaryPage(PerfParser *parser, QWidget *parent = nullptr);
     ~ResultsSummaryPage();
+
+signals:
+    void jumpToCallerCallee(const Data::Symbol& symbol);
 
 private:
     QScopedPointer<Ui::ResultsSummaryPage> ui;

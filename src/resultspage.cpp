@@ -132,6 +132,8 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode,
             this, &ResultsPage::onNavigateToCode);
 
+    connect(m_resultsSummaryPage, &ResultsSummaryPage::jumpToCallerCallee,
+            this, &ResultsPage::onJumpToCallerCallee);
     connect(m_resultsBottomUpPage, &ResultsBottomUpPage::jumpToCallerCallee,
             this, &ResultsPage::onJumpToCallerCallee);
     connect(m_resultsTopDownPage, &ResultsTopDownPage::jumpToCallerCallee,

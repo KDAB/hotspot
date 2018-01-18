@@ -64,6 +64,8 @@ ResultsSummaryPage::ResultsSummaryPage(PerfParser *parser, QWidget *parent)
     ui->topHotspotsTableView->setModel(topHotspotsProxy);
     ResultsUtil::setupCostDelegate<BottomUpModel> (bottomUpCostModel, ui->topHotspotsTableView);
     ResultsUtil::stretchFirstColumn(ui->topHotspotsTableView);
+    ResultsUtil::setupContextMenu(ui->topHotspotsTableView, bottomUpCostModel,
+                                  [this] (const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
 
     connect(parser, &PerfParser::bottomUpDataAvailable,
             this, [this, bottomUpCostModel] (const Data::BottomUpResults& data) {

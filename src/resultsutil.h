@@ -65,7 +65,7 @@ void setupContextMenu(QTreeView* view, int symbolRole,
                       std::function<void(const Data::Symbol&)> callback);
 
 template<typename Model>
-void setupContextMenu(QTreeView* view, Model* model,
+void setupContextMenu(QTreeView* view, Model* /*model*/,
                       std::function<void(const Data::Symbol&)> callback)
 {
     setupContextMenu(view, Model::SymbolRole, callback);
