@@ -293,7 +293,7 @@ private slots:
         ModelTest tester(&model);
         model.setData(events);
 
-        QCOMPARE(model.columnCount(), EventModel::NUM_COLUMNS);
+        QCOMPARE(model.columnCount(), static_cast<int>(EventModel::NUM_COLUMNS));
         QCOMPARE(model.rowCount(), 2);
 
         auto simplifiedEvents = events;
@@ -343,10 +343,10 @@ private slots:
                 if (isCpuIndex) {
                     const auto& cpu = simplifiedEvents.cpus[j];
                     QCOMPARE(rowEvents, cpu.events);
-                    QCOMPARE(threadStart, 0);
+                    QCOMPARE(threadStart, quint64(0));
                     QCOMPARE(threadEnd, endTime);
-                    QCOMPARE(threadId, 0);
-                    QCOMPARE(processId, 0);
+                    QCOMPARE(threadId, qint32(0));
+                    QCOMPARE(processId, qint32(0));
                     QVERIFY(threadName.contains(QString::number(cpu.cpuId)));
                     QCOMPARE(cpuId, cpu.cpuId);
                     QCOMPARE(idx.data(EventModel::SortRole).value<quint32>(), cpu.cpuId);
