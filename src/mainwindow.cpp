@@ -143,12 +143,20 @@ MainWindow::MainWindow(QWidget *parent) :
     setupPathSettingsMenu();
 
     clear();
+
+    auto config = m_config->group("Window");
+    restoreGeometry(config.readEntry("geometry", QByteArray()));
+    restoreState(config.readEntry("state", QByteArray()));
 }
 
 MainWindow::~MainWindow() = default;
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
+    auto config = m_config->group("Window");
+    config.writeEntry("geometry", saveGeometry());
+    config.writeEntry("state", saveState());
+
     m_parser->stop();
     QMainWindow::closeEvent(event);
 }
