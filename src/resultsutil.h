@@ -27,56 +27,38 @@
 
 #pragma once
 
-#include <QtGlobal>
-#include <QTreeView>
-#include <QHeaderView>
-#include <KFilterProxySearchLine>
-#include <KRecursiveFilterProxyModel>
-#include "callercalleemodel.h"
-#include "costdelegate.h"
+class QTreeView;
+class KFilterProxySearchLine;
+class QAbstractItemModel;
+namespace Data {
+class Costs;
+struct Symbol;
+}
 
 namespace ResultsUtil {
-static void stretchFirstColumn(QTreeView* view)
-{
-    view->header()->setStretchLastSection(false);
-    view->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-}
+void stretchFirstColumn(QTreeView* view);
+
+void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter,
+                   QAbstractItemModel* model, int sortRole, int filterRole,
+                   int initialSortColumn);
 
 template<typename Model>
 void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, Model* model)
 {
-    auto proxy = new KRecursiveFilterProxyModel(view);
-    proxy->setSortRole(Model::SortRole);
-    proxy->setFilterRole(Model::FilterRole);
-    proxy->setSourceModel(model);
-
-    filter->setProxy(proxy);
-
-    view->sortByColumn(Model::InitialSortColumn);
-    view->setModel(proxy);
-    stretchFirstColumn(view);
-
-    view->setContextMenuPolicy(Qt::CustomContextMenu);
+    setupTreeView(view, filter, model, Model::SortRole, Model::FilterRole,
+                  Model::InitialSortColumn);
 }
+
+void setupCostDelegate(QAbstractItemModel* model, QTreeView* view,
+                       int sortRole, int totalCostRole, int numBaseColumns);
 
 template<typename Model>
 void setupCostDelegate(Model* model, QTreeView* view)
 {
-    auto costDelegate = new CostDelegate(Model::SortRole, Model::TotalCostRole, view);
-    QObject::connect(model, &QAbstractItemModel::modelReset,
-                     costDelegate, [costDelegate, model, view]() {
-                        for (int i = Model::NUM_BASE_COLUMNS, c = model->columnCount(); i < c; ++i) {
-                            view->setItemDelegateForColumn(i, costDelegate);
-                        }
-                    });
+    setupCostDelegate(model, view, Model::SortRole, Model::TotalCostRole,
+                      Model::NUM_BASE_COLUMNS);
 }
 
-static void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns)
-{
-    for (int i = 0; i < costs.numTypes(); ++i) {
-        if (!costs.totalCost(i)) {
-            view->hideColumn(numBaseColumns + i);
-        }
-    }
-}
+void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns);
+
 }

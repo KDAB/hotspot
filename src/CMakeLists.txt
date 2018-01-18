@@ -37,6 +37,7 @@ set(hotspot_SRCS
     resultsbottomuppage.cpp
     resultsflamegraphpage.cpp
     resultscallercalleepage.cpp
+    resultsutil.cpp
     processlist_unix.cpp
 
     # ui files:
