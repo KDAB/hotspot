@@ -164,10 +164,10 @@ void rememberApplication(const QString& application, const QString& appParameter
 }
 
 RecordPage::RecordPage(QWidget *parent)
-    : QWidget(parent),
-      ui(new Ui::RecordPage),
-      m_perfRecord(new PerfRecord(this)),
-      m_watcher(new QFutureWatcher<ProcDataList>(this))
+    : QWidget(parent)
+    , ui(new Ui::RecordPage)
+    , m_perfRecord(new PerfRecord(this))
+    , m_watcher(new QFutureWatcher<ProcDataList>(this))
 {
     ui->setupUi(this);
 
