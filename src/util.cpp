@@ -89,9 +89,9 @@ QString Util::formatTimeString(quint64 nanoseconds, bool shortForm)
     if (nanoseconds < 1000000) {
         quint64 nanos = nanoseconds % 1000;
         if (shortForm) {
-            return QString::number(microseconds) + QLatin1String("µs");
+            return QString::number(microseconds) + QStringLiteral("µs");
         }
-        return format(microseconds, 3) + QLatin1Char('.') + format(nanos, 3) + QLatin1String("µs");
+        return format(microseconds, 3) + QLatin1Char('.') + format(nanos, 3) + QStringLiteral("µs");
     }
 
     quint64 milliseconds = (nanoseconds / 1000000) % 1000;
