@@ -169,6 +169,11 @@ public:
         m_totalCosts[type] += delta;
     }
 
+    void clearTotalCost()
+    {
+        m_totalCosts.fill(0);
+    }
+
     int numTypes() const
     {
         return m_typeNames.size();
@@ -243,7 +248,7 @@ public:
         m_typeNames = rhs.m_typeNames;
         m_units = rhs.m_units;
         m_costs.resize(rhs.m_costs.size());
-        m_totalCosts.resize(rhs.m_totalCosts.size());
+        m_totalCosts = rhs.m_totalCosts;
     }
 
     QString formatCost(int type, quint64 cost) const

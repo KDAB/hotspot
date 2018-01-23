@@ -141,12 +141,8 @@ ItemCost buildCallerCalleeResult(const BottomUp& data, const Costs& bottomUpCost
 TopDownResults TopDownResults::fromBottomUp(const BottomUpResults& bottomUpData)
 {
     TopDownResults results;
-    for (int i = 0, s = bottomUpData.costs.numTypes(); i < s; ++i) {
-        results.selfCosts.addType(i, bottomUpData.costs.typeName(i), bottomUpData.costs.unit(i));
-        results.selfCosts.setTotalCosts(bottomUpData.costs.totalCosts());
-        results.inclusiveCosts.addType(i, bottomUpData.costs.typeName(i), bottomUpData.costs.unit(i));
-        results.inclusiveCosts.setTotalCosts(bottomUpData.costs.totalCosts());
-    }
+    results.selfCosts.initializeCostsFrom(bottomUpData.costs);
+    results.inclusiveCosts.initializeCostsFrom(bottomUpData.costs);
     quint32 maxId = 0;
     buildTopDownResult(bottomUpData.root, bottomUpData.costs,
                        &results.root, &results.inclusiveCosts,
@@ -157,12 +153,8 @@ TopDownResults TopDownResults::fromBottomUp(const BottomUpResults& bottomUpData)
 
 void Data::callerCalleesFromBottomUpData(const BottomUpResults& bottomUpData, CallerCalleeResults* results)
 {
-    for (int i = 0, s = bottomUpData.costs.numTypes(); i < s; ++i) {
-        results->selfCosts.addType(i, bottomUpData.costs.typeName(i), bottomUpData.costs.unit(i));
-        results->selfCosts.setTotalCosts(bottomUpData.costs.totalCosts());
-        results->inclusiveCosts.addType(i, bottomUpData.costs.typeName(i), bottomUpData.costs.unit(i));
-        results->inclusiveCosts.setTotalCosts(bottomUpData.costs.totalCosts());
-    }
+    results->inclusiveCosts.initializeCostsFrom(bottomUpData.costs);
+    results->selfCosts.initializeCostsFrom(bottomUpData.costs);
     buildCallerCalleeResult(bottomUpData.root, bottomUpData.costs, results);
 }
 

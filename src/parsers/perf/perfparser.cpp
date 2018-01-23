@@ -1410,8 +1410,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
             bottomUp.symbols = m_bottomUpResults.symbols;
             bottomUp.locations = m_bottomUpResults.locations;
             bottomUp.costs.initializeCostsFrom(m_bottomUpResults.costs);
-            callerCallee.inclusiveCosts.initializeCostsFrom(m_bottomUpResults.costs);
-            callerCallee.selfCosts.initializeCostsFrom(m_bottomUpResults.costs);
+            bottomUp.costs.clearTotalCost();
             const int numCosts = m_bottomUpResults.costs.numTypes();
 
             // rebuild per-CPU data, i.e. wipe all the events and then re-add them
