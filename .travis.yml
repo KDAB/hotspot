@@ -42,9 +42,11 @@ script:
   - mkdir -p appdir/usr/share/applications/ # FIXME: Do in CMakeLists.txt
   - cp ../hotspot.desktop appdir/usr/share/applications/ # FIXME: Do in CMakeLists.txt
   - unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
+  - export LD_LIBRARY_PATH=/opt/qt59/lib/x86_64-linux-gnu # make sure this path is known so all Qt/KF5 libs are found
   - linuxdeployqt ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs
   - # workaround for https://github.com/KDAB/hotspot/issues/87
   - linuxdeployqt ./appdir/usr/lib/x86_64-linux-gnu/libexec/hotspot-perfparser -bundle-non-qt-libs -no-plugins
+  - unset LD_LIBRARY_PATH
   - # also include the elfutils backend library ABI specific implementations
   - cp -va /usr/lib/x86_64-linux-gnu/elfutils/* ./appdir/usr/lib/x86_64-linux-gnu/libexec/lib/
   - # Share libraries to reduce image size
