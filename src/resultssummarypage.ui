@@ -29,18 +29,18 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
-        <width>289</width>
-        <height>541</height>
+        <y>-176</y>
+        <width>284</width>
+        <height>699</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_11">
        <item>
-        <widget class="KMessageWidget" name="lostMessage" native="true">
+        <widget class="KMessageWidget" name="lostMessage">
          <property name="toolTip">
           <string>Too much data was generated during the profile and some events got lost. Try to reduce the event load or increase the memory caches.</string>
          </property>
-         <property name="text" stdset="0">
+         <property name="text">
           <string notr="true">Lost messages</string>
          </property>
         </widget>
@@ -117,6 +117,37 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
+           <widget class="QWidget" name="widget" native="true">
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="eventSourceLabel">
+               <property name="text">
+                <string>Event Source:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="eventSourceComboBox"/>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item>
            <widget class="QTreeView" name="topHotspotsTableView">
             <property name="minimumSize">
              <size>
@@ -181,7 +212,7 @@
  <customwidgets>
   <customwidget>
    <class>KMessageWidget</class>
-   <extends>QWidget</extends>
+   <extends>QFrame</extends>
    <header>kmessagewidget.h</header>
    <container>1</container>
   </customwidget>

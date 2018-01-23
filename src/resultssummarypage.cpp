@@ -67,10 +67,17 @@ ResultsSummaryPage::ResultsSummaryPage(PerfParser *parser, QWidget *parent)
     ResultsUtil::setupContextMenu(ui->topHotspotsTableView, bottomUpCostModel,
                                   [this] (const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
 
+    connect(ui->eventSourceComboBox, static_cast<void (QComboBox::*) (int)>(&QComboBox::currentIndexChanged),
+            this, [topHotspotsProxy, this]() {
+                topHotspotsProxy->setCostColumn(ui->eventSourceComboBox->currentData().toInt() + BottomUpModel::NUM_BASE_COLUMNS);
+            });
+
     connect(parser, &PerfParser::bottomUpDataAvailable,
-            this, [this, bottomUpCostModel] (const Data::BottomUpResults& data) {
+            this, [this, bottomUpCostModel, topHotspotsProxy] (const Data::BottomUpResults& data) {
                 bottomUpCostModel->setData(data);
                 ResultsUtil::hideEmptyColumns(data.costs, ui->topHotspotsTableView, BottomUpModel::NUM_BASE_COLUMNS);
+                ResultsUtil::fillEventSourceComboBox(ui->eventSourceComboBox, data.costs,
+                                                     ki18n("Show top hotspots for %1 events."));
             });
 
     auto parserErrorsModel = new QStringListModel(this);

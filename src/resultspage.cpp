@@ -35,11 +35,14 @@
 #include "resultstopdownpage.h"
 #include "resultsflamegraphpage.h"
 #include "resultscallercalleepage.h"
+#include "resultsutil.h"
 
 #include "models/eventmodel.h"
 #include "models/timelinedelegate.h"
 
+#include <KLocalizedString>
 #include <KRecursiveFilterProxyModel>
+
 #include <QProgressBar>
 #include <QDebug>
 #include <QEvent>
