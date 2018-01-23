@@ -194,6 +194,16 @@ QDebug Data::operator<<(QDebug stream, const ItemCost& cost)
     return stream.resetFormat().space();
 }
 
+QDebug Data::operator<<(QDebug stream, const CostSummary& cost)
+{
+    stream.noquote().nospace() << "CostSummary{"
+        << "label = " << cost.label << ", "
+        << "sampleCount = " << cost.sampleCount << ", "
+        << "totalPeriod = " << cost.totalPeriod
+        << "}";
+    return stream.resetFormat().space();
+}
+
 Data::ThreadEvents* Data::EventResults::findThread(qint32 pid, qint32 tid)
 {
     for (int i = threads.size() - 1; i >= 0; --i) {

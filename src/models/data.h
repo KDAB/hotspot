@@ -545,6 +545,8 @@ struct CostSummary
     }
 };
 
+QDebug operator<<(QDebug stream, const CostSummary& symbol);
+
 struct Summary
 {
     quint64 applicationRunningTime = 0;
