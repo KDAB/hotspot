@@ -449,7 +449,10 @@ private slots:
 
     void testSampleCpu()
     {
-        const QStringList perfOptions = {"--call-graph", "dwarf", "--sample-cpu"};
+        QStringList perfOptions = {"--call-graph", "dwarf", "--sample-cpu", "-e", "cycles"};
+        if (PerfRecord::canProfileOffCpu()) {
+            perfOptions += PerfRecord::offCpuProfilingOptions();
+        }
 
         const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-parallel/cpp-parallel";
         const int numThreads = QThread::idealThreadCount();
@@ -463,7 +466,27 @@ private slots:
 
         QCOMPARE(m_eventData.threads.size(), numThreads + 1);
         QCOMPARE(m_eventData.cpus.size(), numThreads);
+
+        if (PerfRecord::canProfileOffCpu()) {
+            QCOMPARE(m_bottomUpData.costs.numTypes(), 3);
+            QCOMPARE(m_bottomUpData.costs.typeName(0), QStringLiteral("cycles"));
+            QCOMPARE(m_bottomUpData.costs.typeName(1), QStringLiteral("sched:sched_switch"));
+            QCOMPARE(m_bottomUpData.costs.typeName(2), QStringLiteral("off-CPU Time"));
+
+            QSet<quint32> eventCpuIds[3];
+            for (const auto& thread : m_eventData.threads) {
+                for (const auto& event : thread.events) {
+                    eventCpuIds[event.type].insert(event.cpuId);
+                }
+            }
+            QCOMPARE(eventCpuIds[0].size(), numThreads);
+            QCOMPARE(eventCpuIds[1].size(), numThreads);
+            QCOMPARE(eventCpuIds[2].size(), numThreads);
+        } else {
+            qDebug() << "skipping extended off-CPU profiling check";
+        }
     }
+
 private:
     Data::Summary m_summaryData;
     Data::BottomUpResults m_bottomUpData;
