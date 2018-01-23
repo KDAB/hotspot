@@ -1402,7 +1402,8 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         const bool filterByTime = filter.startTime != 0 && filter.endTime != 0;
         const bool filterByCpu = filter.cpuId != std::numeric_limits<quint32>::max();
         const bool excludeByCpu = !filter.excludeCpuIds.isEmpty();
-        if (!filterByTime && filter.processId == 0 && filter.threadId == 0 && !filterByCpu && !excludeByCpu
+        if (!filterByTime && filter.processId == Data::INVALID_PID && filter.threadId == Data::INVALID_TID
+            && !filterByCpu && !excludeByCpu
             && filter.excludeProcessIds.isEmpty() && filter.excludeThreadIds.isEmpty())
         {
             bottomUp = m_bottomUpResults;
@@ -1426,8 +1427,8 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                     return;
                 }
 
-                if ((filter.processId && thread.pid != filter.processId) ||
-                    (filter.threadId && thread.tid != filter.threadId) ||
+                if ((filter.processId != Data::INVALID_PID && thread.pid != filter.processId) ||
+                    (filter.threadId != Data::INVALID_TID && thread.tid != filter.threadId) ||
                     (filterByTime && (thread.timeStart > filter.endTime || thread.timeEnd < filter.startTime)) ||
                     filter.excludeProcessIds.contains(thread.pid) ||
                     filter.excludeThreadIds.contains(thread.tid))

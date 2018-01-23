@@ -169,9 +169,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
     } else if (role == ThreadNameRole) {
         return thread ? thread->name : tr("CPU #%1").arg(cpu->cpuId);
     } else if (role == ThreadIdRole) {
-        return thread ? thread->tid : QVariant();
+        return thread ? thread->tid : Data::INVALID_TID;
     } else if (role == ProcessIdRole) {
-        return thread ? thread->pid : QVariant();
+        return thread ? thread->pid : Data::INVALID_PID;
     } else if (role == CpuIdRole) {
         return cpu ? cpu->cpuId : Data::INVALID_CPU_ID;
     } else if (role == EventsRole) {

@@ -474,6 +474,8 @@ struct CallerCalleeResults
 void callerCalleesFromBottomUpData(const BottomUpResults& data, CallerCalleeResults* results);
 
 const constexpr auto INVALID_CPU_ID = std::numeric_limits<quint32>::max();
+const constexpr int INVALID_TID = -1;
+const constexpr int INVALID_PID = -1;
 
 struct Event
 {
@@ -496,8 +498,8 @@ const constexpr auto MAX_TIME = std::numeric_limits<quint64>::max();
 
 struct ThreadEvents
 {
-    qint32 pid = 0;
-    qint32 tid = 0;
+    qint32 pid = INVALID_PID;
+    qint32 tid = INVALID_TID;
     quint64 timeStart = 0;
     quint64 timeEnd = MAX_TIME;
     Events events;
@@ -601,8 +603,8 @@ struct EventResults
 struct FilterAction {
     quint64 startTime = 0;
     quint64 endTime = 0;
-    qint32 processId = 0;
-    qint32 threadId = 0;
+    qint32 processId = Data::INVALID_PID;
+    qint32 threadId = Data::INVALID_PID;
     quint32 cpuId = INVALID_CPU_ID;
     QVector<qint32> excludeProcessIds;
     QVector<qint32> excludeThreadIds;
