@@ -92,18 +92,23 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     connect(timeLineProxy, &QAbstractItemModel::modelReset,
             this, [this]() { ui->timeLineView->expandToDepth(1); });
 
+    connect(parser, &PerfParser::bottomUpDataAvailable,
+            this, [this] (const Data::BottomUpResults& data) {
+                ResultsUtil::fillEventSourceComboBox(ui->timeLineEventSource, data.costs,
+                                                     ki18n("Show timeline for %1 events."));
+            });
     connect(parser, &PerfParser::eventsAvailable,
             this, [this, eventModel] (const Data::EventResults& data) {
-                ui->timeLineEventSource->clear();
-                int typeId = -1;
-                for (const auto& type : data.totalCosts) {
-                    ++typeId;
-                    if (!type.sampleCount || typeId == data.offCpuTimeCostId) {
-                        continue;
-                    }
-                    ui->timeLineEventSource->addItem(type.label, typeId);
-                }
                 eventModel->setData(data);
+                if (data.offCpuTimeCostId != -1) {
+                    // remove the off-CPU time event source, we only want normal sched switches
+                    for (int i = 0, c = ui->timeLineEventSource->count(); i < c; ++i) {
+                        if (ui->timeLineEventSource->itemData(i).toInt() == data.offCpuTimeCostId) {
+                            ui->timeLineEventSource->removeItem(i);
+                            break;
+                        }
+                    }
+                }
             });
     connect(timeLineDelegate, &TimeLineDelegate::filterRequested,
             parser, &PerfParser::filterResults);
