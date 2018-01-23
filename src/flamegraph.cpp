@@ -52,6 +52,8 @@
 #include <KColorScheme>
 #include <KStandardAction>
 
+#include "resultsutil.h"
+
 namespace {
 enum SearchMatchType
 {
@@ -549,16 +551,8 @@ void FlameGraph::setBottomUpData(const Data::BottomUpResults& bottomUpData)
     m_bottomUpData = bottomUpData;
 
     disconnect(m_costSource, 0, this, 0);
-    m_costSource->clear();
-    for (int i = 0, c = bottomUpData.costs.numTypes(); i < c; ++i) {
-        if (!bottomUpData.costs.totalCost(i)) {
-            continue;
-        }
-        const auto& typeName = bottomUpData.costs.typeName(i);
-        m_costSource->addItem(typeName, QVariant::fromValue(i));
-        m_costSource->setItemData(i, i18n("Show a flame graph over the aggregated %1 sample costs.", typeName),
-                                  Qt::ToolTipRole);
-    }
+    ResultsUtil::fillEventSourceComboBox(m_costSource, bottomUpData.costs,
+                                         ki18n("Show a flame graph over the aggregated %1 sample costs."));
     connect(m_costSource, static_cast<void (QComboBox::*) (int)>(&QComboBox::currentIndexChanged),
             this, &FlameGraph::showData);
 }

@@ -31,9 +31,11 @@
 #include <QHeaderView>
 #include <QMenu>
 #include <QCoreApplication>
+#include <QComboBox>
 
 #include <KRecursiveFilterProxyModel>
 #include <KFilterProxySearchLine>
+#include <KLocalizedString>
 
 #include "models/costdelegate.h"
 #include "models/data.h"
@@ -104,6 +106,19 @@ void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColu
         if (!costs.totalCost(i)) {
             view->hideColumn(numBaseColumns + i);
         }
+    }
+}
+
+void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs, const KLocalizedString& tooltipTemplate)
+{
+    combo->clear();
+    for (int i = 0, c = costs.numTypes(); i < c; ++i) {
+        if (!costs.totalCost(i)) {
+            continue;
+        }
+        const auto& typeName = costs.typeName(i);
+        combo->addItem(typeName, QVariant::fromValue(i));
+        combo->setItemData(i, tooltipTemplate.subs(typeName).toString(), Qt::ToolTipRole);
     }
 }
 

@@ -30,8 +30,11 @@
 #include <functional>
 
 class QTreeView;
+class QComboBox;
 class KFilterProxySearchLine;
 class QAbstractItemModel;
+class KLocalizedString;
+
 namespace Data {
 class Costs;
 struct Symbol;
@@ -73,4 +76,6 @@ void setupContextMenu(QTreeView* view, Model* /*model*/,
 
 void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns);
 
+void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs,
+                             const KLocalizedString& tooltipTemplate);
 }
