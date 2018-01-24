@@ -345,8 +345,8 @@ private slots:
                     QCOMPARE(rowEvents, cpu.events);
                     QCOMPARE(threadStart, quint64(0));
                     QCOMPARE(threadEnd, endTime);
-                    QCOMPARE(threadId, qint32(0));
-                    QCOMPARE(processId, qint32(0));
+                    QCOMPARE(threadId, Data::INVALID_TID);
+                    QCOMPARE(processId, Data::INVALID_PID);
                     QVERIFY(threadName.contains(QString::number(cpu.cpuId)));
                     QCOMPARE(cpuId, cpu.cpuId);
                     QCOMPARE(idx.data(EventModel::SortRole).value<quint32>(), cpu.cpuId);
