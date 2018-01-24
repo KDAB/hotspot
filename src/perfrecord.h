@@ -43,6 +43,8 @@ public:
                 const QString &workingDirectory = QString());
     void record(const QStringList &perfOptions, const QString &outputPath,
                 bool recordAsSudo, const QStringList &pids);
+    void recordSystem(const QStringList &perfOptions, const QString &outputPath);
+
     const QString perfCommand();
     void stopRecording();
     void sendInput(const QByteArray& input);

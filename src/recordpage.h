@@ -47,7 +47,7 @@ enum RecordType
 {
     LaunchApplication = 0,
     AttachToProcess,
-    // ProfileSystem, TODO
+    ProfileSystem,
     NUM_RECORD_TYPES
 };
 Q_DECLARE_METATYPE(RecordType)

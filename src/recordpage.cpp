@@ -97,6 +97,8 @@ void updateStartRecordingButtonState(const QScopedPointer<Ui::RecordPage> &ui)
         case AttachToProcess:
             enabled = ui->processesTableView->selectionModel()->hasSelection();
             break;
+        case ProfileSystem:
+            enabled = true;
         case NUM_RECORD_TYPES:
             break;
     }
@@ -214,6 +216,8 @@ RecordPage::RecordPage(QWidget *parent)
                                     tr("Launch Application"), QVariant::fromValue(LaunchApplication));
     ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-install")),
                                     tr("Attach To Process(es)"), QVariant::fromValue(AttachToProcess));
+    ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-build-install-root")),
+                                    tr("Profile System"), QVariant::fromValue(ProfileSystem));
     connect(ui->recordTypeComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, &RecordPage::updateRecordType);
     updateRecordType();
@@ -369,6 +373,7 @@ void RecordPage::showRecordPage()
 
 void RecordPage::onStartRecordingButtonClicked(bool checked)
 {
+    const auto recordType = selectedRecordType(ui);
     if (checked) {
         showRecordPage();
         m_watcher->cancel();
@@ -411,12 +416,15 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         config().writeEntry(QStringLiteral("offCpuProfiling"), offCpuProfilingEnabled);
 
         const bool recordAsSudo = ui->recordAsSudoCheckBox->isChecked();
-        config().writeEntry(QStringLiteral("recordAsSudo"), recordAsSudo);
 
         const bool sampleCpuEnabled = ui->sampleCpuCheckBox->isChecked();
-        config().writeEntry(QStringLiteral("sampleCpu"), sampleCpuEnabled);
         if (sampleCpuEnabled) {
             perfOptions += QStringLiteral("--sample-cpu");
+        }
+
+        if (recordType != ProfileSystem) { // always true when recording full system
+            config().writeEntry(QStringLiteral("recordAsSudo"), recordAsSudo);
+            config().writeEntry(QStringLiteral("sampleCpu"), sampleCpuEnabled);
         }
 
         const int mmapPages = ui->mmapPagesSpinBox->value();
@@ -449,9 +457,12 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         config().writeEntry(QStringLiteral("mmapPages"), mmapPages);
         config().writeEntry(QStringLiteral("mmapPagesUnit"), mmapPagesUnit);
 
+        const auto outputFile = ui->outputFile->url().toLocalFile();
+
         m_recordTimer.start();
         m_updateRuntimeTimer->start();
-        if (ui->recordTypeComboBox->currentData() == LaunchApplication) {
+        switch (recordType) {
+        case LaunchApplication: {
             const auto applicationName = KShell::tildeExpand(ui->applicationName->text());
             const auto appParameters = ui->applicationParametersBox->text();
             auto workingDir = ui->workingDirectory->text();
@@ -460,11 +471,12 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
             }
             rememberApplication(applicationName, appParameters, workingDir,
                                 ui->applicationName->comboBox());
-            m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(),
-                                 recordAsSudo,
+            m_perfRecord->record(perfOptions, outputFile, recordAsSudo,
                                  applicationName, KShell::splitArgs(appParameters),
                                  workingDir);
-        } else {
+            break;
+        }
+        case AttachToProcess: {
             QItemSelectionModel *selectionModel = ui->processesTableView->selectionModel();
             QStringList pids;
 
@@ -474,8 +486,15 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
                 }
             }
 
-            m_perfRecord->record(perfOptions, ui->outputFile->url().toLocalFile(), 
-                                 recordAsSudo, pids);
+            m_perfRecord->record(perfOptions, outputFile, recordAsSudo, pids);
+            break;
+        }
+        case ProfileSystem: {
+            m_perfRecord->recordSystem(perfOptions, outputFile);
+            break;
+        }
+        case NUM_RECORD_TYPES:
+            break;
         }
     } else {
         stopRecording();
@@ -620,6 +639,12 @@ void RecordPage::updateRecordType()
     ui->perfInputEdit->setVisible(recordType == LaunchApplication);
     ui->perfInputEdit->clear();
     ui->perfResultsTextEdit->clear();
+    ui->recordAsSudoCheckBox->setEnabled(recordType != ProfileSystem);
+    ui->sampleCpuCheckBox->setEnabled(recordType != ProfileSystem);
+    if (recordType == ProfileSystem) {
+        ui->recordAsSudoCheckBox->setChecked(true);
+        ui->sampleCpuCheckBox->setChecked(true);
+    }
 
     if (recordType == AttachToProcess) {
         updateProcesses();

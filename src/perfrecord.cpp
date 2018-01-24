@@ -222,6 +222,13 @@ void PerfRecord::record(const QStringList &perfOptions, const QString &outputPat
     startRecording(perfOptions, outputPath, recordAsSudo, recordOptions, workingDirectory);
 }
 
+void PerfRecord::recordSystem(const QStringList& perfOptions, const QString& outputPath)
+{
+    auto options = perfOptions;
+    options.append(QStringLiteral("--all-cpus"));
+    startRecording(options, outputPath, true, {});
+}
+
 const QString PerfRecord::perfCommand()
 {
     if (m_perfRecordProcess) {
