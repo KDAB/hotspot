@@ -282,8 +282,12 @@ bool PerfRecord::ensureFileReadable(const QString &filePath)
 QString PerfRecord::sudoUtil()
 {
     const auto commands = {
-        QStringLiteral("kdesu"),
-        QStringLiteral("gksu")
+        QStringLiteral("kdesudo"),
+        // FIXME: maybe gksudo works, too? couldn't test
+        // note that kdesu and gksu both are not applicable to our use-case since
+        // we need to be able to kill the spawned child and then have it take down
+        // all its child processes too. kdesu/gksu don't do that, essentially leaking
+        // the perf process which is very very bad in our scenario!
     };
     for (const auto& cmd : commands) {
         QString util = QStandardPaths::findExecutable(cmd);
