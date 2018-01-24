@@ -1,3 +1,4 @@
 build/
 /.project
 /CMakeLists.txt.user
+.kdev4
