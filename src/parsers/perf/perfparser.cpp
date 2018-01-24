@@ -227,12 +227,13 @@ struct Symbol
 {
     StringId name;
     StringId binary;
+    StringId path;
     bool isKernel = false;
 };
 
 QDataStream& operator>>(QDataStream& stream, Symbol& symbol)
 {
-    return stream >> symbol.name >> symbol.binary >> symbol.isKernel;
+    return stream >> symbol.name >> symbol.binary >> symbol.path >> symbol.isKernel;
 }
 
 QDebug operator<<(QDebug stream, const Symbol& symbol)
@@ -240,6 +241,7 @@ QDebug operator<<(QDebug stream, const Symbol& symbol)
     stream.noquote().nospace() << "Symbol{"
         << "name=" << symbol.name << ", "
         << "binary=" << symbol.binary << ", "
+        << "path=" << symbol.path << ", "
         << "isKernel=" << symbol.isKernel
         << "}";
     return stream;
@@ -929,7 +931,8 @@ struct PerfParserPrivate
         // TODO: isKernel information
         const auto symbolString = strings.value(symbol.symbol.name.id);
         const auto binaryString = strings.value(symbol.symbol.binary.id);
-        bottomUpResult.symbols[symbol.id] = {symbolString, binaryString};
+        const auto pathString = strings.value(symbol.symbol.path.id);
+        bottomUpResult.symbols[symbol.id] = {symbolString, binaryString, pathString};
         if (symbolString.isEmpty() && !binaryString.isEmpty()
             && !reportedMissingDebugInfoModules.contains(symbol.symbol.binary.id))
         {

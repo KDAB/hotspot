@@ -43,25 +43,28 @@
 namespace Data {
 struct Symbol
 {
-    Symbol(const QString& symbol = {}, const QString& binary = {})
+    Symbol(const QString& symbol = {}, const QString& binary = {}, const QString& path = {})
         : symbol(symbol)
         , binary(binary)
+        , path(path)
     {}
 
     // function name
     QString symbol;
     // dso / executable name
     QString binary;
+    // path to dso / executable
+    QString path;
 
     bool operator<(const Symbol& rhs) const
     {
-        return std::tie(symbol, binary)
-             < std::tie(rhs.symbol, rhs.binary);
+        return std::tie(symbol, binary, path)
+             < std::tie(rhs.symbol, rhs.binary, rhs.path);
     }
 
     bool isValid() const
     {
-        return !symbol.isEmpty() || !binary.isEmpty();
+        return !symbol.isEmpty() || !binary.isEmpty() || !path.isEmpty();
     }
 };
 
@@ -69,8 +72,8 @@ QDebug operator<<(QDebug stream, const Symbol& symbol);
 
 inline bool operator==(const Symbol& lhs, const Symbol& rhs)
 {
-    return std::tie(lhs.symbol, lhs.binary)
-        == std::tie(rhs.symbol, rhs.binary);
+    return std::tie(lhs.symbol, lhs.binary, lhs.path)
+        == std::tie(rhs.symbol, rhs.binary, rhs.path);
 }
 
 inline bool operator!=(const Symbol& lhs, const Symbol& rhs)
@@ -83,6 +86,7 @@ inline uint qHash(const Symbol& symbol, uint seed = 0)
     Util::HashCombine hash;
     seed = hash(seed, symbol.symbol);
     seed = hash(seed, symbol.binary);
+    seed = hash(seed, symbol.path);
     return seed;
 }
 
