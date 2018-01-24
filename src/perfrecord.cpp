@@ -152,17 +152,19 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
         };
         options += perfOptions;
 
-        // use runuser to launch command as original user
-        options += QStringList {
-            QStringLiteral("--"),
-            QStringLiteral("runuser"),
-            QStringLiteral("-u"),
-            currentUsername(),
-            QStringLiteral("--"),
-        };
+        if (!recordOptions.isEmpty()) {
+            // use runuser to launch command as original user
+            options += QStringList {
+                QStringLiteral("--"),
+                QStringLiteral("runuser"),
+                QStringLiteral("-u"),
+                currentUsername(),
+                QStringLiteral("--"),
+            };
 
-        // finally the actual client application and arguments
-        options += recordOptions;
+            // finally the actual client application and arguments
+            options += recordOptions;
+        }
 
         emit recordingStarted(sudoBinary, options);
         m_perfRecordProcess->start(sudoBinary, options);
@@ -187,9 +189,9 @@ void PerfRecord::record(const QStringList &perfOptions, const QString &outputPat
         return;
     }
 
-    QStringList recordOptions = { QStringLiteral("--pid"), pids.join(QLatin1Char(',')) };
-
-    startRecording(perfOptions, outputPath, recordAsSudo, recordOptions);
+    QStringList options = perfOptions;
+    options += {QStringLiteral("--pid"), pids.join(QLatin1Char(','))};
+    startRecording(options, outputPath, recordAsSudo, {});
 }
 
 void PerfRecord::record(const QStringList &perfOptions, const QString &outputPath, bool recordAsSudo,
