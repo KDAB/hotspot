@@ -61,9 +61,7 @@ static QStringList sudoOptions(const QString& sudoBinary)
         QStringLiteral("-u"),
         QStringLiteral("root")
     };
-    if (sudoBinary.endsWith(QLatin1String("/kdesu"))) {
-        // enable command line output
-        options.append(QStringLiteral("-t"));
+    if (sudoBinary.endsWith(QLatin1String("/kdesudo"))) {
         // make the dialog transient for the current window
         options.append(QStringLiteral("--attach"));
         options.append(QString::number(KWindowSystem::activeWindow()));
