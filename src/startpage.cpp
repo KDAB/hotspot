@@ -50,7 +50,6 @@ StartPage::~StartPage() = default;
 
 void StartPage::showStartPage()
 {
-    setWindowTitle(tr("Hotspot"));
     ui->loadingResultsErrorLabel->hide();
     ui->loadStack->setCurrentWidget(ui->openFilePage);
 }

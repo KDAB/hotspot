@@ -213,6 +213,7 @@ void MainWindow::onHomeButtonClicked()
 void MainWindow::onRecordButtonClicked()
 {
     clear();
+    setWindowTitle(tr("Hotspot - Record"));
     m_recordPage->showRecordPage();
     m_pageStack->setCurrentWidget(m_recordPage);
 }
@@ -220,6 +221,7 @@ void MainWindow::onRecordButtonClicked()
 void MainWindow::clear()
 {
     m_parser->stop();
+    setWindowTitle(tr("Hotspot"));
     m_startPage->showStartPage();
     m_pageStack->setCurrentWidget(m_startPage);
     m_recordPage->stopRecording();

@@ -364,7 +364,6 @@ RecordPage::~RecordPage() = default;
 
 void RecordPage::showRecordPage()
 {
-    setWindowTitle(tr("Hotspot - Record"));
     m_resultsFile.clear();
     setError({});
     updateRecordType();
