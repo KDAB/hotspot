@@ -273,6 +273,7 @@ void MainWindow::aboutKDAB()
            "</p></qt>"));
     dialog.setLogo(QStringLiteral(":/images/kdablogo.png"));
     dialog.setWindowIcon(QPixmap(QStringLiteral(":/images/kdablogo.png")));
+    dialog.adjustSize();
     dialog.exec();
 }
 
