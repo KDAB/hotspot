@@ -60,6 +60,7 @@ public:
         SourceMapRole,
         SelfCostsRole,
         InclusiveCostsRole,
+        SymbolRole,
     };
 
     QVariant headerCell(int column, int role) const final override;

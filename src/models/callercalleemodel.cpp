@@ -81,7 +81,9 @@ QVariant CallerCalleeModel::headerCell(int column, int role) const
 QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbol,
                                  const Data::CallerCalleeEntry& entry) const
 {
-    if (role == SortRole) {
+    if (role == SymbolRole) {
+        return QVariant::fromValue(symbol);
+    } else if (role == SortRole) {
         switch (column) {
             case Symbol:
                 return symbol.symbol;

@@ -30,7 +30,9 @@
 
 #include <QSortFilterProxyModel>
 #include <QMenu>
+#include <QDebug>
 #include <QFileInfo>
+#include <QDir>
 
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
@@ -161,9 +163,13 @@ void ResultsCallerCalleePage::onSourceMapContextMenu(const QPoint &point)
 
     const auto fileName = location.leftRef(separator);
     const int lineNumber = location.midRef(separator+1).toInt();
-    if (!showMenu(m_sysroot, fileName, lineNumber)) {
-         showMenu(m_appPath, fileName, lineNumber);
-    }
+    // also try to resolve paths relative to the module output folder
+    // fixes a common issue with qmake builds that use relative paths
+    const auto symbol = ui->callerCalleeTableView->currentIndex().data(CallerCalleeModel::SymbolRole).value<Data::Symbol>();
+    const QString modulePath = QFileInfo(symbol.path).path() + QLatin1Char('/');
+
+    showMenu(m_sysroot, fileName, lineNumber) || showMenu(m_sysroot + modulePath, fileName, lineNumber)
+        || showMenu(m_appPath, fileName, lineNumber) || showMenu(m_appPath + modulePath, fileName, lineNumber);
 }
 
 void ResultsCallerCalleePage::setSysroot(const QString& path)
