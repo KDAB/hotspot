@@ -58,6 +58,7 @@ public slots:
 signals:
     void openFileButtonClicked();
     void recordButtonClicked();
+    void stopParseButtonClicked();
 
 private:
     void updateBackground();

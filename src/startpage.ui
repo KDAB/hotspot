@@ -204,6 +204,26 @@
            </widget>
           </item>
           <item>
+           <widget class="QToolButton" name="stopParseButton">
+            <property name="toolTip">
+             <string>Stop the parse process and go back to the start page.</string>
+            </property>
+            <property name="icon">
+             <iconset theme="process-stop">
+              <normaloff>.</normaloff>.</iconset>
+            </property>
+            <property name="shortcut">
+             <string>Esc</string>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonIconOnly</enum>
+            </property>
+            <property name="autoRaise">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="horizontalSpacer_2">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
