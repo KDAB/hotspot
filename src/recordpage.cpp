@@ -355,8 +355,10 @@ RecordPage::RecordPage(QWidget *parent)
     m_updateRuntimeTimer->setInterval(1000);
     connect(m_updateRuntimeTimer, &QTimer::timeout,
             this, [this] {
+                // round to the nearest second
+                const auto roundedElapsed = std::round(double(m_recordTimer.nsecsElapsed()) / 1E9) * 1E9;
                 ui->startRecordingButton->setText(tr("Stop Recording (%1)")
-                    .arg(Util::formatTimeString(m_recordTimer.nsecsElapsed(), true)));
+                    .arg(Util::formatTimeString(roundedElapsed, true)));
             });
 }
 
