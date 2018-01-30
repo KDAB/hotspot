@@ -34,6 +34,7 @@
 #include <QDataStream>
 #include <QFileInfo>
 #include <QLoggingCategory>
+#include <QEventLoop>
 
 #include <ThreadWeaver/ThreadWeaver>
 
@@ -571,11 +572,13 @@ void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& loca
 Q_DECLARE_TYPEINFO(AttributesDefinition, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(SampleCost, Q_MOVABLE_TYPE);
 
-struct PerfParserPrivate
+class PerfParserPrivate : public QObject
 {
-    PerfParserPrivate(std::atomic<bool>& stopRequested, std::function<void(float)> progressHandler)
-        : progressHandler(progressHandler)
-        , stopRequested(stopRequested)
+    Q_OBJECT
+public:
+    explicit PerfParserPrivate(QObject *parent = nullptr)
+        : QObject(parent)
+        , stopRequested(false)
     {
         buffer.buffer().reserve(1024);
         buffer.open(QIODevice::ReadOnly);
@@ -590,7 +593,6 @@ struct PerfParserPrivate
     bool tryParse()
     {
         if (stopRequested) {
-            process.kill();
             return false;
         }
         const auto bytesAvailable = process.bytesAvailable();
@@ -779,10 +781,10 @@ struct PerfParserPrivate
                 break;
             }
             case EventType::Progress: {
-                float progress = 0;
-                stream >> progress;
-                qCDebug(LOG_PERFPARSER) << "parsed:" << progress;
-                progressHandler(progress);
+                float percent = 0;
+                stream >> percent;
+                qCDebug(LOG_PERFPARSER) << "parsed:" << percent;
+                emit progress(percent);
                 break;
             }
             case EventType::InvalidType:
@@ -1209,15 +1211,24 @@ struct PerfParserPrivate
     Data::EventResults eventResult;
     QHash<qint32, QHash<qint32, QString>> commands;
     QScopedPointer<QTextStream> perfScriptOutput;
-    std::function<void(float)> progressHandler;
     QSet<qint32> reportedMissingDebugInfoModules;
     QSet<QString> encounteredErrors;
     QHash<QVector<qint32>, qint32> stacks;
-    std::atomic<bool>& stopRequested;
+    std::atomic<bool> stopRequested;
     QHash<qint32, qint32> attributeIdsToCostIds;
     QHash<int, qint32> attributeNameToCostIds;
     qint32 m_nextCostId = 0;
     qint32 m_schedSwitchCostId = -1;
+
+public slots:
+    void stop()
+    {
+        stopRequested = true;
+        process.kill();
+    }
+
+signals:
+    void progress(float percent);
 };
 
 PerfParser::PerfParser(QObject* parent)
@@ -1317,9 +1328,9 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
     emit parsingStarted();
     using namespace ThreadWeaver;
     stream() << make_job([parserBinary, parserArgs, this]() {
-        PerfParserPrivate d(m_stopRequested, [this](float percent) {
-            emit progress(percent);
-        });
+        PerfParserPrivate d;
+        connect(&d, &PerfParserPrivate::progress, this, &PerfParser::progress);
+        connect(this, &PerfParser::stopRequested, &d, &PerfParserPrivate::stop);
 
         connect(&d.process, &QProcess::readyRead,
                 &d.process, [&d] {
@@ -1394,7 +1405,11 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
             emit parsingFailed(tr("Failed to start the hotspot-perfparser process"));
             return;
         }
-        d.process.waitForFinished(-1);
+
+        QEventLoop loop;
+        connect(&d.process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+                &loop, &QEventLoop::quit);
+        loop.exec();
     });
 }
 
@@ -1532,4 +1547,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
 void PerfParser::stop()
 {
     m_stopRequested = true;
+    emit stopRequested();
 }
+
+#include "perfparser.moc"

@@ -60,6 +60,7 @@ signals:
     void parsingFinished();
     void parsingFailed(const QString& errorMessage);
     void progress(float progress);
+    void stopRequested();
 
 private:
     // only set once after the initial startParseFile finished
