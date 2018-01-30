@@ -215,16 +215,7 @@ namespace {
  */
 Q_DECL_UNUSED QBrush memBrush()
 {
-    // intern the brushes, to reuse them across items which can be thousands
-    // otherwise we'd end up with dozens of allocations and higher memory consumption
-    static const QVector<QBrush> brushes = ([] () -> QVector<QBrush> {
-        QVector<QBrush> ret;
-        std::generate_n(std::back_inserter(ret), 100, [] () {
-            return QColor(0, 190 + 50 * qreal(qrand()) / RAND_MAX, 210 * qreal(qrand()) / RAND_MAX, 125);
-        });
-        return ret;
-    }) ();
-    return brushes.at(qrand() % brushes.size());
+    return QColor(0, 190 + 50 * qreal(qrand()) / RAND_MAX, 210 * qreal(qrand()) / RAND_MAX, 125);
 }
 
 /**
@@ -232,16 +223,39 @@ Q_DECL_UNUSED QBrush memBrush()
  */
 QBrush hotBrush()
 {
+    return QColor(205 + 50 * qreal(qrand()) / RAND_MAX, 230 * qreal(qrand()) / RAND_MAX, 55 * qreal(qrand()) / RAND_MAX, 125);
+}
+
+template<typename Generator>
+QVector<QBrush> generateBrushes(Generator generator)
+{
+    QVector<QBrush> ret;
+    std::generate_n(std::back_inserter(ret), 100, generator);
+    return ret;
+}
+
+enum class BrushType
+{
+    Hot,
+    Memory
+};
+
+/**
+ * Generate a brush from the "hot" color space used in upstream flamegraph.pl
+ */
+QBrush brushImpl(uint hash, BrushType type)
+{
     // intern the brushes, to reuse them across items which can be thousands
     // otherwise we'd end up with dozens of allocations and higher memory consumption
-    static const QVector<QBrush> brushes = ([] () -> QVector<QBrush> {
-        QVector<QBrush> ret;
-        std::generate_n(std::back_inserter(ret), 100, [] () {
-            return QColor(205 + 50 * qreal(qrand()) / RAND_MAX, 230 * qreal(qrand()) / RAND_MAX, 55 * qreal(qrand()) / RAND_MAX, 125);
-        });
-        return ret;
-    }) ();
-    return brushes.at(qrand() % brushes.size());
+    static const QVector<QBrush> allBrushes[2] = {generateBrushes(hotBrush), generateBrushes(memBrush)};
+    const auto& brushes = allBrushes[static_cast<uint>(type)];
+    return brushes.at(hash % brushes.size());
+}
+
+template<typename T>
+QBrush brush(const T &entry, BrushType type)
+{
+    return brushImpl(qHash(entry), type);
 }
 
 /**
@@ -306,7 +320,7 @@ void toGraphicsItems(const Data::Costs& costs, int type, const QVector<Tree>& da
         if (!item) {
             item = new FrameGraphicsItem(costs.cost(type, row.id), row.symbol, parent);
             item->setPen(parent->pen());
-            item->setBrush(hotBrush());
+            item->setBrush(brush(row.symbol, BrushType::Hot));
         } else {
             item->setCost(item->cost() + costs.cost(type, row.id));
         }
