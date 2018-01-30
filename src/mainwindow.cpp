@@ -79,10 +79,15 @@ static const IdeSettings ideSettings[] = {
     static const int ideSettingsSize = sizeof(ideSettings) / sizeof(IdeSettings);
 #endif
 
+bool isAppAvailable(const char * app)
+{
+    return !QStandardPaths::findExecutable(QString::fromUtf8(app)).isEmpty();
+}
+
 int firstAvailableIde()
 {
     for (int i = 0; i < ideSettingsSize; ++i) {
-        if (!QStandardPaths::findExecutable(QString::fromUtf8(ideSettings[i].app)).isEmpty()) {
+        if (isAppAvailable(ideSettings[i].app)) {
             return i;
         }
     }
@@ -391,7 +396,7 @@ void MainWindow::setupCodeNavigationMenu()
         action->setChecked(currentIdx == i);
         action->setData(i);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) // It's not worth it to reimplement missing findExecutable for Qt4.
-        action->setEnabled(!QStandardPaths::findExecutable(QString::fromUtf8(ideSettings[i].app)).isEmpty());
+        action->setEnabled(isAppAvailable(ideSettings[i].app));
 #endif
         group->addAction(action);
         menu->addAction(action);
