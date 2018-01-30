@@ -459,9 +459,8 @@ void MainWindow::navigateToCode(const QString &filePath, int lineNumber, int col
     QString command;
 #if !defined(Q_OS_WIN) && !defined(Q_OS_OSX) // Remove this #if branch when adding real data to ideSettings for Windows/OSX.
     if (ideIdx >= 0 && ideIdx < ideSettingsSize) {
-        command += QString::fromUtf8(ideSettings[ideIdx].app);
-        command += QString::fromUtf8(" ");
-        command += QString::fromUtf8(ideSettings[ideIdx].args);
+        command = QString::fromUtf8(ideSettings[ideIdx].app) + QLatin1Char(' ')
+                + QString::fromUtf8(ideSettings[ideIdx].args);
     } else
 #endif
     if (ideIdx == -1) {
