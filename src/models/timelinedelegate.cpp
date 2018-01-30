@@ -532,6 +532,8 @@ void TimeLineDelegate::filterInByTime(quint64 startTime, quint64 endTime)
     if (endTime < startTime)
         std::swap(endTime, startTime);
 
+    zoomIn(startTime, endTime);
+
     Data::FilterAction filter;
     filter.startTime = startTime;
     filter.endTime = endTime;
