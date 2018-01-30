@@ -59,19 +59,18 @@ struct IdeSettings {
     const char * const app;
     const char * const args;
     const char * const name;
-    const char * const icon;
 };
 
 static const IdeSettings ideSettings[] = {
 #if defined(Q_OS_WIN) || defined(Q_OS_OSX)
     {"", "", "", ""} // Dummy content, because we can't have empty arrays.
 #else
-    { "kdevelop", "%f:%l:%c", QT_TRANSLATE_NOOP("MainWindow", "KDevelop"), "kdevelop" },
-    { "kate", "%f --line %l --column %c", QT_TRANSLATE_NOOP("MainWindow", "Kate"), "kate" },
-    { "kwrite", "%f --line %l --column %c", QT_TRANSLATE_NOOP("MainWindow", "KWrite"), nullptr },
-    { "gedit", "%f +%l:%c", QT_TRANSLATE_NOOP("MainWindow", "gedit"), nullptr },
-    { "gvim", "%f +%l", QT_TRANSLATE_NOOP("MainWindow", "gvim"), nullptr },
-    { "qtcreator", "%f", QT_TRANSLATE_NOOP("MainWindow", "Qt Creator"), nullptr }
+    { "kdevelop", "%f:%l:%c", QT_TRANSLATE_NOOP("MainWindow", "KDevelop") },
+    { "kate", "%f --line %l --column %c", QT_TRANSLATE_NOOP("MainWindow", "Kate") },
+    { "kwrite", "%f --line %l --column %c", QT_TRANSLATE_NOOP("MainWindow", "KWrite") },
+    { "gedit", "%f +%l:%c", QT_TRANSLATE_NOOP("MainWindow", "gedit") },
+    { "gvim", "%f +%l", QT_TRANSLATE_NOOP("MainWindow", "gvim") },
+    { "qtcreator", "%f", QT_TRANSLATE_NOOP("MainWindow", "Qt Creator") }
 #endif
 };
 #if defined(Q_OS_WIN) || defined(Q_OS_OSX) // Remove this #if branch when adding real data to ideSettings for Windows/OSX.
@@ -383,8 +382,11 @@ void MainWindow::setupCodeNavigationMenu()
     for (int i = 0; i < ideSettingsSize; ++i) {
         auto action = new QAction(menu);
         action->setText(tr(ideSettings[i].name));
-        if (ideSettings[i].icon)
-            action->setIcon(QIcon::fromTheme(QString::fromUtf8(ideSettings[i].icon)));
+        auto icon = QIcon::fromTheme(QString::fromUtf8(ideSettings[i].app));
+        if (icon.isNull()) {
+            icon = QIcon::fromTheme(QStringLiteral("application-x-executable"));
+        }
+        action->setIcon(icon);
         action->setCheckable(true);
         action->setChecked(currentIdx == i);
         action->setData(i);
@@ -401,6 +403,7 @@ void MainWindow::setupCodeNavigationMenu()
     action->setCheckable(true);
     action->setChecked(currentIdx == -1);
     action->setData(-1);
+    action->setIcon(QIcon::fromTheme(QStringLiteral("application-x-executable-script")));
     group->addAction(action);
     menu->addAction(action);
 
