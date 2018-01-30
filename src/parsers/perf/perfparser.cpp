@@ -1225,10 +1225,17 @@ PerfParser::PerfParser(QObject* parent)
     , m_isParsing(false)
     , m_stopRequested(false)
 {
+    // set data via signal/slot connection to ensure we don't introduce a data race
     connect(this, &PerfParser::bottomUpDataAvailable,
             this, [this](const Data::BottomUpResults& data) {
                 if (m_bottomUpResults.root.children.isEmpty()) {
                     m_bottomUpResults = data;
+                }
+            });
+    connect(this, &PerfParser::callerCalleeDataAvailable,
+            this, [this](const Data::CallerCalleeResults& data) {
+                if (m_callerCalleeResults.entries.isEmpty()) {
+                    m_callerCalleeResults = data;
                 }
             });
     connect(this, &PerfParser::eventsAvailable,
@@ -1410,6 +1417,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
             && filter.excludeProcessIds.isEmpty() && filter.excludeThreadIds.isEmpty())
         {
             bottomUp = m_bottomUpResults;
+            callerCallee = m_callerCalleeResults;
         } else {
             bottomUp.symbols = m_bottomUpResults.symbols;
             bottomUp.locations = m_bottomUpResults.locations;
@@ -1491,15 +1499,15 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
             events.threads.erase(it, events.threads.end());
 
             Data::BottomUp::initializeParents(&bottomUp.root);
-        }
 
-        if (m_stopRequested) {
-            emit parsingFailed(tr("Parsing stopped."));
-            return;
-        }
+            if (m_stopRequested) {
+                emit parsingFailed(tr("Parsing stopped."));
+                return;
+            }
 
-        // TODO: parallelize
-        Data::callerCalleesFromBottomUpData(bottomUp, &callerCallee);
+            // TODO: parallelize
+            Data::callerCalleesFromBottomUpData(bottomUp, &callerCallee);
+        }
 
         if (m_stopRequested) {
             emit parsingFailed(tr("Parsing stopped."));

@@ -64,6 +64,7 @@ signals:
 private:
     // only set once after the initial startParseFile finished
     Data::BottomUpResults m_bottomUpResults;
+    Data::CallerCalleeResults m_callerCalleeResults;
     Data::EventResults m_events;
     std::atomic<bool> m_isParsing;
     std::atomic<bool> m_stopRequested;
