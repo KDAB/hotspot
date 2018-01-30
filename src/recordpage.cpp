@@ -260,6 +260,8 @@ RecordPage::RecordPage(QWidget *parent)
 
     connect(m_perfRecord, &PerfRecord::recordingStarted,
             this, [this] (const QString& perfBinary, const QStringList& arguments) {
+                m_recordTimer.start();
+                m_updateRuntimeTimer->start();
                 appendOutput(QLatin1String("$ ") + perfBinary + QLatin1Char(' ')
                                 + arguments.join(QLatin1Char(' '))
                                 + QLatin1Char('\n'));
@@ -460,8 +462,6 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
 
         const auto outputFile = ui->outputFile->url().toLocalFile();
 
-        m_recordTimer.start();
-        m_updateRuntimeTimer->start();
         switch (recordType) {
         case LaunchApplication: {
             const auto applicationName = KShell::tildeExpand(ui->applicationName->text());
