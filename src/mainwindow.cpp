@@ -79,6 +79,16 @@ static const IdeSettings ideSettings[] = {
 #else
     static const int ideSettingsSize = sizeof(ideSettings) / sizeof(IdeSettings);
 #endif
+
+int firstAvailableIde()
+{
+    for (int i = 0; i < ideSettingsSize; ++i) {
+        if (!QStandardPaths::findExecutable(QString::fromUtf8(ideSettings[i].app)).isEmpty()) {
+            return i;
+        }
+    }
+    return -1;
+}
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -368,7 +378,7 @@ void MainWindow::setupCodeNavigationMenu()
     group->setExclusive(true);
 
     const auto settings = m_config->group("CodeNavigation");
-    const auto currentIdx = settings.readEntry("IDE", -1);
+    const auto currentIdx = settings.readEntry("IDE", firstAvailableIde());
 
     for (int i = 0; i < ideSettingsSize; ++i) {
         auto action = new QAction(menu);
@@ -436,7 +446,7 @@ void MainWindow::setCodeNavigationIDE(QAction *action)
 void MainWindow::navigateToCode(const QString &filePath, int lineNumber, int columnNumber)
 {
     const auto settings = m_config->group("CodeNavigation");
-    const auto ideIdx = settings.readEntry("IDE", -1);
+    const auto ideIdx = settings.readEntry("IDE", firstAvailableIde());
 
     QString command;
 #if !defined(Q_OS_WIN) && !defined(Q_OS_OSX) // Remove this #if branch when adding real data to ideSettings for Windows/OSX.
