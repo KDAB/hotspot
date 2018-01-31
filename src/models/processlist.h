@@ -57,4 +57,4 @@ struct ProcData
 
 typedef QList<ProcData> ProcDataList;
 
-extern ProcDataList processList(const ProcDataList &previous);
+extern ProcDataList processList();

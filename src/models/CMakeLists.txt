@@ -6,6 +6,7 @@ add_library(models STATIC
     costdelegate.cpp
     processmodel.cpp
     processfiltermodel.cpp
+    processlist_unix.cpp
     timelinedelegate.cpp
     eventmodel.cpp
     ../util.cpp

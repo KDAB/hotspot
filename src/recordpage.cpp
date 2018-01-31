@@ -608,7 +608,7 @@ void RecordPage::onOutputFileUrlChanged(const QUrl& fileUrl)
 
 void RecordPage::updateProcesses()
 {
-    m_watcher->setFuture(QtConcurrent::run(processList, m_processModel->processes()));
+    m_watcher->setFuture(QtConcurrent::run(processList));
 }
 
 void RecordPage::updateProcessesFinished()

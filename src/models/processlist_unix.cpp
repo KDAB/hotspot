@@ -45,28 +45,26 @@ static bool isUnixProcessId(const QString &procname)
 }
 
 // Determine UNIX processes by running ps
-static ProcDataList unixProcessListPS(const ProcDataList &previous)
+static ProcDataList unixProcessListPS()
 {
-    Q_UNUSED(previous)
 #ifdef Q_OS_MAC
     // command goes last, otherwise it is cut off
-    static const char formatC[] = "pid state user command";
+    const auto format = QStringLiteral("pid state user command");
 #else
-    static const char formatC[] = "pid,state,user,cmd";
+    const auto format = QStringLiteral("pid,state,user,cmd");
 #endif
-    ProcDataList rc;
     QProcess psProcess;
-    QStringList args;
-    args << QStringLiteral("-e") << QStringLiteral("-o") << QLatin1String(formatC);
-    psProcess.start(QStringLiteral("ps"), args);
+    psProcess.start(QStringLiteral("ps"), {QStringLiteral("-e"), QStringLiteral("-o"), format});
     if (!psProcess.waitForStarted())
-        return rc;
+        return {};
+
     psProcess.waitForFinished();
     QByteArray output = psProcess.readAllStandardOutput();
     // Split "457 S+   /Users/foo.app"
     const QStringList lines = QString::fromLocal8Bit(output).split(QLatin1Char('\n'));
     const int lineCount = lines.size();
     const QChar blank = QLatin1Char(' ');
+    ProcDataList rc;
     for (int l = 1; l < lineCount; l++) { // Skip header
         const QString line = lines.at(l).simplified();
         // we can't just split on blank as the process name might
@@ -89,22 +87,18 @@ static ProcDataList unixProcessListPS(const ProcDataList &previous)
 
 // Determine UNIX processes by reading "/proc". Default to ps if
 // it does not exist
-ProcDataList processList(const ProcDataList &previous)
+ProcDataList processList()
 {
     const QDir procDir(QStringLiteral("/proc/"));
     if (!procDir.exists())
-        return unixProcessListPS(previous);
+        return unixProcessListPS();
+
     ProcDataList rc;
-    const QStringList procIds = procDir.entryList();
-    if (procIds.isEmpty())
-        return rc;
-    foreach (const QString &procId, procIds) {
+    foreach (const QString &procId, procDir.entryList()) {
         if (!isUnixProcessId(procId))
             continue;
-        QString filename = QStringLiteral("/proc/");
-        filename += procId;
-        filename += QLatin1String("/stat");
-        QFile file(filename);
+
+        QFile file(QLatin1String("/proc/") + procId + QLatin1String("/stat"));
         if (!file.open(QIODevice::ReadOnly))
             continue;     // process may have exited
 
