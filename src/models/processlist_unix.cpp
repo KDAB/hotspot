@@ -34,9 +34,17 @@
 
 #include <QProcess>
 #include <QDir>
+#include <QDebug>
 
 #include <algorithm>
 #include <functional>
+
+QDebug operator<<(QDebug d, const ProcData &data)
+{
+    d << "ProcData{.ppid=" << data.ppid << ", .name=" << data.name << ", .image=" << data.image
+      << ", .state=" << data.state << ", .user=" << data.user << ", .type=" << "}";
+    return d;
+}
 
 static bool isUnixProcessId(const QString &procname)
 {

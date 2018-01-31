@@ -43,8 +43,6 @@ struct ProcData
     QString state;
     QString user;
 
-    ProcData() {}
-
     inline bool equals(const ProcData &other) const
     {
         return ppid == other.ppid &&
@@ -54,6 +52,18 @@ struct ProcData
                 user == other.user;
     }
 };
+
+inline bool operator<(const ProcData &l, const ProcData &r)
+{
+    return l.ppid < r.ppid;
+}
+
+inline bool operator==(const ProcData &l, const ProcData &r)
+{
+    return l.ppid == r.ppid;
+}
+
+QDebug operator<<(QDebug d, const ProcData &data);
 
 typedef QList<ProcData> ProcDataList;
 
