@@ -31,23 +31,13 @@
 
 #include <QCoreApplication>
 
-#include <sys/types.h>
-#include <pwd.h>
-#include <unistd.h>
-
-static QString qGetLogin()
-{
-    struct passwd *pw = getpwuid(getuid());
-    if (!pw || !pw->pw_name)
-        return QString();
-    return QString::fromLocal8Bit(pw->pw_name);
-}
+#include <KUser>
 
 ProcessFilterModel::ProcessFilterModel(QObject *parent)
     : KRecursiveFilterProxyModel(parent)
 {
     m_currentProcId = QString::number(qApp->applicationPid());
-    m_currentUser = qGetLogin();
+    m_currentUser = KUser().loginName();
 
     if (m_currentUser == QLatin1String("root")) {
         // empty current user == no filter. as root we want to show all
