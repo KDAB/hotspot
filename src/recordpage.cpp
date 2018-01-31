@@ -39,6 +39,7 @@
 #include <QTimer>
 #include <QtConcurrent/QtConcurrentRun>
 #include <QKeyEvent>
+#include <QShortcut>
 
 #include <KUrlRequester>
 #include <Solid/Device>
@@ -365,6 +366,22 @@ RecordPage::RecordPage(QWidget *parent)
                 const auto roundedElapsed = std::round(double(m_recordTimer.nsecsElapsed()) / 1E9) * 1E9;
                 ui->startRecordingButton->setText(tr("Stop Recording (%1)")
                     .arg(Util::formatTimeString(roundedElapsed, true)));
+            });
+
+    auto *stopRecordingShortcut = new QShortcut(Qt::Key_Escape, this);
+    stopRecordingShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+    connect(stopRecordingShortcut, &QShortcut::activated,
+            this, [this] { ui->startRecordingButton->setChecked(false); });
+
+    auto *startRecordingShortcut = new QShortcut(Qt::Key_Return, this);
+    startRecordingShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+    connect(startRecordingShortcut, &QShortcut::activated,
+            this, [this] {
+                if (ui->viewPerfRecordResultsButton->isEnabled()) {
+                    ui->viewPerfRecordResultsButton->click();
+                } else if (ui->startRecordingButton->isEnabled()) {
+                    ui->startRecordingButton->setChecked(true);
+                }
             });
 }
 
