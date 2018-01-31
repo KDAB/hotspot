@@ -41,7 +41,7 @@
 
 QDebug operator<<(QDebug d, const ProcData &data)
 {
-    d << "ProcData{.ppid=" << data.ppid << ", .name=" << data.name << ", .image=" << data.image
+    d << "ProcData{.ppid=" << data.ppid << ", .name=" << data.name
       << ", .state=" << data.state << ", .user=" << data.user << ", .type=" << "}";
     return d;
 }

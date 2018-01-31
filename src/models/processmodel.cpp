@@ -152,21 +152,17 @@ QVariant ProcessModel::data(const QModelIndex &index, int role) const
         if (index.column() == PIDColumn)
             return data.ppid;
         else if (index.column() == NameColumn)
-            return data.image.isEmpty() ? data.name : data.image;
+            return data.name;
         else if (index.column() == StateColumn)
             return data.state;
         else if (index.column() == UserColumn)
             return data.user;
     } else if (role == Qt::ToolTipRole) {
-        return tr("Name: %1\nPID: %2\nOwner: %3").arg(
-            data.image.isEmpty() ? data.name : data.image,
-            data.ppid,
-            data.user
-            );
+        return tr("Name: %1\nPID: %2\nOwner: %3").arg(data.name, data.ppid, data.user);
     } else if (role == PIDRole) {
         return data.ppid.toInt(); // why is this a QString in the first place!?
     } else if (role == NameRole) {
-        return data.image.isEmpty() ? data.name : data.image;
+        return data.name;
     } else if (role == StateRole) {
         return data.state;
     } else if (role == UserRole) {

@@ -39,7 +39,6 @@ struct ProcData
 {
     QString ppid;
     QString name;
-    QString image;
     QString state;
     QString user;
 
@@ -47,7 +46,6 @@ struct ProcData
     {
         return ppid == other.ppid &&
                 name == other.name &&
-                image == other.image &&
                 state == other.state &&
                 user == other.user;
     }
