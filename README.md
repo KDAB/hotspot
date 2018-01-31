@@ -291,12 +291,12 @@ are _not_ available in hotspot currently:
 
 ### Recording with perf without super user rights
 
-It is a good idea to launch hotspot with `sudo` or as `root` user. See e.g.
+It is **not** a good idea to launch hotspot with `sudo` or as `root` user. See e.g.
 [Editing Files As Root](https://blog.martin-graesslin.com/blog/2017/02/editing-files-as-root/)
 for an article on that matter. [Issue #83](https://github.com/KDAB/hotspot/issues/83) is
 also relevant in this contact.
 
-But without superuser rights, you will probably see error messages such as the following
+But without superuser rights, you may see error messages such as the following
 when using hotspot's record feature:
 
     You may not have permission to collect stats.
@@ -306,9 +306,10 @@ when using hotspot's record feature:
        1 - Disallow cpu events for unpriv
        2 - Disallow kernel profiling for unpriv
 
-If that is the case, follow [these steps](https://superuser.com/questions/980632/run-perf-without-root-right)
-to temporarily elevate your capabilities. See also [issue #90](https://github.com/KDAB/hotspot/issues/90)
-for our plan to improve this situation in the future.
+To workaround this limitation, hotspot can temporarily elevate the perf privileges.
+This is achieved by applying [these steps](https://superuser.com/questions/980632/run-perf-without-root-right),
+bundled into [a script](scripts/elevate_perf_privileges.sh) that is run via `kdesudo` or `kdesu`.
+The resulting elevated privileges are also required for kernel tracing in general and Off-CPU profiling in particular.
 
 ## Qt Creator
 
