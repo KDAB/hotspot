@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1120</width>
-    <height>880</height>
+    <height>967</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -72,11 +72,11 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="KUrlComboRequester" name="applicationName">
+       <widget class="KUrlComboRequester" name="applicationName" native="true">
         <property name="toolTip">
          <string>Path to the application to be recorded</string>
         </property>
-        <property name="text">
+        <property name="text" stdset="0">
          <string/>
         </property>
        </widget>
@@ -118,7 +118,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="KUrlRequester" name="workingDirectory">
+       <widget class="KUrlRequester" name="workingDirectory" native="true">
         <property name="toolTip">
          <string>Directory to store the perf data file while recording</string>
         </property>
@@ -150,7 +150,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="KFilterProxySearchLine" name="processesFilterBox">
+       <widget class="KFilterProxySearchLine" name="processesFilterBox" native="true">
         <property name="toolTip">
          <string>Filter the process list by process name or process ID</string>
         </property>
@@ -212,29 +212,29 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="recordAsSudoLabel">
+       <widget class="QLabel" name="elevatePrivilegesLabel">
         <property name="toolTip">
-         <string>Enable this to run perf as root. This gives access to advanced event types such as kernel tracepoints.</string>
+         <string>When enabled, hotspot will temporarily elevate the perf privileges via kdesudo or kdesu. This allows you to access advanced perf features such as kernel tracepoints required for Off-CPU profiling.</string>
         </property>
         <property name="text">
-         <string>Record as Root:</string>
+         <string>Elevate Privileges:</string>
         </property>
         <property name="buddy">
-         <cstring>recordAsSudoCheckBox</cstring>
+         <cstring>elevatePrivilegesCheckBox</cstring>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QCheckBox" name="recordAsSudoCheckBox">
+       <widget class="QCheckBox" name="elevatePrivilegesCheckBox">
         <property name="toolTip">
-         <string>Enable this to run perf as root. This gives access to advanced event types such as kernel tracepoints.</string>
+         <string>When enabled, hotspot will temporarily elevate the perf privileges via kdesudo or kdesu. This allows you to access advanced perf features such as kernel tracepoints required for Off-CPU profiling.</string>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
        <widget class="QLabel" name="offCpuLabel">
         <property name="toolTip">
-         <string>Record scheduler switch events. This enables off-CPU profiling to measure sleep times etc. This requires elevated rights, so you may need to record as root.</string>
+         <string>Record scheduler switch events. This enables off-CPU profiling to measure sleep times etc. This requires elevated privileges.</string>
         </property>
         <property name="text">
          <string>Off-CPU Profilin&amp;g:</string>
@@ -247,7 +247,7 @@
       <item row="2" column="1">
        <widget class="QCheckBox" name="offCpuCheckBox">
         <property name="toolTip">
-         <string>Record scheduler switch events. This enables off-CPU profiling to measure sleep times etc. This requires elevated rights, so you may need to record as root.</string>
+         <string>Record scheduler switch events. This enables off-CPU profiling to measure sleep times etc. This requires elevated privileges.</string>
         </property>
         <property name="text">
          <string/>
@@ -255,8 +255,8 @@
        </widget>
       </item>
       <item row="3" column="0" colspan="2">
-       <widget class="KCollapsibleGroupBox" name="perfOptionsBox2">
-        <property name="title">
+       <widget class="KCollapsibleGroupBox" name="perfOptionsBox2" native="true">
+        <property name="title" stdset="0">
          <string>Advanced</string>
         </property>
         <layout class="QFormLayout" name="formLayout_3">
@@ -277,7 +277,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="KUrlRequester" name="outputFile">
+          <widget class="KUrlRequester" name="outputFile" native="true">
            <property name="toolTip">
             <string>Path to the file location, where perf will write its output to</string>
            </property>
@@ -545,14 +545,10 @@
    <header>kfilterproxysearchline.h</header>
   </customwidget>
   <customwidget>
-   <class>KUrlComboRequester</class>
-   <extends>KUrlRequester</extends>
-   <header>kurlrequester.h</header>
-  </customwidget>
-  <customwidget>
    <class>KMessageWidget</class>
    <extends>QFrame</extends>
    <header>kmessagewidget.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>KCollapsibleGroupBox</class>
@@ -563,6 +559,11 @@
   <customwidget>
    <class>KUrlRequester</class>
    <extends>QWidget</extends>
+   <header>kurlrequester.h</header>
+  </customwidget>
+  <customwidget>
+   <class>KUrlComboRequester</class>
+   <extends>KUrlRequester</extends>
    <header>kurlrequester.h</header>
   </customwidget>
  </customwidgets>

@@ -280,8 +280,12 @@ RecordPage::RecordPage(QWidget *parent)
 
     connect(m_perfRecord, &PerfRecord::recordingFailed,
             this, [this] (const QString& errorMessage) {
-                appendOutput(tr("\nrecording failed after %1")
-                    .arg(Util::formatTimeString(m_recordTimer.nsecsElapsed())));
+                if (m_recordTimer.isValid()) {
+                    appendOutput(tr("\nrecording failed after %1: %2")
+                        .arg(Util::formatTimeString(m_recordTimer.nsecsElapsed()), errorMessage));
+                } else {
+                    appendOutput(tr("\nrecording failed: %1").arg(errorMessage));
+                }
                 setError(errorMessage);
                 recordingStopped();
                 ui->viewPerfRecordResultsButton->setEnabled(false);
@@ -321,15 +325,15 @@ RecordPage::RecordPage(QWidget *parent)
             this, &RecordPage::updateProcessesFinished);
 
     if (m_perfRecord->currentUsername() == QLatin1String("root")) {
-        ui->recordAsSudoCheckBox->setChecked(true);
-        ui->recordAsSudoCheckBox->setEnabled(false);
+        ui->elevatePrivilegesCheckBox->setChecked(true);
+        ui->elevatePrivilegesCheckBox->setEnabled(false);
     } else if (m_perfRecord->sudoUtil().isEmpty()) {
-        ui->recordAsSudoCheckBox->setChecked(false);
-        ui->recordAsSudoCheckBox->setEnabled(false);
-        ui->recordAsSudoCheckBox->setText(tr("(Note: Install kdesudo to record perf data as root.)"));
+        ui->elevatePrivilegesCheckBox->setChecked(false);
+        ui->elevatePrivilegesCheckBox->setEnabled(false);
+        ui->elevatePrivilegesCheckBox->setText(tr("(Note: Install kdesudo or kdesu to temporarily elevate perf privileges.)"));
     }
 
-    connect(ui->recordAsSudoCheckBox, &QCheckBox::toggled,
+    connect(ui->elevatePrivilegesCheckBox, &QCheckBox::toggled,
             this, &RecordPage::updateOffCpuCheckboxState);
 
     restoreCombobox(config(), QStringLiteral("applications"),
@@ -338,7 +342,7 @@ RecordPage::RecordPage(QWidget *parent)
                     ui->eventTypeBox, {ui->eventTypeBox->currentText()});
     restoreCombobox(config(), QStringLiteral("customOptions"),
                     ui->perfParams);
-    ui->recordAsSudoCheckBox->setChecked(config().readEntry(QStringLiteral("recordAsSudo"), false));
+    ui->elevatePrivilegesCheckBox->setChecked(config().readEntry(QStringLiteral("elevatePrivileges"), false));
     ui->offCpuCheckBox->setChecked(config().readEntry(QStringLiteral("offCpuProfiling"), false));
     ui->sampleCpuCheckBox->setChecked(config().readEntry(QStringLiteral("sampleCpu"), true));
     ui->mmapPagesSpinBox->setValue(config().readEntry(QStringLiteral("mmapPages"), 0));
@@ -386,6 +390,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         ui->perfOptionsBox->setEnabled(false);
         ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-stop")));
         ui->startRecordingButton->setText(tr("Stop Recording"));
+        ui->perfResultsTextEdit->clear();
 
         QStringList perfOptions;
 
@@ -418,7 +423,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         }
         config().writeEntry(QStringLiteral("offCpuProfiling"), offCpuProfilingEnabled);
 
-        const bool recordAsSudo = ui->recordAsSudoCheckBox->isChecked();
+        const bool elevatePrivileges = ui->elevatePrivilegesCheckBox->isChecked();
 
         const bool sampleCpuEnabled = ui->sampleCpuCheckBox->isChecked();
         if (sampleCpuEnabled) {
@@ -426,7 +431,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         }
 
         if (recordType != ProfileSystem) { // always true when recording full system
-            config().writeEntry(QStringLiteral("recordAsSudo"), recordAsSudo);
+            config().writeEntry(QStringLiteral("elevatePrivileges"), elevatePrivileges);
             config().writeEntry(QStringLiteral("sampleCpu"), sampleCpuEnabled);
         }
 
@@ -472,7 +477,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
             }
             rememberApplication(applicationName, appParameters, workingDir,
                                 ui->applicationName->comboBox());
-            m_perfRecord->record(perfOptions, outputFile, recordAsSudo,
+            m_perfRecord->record(perfOptions, outputFile, elevatePrivileges,
                                  applicationName, KShell::splitArgs(appParameters),
                                  workingDir);
             break;
@@ -487,7 +492,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
                 }
             }
 
-            m_perfRecord->record(perfOptions, outputFile, recordAsSudo, pids);
+            m_perfRecord->record(perfOptions, outputFile, elevatePrivileges, pids);
             break;
         }
         case ProfileSystem: {
@@ -505,6 +510,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
 void RecordPage::recordingStopped()
 {
     m_updateRuntimeTimer->stop();
+    m_recordTimer.invalidate();
     ui->startRecordingButton->setChecked(false);
     ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
     ui->startRecordingButton->setText(tr("Start Recording"));
@@ -640,10 +646,10 @@ void RecordPage::updateRecordType()
     ui->perfInputEdit->setVisible(recordType == LaunchApplication);
     ui->perfInputEdit->clear();
     ui->perfResultsTextEdit->clear();
-    ui->recordAsSudoCheckBox->setEnabled(recordType != ProfileSystem);
+    ui->elevatePrivilegesCheckBox->setEnabled(recordType != ProfileSystem);
     ui->sampleCpuCheckBox->setEnabled(recordType != ProfileSystem);
     if (recordType == ProfileSystem) {
-        ui->recordAsSudoCheckBox->setChecked(true);
+        ui->elevatePrivilegesCheckBox->setChecked(true);
         ui->sampleCpuCheckBox->setChecked(true);
     }
 
@@ -656,7 +662,7 @@ void RecordPage::updateRecordType()
 
 void RecordPage::updateOffCpuCheckboxState()
 {
-    const bool enableOffCpuProfiling = ui->recordAsSudoCheckBox->isChecked()
+    const bool enableOffCpuProfiling = ui->elevatePrivilegesCheckBox->isChecked()
         || PerfRecord::canProfileOffCpu();
 
     if (enableOffCpuProfiling == ui->offCpuCheckBox->isEnabled()) {

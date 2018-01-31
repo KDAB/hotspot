@@ -28,6 +28,7 @@
 #pragma once
 
 #include <QObject>
+#include <QPointer>
 
 class QProcess;
 
@@ -39,10 +40,10 @@ public:
     ~PerfRecord();
 
     void record(const QStringList &perfOptions, const QString &outputPath,
-                bool recordAsSudo, const QString &exePath, const QStringList &exeOptions,
+                bool elevatePrivileges, const QString &exePath, const QStringList &exeOptions,
                 const QString &workingDirectory = QString());
     void record(const QStringList &perfOptions, const QString &outputPath,
-                bool recordAsSudo, const QStringList &pids);
+                bool elevatePrivileges, const QStringList &pids);
     void recordSystem(const QStringList &perfOptions, const QString &outputPath);
 
     const QString perfCommand();
@@ -64,12 +65,15 @@ signals:
     void recordingOutput(const QString &errorMessage);
 
 private:
-    QProcess *m_perfRecordProcess;
+    QPointer<QProcess> m_perfRecordProcess;
+    QPointer<QProcess> m_elevatePrivilegesProcess;
     QString m_outputPath;
     bool m_userTerminated;
 
-    void startRecording(const QStringList &perfOptions, const QString &outputPath,
-                        bool recordAsSudo, const QStringList &recordOptions,
+    void startRecording(bool elevatePrivileges, const QStringList &perfOptions,
+                        const QString &outputPath, const QStringList &recordOptions,
                         const QString &workingDirectory = QString());
-    bool ensureFileReadable(const QString &filePath);
+    void startRecording(const QStringList &perfOptions, const QString &outputPath,
+                        const QStringList &recordOptions,
+                        const QString &workingDirectory = QString());
 };

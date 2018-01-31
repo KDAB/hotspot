@@ -29,6 +29,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # 
 
+if [ ! -z "$1" ]; then
+    echo "rewriting to $1"
+    # redirect output to file, to enable parsing of output even when
+    # the graphical sudo helper like kdesudo isn't forwarding the text properly
+    $0 2>&1 | tee -a $1
+    exit
+fi
+
+if [ "$(id -u)" != "0" ]; then
+   echo "Error: This script must be run as root"
+   exit 1
+fi
+
 echo "querying current privileges..."
 
 old_sysctl_state=$(sysctl kernel.kptr_restrict kernel.perf_event_paranoid | sed 's/ = /=/')
@@ -67,6 +80,6 @@ mount -o remount,mode=755 /sys/kernel/debug/tracing
 printPrivileges
 
 echo
-echo -n "waiting..."
+echo "privileges elevated!"
 read something
 echo
