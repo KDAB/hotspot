@@ -40,11 +40,8 @@
 
 static bool isUnixProcessId(const QString &procname)
 {
-    for (int i = 0; i != procname.size(); ++i) {
-        if (!procname.at(i).isDigit())
-            return false;
-    }
-    return true;
+    return std::all_of(procname.begin(), procname.end(),
+                       [](QChar c) { return c.isDigit(); });
 }
 
 // Determine UNIX processes by running ps
