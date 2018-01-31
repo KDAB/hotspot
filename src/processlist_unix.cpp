@@ -47,22 +47,6 @@ static bool isUnixProcessId(const QString &procname)
     return true;
 }
 
-struct PidAndNameMatch : public std::unary_function<ProcData, bool> {
-    explicit PidAndNameMatch(const QString &ppid, const QString &name)
-        : m_ppid(ppid)
-        , m_name(name)
-    {
-    }
-
-    bool operator()(const ProcData &p) const
-    {
-        return p.ppid == m_ppid && m_name == p.name;
-    }
-
-    const QString m_ppid;
-    const QString m_name;
-};
-
 // Determine UNIX processes by running ps
 static ProcDataList unixProcessListPS(const ProcDataList &previous)
 {
