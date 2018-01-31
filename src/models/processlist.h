@@ -52,6 +52,7 @@ struct ProcData
                 user == other.user;
     }
 };
+Q_DECLARE_TYPEINFO(ProcData, Q_MOVABLE_TYPE);
 
 inline bool operator<(const ProcData &l, const ProcData &r)
 {
@@ -65,6 +66,5 @@ inline bool operator==(const ProcData &l, const ProcData &r)
 
 QDebug operator<<(QDebug d, const ProcData &data);
 
-typedef QList<ProcData> ProcDataList;
-
-extern ProcDataList processList();
+using ProcDataList = QVector<ProcData>;
+ProcDataList processList();
