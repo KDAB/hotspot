@@ -1,5 +1,5 @@
 include_directories(
-    ${LIBELF_INCLUDE_DIR}
+    ${LIBELF_INCLUDE_DIRS}
     ${LIBDW_INCLUDE_DIR}/elfutils
     ${LIBDWARF_INCLUDE_DIRS}
     perfparser/app
