@@ -113,14 +113,14 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList &perfO
         options.append(outputFile->fileName());
 
         connect(this, &PerfRecord::recordingStarted,
-                m_elevatePrivilegesProcess, [this] {
+                m_elevatePrivilegesProcess.data(), [this] {
                     QTimer::singleShot(1000, m_elevatePrivilegesProcess, [this]() {
                         emit recordingOutput(QStringLiteral("\nrestoring privileges...\n"));
                         m_elevatePrivilegesProcess->terminate();
                     });
                 });
-        connect(m_elevatePrivilegesProcess, &QProcess::errorOccurred,
-                m_elevatePrivilegesProcess, [this] (QProcess::ProcessError /*error*/) {
+        connect(m_elevatePrivilegesProcess.data(), &QProcess::errorOccurred,
+                m_elevatePrivilegesProcess.data(), [this] (QProcess::ProcessError /*error*/) {
                     if (!m_perfRecordProcess) {
                         emit recordingFailed(tr("Failed to elevate privileges: %1").arg(m_elevatePrivilegesProcess->errorString()));
                         m_elevatePrivilegesProcess->deleteLater();
@@ -146,10 +146,10 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList &perfO
         };
         connect(readTimer, &QTimer::timeout,
                 this, readSlot);
-        connect(m_elevatePrivilegesProcess, &QProcess::started,
+        connect(m_elevatePrivilegesProcess.data(), &QProcess::started,
                 readTimer, [readTimer]{ readTimer->start(250); });
-        connect(m_elevatePrivilegesProcess, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-                m_elevatePrivilegesProcess, [this, readSlot] {
+        connect(m_elevatePrivilegesProcess.data(), static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+                m_elevatePrivilegesProcess.data(), [this, readSlot] {
                     // read remaining data
                     readSlot();
                     // then delete the process
