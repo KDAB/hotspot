@@ -189,7 +189,7 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
         return;
     }
 
-    connect(m_perfRecordProcess, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+    connect(m_perfRecordProcess.data(), static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
             this, [this] (int exitCode, QProcess::ExitStatus exitStatus) {
                 Q_UNUSED(exitStatus)
 
@@ -203,7 +203,7 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
                 m_userTerminated = false;
             });
 
-    connect(m_perfRecordProcess, &QProcess::errorOccurred,
+    connect(m_perfRecordProcess.data(), &QProcess::errorOccurred,
             this, [this] (QProcess::ProcessError error) {
                 Q_UNUSED(error)
                 if (!m_userTerminated) {
@@ -211,7 +211,7 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
                 }
             });
 
-    connect(m_perfRecordProcess, &QProcess::readyRead,
+    connect(m_perfRecordProcess.data(), &QProcess::readyRead,
             this, [this] () {
                 QString output = QString::fromUtf8(m_perfRecordProcess->readAll());
                 emit recordingOutput(output);
@@ -232,7 +232,7 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
     perfCommand += perfOptions;
     perfCommand += recordOptions;
 
-    connect(m_perfRecordProcess, &QProcess::started,
+    connect(m_perfRecordProcess.data(), &QProcess::started,
             this, [this, perfBinary, perfCommand] { emit recordingStarted(perfBinary, perfCommand); });
     m_perfRecordProcess->start(perfBinary, perfCommand);
 }
