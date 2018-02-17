@@ -4,4 +4,4 @@ configure_file(
     @ONLY
 )
 
-install(FILES elevate_perf_privileges.sh DESTINATION ${KDE_INSTALL_LIBEXECDIR})
+install(PROGRAMS elevate_perf_privileges.sh DESTINATION ${KDE_INSTALL_LIBEXECDIR})
