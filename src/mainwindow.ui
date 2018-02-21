@@ -23,7 +23,7 @@
      <x>0</x>
      <y>0</y>
      <width>1123</width>
-     <height>25</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="helpMenu">
@@ -50,8 +50,8 @@
   </widget>
   <action name="actionAbout_Hotspot">
    <property name="icon">
-    <iconset theme="hotspot">
-     <normaloff>.</normaloff>.</iconset>
+    <iconset theme="hotspot" resource="resources.qrc">
+     <normaloff>:/images/icons/128-apps-hotspot.png</normaloff>:/images/icons/128-apps-hotspot.png</iconset>
    </property>
    <property name="text">
     <string>About &amp;Hotspot</string>
