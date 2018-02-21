@@ -122,6 +122,8 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(PerfParser *parser, QWidget *pa
     ui->sourceMapView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->sourceMapView, &QTreeView::customContextMenuRequested,
             this, &ResultsCallerCalleePage::onSourceMapContextMenu);
+    connect(ui->sourceMapView, &QTreeView::activated,
+            this, &ResultsCallerCalleePage::onSourceMapActivated);
 
     connect(ui->callerCalleeTableView->selectionModel(), &QItemSelectionModel::currentRowChanged,
             this, [selectCallerCaleeeIndex] (const QModelIndex& current, const QModelIndex&) {
@@ -133,6 +135,40 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(PerfParser *parser, QWidget *pa
 
 ResultsCallerCalleePage::~ResultsCallerCalleePage() = default;
 
+ResultsCallerCalleePage::SourceMapLocation ResultsCallerCalleePage::toSourceMapLocation(const QModelIndex& index)
+{
+    const auto location = index.data(SourceMapModel::LocationRole).toString();
+    const auto separator = location.lastIndexOf(QLatin1Char(':'));
+    if (separator <= 0) {
+        return {};
+    }
+
+    const auto fileName = location.leftRef(separator);
+    const auto lineNumber = location.midRef(separator+1).toInt();
+
+    SourceMapLocation ret;
+    auto resolvePath = [&ret, fileName, lineNumber] (const QString& pathName) -> bool
+    {
+        const QString path = pathName + fileName;
+        if (QFileInfo::exists(path)) {
+            ret.path = path;
+            ret.lineNumber = lineNumber;
+            return true;
+        }
+        return false;
+    };
+
+    // also try to resolve paths relative to the module output folder
+    // fixes a common issue with qmake builds that use relative paths
+    const auto symbol = ui->callerCalleeTableView->currentIndex().data(CallerCalleeModel::SymbolRole).value<Data::Symbol>();
+    const QString modulePath = QFileInfo(symbol.path).path() + QLatin1Char('/');
+
+    resolvePath(m_sysroot) || resolvePath(m_sysroot + modulePath)
+        || resolvePath(m_appPath) || resolvePath(m_appPath + modulePath);
+
+    return ret;
+}
+
 void ResultsCallerCalleePage::onSourceMapContextMenu(const QPoint &point)
 {
     const auto index = ui->sourceMapView->indexAt(point);
@@ -140,36 +176,25 @@ void ResultsCallerCalleePage::onSourceMapContextMenu(const QPoint &point)
         return;
     }
 
-    const auto location = index.data(SourceMapModel::LocationRole).toString();
-    const auto separator = location.lastIndexOf(QLatin1Char(':'));
-    if (separator <= 0) {
+    const auto location = toSourceMapLocation(index);
+    if (!location) {
         return;
     }
 
-    auto showMenu = [this] (const QString& pathName, const QStringRef& fileName,
-                            int lineNumber) -> bool
-    {
-        if (QFileInfo::exists(pathName + fileName)) {
-            QMenu contextMenu;
-            auto *viewCallerCallee = contextMenu.addAction(tr("Open in editor"));
-            auto *action = contextMenu.exec(QCursor::pos());
-            if (action == viewCallerCallee) {
-                emit navigateToCode(pathName + fileName, lineNumber, 0);
-                return true;
-            }
-        }
-        return false;
-    };
+    QMenu contextMenu;
+    auto *viewCallerCallee = contextMenu.addAction(tr("Open in editor"));
+    auto *action = contextMenu.exec(QCursor::pos());
+    if (action == viewCallerCallee) {
+        emit navigateToCode(location.path, location.lineNumber, 0);
+    }
+}
 
-    const auto fileName = location.leftRef(separator);
-    const int lineNumber = location.midRef(separator+1).toInt();
-    // also try to resolve paths relative to the module output folder
-    // fixes a common issue with qmake builds that use relative paths
-    const auto symbol = ui->callerCalleeTableView->currentIndex().data(CallerCalleeModel::SymbolRole).value<Data::Symbol>();
-    const QString modulePath = QFileInfo(symbol.path).path() + QLatin1Char('/');
-
-    showMenu(m_sysroot, fileName, lineNumber) || showMenu(m_sysroot + modulePath, fileName, lineNumber)
-        || showMenu(m_appPath, fileName, lineNumber) || showMenu(m_appPath + modulePath, fileName, lineNumber);
+void ResultsCallerCalleePage::onSourceMapActivated(const QModelIndex& index)
+{
+    const auto location = toSourceMapLocation(index);
+    if (location) {
+        emit navigateToCode(location.path, location.lineNumber, 0);
+    }
 }
 
 void ResultsCallerCalleePage::setSysroot(const QString& path)

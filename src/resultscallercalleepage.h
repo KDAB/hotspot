@@ -38,6 +38,7 @@ struct Symbol;
 }
 
 class QSortFilterProxyModel;
+class QModelIndex;
 
 class PerfParser;
 class CallerCalleeModel;
@@ -55,12 +56,25 @@ public:
     void jumpToCallerCallee(const Data::Symbol &symbol);
 
 private slots:
-    void onSourceMapContextMenu(const QPoint &pos);
+    void onSourceMapContextMenu(const QPoint& pos);
+    void onSourceMapActivated(const QModelIndex& index);
 
 signals:
     void navigateToCode(const QString &url, int lineNumber, int columnNumber);
 
 private:
+    struct SourceMapLocation
+    {
+        inline explicit operator bool() const
+        {
+            return !path.isEmpty();
+        }
+
+        QString path;
+        int lineNumber = -1;
+    };
+    SourceMapLocation toSourceMapLocation(const QModelIndex& index);
+
     QScopedPointer<Ui::ResultsCallerCalleePage> ui;
 
     CallerCalleeModel* m_callerCalleeCostModel;
