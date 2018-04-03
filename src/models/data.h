@@ -541,13 +541,14 @@ struct CpuEvents
 struct CostSummary
 {
     CostSummary() = default;
-    CostSummary(const QString &label, quint64 sampleCount, quint64 totalPeriod)
-        : label(label), sampleCount(sampleCount), totalPeriod(totalPeriod)
+    CostSummary(const QString &label, quint64 sampleCount, quint64 totalPeriod, Costs::Unit unit)
+        : label(label), sampleCount(sampleCount), totalPeriod(totalPeriod), unit(unit)
     {}
 
     QString label;
     quint64 sampleCount = 0;
     quint64 totalPeriod = 0;
+    Costs::Unit unit = Costs::Unit::Unknown;
 
     bool operator==(const CostSummary& rhs) const
     {

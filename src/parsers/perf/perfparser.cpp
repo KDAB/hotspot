@@ -851,7 +851,7 @@ public:
         }
 
         Q_ASSERT(summaryResult.costs.size() == costId);
-        summaryResult.costs.push_back({label, 0, 0});
+        summaryResult.costs.push_back({label, 0, 0, unit});
         Q_ASSERT(bottomUpResult.costs.numTypes() == costId);
         bottomUpResult.costs.addType(costId, label, unit);
 

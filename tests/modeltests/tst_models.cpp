@@ -269,7 +269,7 @@ private slots:
             thread2.name = "asdf";
         }
 
-        Data::CostSummary costSummary("cycles", 0, 0);
+        Data::CostSummary costSummary("cycles", 0, 0, Data::Costs::Unit::Unknown);
         auto generateEvent = [&costSummary, &events](quint64 time, quint32 cpuId) -> Data::Event {
             Data::Event event;
             event.cost = 10;
