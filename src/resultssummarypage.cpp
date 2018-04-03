@@ -102,8 +102,12 @@ ResultsSummaryPage::ResultsSummaryPage(PerfParser *parser, QWidget *parent)
                                << formatSummaryText(indent + tr("Off CPU Time"), Util::formatTimeString(data.offCpuTime));
                     }
                     stream << formatSummaryText(tr("Processes"), QString::number(data.processCount))
-                           << formatSummaryText(tr("Threads"), QString::number(data.threadCount))
-                           << formatSummaryText(tr("Total Samples"), tr("%1 (%4)")
+                           << formatSummaryText(tr("Threads"), QString::number(data.threadCount));
+                    if (data.offCpuTime > 0 || data.onCpuTime > 0) {
+                        stream << formatSummaryText(indent + tr("Avg. Running"), Util::formatCostRelative(data.onCpuTime, data.applicationRunningTime * 100))
+                               << formatSummaryText(indent + tr("Avg. Sleeping"), Util::formatCostRelative(data.offCpuTime, data.applicationRunningTime * 100));
+                    }
+                    stream << formatSummaryText(tr("Total Samples"), tr("%1 (%4)")
                                 .arg(QString::number(data.sampleCount), Util::formatFrequency(data.sampleCount, data.applicationRunningTime)));
                     for (const auto& costSummary : data.costs) {
                         if (!costSummary.sampleCount) {
