@@ -70,7 +70,7 @@ static const IdeSettings ideSettings[] = {
     { "kwrite", "%f --line %l --column %c", QT_TRANSLATE_NOOP("MainWindow", "KWrite") },
     { "gedit", "%f +%l:%c", QT_TRANSLATE_NOOP("MainWindow", "gedit") },
     { "gvim", "%f +%l", QT_TRANSLATE_NOOP("MainWindow", "gvim") },
-    { "qtcreator", "%f", QT_TRANSLATE_NOOP("MainWindow", "Qt Creator") }
+    { "qtcreator", "-client %f:%l", QT_TRANSLATE_NOOP("MainWindow", "Qt Creator") }
 #endif
 };
 #if defined(Q_OS_WIN) || defined(Q_OS_OSX) // Remove this #if branch when adding real data to ideSettings for Windows/OSX.
