@@ -1325,6 +1325,11 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
         parserArgs += {QStringLiteral("--arch"), arch};
     }
 
+    // reset the data to ensure filtering will pick up the new data
+    m_bottomUpResults = {};
+    m_callerCalleeResults = {};
+    m_events = {};
+
     emit parsingStarted();
     using namespace ThreadWeaver;
     stream() << make_job([parserBinary, parserArgs, this]() {
