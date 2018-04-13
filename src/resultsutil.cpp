@@ -111,6 +111,9 @@ void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColu
 
 void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs, const KLocalizedString& tooltipTemplate)
 {
+    // restore selection if possible
+    const auto oldData = combo->currentData();
+
     combo->clear();
     for (int i = 0, c = costs.numTypes(); i < c; ++i) {
         if (!costs.totalCost(i)) {
@@ -119,6 +122,11 @@ void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs, const K
         const auto& typeName = costs.typeName(i);
         combo->addItem(typeName, QVariant::fromValue(i));
         combo->setItemData(i, tooltipTemplate.subs(typeName).toString(), Qt::ToolTipRole);
+    }
+
+    const auto index = combo->findData(oldData);
+    if (index != -1) {
+        combo->setCurrentIndex(index);
     }
 }
 
