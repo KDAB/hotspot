@@ -56,6 +56,7 @@ public:
     static bool canTrace(const QString& path);
     static bool canProfileOffCpu();
     static bool canSampleCpu();
+    static bool canSwitchEvents();
 
     static QStringList offCpuProfilingOptions();
 

@@ -342,6 +342,20 @@ bool PerfRecord::canTrace(const QString& path)
         && paranoid.readAll().trimmed() == "-1";
 }
 
+static QByteArray perfRecordHelp()
+{
+    static const QByteArray recordHelp = []() {
+        QProcess testProcess;
+        testProcess.start(QStringLiteral("perf"), {
+            QStringLiteral("record"),
+            QStringLiteral("--help")
+        });
+        testProcess.waitForFinished(1000);
+        return testProcess.readAllStandardOutput();
+    }();
+    return recordHelp;
+}
+
 bool PerfRecord::canProfileOffCpu()
 {
     return canTrace(QStringLiteral("events/sched/sched_switch"));
@@ -358,16 +372,10 @@ QStringList PerfRecord::offCpuProfilingOptions()
 
 bool PerfRecord::canSampleCpu()
 {
-    static const bool canSampleCpu = []() {
-        QProcess testProcess;
-        testProcess.start(QStringLiteral("perf"), {
-            QStringLiteral("record"),
-            QStringLiteral("--help")
-        });
-        if (!testProcess.waitForFinished(1000)) {
-            return false;
-        }
-        return testProcess.readAllStandardOutput().contains("--sample-cpu");
-    }();
-    return canSampleCpu;
+    return perfRecordHelp().contains("--sample-cpu");
+}
+
+bool PerfRecord::canSwitchEvents()
+{
+    return perfRecordHelp().contains("--switch-events");
 }

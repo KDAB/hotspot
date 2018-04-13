@@ -388,6 +388,10 @@ RecordPage::RecordPage(QWidget *parent)
         ui->sampleCpuCheckBox->hide();
         ui->sampleCpuLabel->hide();
     }
+    if (!PerfRecord::canSwitchEvents()) {
+        ui->offCpuCheckBox->hide();
+        ui->offCpuLabel->hide();
+    }
 }
 
 RecordPage::~RecordPage() = default;
@@ -435,7 +439,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         perfOptions += KShell::splitArgs(customOptions);
 
         const bool offCpuProfilingEnabled = ui->offCpuCheckBox->isChecked();
-        if (offCpuProfilingEnabled) {
+        if (offCpuProfilingEnabled && PerfRecord::canSwitchEvents()) {
             if (eventType.isEmpty()) {
                 // TODO: use clock event in VM context
                 perfOptions += QStringLiteral("--event");
@@ -448,7 +452,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         const bool elevatePrivileges = ui->elevatePrivilegesCheckBox->isChecked();
 
         const bool sampleCpuEnabled = ui->sampleCpuCheckBox->isChecked();
-        if (sampleCpuEnabled) {
+        if (sampleCpuEnabled && PerfRecord::canSampleCpu()) {
             perfOptions += QStringLiteral("--sample-cpu");
         }
 
@@ -684,8 +688,8 @@ void RecordPage::updateRecordType()
 
 void RecordPage::updateOffCpuCheckboxState()
 {
-    const bool enableOffCpuProfiling = ui->elevatePrivilegesCheckBox->isChecked()
-        || PerfRecord::canProfileOffCpu();
+    const bool enableOffCpuProfiling = (ui->elevatePrivilegesCheckBox->isChecked()
+        || PerfRecord::canProfileOffCpu()) && PerfRecord::canSwitchEvents();
 
     if (enableOffCpuProfiling == ui->offCpuCheckBox->isEnabled()) {
         return;
