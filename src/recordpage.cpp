@@ -383,6 +383,11 @@ RecordPage::RecordPage(QWidget *parent)
                     ui->startRecordingButton->setChecked(true);
                 }
             });
+
+    if (!PerfRecord::canSampleCpu()) {
+        ui->sampleCpuCheckBox->hide();
+        ui->sampleCpuLabel->hide();
+    }
 }
 
 RecordPage::~RecordPage() = default;
@@ -664,10 +669,10 @@ void RecordPage::updateRecordType()
     ui->perfInputEdit->clear();
     ui->perfResultsTextEdit->clear();
     ui->elevatePrivilegesCheckBox->setEnabled(recordType != ProfileSystem);
-    ui->sampleCpuCheckBox->setEnabled(recordType != ProfileSystem);
+    ui->sampleCpuCheckBox->setEnabled(recordType != ProfileSystem && PerfRecord::canSampleCpu());
     if (recordType == ProfileSystem) {
         ui->elevatePrivilegesCheckBox->setChecked(true);
-        ui->sampleCpuCheckBox->setChecked(true);
+        ui->sampleCpuCheckBox->setChecked(true && PerfRecord::canSampleCpu());
     }
 
     if (recordType == AttachToProcess) {

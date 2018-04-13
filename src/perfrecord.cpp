@@ -355,3 +355,19 @@ QStringList PerfRecord::offCpuProfilingOptions()
         QStringLiteral("sched:sched_switch")
     };
 }
+
+bool PerfRecord::canSampleCpu()
+{
+    static const bool canSampleCpu = []() {
+        QProcess testProcess;
+        testProcess.start(QStringLiteral("perf"), {
+            QStringLiteral("record"),
+            QStringLiteral("--help")
+        });
+        if (!testProcess.waitForFinished(1000)) {
+            return false;
+        }
+        return testProcess.readAllStandardOutput().contains("--sample-cpu");
+    }();
+    return canSampleCpu;
+}
