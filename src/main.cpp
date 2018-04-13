@@ -51,6 +51,11 @@ int main(int argc, char** argv)
     qRegisterMetaType<Data::CallerCalleeResults>();
     qRegisterMetaType<Data::EventResults>();
 
+#if APPIMAGE_BUILD
+    QIcon::setThemeSearchPaths({app.applicationDirPath() + QLatin1String("/../share/icons/")});
+    QIcon::setThemeName(QStringLiteral("breeze"));
+#endif
+
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("Linux perf GUI for performance analysis."));
     parser.addHelpOption();
@@ -140,6 +145,15 @@ int main(int argc, char** argv)
 
         window->show();
     }
+
+#if APPIMAGE_BUILD
+    // cleanup the environment when we are running from within the AppImage
+    // to allow launching system applications using Qt without them loading
+    // the bundled Qt we ship in the AppImage
+    auto LD_LIBRARY_PATH = qgetenv("LD_LIBRARY_PATH");
+    LD_LIBRARY_PATH.remove(0, LD_LIBRARY_PATH.indexOf(':') + 1);
+    qputenv("LD_LIBRARY_PATH", LD_LIBRARY_PATH);
+#endif
 
     return app.exec();
 }

@@ -6,6 +6,8 @@ include(KDEFrameworkCompilerSettings)
 # but allow signal/slot keywords
 remove_definitions(-DQT_NO_SIGNALS_SLOTS_KEYWORDS)
 
+option(APPIMAGE_BUILD "configure build for bundling in an appimage" OFF)
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(models)
