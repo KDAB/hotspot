@@ -59,6 +59,8 @@ public:
 
     static QStringList offCpuProfilingOptions();
 
+    static bool isPerfInstalled();
+
 signals:
     void recordingStarted(const QString& perfBinary, const QStringList& arguments);
     void recordingFinished(const QString& fileLocation);

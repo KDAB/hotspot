@@ -86,6 +86,13 @@ RecordType selectedRecordType(const QScopedPointer<Ui::RecordPage>& ui)
 
 void updateStartRecordingButtonState(const QScopedPointer<Ui::RecordPage>& ui)
 {
+    if (!PerfRecord::isPerfInstalled()) {
+        ui->startRecordingButton->setEnabled(false);
+        ui->applicationRecordErrorMessage->setText(QObject::tr("Please install perf before trying to record."));
+        ui->applicationRecordErrorMessage->setVisible(true);
+        return;
+    }
+
     bool enabled = false;
     switch (selectedRecordType(ui)) {
     case LaunchApplication:

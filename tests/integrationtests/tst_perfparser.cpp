@@ -109,7 +109,7 @@ class TestPerfParser : public QObject
 private slots:
     void initTestCase()
     {
-        if (QStandardPaths::findExecutable(QStringLiteral("perf")).isEmpty()) {
+        if (!PerfRecord::isPerfInstalled()) {
             QSKIP("perf is not available, cannot run integration tests.");
         }
 

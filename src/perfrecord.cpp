@@ -365,3 +365,8 @@ bool PerfRecord::canSwitchEvents()
 {
     return perfRecordHelp().contains("--switch-events");
 }
+
+bool PerfRecord::isPerfInstalled()
+{
+    return !QStandardPaths::findExecutable(QStringLiteral("perf")).isEmpty();
+}
