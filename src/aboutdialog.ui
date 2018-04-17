@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>96</width>
-    <height>86</height>
+    <height>102</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout">
@@ -56,6 +56,9 @@
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+     <property name="margin">
+      <number>10</number>
      </property>
     </widget>
    </item>

@@ -51,5 +51,10 @@ void AboutDialog::setText(const QString &text)
 
 void AboutDialog::setLogo(const QString &iconFileName)
 {
-    ui->logoLabel->setPixmap(iconFileName);
+    QPixmap pixmap(iconFileName);
+    // scale down pixmap (while keeping aspect ratio) if required
+    if (pixmap.width() > 100) {
+        pixmap = pixmap.scaledToWidth(100, Qt::SmoothTransformation);
+    }
+    ui->logoLabel->setPixmap(pixmap);
 }
