@@ -787,6 +787,11 @@ public:
                 emit progress(percent);
                 break;
             }
+            case EventType::TracePointFormat:
+            case EventType::TracePointSample: {
+                // TODO: implement me
+                return true;
+            }
             case EventType::InvalidType:
                 break;
         }
@@ -1175,7 +1180,7 @@ public:
     };
 
     enum class EventType {
-        Sample43, // backwards compatibility
+        Sample43, // now obsolete
         ThreadStart,
         ThreadEnd,
         Command,
@@ -1186,8 +1191,10 @@ public:
         LostDefinition,
         FeaturesDefinition,
         Error,
-        Sample45, // backwards compatibility
+        Sample45, // now obsolete
         Progress,
+        TracePointFormat,
+        TracePointSample,
         ContextSwitchDefinition,
         Sample,
         InvalidType
