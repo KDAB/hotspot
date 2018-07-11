@@ -141,9 +141,10 @@ zypper in cmake gcc-c++ extra-cmake-modules threadweaver-devel ki18n-devel kio-d
 
 ```
 git clone --recurse-submodules https://github.com/KDAB/hotspot.git
+cd hotspot
 mkdir build-hotspot
 cd build-hotspot
-cmake ../hotspot
+cmake ..
 make
 # now you can run hotspot from the build folder:
 ./bin/hotspot
