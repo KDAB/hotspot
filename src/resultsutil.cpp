@@ -27,15 +27,15 @@
 
 #include "resultsutil.h"
 
-#include <QTreeView>
+#include <QComboBox>
+#include <QCoreApplication>
 #include <QHeaderView>
 #include <QMenu>
-#include <QCoreApplication>
-#include <QComboBox>
+#include <QTreeView>
 
-#include <KRecursiveFilterProxyModel>
 #include <KFilterProxySearchLine>
 #include <KLocalizedString>
+#include <KRecursiveFilterProxyModel>
 
 #include "models/costdelegate.h"
 #include "models/data.h"
@@ -48,8 +48,7 @@ void stretchFirstColumn(QTreeView* view)
     view->header()->setSectionResizeMode(0, QHeaderView::Stretch);
 }
 
-void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter,
-                   QAbstractItemModel* model, int initialSortColumn,
+void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, QAbstractItemModel* model, int initialSortColumn,
                    int sortRole, int filterRole)
 {
     auto proxy = new KRecursiveFilterProxyModel(view);
@@ -64,40 +63,38 @@ void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter,
     stretchFirstColumn(view);
 }
 
-void setupContextMenu(QTreeView* view, int symbolRole,
-                      std::function<void(const Data::Symbol&)> callback)
+void setupContextMenu(QTreeView* view, int symbolRole, std::function<void(const Data::Symbol&)> callback)
 {
     view->setContextMenuPolicy(Qt::CustomContextMenu);
-    QObject::connect(view, &QTreeView::customContextMenuRequested,
-                     view, [view, symbolRole, callback](const QPoint &point) {
-                        const auto index = view->indexAt(point);
-                        if (!index.isValid()) {
-                            return;
-                        }
+    QObject::connect(
+        view, &QTreeView::customContextMenuRequested, view, [view, symbolRole, callback](const QPoint& point) {
+            const auto index = view->indexAt(point);
+            if (!index.isValid()) {
+                return;
+            }
 
-                        QMenu contextMenu;
-                        auto *viewCallerCallee = contextMenu.addAction(QCoreApplication::translate("Util", "View Caller/Callee"));
-                        auto *action = contextMenu.exec(QCursor::pos());
-                        if (action == viewCallerCallee) {
-                            const auto symbol = index.data(symbolRole).value<Data::Symbol>();
+            QMenu contextMenu;
+            auto* viewCallerCallee = contextMenu.addAction(QCoreApplication::translate("Util", "View Caller/Callee"));
+            auto* action = contextMenu.exec(QCursor::pos());
+            if (action == viewCallerCallee) {
+                const auto symbol = index.data(symbolRole).value<Data::Symbol>();
 
-                            if (symbol.isValid()) {
-                                callback(symbol);
-                            }
-                        }
-                    });
+                if (symbol.isValid()) {
+                    callback(symbol);
+                }
+            }
+        });
 }
 
-void setupCostDelegate(QAbstractItemModel* model, QTreeView* view,
-                       int sortRole, int totalCostRole, int numBaseColumns)
+void setupCostDelegate(QAbstractItemModel* model, QTreeView* view, int sortRole, int totalCostRole, int numBaseColumns)
 {
     auto costDelegate = new CostDelegate(sortRole, totalCostRole, view);
-    QObject::connect(model, &QAbstractItemModel::modelReset,
-                     costDelegate, [costDelegate, model, view, numBaseColumns]() {
-                        for (int i = numBaseColumns, c = model->columnCount(); i < c; ++i) {
-                            view->setItemDelegateForColumn(i, costDelegate);
-                        }
-                    });
+    QObject::connect(model, &QAbstractItemModel::modelReset, costDelegate,
+                     [costDelegate, model, view, numBaseColumns]() {
+                         for (int i = numBaseColumns, c = model->columnCount(); i < c; ++i) {
+                             view->setItemDelegateForColumn(i, costDelegate);
+                         }
+                     });
 }
 
 void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns)
@@ -129,5 +126,4 @@ void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs, const K
         combo->setCurrentIndex(index);
     }
 }
-
 }

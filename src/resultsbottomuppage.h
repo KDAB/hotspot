@@ -45,7 +45,7 @@ class ResultsBottomUpPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsBottomUpPage(PerfParser *parser, QWidget *parent = nullptr);
+    explicit ResultsBottomUpPage(PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsBottomUpPage();
 
 signals:

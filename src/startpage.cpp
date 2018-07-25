@@ -32,7 +32,7 @@
 #include <QMainWindow>
 #include <QPainter>
 
-StartPage::StartPage(QWidget *parent)
+StartPage::StartPage(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::StartPage)
 {
@@ -64,7 +64,7 @@ void StartPage::showParseFileProgress()
     ui->openFileProgressBar->setMaximum(0);
 }
 
-void StartPage::setPathSettingsMenu(QMenu *menu)
+void StartPage::setPathSettingsMenu(QMenu* menu)
 {
     ui->pathSettings->setMenu(menu);
 }

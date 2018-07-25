@@ -33,7 +33,7 @@
 
 #include <KUser>
 
-ProcessFilterModel::ProcessFilterModel(QObject *parent)
+ProcessFilterModel::ProcessFilterModel(QObject* parent)
     : KRecursiveFilterProxyModel(parent)
 {
     m_currentProcId = QString::number(qApp->applicationPid());
@@ -45,7 +45,7 @@ ProcessFilterModel::ProcessFilterModel(QObject *parent)
     }
 }
 
-bool ProcessFilterModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
+bool ProcessFilterModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
 {
     const QString l = sourceModel()->data(left).toString();
     const QString r = sourceModel()->data(right).toString();
@@ -55,13 +55,13 @@ bool ProcessFilterModel::lessThan(const QModelIndex &left, const QModelIndex &ri
     return l.compare(r, Qt::CaseInsensitive) <= 0;
 }
 
-bool ProcessFilterModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
+bool ProcessFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
 {
-    ProcessModel *source = dynamic_cast<ProcessModel *>(sourceModel());
+    ProcessModel* source = dynamic_cast<ProcessModel*>(sourceModel());
     if (!source)
         return true;
 
-    const ProcData &data = source->dataForRow(source_row);
+    const ProcData& data = source->dataForRow(source_row);
 
     if (!m_currentUser.isEmpty() && data.user != m_currentUser)
         return false;
@@ -69,8 +69,7 @@ bool ProcessFilterModel::filterAcceptsRow(int source_row, const QModelIndex &sou
     return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
 }
 
-bool ProcessFilterModel::filterAcceptsColumn(int source_column,
-                                             const QModelIndex & /*source_parent*/) const
+bool ProcessFilterModel::filterAcceptsColumn(int source_column, const QModelIndex& /*source_parent*/) const
 {
     // hide user row if current user was found
     return m_currentUser.isEmpty() || source_column != ProcessModel::UserColumn;

@@ -25,9 +25,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <QDebug>
 #include <QObject>
 #include <QTest>
-#include <QDebug>
 #include <QTextStream>
 
 #include "modeltest.h"
@@ -81,7 +81,6 @@ Data::BottomUpResults generateTree1()
         C
     )");
 }
-
 }
 
 class TestModels : public QObject
@@ -107,29 +106,9 @@ private slots:
 
         QCOMPARE(tree.costs.totalCost(0), qint64(9));
 
-        const QStringList expectedTree = {
-            "C=5",
-            " B=1",
-            "  A=1",
-            " E=1",
-            "  C=1",
-            "   B=1",
-            "    A=1",
-            " C=1",
-            "  B=1",
-            "   A=1",
-            "D=2",
-            " B=2",
-            "  A=2",
-            "E=2",
-            " C=2",
-            "  B=1",
-            "   A=1",
-            "  E=1",
-            "   C=1",
-            "    B=1",
-            "     A=1"
-        };
+        const QStringList expectedTree = {"C=5",  " B=1",  "  A=1",  " E=1",  "  C=1",  "   B=1",  "    A=1",
+                                          " C=1", "  B=1", "   A=1", "D=2",   " B=2",   "  A=2",   "E=2",
+                                          " C=2", "  B=1", "   A=1", "  E=1", "   C=1", "    B=1", "     A=1"};
         QCOMPARE(printTree(tree), expectedTree);
 
         BottomUpModel model;
@@ -145,19 +124,12 @@ private slots:
         QCOMPARE(tree.inclusiveCosts.totalCost(0), qint64(9));
         QCOMPARE(tree.selfCosts.totalCost(0), qint64(9));
 
-        const QStringList expectedTree = {
-            "A=s:0,i:7",
-            " B=s:0,i:7",
-            "  C=s:1,i:5",
-            "   E=s:1,i:3",
-            "    C=s:1,i:2",
-            "     E=s:1,i:1",
-            "   C=s:1,i:1",
-            "  D=s:2,i:2",
-            "C=s:2,i:2"
-        };
-        QTextStream(stdout) << "Actual:\n" << printTree(tree).join("\n")
-                            << "\nExpected:\n" << expectedTree.join("\n") << "\n";
+        const QStringList expectedTree = {"A=s:0,i:7",    " B=s:0,i:7",    "  C=s:1,i:5",
+                                          "   E=s:1,i:3", "    C=s:1,i:2", "     E=s:1,i:1",
+                                          "   C=s:1,i:1", "  D=s:2,i:2",   "C=s:2,i:2"};
+        QTextStream(stdout) << "Actual:\n"
+                            << printTree(tree).join("\n") << "\nExpected:\n"
+                            << expectedTree.join("\n") << "\n";
         QCOMPARE(printTree(tree), expectedTree);
 
         TopDownModel model;
@@ -193,26 +165,12 @@ private slots:
         Data::CallerCalleeResults results;
         Data::callerCalleesFromBottomUpData(tree, &results);
         const QStringList expectedMap = {
-            "A=s:0,i:7",
-            "A>B=7",
-            "B=s:0,i:7",
-            "B<A=7",
-            "B>C=5",
-            "B>D=2",
-            "C=s:5,i:7",
-            "C<B=5",
-            "C<C=1",
-            "C<E=2",
-            "C>C=1",
-            "C>E=3",
-            "D=s:2,i:2",
-            "D<B=2",
-            "E=s:2,i:3",
-            "E<C=3",
-            "E>C=2",
+            "A=s:0,i:7", "A>B=7", "B=s:0,i:7", "B<A=7",     "B>C=5", "B>D=2",     "C=s:5,i:7", "C<B=5", "C<C=1",
+            "C<E=2",     "C>C=1", "C>E=3",     "D=s:2,i:2", "D<B=2", "E=s:2,i:3", "E<C=3",     "E>C=2",
         };
-        QTextStream(stdout) << "Actual:\n" << printMap(results).join("\n")
-                            << "\n\nExpected:\n" << expectedMap.join("\n") << "\n";
+        QTextStream(stdout) << "Actual:\n"
+                            << printMap(results).join("\n") << "\n\nExpected:\n"
+                            << expectedMap.join("\n") << "\n";
         QCOMPARE(printMap(results), expectedMap);
 
         CallerCalleeModel model;
@@ -299,7 +257,7 @@ private slots:
         auto simplifiedEvents = events;
         simplifiedEvents.cpus.remove(1);
 
-        auto verifyCommonData = [&] (const QModelIndex& idx) {
+        auto verifyCommonData = [&](const QModelIndex& idx) {
             const auto eventResults = idx.data(EventModel::EventResultsRole).value<Data::EventResults>();
             QCOMPARE(eventResults, simplifiedEvents);
             const auto maxTime = idx.data(EventModel::MaxTimeRole).value<quint64>();

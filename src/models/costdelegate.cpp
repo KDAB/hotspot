@@ -33,9 +33,9 @@
 #include <cmath>
 
 CostDelegate::CostDelegate(quint32 sortRole, quint32 totalCostRole, QObject* parent)
-    : QStyledItemDelegate(parent),
-      m_sortRole(sortRole),
-      m_totalCostRole(totalCostRole)
+    : QStyledItemDelegate(parent)
+    , m_sortRole(sortRole)
+    , m_totalCostRole(totalCostRole)
 {
 }
 

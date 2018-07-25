@@ -25,42 +25,42 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <QObject>
-#include <QTest>
 #include <QDebug>
-#include <QTextStream>
+#include <QObject>
 #include <QProcess>
 #include <QSignalSpy>
-#include <QTemporaryFile>
 #include <QStandardPaths>
+#include <QTemporaryFile>
+#include <QTest>
+#include <QTextStream>
 
-#include "perfrecord.h"
-#include "perfparser.h"
-#include "util.h"
 #include "data.h"
+#include "perfparser.h"
+#include "perfrecord.h"
 #include "unistd.h"
+#include "util.h"
 
 #include "../testutils.h"
 
 #include <exception>
 
-#define VERIFY_OR_THROW(statement) \
-do {\
-    if (!QTest::qVerify(static_cast<bool>(statement), #statement, "", __FILE__, __LINE__))\
-        throw std::logic_error("verify failed: " #statement);\
-} while (false)
+#define VERIFY_OR_THROW(statement)                                                                                     \
+    do {                                                                                                               \
+        if (!QTest::qVerify(static_cast<bool>(statement), #statement, "", __FILE__, __LINE__))                         \
+            throw std::logic_error("verify failed: " #statement);                                                      \
+    } while (false)
 
-#define VERIFY_OR_THROW2(statement, description) \
-do {\
-    if (!QTest::qVerify(static_cast<bool>(statement), #statement, description, __FILE__, __LINE__))\
-        throw std::logic_error(description);\
-} while (false)
+#define VERIFY_OR_THROW2(statement, description)                                                                       \
+    do {                                                                                                               \
+        if (!QTest::qVerify(static_cast<bool>(statement), #statement, description, __FILE__, __LINE__))                \
+            throw std::logic_error(description);                                                                       \
+    } while (false)
 
-#define COMPARE_OR_THROW(actual, expected) \
-do {\
-    if (!QTest::qCompare(actual, expected, #actual, #expected, __FILE__, __LINE__))\
-        throw std::logic_error("compare failed: " #actual #expected);\
-} while (false)
+#define COMPARE_OR_THROW(actual, expected)                                                                             \
+    do {                                                                                                               \
+        if (!QTest::qCompare(actual, expected, #actual, #expected, __FILE__, __LINE__))                                \
+            throw std::logic_error("compare failed: " #actual #expected);                                              \
+    } while (false)
 
 namespace {
 template<typename T>
@@ -80,26 +80,26 @@ bool searchForChildSymbol(const T& root, const QString& searchString, bool exact
     return false;
 }
 
-bool compareCosts(const Data::TopDown &lhs, const Data::TopDown &rhs, const Data::TopDownResults &results,
+bool compareCosts(const Data::TopDown& lhs, const Data::TopDown& rhs, const Data::TopDownResults& results,
                   int costIndex)
 {
     return results.inclusiveCosts.cost(costIndex, lhs.id) < results.inclusiveCosts.cost(costIndex, rhs.id);
 }
 
-bool compareCosts(const Data::BottomUp &lhs, const Data::BottomUp &rhs, const Data::BottomUpResults &results,
+bool compareCosts(const Data::BottomUp& lhs, const Data::BottomUp& rhs, const Data::BottomUpResults& results,
                   int costIndex)
 {
     return results.costs.cost(costIndex, lhs.id) < results.costs.cost(costIndex, rhs.id);
 }
 
 template<typename Results>
-int maxElementTopIndex(const Results &collection, int costIndex = 0)
+int maxElementTopIndex(const Results& collection, int costIndex = 0)
 {
     using DataType = decltype(*collection.root.children.begin());
     auto topResult = std::max_element(collection.root.children.constBegin(), collection.root.children.constEnd(),
-                                                [collection, costIndex](const DataType &lhs, const DataType &rhs) {
-                                                    return compareCosts(lhs, rhs, collection, costIndex);
-                                                });
+                                      [collection, costIndex](const DataType& lhs, const DataType& rhs) {
+                                          return compareCosts(lhs, rhs, collection, costIndex);
+                                      });
     return std::distance(collection.root.children.begin(), topResult);
 }
 }
@@ -205,13 +205,18 @@ private slots:
 
         int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData);
         qint64 bottomUpCycleCost = m_bottomUpData.costs.cost(0, m_bottomUpData.root.children.at(bottomUpTopIndex).id);
-        qint64 bottomUpInstructionCost = m_bottomUpData.costs.cost(1, m_bottomUpData.root.children.at(bottomUpTopIndex).id);
-        QVERIFY2(bottomUpCycleCost != bottomUpInstructionCost, "Bottom-Up Cycle Cost should not be equal to Bottom-Up Instruction Cost");
+        qint64 bottomUpInstructionCost =
+            m_bottomUpData.costs.cost(1, m_bottomUpData.root.children.at(bottomUpTopIndex).id);
+        QVERIFY2(bottomUpCycleCost != bottomUpInstructionCost,
+                 "Bottom-Up Cycle Cost should not be equal to Bottom-Up Instruction Cost");
 
         int topDownTopIndex = maxElementTopIndex(m_topDownData);
-        qint64 topDownCycleCost = m_topDownData.inclusiveCosts.cost(0, m_topDownData.root.children.at(topDownTopIndex).id);
-        qint64 topDownInstructionCost = m_topDownData.inclusiveCosts.cost(1, m_topDownData.root.children.at(topDownTopIndex).id);
-        QVERIFY2(topDownCycleCost != topDownInstructionCost, "Top-Down Cycle Cost should not be equal to Top-Down Instruction Cost");
+        qint64 topDownCycleCost =
+            m_topDownData.inclusiveCosts.cost(0, m_topDownData.root.children.at(topDownTopIndex).id);
+        qint64 topDownInstructionCost =
+            m_topDownData.inclusiveCosts.cost(1, m_topDownData.root.children.at(topDownTopIndex).id);
+        QVERIFY2(topDownCycleCost != topDownInstructionCost,
+                 "Top-Down Cycle Cost should not be equal to Top-Down Instruction Cost");
     }
 
     void testCppInliningEventCyclesInstructions_data()
@@ -233,7 +238,8 @@ private slots:
         tempFile.open();
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-        testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"fibonacci", "cpp-recursion"}, tempFile.fileName());
+        testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"fibonacci", "cpp-recursion"},
+                     tempFile.fileName());
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
     }
@@ -248,14 +254,16 @@ private slots:
         tempFile.open();
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-        testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"start", "cpp-recursion"}, tempFile.fileName());
+        testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"start", "cpp-recursion"},
+                     tempFile.fileName());
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
 
         QVERIFY(searchForChildSymbol(m_bottomUpData.root.children.at(maxElementTopIndex(m_bottomUpData)), "main"));
         const auto maxTop = m_topDownData.root.children.at(maxElementTopIndex(m_topDownData));
         if (!maxTop.symbol.isValid()) {
-            QSKIP("unwinding failed from the fibonacci function, unclear why - increasing the stack dump size doesn't help");
+            QSKIP("unwinding failed from the fibonacci function, unclear why - increasing the stack dump size doesn't "
+                  "help");
         }
         QVERIFY(searchForChildSymbol(maxTop, "main"));
     }
@@ -270,7 +278,8 @@ private slots:
         tempFile.open();
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-        testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"fibonacci", "cpp-recursion"}, tempFile.fileName());
+        testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"fibonacci", "cpp-recursion"},
+                     tempFile.fileName());
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
     }
@@ -285,19 +294,25 @@ private slots:
         tempFile.open();
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-        testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"start", "cpp-recursion"}, tempFile.fileName());
+        testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"start", "cpp-recursion"},
+                     tempFile.fileName());
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
 
         int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData);
         qint64 bottomUpCycleCost = m_bottomUpData.costs.cost(0, m_bottomUpData.root.children.at(bottomUpTopIndex).id);
-        qint64 bottomUpInstructionCost = m_bottomUpData.costs.cost(1, m_bottomUpData.root.children.at(bottomUpTopIndex).id);
-        QVERIFY2(bottomUpCycleCost != bottomUpInstructionCost, "Bottom-Up Cycle Cost should not be equal to Bottom-Up Instruction Cost");
+        qint64 bottomUpInstructionCost =
+            m_bottomUpData.costs.cost(1, m_bottomUpData.root.children.at(bottomUpTopIndex).id);
+        QVERIFY2(bottomUpCycleCost != bottomUpInstructionCost,
+                 "Bottom-Up Cycle Cost should not be equal to Bottom-Up Instruction Cost");
 
         int topDownTopIndex = maxElementTopIndex(m_topDownData);
-        qint64 topDownCycleCost = m_topDownData.inclusiveCosts.cost(0, m_topDownData.root.children.at(topDownTopIndex).id);
-        qint64 topDownInstructionCost = m_topDownData.inclusiveCosts.cost(1, m_topDownData.root.children.at(topDownTopIndex).id);
-        QVERIFY2(topDownCycleCost != topDownInstructionCost, "Top-Down Cycle Cost should not be equal to Top-Down Instruction Cost");
+        qint64 topDownCycleCost =
+            m_topDownData.inclusiveCosts.cost(0, m_topDownData.root.children.at(topDownTopIndex).id);
+        qint64 topDownInstructionCost =
+            m_topDownData.inclusiveCosts.cost(1, m_topDownData.root.children.at(topDownTopIndex).id);
+        QVERIFY2(topDownCycleCost != topDownInstructionCost,
+                 "Top-Down Cycle Cost should not be equal to Top-Down Instruction Cost");
     }
 
     void testSendStdIn()
@@ -417,7 +432,6 @@ private slots:
         QVERIFY(m_bottomUpData.costs.cost(2, topBottomUp.id) >= 1E9); // at least 1s sleep time
     }
 
-
     void testOffCpuSleep()
     {
         const auto sleep = QStandardPaths::findExecutable("sleep");
@@ -495,15 +509,16 @@ private:
     Data::EventResults m_eventData;
     QString m_perfCommand;
 
-    void perfRecord(const QStringList &perfOptions, const QString &exePath, const QStringList &exeOptions, const QString &fileName)
+    void perfRecord(const QStringList& perfOptions, const QString& exePath, const QStringList& exeOptions,
+                    const QString& fileName)
     {
         PerfRecord perf(this);
         QSignalSpy recordingFinishedSpy(&perf, &PerfRecord::recordingFinished);
         QSignalSpy recordingFailedSpy(&perf, &PerfRecord::recordingFailed);
 
         // always add `-c 1000000`, as perf's frequency mode is too unreliable for testing purposes
-        perf.record(perfOptions + QStringList{QStringLiteral("-c"), QStringLiteral("1000000")},
-                    fileName, false, exePath, exeOptions);
+        perf.record(perfOptions + QStringList{QStringLiteral("-c"), QStringLiteral("1000000")}, fileName, false,
+                    exePath, exeOptions);
 
         VERIFY_OR_THROW(recordingFinishedSpy.wait(10000));
 
@@ -539,8 +554,8 @@ private:
         }
     }
 
-    void testPerfData(const Data::Symbol &topBottomUpSymbol, const Data::Symbol &topTopDownSymbol, const QString &fileName,
-                      bool checkFrequency = true)
+    void testPerfData(const Data::Symbol& topBottomUpSymbol, const Data::Symbol& topTopDownSymbol,
+                      const QString& fileName, bool checkFrequency = true)
     {
         PerfParser parser(this);
 
@@ -589,8 +604,10 @@ private:
 
         if (topBottomUpSymbol.isValid()) {
             int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData);
-            VERIFY_OR_THROW(m_bottomUpData.root.children[bottomUpTopIndex].symbol.symbol.contains(topBottomUpSymbol.symbol));
-            VERIFY_OR_THROW(m_bottomUpData.root.children[bottomUpTopIndex].symbol.binary.contains(topBottomUpSymbol.binary));
+            VERIFY_OR_THROW(
+                m_bottomUpData.root.children[bottomUpTopIndex].symbol.symbol.contains(topBottomUpSymbol.symbol));
+            VERIFY_OR_THROW(
+                m_bottomUpData.root.children[bottomUpTopIndex].symbol.binary.contains(topBottomUpSymbol.binary));
         }
 
         // Verify the top Top-Down symbol result contains the expected data
@@ -602,10 +619,11 @@ private:
         if (topTopDownSymbol.isValid()) {
             int topDownTopIndex = maxElementTopIndex(m_topDownData);
             if (QTest::currentTestFunction() != QLatin1String("testCppRecursionCallGraphDwarf")
-                || m_topDownData.root.children[topDownTopIndex].symbol.isValid())
-            {
-                VERIFY_OR_THROW(m_topDownData.root.children[topDownTopIndex].symbol.symbol.contains(topTopDownSymbol.symbol));
-                VERIFY_OR_THROW(m_topDownData.root.children[topDownTopIndex].symbol.binary.contains(topTopDownSymbol.binary));
+                || m_topDownData.root.children[topDownTopIndex].symbol.isValid()) {
+                VERIFY_OR_THROW(
+                    m_topDownData.root.children[topDownTopIndex].symbol.symbol.contains(topTopDownSymbol.symbol));
+                VERIFY_OR_THROW(
+                    m_topDownData.root.children[topDownTopIndex].symbol.binary.contains(topTopDownSymbol.binary));
             }
         }
 
@@ -616,7 +634,7 @@ private:
         VERIFY_OR_THROW(m_callerCalleeData.entries.count() > 0);
 
         // Verify that no individual cost in the Caller/Callee data is greater than the total cost of all samples
-        for (const auto &entry : m_callerCalleeData.entries) {
+        for (const auto& entry : m_callerCalleeData.entries) {
             VERIFY_OR_THROW(m_callerCalleeData.inclusiveCosts.cost(0, entry.id) <= m_summaryData.costs[0].totalPeriod);
         }
 

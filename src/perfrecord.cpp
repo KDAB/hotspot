@@ -28,12 +28,12 @@
 #include "perfrecord.h"
 
 #include <QDebug>
+#include <QDir>
 #include <QFileInfo>
 #include <QProcess>
-#include <QDir>
 #include <QStandardPaths>
-#include <QTimer>
 #include <QTemporaryFile>
+#include <QTimer>
 
 #include <csignal>
 
@@ -75,8 +75,8 @@ static QStringList sudoOptions(const QString& sudoBinary)
     return options;
 }
 
-void PerfRecord::startRecording(bool elevatePrivileges, const QStringList &perfOptions, const QString &outputPath,
-                                const QStringList &recordOptions, const QString &workingDirectory)
+void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
+                                const QStringList& recordOptions, const QString& workingDirectory)
 {
     if (elevatePrivileges) {
         // elevate privileges temporarily as root
@@ -108,27 +108,27 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList &perfO
 
         // I/O redirection of client scripts launched by kdesu & friends doesn't work, i.e. no data can be read...
         // so instead we use a temporary file and parse its contents via a polling timer :-/
-        auto *outputFile = new QTemporaryFile(m_elevatePrivilegesProcess);
+        auto* outputFile = new QTemporaryFile(m_elevatePrivilegesProcess);
         outputFile->open();
         options.append(outputFile->fileName());
 
-        connect(this, &PerfRecord::recordingStarted,
-                m_elevatePrivilegesProcess.data(), [this] {
-                    QTimer::singleShot(1000, m_elevatePrivilegesProcess, [this]() {
-                        emit recordingOutput(QStringLiteral("\nrestoring privileges...\n"));
-                        m_elevatePrivilegesProcess->terminate();
-                    });
-                });
-        connect(m_elevatePrivilegesProcess.data(), &QProcess::errorOccurred,
-                m_elevatePrivilegesProcess.data(), [this] (QProcess::ProcessError /*error*/) {
+        connect(this, &PerfRecord::recordingStarted, m_elevatePrivilegesProcess.data(), [this] {
+            QTimer::singleShot(1000, m_elevatePrivilegesProcess, [this]() {
+                emit recordingOutput(QStringLiteral("\nrestoring privileges...\n"));
+                m_elevatePrivilegesProcess->terminate();
+            });
+        });
+        connect(m_elevatePrivilegesProcess.data(), &QProcess::errorOccurred, m_elevatePrivilegesProcess.data(),
+                [this](QProcess::ProcessError /*error*/) {
                     if (!m_perfRecordProcess) {
-                        emit recordingFailed(tr("Failed to elevate privileges: %1").arg(m_elevatePrivilegesProcess->errorString()));
+                        emit recordingFailed(
+                            tr("Failed to elevate privileges: %1").arg(m_elevatePrivilegesProcess->errorString()));
                         m_elevatePrivilegesProcess->deleteLater();
                     }
                 });
         // poll the file for new input, readyRead isn't being emitted by QFile (cf. docs)
-        auto *readTimer = new QTimer(outputFile);
-        auto readSlot = [this, outputFile, perfOptions, outputPath, recordOptions, workingDirectory] () {
+        auto* readTimer = new QTimer(outputFile);
+        auto readSlot = [this, outputFile, perfOptions, outputPath, recordOptions, workingDirectory]() {
             const auto data = outputFile->readAll();
             if (data.isEmpty()) {
                 return;
@@ -144,11 +144,11 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList &perfO
                 emit recordingOutput(QString::fromUtf8(data));
             }
         };
-        connect(readTimer, &QTimer::timeout,
-                this, readSlot);
-        connect(m_elevatePrivilegesProcess.data(), &QProcess::started,
-                readTimer, [readTimer]{ readTimer->start(250); });
-        connect(m_elevatePrivilegesProcess.data(), static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+        connect(readTimer, &QTimer::timeout, this, readSlot);
+        connect(m_elevatePrivilegesProcess.data(), &QProcess::started, readTimer,
+                [readTimer] { readTimer->start(250); });
+        connect(m_elevatePrivilegesProcess.data(),
+                static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
                 m_elevatePrivilegesProcess.data(), [this, readSlot] {
                     // read remaining data
                     readSlot();
@@ -162,8 +162,8 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList &perfO
     }
 }
 
-void PerfRecord::startRecording(const QStringList &perfOptions, const QString &outputPath,
-                                const QStringList &recordOptions, const QString &workingDirectory)
+void PerfRecord::startRecording(const QStringList& perfOptions, const QString& outputPath,
+                                const QStringList& recordOptions, const QString& workingDirectory)
 {
     // Reset perf record process to avoid getting signals from old processes
     if (m_perfRecordProcess) {
@@ -190,12 +190,12 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
     }
 
     connect(m_perfRecordProcess.data(), static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-            this, [this] (int exitCode, QProcess::ExitStatus exitStatus) {
+            this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
                 Q_UNUSED(exitStatus)
 
                 QFileInfo outputFileInfo(m_outputPath);
-                if ((exitCode == EXIT_SUCCESS || (exitCode == SIGTERM && m_userTerminated)
-                     || outputFileInfo.size() > 0) && outputFileInfo.exists()) {
+                if ((exitCode == EXIT_SUCCESS || (exitCode == SIGTERM && m_userTerminated) || outputFileInfo.size() > 0)
+                    && outputFileInfo.exists()) {
                     emit recordingFinished(m_outputPath);
                 } else {
                     emit recordingFailed(tr("Failed to record perf data, error code %1.").arg(exitCode));
@@ -203,19 +203,17 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
                 m_userTerminated = false;
             });
 
-    connect(m_perfRecordProcess.data(), &QProcess::errorOccurred,
-            this, [this] (QProcess::ProcessError error) {
-                Q_UNUSED(error)
-                if (!m_userTerminated) {
-                    emit recordingFailed(m_perfRecordProcess->errorString());
-                }
-            });
+    connect(m_perfRecordProcess.data(), &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
+        Q_UNUSED(error)
+        if (!m_userTerminated) {
+            emit recordingFailed(m_perfRecordProcess->errorString());
+        }
+    });
 
-    connect(m_perfRecordProcess.data(), &QProcess::readyRead,
-            this, [this] () {
-                QString output = QString::fromUtf8(m_perfRecordProcess->readAll());
-                emit recordingOutput(output);
-            });
+    connect(m_perfRecordProcess.data(), &QProcess::readyRead, this, [this]() {
+        QString output = QString::fromUtf8(m_perfRecordProcess->readAll());
+        emit recordingOutput(output);
+    });
 
     m_outputPath = outputPath;
     auto perfBinary = QStringLiteral("perf");
@@ -224,20 +222,17 @@ void PerfRecord::startRecording(const QStringList &perfOptions, const QString &o
         m_perfRecordProcess->setWorkingDirectory(workingDirectory);
     }
 
-    QStringList perfCommand =  {
-        QStringLiteral("record"),
-        QStringLiteral("-o"),
-        m_outputPath
-    };
+    QStringList perfCommand = {QStringLiteral("record"), QStringLiteral("-o"), m_outputPath};
     perfCommand += perfOptions;
     perfCommand += recordOptions;
 
-    connect(m_perfRecordProcess.data(), &QProcess::started,
-            this, [this, perfBinary, perfCommand] { emit recordingStarted(perfBinary, perfCommand); });
+    connect(m_perfRecordProcess.data(), &QProcess::started, this,
+            [this, perfBinary, perfCommand] { emit recordingStarted(perfBinary, perfCommand); });
     m_perfRecordProcess->start(perfBinary, perfCommand);
 }
 
-void PerfRecord::record(const QStringList &perfOptions, const QString &outputPath, bool elevatePrivileges, const QStringList &pids)
+void PerfRecord::record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
+                        const QStringList& pids)
 {
     if (pids.empty()) {
         emit recordingFailed(tr("Process does not exist."));
@@ -249,8 +244,8 @@ void PerfRecord::record(const QStringList &perfOptions, const QString &outputPat
     startRecording(elevatePrivileges, options, outputPath, {});
 }
 
-void PerfRecord::record(const QStringList &perfOptions, const QString &outputPath, bool elevatePrivileges,
-                        const QString &exePath, const QStringList &exeOptions, const QString &workingDirectory)
+void PerfRecord::record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
+                        const QString& exePath, const QStringList& exeOptions, const QString& workingDirectory)
 {
     QFileInfo exeFileInfo(exePath);
 
@@ -271,7 +266,7 @@ void PerfRecord::record(const QStringList &perfOptions, const QString &outputPat
         return;
     }
 
-    QStringList recordOptions =  { exeFileInfo.absoluteFilePath() };
+    QStringList recordOptions = {exeFileInfo.absoluteFilePath()};
     recordOptions += exeOptions;
 
     startRecording(elevatePrivileges, perfOptions, outputPath, recordOptions, workingDirectory);
@@ -313,8 +308,7 @@ void PerfRecord::sendInput(const QByteArray& input)
 QString PerfRecord::sudoUtil()
 {
     const auto commands = {
-        QStringLiteral("kdesudo"),
-        QStringLiteral("kdesu"),
+        QStringLiteral("kdesudo"), QStringLiteral("kdesu"),
         // gksudo / gksu seem to close stdin and thus the elevate script doesn't wait on read
     };
     for (const auto& cmd : commands) {
@@ -338,18 +332,14 @@ bool PerfRecord::canTrace(const QString& path)
         return false;
     }
     QFile paranoid(QStringLiteral("/proc/sys/kernel/perf_event_paranoid"));
-    return paranoid.open(QIODevice::ReadOnly)
-        && paranoid.readAll().trimmed() == "-1";
+    return paranoid.open(QIODevice::ReadOnly) && paranoid.readAll().trimmed() == "-1";
 }
 
 static QByteArray perfRecordHelp()
 {
     static const QByteArray recordHelp = []() {
         QProcess testProcess;
-        testProcess.start(QStringLiteral("perf"), {
-            QStringLiteral("record"),
-            QStringLiteral("--help")
-        });
+        testProcess.start(QStringLiteral("perf"), {QStringLiteral("record"), QStringLiteral("--help")});
         testProcess.waitForFinished(1000);
         return testProcess.readAllStandardOutput();
     }();
@@ -363,11 +353,7 @@ bool PerfRecord::canProfileOffCpu()
 
 QStringList PerfRecord::offCpuProfilingOptions()
 {
-    return {
-        QStringLiteral("--switch-events"),
-        QStringLiteral("--event"),
-        QStringLiteral("sched:sched_switch")
-    };
+    return {QStringLiteral("--switch-events"), QStringLiteral("--event"), QStringLiteral("sched:sched_switch")};
 }
 
 bool PerfRecord::canSampleCpu()

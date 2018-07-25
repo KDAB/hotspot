@@ -27,8 +27,8 @@
 
 #pragma once
 
-#include <QVector>
 #include <QAbstractItemModel>
+#include <QVector>
 
 #include "data.h"
 #include "hashmodel.h"
@@ -42,16 +42,19 @@ public:
 
     void setResults(const Data::CallerCalleeResults& results);
 
-    enum Columns {
+    enum Columns
+    {
         Symbol = 0,
         Binary,
     };
-    enum {
+    enum
+    {
         NUM_BASE_COLUMNS = Binary + 1,
         InitialSortColumn = Binary + 1 // the first cost column
     };
 
-    enum Roles {
+    enum Roles
+    {
         SortRole = Qt::UserRole,
         TotalCostRole,
         FilterRole,
@@ -90,16 +93,19 @@ public:
         HashModel<Data::SymbolCostMap, ModelImpl>::setRows(map);
     }
 
-    enum Columns {
+    enum Columns
+    {
         Symbol = 0,
         Binary,
     };
-    enum {
+    enum
+    {
         NUM_BASE_COLUMNS = Binary + 1,
         InitialSortColumn = Binary + 1 // the first cost column
     };
 
-    enum Roles {
+    enum Roles
+    {
         SortRole = Qt::UserRole,
         TotalCostRole,
         FilterRole,
@@ -112,34 +118,36 @@ public:
             return Qt::DescendingOrder;
         } else if (role == Qt::DisplayRole) {
             switch (column) {
-                case Symbol:
-                    return symbolHeader();
-                case Binary:
-                    return ModelImpl::tr("Binary");
+            case Symbol:
+                return symbolHeader();
+            case Binary:
+                return ModelImpl::tr("Binary");
             }
             return m_costs.typeName(column - NUM_BASE_COLUMNS);
         } else if (role == Qt::ToolTipRole) {
             switch (column) {
-                case Symbol:
-                    return ModelImpl::tr("The function name of the %1. May be empty when debug information is missing.").arg(symbolHeader());
-                case Binary:
-                    return ModelImpl::tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
+            case Symbol:
+                return ModelImpl::tr("The function name of the %1. May be empty when debug information is missing.")
+                    .arg(symbolHeader());
+            case Binary:
+                return ModelImpl::tr("The name of the executable the symbol resides in. May be empty when debug "
+                                     "information is missing.");
             }
-            return ModelImpl::tr("The symbol's inclusive cost, i.e. the aggregated sample costs attributed to this symbol, both directly and indirectly.");
+            return ModelImpl::tr("The symbol's inclusive cost, i.e. the aggregated sample costs attributed to this "
+                                 "symbol, both directly and indirectly.");
         }
 
         return {};
     }
 
-    QVariant cell(int column, int role, const Data::Symbol& symbol,
-                  const Data::ItemCost& costs) const final override
+    QVariant cell(int column, int role, const Data::Symbol& symbol, const Data::ItemCost& costs) const final override
     {
         if (role == SortRole) {
             switch (column) {
-                case Symbol:
-                    return symbol.symbol;
-                case Binary:
-                    return symbol.binary;
+            case Symbol:
+                return symbol.symbol;
+            case Binary:
+                return symbol.binary;
             }
             return costs[column - NUM_BASE_COLUMNS];
         } else if (role == TotalCostRole && column >= NUM_BASE_COLUMNS) {
@@ -149,10 +157,10 @@ public:
             return QString(symbol.symbol + symbol.binary);
         } else if (role == Qt::DisplayRole) {
             switch (column) {
-                case Symbol:
-                    return symbol.symbol.isEmpty() ? ModelImpl::tr("??") : symbol.symbol;
-                case Binary:
-                    return symbol.binary;
+            case Symbol:
+                return symbol.symbol.isEmpty() ? ModelImpl::tr("??") : symbol.symbol;
+            case Binary:
+                return symbol.binary;
             }
             return Util::formatCostRelative(costs[column - NUM_BASE_COLUMNS],
                                             m_costs.totalCost(column - NUM_BASE_COLUMNS), true);
@@ -213,15 +221,18 @@ public:
         HashModel<Data::LocationCostMap, ModelImpl>::setRows(map);
     }
 
-    enum Columns {
+    enum Columns
+    {
         Location = 0,
     };
-    enum {
+    enum
+    {
         NUM_BASE_COLUMNS = Location + 1,
         InitialSortColumn = Location + 1 // the first cost column
     };
 
-    enum Roles {
+    enum Roles
+    {
         SortRole = Qt::UserRole,
         TotalCostRole,
         FilterRole,
@@ -244,21 +255,22 @@ public:
             return ModelImpl::tr("%1 (incl.)").arg(m_totalCosts.typeName(column));
         } else if (role == Qt::ToolTipRole) {
             if (column == Location) {
-                return ModelImpl::tr("The source file name and line number where the cost was measured. May be empty when debug information is missing.");
+                return ModelImpl::tr("The source file name and line number where the cost was measured. May be empty "
+                                     "when debug information is missing.");
             }
             column -= NUM_BASE_COLUMNS;
             if (column < m_totalCosts.numTypes()) {
                 return ModelImpl::tr("The aggregated sample costs directly attributed to this code location.");
             }
-            return ModelImpl::tr("The aggregated sample costs attributed to this code location, both directly and indirectly."
-                                 " This includes the costs of all functions called from this location plus its self cost.");
+            return ModelImpl::tr(
+                "The aggregated sample costs attributed to this code location, both directly and indirectly."
+                " This includes the costs of all functions called from this location plus its self cost.");
         }
 
         return {};
     }
 
-    QVariant cell(int column, int role, const QString& location,
-                  const Data::LocationCost& costs) const final override
+    QVariant cell(int column, int role, const QString& location, const Data::LocationCost& costs) const final override
     {
         if (role == SortRole) {
             if (column == Location) {
@@ -289,14 +301,10 @@ public:
             }
             column -= NUM_BASE_COLUMNS;
             if (column < m_totalCosts.numTypes()) {
-                return Util::formatCostRelative(costs.selfCost[column],
-                                                m_totalCosts.totalCost(column),
-                                                true);
+                return Util::formatCostRelative(costs.selfCost[column], m_totalCosts.totalCost(column), true);
             }
             column -= m_totalCosts.numTypes();
-            return Util::formatCostRelative(costs.inclusiveCost[column],
-                                            m_totalCosts.totalCost(column),
-                                            true);
+            return Util::formatCostRelative(costs.inclusiveCost[column], m_totalCosts.totalCost(column), true);
         } else if (role == LocationRole) {
             return QVariant::fromValue(location);
         } else if (role == Qt::ToolTipRole) {

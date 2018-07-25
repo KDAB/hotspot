@@ -48,7 +48,7 @@ class ResultsPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsPage(PerfParser *parser, QWidget *parent = nullptr);
+    explicit ResultsPage(PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsPage();
 
     void setSysroot(const QString& path);
@@ -57,11 +57,11 @@ public:
     void selectSummaryTab();
 
 public slots:
-    void onNavigateToCode(const QString &url, int lineNumber, int columnNumber);
-    void onJumpToCallerCallee(const Data::Symbol &symbol);
+    void onNavigateToCode(const QString& url, int lineNumber, int columnNumber);
+    void onJumpToCallerCallee(const Data::Symbol& symbol);
 
 signals:
-    void navigateToCode(const QString &url, int lineNumber, int columnNumber);
+    void navigateToCode(const QString& url, int lineNumber, int columnNumber);
 
 private:
     bool eventFilter(QObject* watched, QEvent* event) override;

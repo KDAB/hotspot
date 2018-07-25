@@ -62,48 +62,47 @@ int main(int argc, char** argv)
     parser.addVersionOption();
 
     QCommandLineOption sysroot(QLatin1String("sysroot"),
-                               QCoreApplication::translate(
-                                   "main", "Path to sysroot which is used to find libraries."),
+                               QCoreApplication::translate("main", "Path to sysroot which is used to find libraries."),
                                QLatin1String("path"));
     parser.addOption(sysroot);
 
-    QCommandLineOption kallsyms(QLatin1String("kallsyms"),
-                               QCoreApplication::translate(
-                                   "main", "Path to kallsyms file which is used to resolve kernel symbols."),
-                               QLatin1String("path"));
+    QCommandLineOption kallsyms(
+        QLatin1String("kallsyms"),
+        QCoreApplication::translate("main", "Path to kallsyms file which is used to resolve kernel symbols."),
+        QLatin1String("path"));
     parser.addOption(kallsyms);
 
-    QCommandLineOption debugPaths(QLatin1String("debugPaths"),
-                               QCoreApplication::translate(
-                                   "main", "Colon separated list of paths that contain debug information."),
-                               QLatin1String("paths"));
+    QCommandLineOption debugPaths(
+        QLatin1String("debugPaths"),
+        QCoreApplication::translate("main", "Colon separated list of paths that contain debug information."),
+        QLatin1String("paths"));
     parser.addOption(debugPaths);
 
-    QCommandLineOption extraLibPaths(QLatin1String("extraLibPaths"),
-                               QCoreApplication::translate(
-                                   "main", "Colon separated list of extra paths to find libraries."),
-                               QLatin1String("paths"));
+    QCommandLineOption extraLibPaths(
+        QLatin1String("extraLibPaths"),
+        QCoreApplication::translate("main", "Colon separated list of extra paths to find libraries."),
+        QLatin1String("paths"));
     parser.addOption(extraLibPaths);
 
-    QCommandLineOption appPath(QLatin1String("appPath"),
-                               QCoreApplication::translate(
-                                   "main", "Path to folder containing the application executable and libraries."),
-                               QLatin1String("path"));
+    QCommandLineOption appPath(
+        QLatin1String("appPath"),
+        QCoreApplication::translate("main", "Path to folder containing the application executable and libraries."),
+        QLatin1String("path"));
     parser.addOption(appPath);
 
     QCommandLineOption arch(QLatin1String("arch"),
-                               QCoreApplication::translate(
-                                   "main", "Architecture to use for unwinding."),
-                               QLatin1String("path"));
+                            QCoreApplication::translate("main", "Architecture to use for unwinding."),
+                            QLatin1String("path"));
     parser.addOption(arch);
 
-    parser.addPositionalArgument(QStringLiteral("files"),
+    parser.addPositionalArgument(
+        QStringLiteral("files"),
         QCoreApplication::translate("main", "Optional input files to open on startup, i.e. perf.data files."),
-                                 QStringLiteral("[files...]"));
+        QStringLiteral("[files...]"));
 
     parser.process(app);
 
-    auto applyCliArgs = [&] (MainWindow *window) {
+    auto applyCliArgs = [&](MainWindow* window) {
         if (parser.isSet(sysroot)) {
             window->setSysroot(parser.value(sysroot));
         }

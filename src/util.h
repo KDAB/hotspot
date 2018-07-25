@@ -27,9 +27,9 @@
 
 #pragma once
 
-#include <QtGlobal>
-#include <QHashFunctions>
 #include <valarray>
+#include <QHashFunctions>
+#include <QtGlobal>
 
 class QString;
 
@@ -48,12 +48,15 @@ namespace Util {
 QString findLibexecBinary(const QString& name);
 
 // HashCombine was taken from Qt's file qhashfunctions.h
-struct HashCombine {
+struct HashCombine
+{
     typedef uint result_type;
-    template <typename T>
-    Q_DECL_CONSTEXPR result_type operator()(uint seed, const T &t) const Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
+    template<typename T>
+    Q_DECL_CONSTEXPR result_type operator()(uint seed, const T& t) const Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
     // combiner taken from N3876 / boost::hash_combine
-    { return seed ^ (qHash(t) + 0x9e3779b9 + (seed << 6) + (seed >> 2)) ; }
+    {
+        return seed ^ (qHash(t) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
+    }
 };
 
 QString formatString(const QString& input);
@@ -61,13 +64,9 @@ QString formatCost(quint64 cost);
 QString formatCostRelative(quint64 selfCost, quint64 totalCost, bool addPercentSign = false);
 QString formatTimeString(quint64 nanoseconds, bool shortForm = false);
 QString formatFrequency(quint64 occurrences, quint64 nanoseconds);
-QString formatTooltip(int id, const Data::Symbol& symbol,
-                      const Data::Costs& costs);
-QString formatTooltip(int id, const Data::Symbol& symbol,
-                      const Data::Costs& selfCosts, const Data::Costs& inclusiveCosts);
-QString formatTooltip(const Data::Symbol& symbol, const Data::ItemCost& itemCost,
-                      const Data::Costs& totalCosts);
-QString formatTooltip(const QString& location,
-                      const Data::LocationCost& cost,
-                      const Data::Costs& totalCosts);
+QString formatTooltip(int id, const Data::Symbol& symbol, const Data::Costs& costs);
+QString formatTooltip(int id, const Data::Symbol& symbol, const Data::Costs& selfCosts,
+                      const Data::Costs& inclusiveCosts);
+QString formatTooltip(const Data::Symbol& symbol, const Data::ItemCost& itemCost, const Data::Costs& totalCosts);
+QString formatTooltip(const QString& location, const Data::LocationCost& cost, const Data::Costs& totalCosts);
 }

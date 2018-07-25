@@ -47,20 +47,20 @@ class ResultsCallerCalleePage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsCallerCalleePage(PerfParser *parser, QWidget *parent = nullptr);
+    explicit ResultsCallerCalleePage(PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsCallerCalleePage();
 
     void setSysroot(const QString& path);
     void setAppPath(const QString& path);
 
-    void jumpToCallerCallee(const Data::Symbol &symbol);
+    void jumpToCallerCallee(const Data::Symbol& symbol);
 
 private slots:
     void onSourceMapContextMenu(const QPoint& pos);
     void onSourceMapActivated(const QModelIndex& index);
 
 signals:
-    void navigateToCode(const QString &url, int lineNumber, int columnNumber);
+    void navigateToCode(const QString& url, int lineNumber, int columnNumber);
 
 private:
     struct SourceMapLocation

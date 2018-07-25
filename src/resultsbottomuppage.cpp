@@ -35,28 +35,28 @@
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
 
-#include "models/hashmodel.h"
 #include "models/costdelegate.h"
-#include "models/treemodel.h"
+#include "models/hashmodel.h"
 #include "models/topproxy.h"
+#include "models/treemodel.h"
 
-ResultsBottomUpPage::ResultsBottomUpPage(PerfParser *parser, QWidget *parent)
+ResultsBottomUpPage::ResultsBottomUpPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsBottomUpPage)
 {
     ui->setupUi(this);
 
     auto bottomUpCostModel = new BottomUpModel(this);
-    ResultsUtil::setupTreeView(ui->bottomUpTreeView,  ui->bottomUpSearch, bottomUpCostModel);
+    ResultsUtil::setupTreeView(ui->bottomUpTreeView, ui->bottomUpSearch, bottomUpCostModel);
     ResultsUtil::setupCostDelegate(bottomUpCostModel, ui->bottomUpTreeView);
     ResultsUtil::setupContextMenu(ui->bottomUpTreeView, bottomUpCostModel,
-                                  [this] (const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
+                                  [this](const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
 
     auto topHotspotsProxy = new TopProxy(this);
     topHotspotsProxy->setSourceModel(bottomUpCostModel);
 
-    connect(parser, &PerfParser::bottomUpDataAvailable,
-            this, [this, bottomUpCostModel] (const Data::BottomUpResults& data) {
+    connect(parser, &PerfParser::bottomUpDataAvailable, this,
+            [this, bottomUpCostModel](const Data::BottomUpResults& data) {
                 bottomUpCostModel->setData(data);
                 ResultsUtil::hideEmptyColumns(data.costs, ui->bottomUpTreeView, BottomUpModel::NUM_BASE_COLUMNS);
             });

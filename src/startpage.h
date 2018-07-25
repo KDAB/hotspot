@@ -39,20 +39,20 @@ class StartPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit StartPage(QWidget *parent = nullptr);
+    explicit StartPage(QWidget* parent = nullptr);
     ~StartPage();
 
     void showStartPage();
     void showParseFileProgress();
 
-    void setPathSettingsMenu(QMenu *menu);
+    void setPathSettingsMenu(QMenu* menu);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
     void changeEvent(QEvent* event) override;
 
 public slots:
-    void onOpenFileError(const QString &errorMessage);
+    void onOpenFileError(const QString& errorMessage);
     void onParseFileProgress(float percent);
 
 signals:

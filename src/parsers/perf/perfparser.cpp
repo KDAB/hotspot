@@ -27,14 +27,14 @@
 
 #include "perfparser.h"
 
-#include <QProcess>
-#include <QDebug>
-#include <QtEndian>
 #include <QBuffer>
 #include <QDataStream>
+#include <QDebug>
+#include <QEventLoop>
 #include <QFileInfo>
 #include <QLoggingCategory>
-#include <QEventLoop>
+#include <QProcess>
+#include <QtEndian>
 
 #include <ThreadWeaver/ThreadWeaver>
 
@@ -62,11 +62,10 @@ QDataStream& operator>>(QDataStream& stream, Record& record)
 QDebug operator<<(QDebug stream, const Record& record)
 {
     stream.noquote().nospace() << "Record{"
-        << "pid=" << record.pid << ", "
-        << "tid=" << record.tid << ", "
-        << "time=" << record.time << ", "
-        << "cpu=" << record.cpu
-        << "}";
+                               << "pid=" << record.pid << ", "
+                               << "tid=" << record.tid << ", "
+                               << "time=" << record.time << ", "
+                               << "cpu=" << record.cpu << "}";
     return stream;
 }
 
@@ -83,8 +82,7 @@ QDataStream& operator>>(QDataStream& stream, StringId& stringId)
 QDebug operator<<(QDebug stream, const StringId& stringId)
 {
     stream.noquote().nospace() << "String{"
-        << "id=" << stringId.id
-        << "}";
+                               << "id=" << stringId.id << "}";
     return stream;
 }
 
@@ -100,24 +98,19 @@ struct AttributesDefinition
 
 QDataStream& operator>>(QDataStream& stream, AttributesDefinition& attributesDefinition)
 {
-    return stream >> attributesDefinition.id
-                  >> attributesDefinition.type
-                  >> attributesDefinition.config
-                  >> attributesDefinition.name
-                  >> attributesDefinition.usesFrequency
-                  >> attributesDefinition.frequencyOrPeriod;
+    return stream >> attributesDefinition.id >> attributesDefinition.type >> attributesDefinition.config
+        >> attributesDefinition.name >> attributesDefinition.usesFrequency >> attributesDefinition.frequencyOrPeriod;
 }
 
 QDebug operator<<(QDebug stream, const AttributesDefinition& attributesDefinition)
 {
     stream.noquote().nospace() << "AttributesDefinition{"
-        << "id=" << attributesDefinition.id << ", "
-        << "type=" << attributesDefinition.type << ", "
-        << "config=" << attributesDefinition.config << ", "
-        << "name=" << attributesDefinition.name << ", "
-        << "usesFrequency=" << attributesDefinition.usesFrequency << ", "
-        << "frequencyOrPeriod=" << attributesDefinition.frequencyOrPeriod
-        << "}";
+                               << "id=" << attributesDefinition.id << ", "
+                               << "type=" << attributesDefinition.type << ", "
+                               << "config=" << attributesDefinition.config << ", "
+                               << "name=" << attributesDefinition.name << ", "
+                               << "usesFrequency=" << attributesDefinition.usesFrequency << ", "
+                               << "frequencyOrPeriod=" << attributesDefinition.frequencyOrPeriod << "}";
     return stream;
 }
 
@@ -133,10 +126,8 @@ QDataStream& operator>>(QDataStream& stream, Command& command)
 
 QDebug operator<<(QDebug stream, const Command& command)
 {
-    stream.noquote().nospace() << "Command{"
-        << static_cast<const Record&>(command) << ", "
-        << "comm=" << command.comm
-        << "}";
+    stream.noquote().nospace() << "Command{" << static_cast<const Record&>(command) << ", "
+                               << "comm=" << command.comm << "}";
     return stream;
 }
 
@@ -151,9 +142,7 @@ QDataStream& operator>>(QDataStream& stream, ThreadStart& threadStart)
 
 QDebug operator<<(QDebug stream, const ThreadStart& threadStart)
 {
-    stream.noquote().nospace() << "ThreadStart{"
-        << static_cast<const Record&>(threadStart)
-        << "}";
+    stream.noquote().nospace() << "ThreadStart{" << static_cast<const Record&>(threadStart) << "}";
     return stream;
 }
 
@@ -168,9 +157,7 @@ QDataStream& operator>>(QDataStream& stream, ThreadEnd& threadEnd)
 
 QDebug operator<<(QDebug stream, const ThreadEnd& threadEnd)
 {
-    stream.noquote().nospace() << "ThreadEnd{"
-        << static_cast<const Record&>(threadEnd)
-        << "}";
+    stream.noquote().nospace() << "ThreadEnd{" << static_cast<const Record&>(threadEnd) << "}";
     return stream;
 }
 
@@ -186,21 +173,19 @@ struct Location
 
 QDataStream& operator>>(QDataStream& stream, Location& location)
 {
-    return stream >> location.address >> location.file
-        >> location.pid >> location.line
-        >> location.column >> location.parentLocationId;
+    return stream >> location.address >> location.file >> location.pid >> location.line >> location.column
+        >> location.parentLocationId;
 }
 
 QDebug operator<<(QDebug stream, const Location& location)
 {
     stream.noquote().nospace() << "Location{"
-        << "address=0x" << hex << location.address << dec << ", "
-        << "file=" << location.file << ", "
-        << "pid=" << location.pid << ", "
-        << "line=" << location.line << ", "
-        << "column=" << location.column << ", "
-        << "parentLocationId=" << location.parentLocationId
-        << "}";
+                               << "address=0x" << hex << location.address << dec << ", "
+                               << "file=" << location.file << ", "
+                               << "pid=" << location.pid << ", "
+                               << "line=" << location.line << ", "
+                               << "column=" << location.column << ", "
+                               << "parentLocationId=" << location.parentLocationId << "}";
     return stream;
 }
 
@@ -218,9 +203,8 @@ QDataStream& operator>>(QDataStream& stream, LocationDefinition& locationDefinit
 QDebug operator<<(QDebug stream, const LocationDefinition& locationDefinition)
 {
     stream.noquote().nospace() << "LocationDefinition{"
-        << "id=" << locationDefinition.id << ", "
-        << "location=" << locationDefinition.location
-        << "}";
+                               << "id=" << locationDefinition.id << ", "
+                               << "location=" << locationDefinition.location << "}";
     return stream;
 }
 
@@ -240,11 +224,10 @@ QDataStream& operator>>(QDataStream& stream, Symbol& symbol)
 QDebug operator<<(QDebug stream, const Symbol& symbol)
 {
     stream.noquote().nospace() << "Symbol{"
-        << "name=" << symbol.name << ", "
-        << "binary=" << symbol.binary << ", "
-        << "path=" << symbol.path << ", "
-        << "isKernel=" << symbol.isKernel
-        << "}";
+                               << "name=" << symbol.name << ", "
+                               << "binary=" << symbol.binary << ", "
+                               << "path=" << symbol.path << ", "
+                               << "isKernel=" << symbol.isKernel << "}";
     return stream;
 }
 
@@ -262,9 +245,8 @@ QDataStream& operator>>(QDataStream& stream, SymbolDefinition& symbolDefinition)
 QDebug operator<<(QDebug stream, const SymbolDefinition& symbolDefinition)
 {
     stream.noquote().nospace() << "SymbolDefinition{"
-        << "id=" << symbolDefinition.id << ", "
-        << "symbol=" << symbolDefinition.symbol
-        << "}";
+                               << "id=" << symbolDefinition.id << ", "
+                               << "symbol=" << symbolDefinition.symbol << "}";
     return stream;
 }
 
@@ -282,9 +264,8 @@ QDataStream& operator>>(QDataStream& stream, SampleCost& sampleCost)
 QDebug operator<<(QDebug stream, const SampleCost& sampleCost)
 {
     stream.noquote().nospace() << "SampleCost{"
-        << "attributeId=" << sampleCost.attributeId << ", "
-        << "cost=" << sampleCost.cost
-        << "}";
+                               << "attributeId=" << sampleCost.attributeId << ", "
+                               << "cost=" << sampleCost.cost << "}";
     return stream;
 }
 
@@ -297,18 +278,15 @@ struct Sample : Record
 
 QDataStream& operator>>(QDataStream& stream, Sample& sample)
 {
-    return stream >> static_cast<Record&>(sample)
-        >> sample.frames >> sample.guessedFrames >> sample.costs;
+    return stream >> static_cast<Record&>(sample) >> sample.frames >> sample.guessedFrames >> sample.costs;
 }
 
 QDebug operator<<(QDebug stream, const Sample& sample)
 {
-    stream.noquote().nospace() << "Sample{"
-        << static_cast<const Record&>(sample) << ", "
-        << "frames=" << sample.frames << ", "
-        << "guessedFrames=" << sample.guessedFrames << ", "
-        << "costs=" << sample.costs
-        << "}";
+    stream.noquote().nospace() << "Sample{" << static_cast<const Record&>(sample) << ", "
+                               << "frames=" << sample.frames << ", "
+                               << "guessedFrames=" << sample.guessedFrames << ", "
+                               << "costs=" << sample.costs << "}";
     return stream;
 }
 
@@ -319,16 +297,13 @@ struct ContextSwitchDefinition : Record
 
 QDataStream& operator>>(QDataStream& stream, ContextSwitchDefinition& contextSwitch)
 {
-    return stream >> static_cast<Record&>(contextSwitch)
-        >> contextSwitch.switchOut;
+    return stream >> static_cast<Record&>(contextSwitch) >> contextSwitch.switchOut;
 }
 
 QDebug operator<<(QDebug stream, const ContextSwitchDefinition& contextSwitch)
 {
-    stream.noquote().nospace() << "ContextSwitchDefinition{"
-        << static_cast<const Record&>(contextSwitch) << ", "
-        << "switchOut=" << contextSwitch.switchOut
-        << "}";
+    stream.noquote().nospace() << "ContextSwitchDefinition{" << static_cast<const Record&>(contextSwitch) << ", "
+                               << "switchOut=" << contextSwitch.switchOut << "}";
     return stream.space();
 }
 
@@ -346,9 +321,8 @@ QDataStream& operator>>(QDataStream& stream, StringDefinition& stringDefinition)
 QDebug operator<<(QDebug stream, const StringDefinition& stringDefinition)
 {
     stream.noquote().nospace() << "StringDefinition{"
-        << "id=" << stringDefinition.id << ", "
-        << "string=" << stringDefinition.string
-        << "}";
+                               << "id=" << stringDefinition.id << ", "
+                               << "string=" << stringDefinition.string << "}";
     return stream;
 }
 
@@ -363,9 +337,7 @@ QDataStream& operator>>(QDataStream& stream, LostDefinition& lostDefinition)
 
 QDebug operator<<(QDebug stream, const LostDefinition& lostDefinition)
 {
-    stream.noquote().nospace() << "LostDefinition{"
-        << static_cast<const Record&>(lostDefinition)
-        << "}";
+    stream.noquote().nospace() << "LostDefinition{" << static_cast<const Record&>(lostDefinition) << "}";
     return stream;
 }
 
@@ -384,10 +356,9 @@ QDataStream& operator>>(QDataStream& stream, BuildId& buildId)
 QDebug operator<<(QDebug stream, const BuildId& buildId)
 {
     stream.noquote().nospace() << "BuildId{"
-        << "pid=" << buildId.pid << ", "
-        << "id=" << buildId.id.toHex() << ", "
-        << "fileName=" << buildId.fileName
-        << "}";
+                               << "pid=" << buildId.pid << ", "
+                               << "id=" << buildId.id.toHex() << ", "
+                               << "fileName=" << buildId.fileName << "}";
     return stream;
 }
 
@@ -401,18 +372,16 @@ struct NumaNode
 
 QDataStream& operator>>(QDataStream& stream, NumaNode& numaNode)
 {
-    return stream >> numaNode.nodeId >> numaNode.memTotal
-                  >> numaNode.memFree >> numaNode.topology;
+    return stream >> numaNode.nodeId >> numaNode.memTotal >> numaNode.memFree >> numaNode.topology;
 }
 
 QDebug operator<<(QDebug stream, const NumaNode& numaNode)
 {
     stream.noquote().nospace() << "NumaNode{"
-        << "nodeId=" << numaNode.nodeId << ", "
-        << "memTotal=" << numaNode.memTotal << ", "
-        << "memFree=" << numaNode.memFree << ", "
-        << "topology=" << numaNode.topology
-        << "}";
+                               << "nodeId=" << numaNode.nodeId << ", "
+                               << "memTotal=" << numaNode.memTotal << ", "
+                               << "memFree=" << numaNode.memFree << ", "
+                               << "topology=" << numaNode.topology << "}";
     return stream;
 }
 
@@ -430,9 +399,8 @@ QDataStream& operator>>(QDataStream& stream, Pmu& pmu)
 QDebug operator<<(QDebug stream, const Pmu& pmu)
 {
     stream.noquote().nospace() << "Pmu{"
-        << "type=" << pmu.type << ", "
-        << "name=" << pmu.name
-        << "}";
+                               << "type=" << pmu.type << ", "
+                               << "name=" << pmu.name << "}";
     return stream;
 }
 
@@ -445,17 +413,15 @@ struct GroupDesc
 
 QDataStream& operator>>(QDataStream& stream, GroupDesc& groupDesc)
 {
-    return stream >> groupDesc.name >> groupDesc.leaderIndex
-                  >> groupDesc.numMembers;
+    return stream >> groupDesc.name >> groupDesc.leaderIndex >> groupDesc.numMembers;
 }
 
 QDebug operator<<(QDebug stream, const GroupDesc& groupDesc)
 {
     stream.noquote().nospace() << "GroupDesc{"
-        << "name=" << groupDesc.name << ", "
-        << "leaderIndex=" << groupDesc.leaderIndex << ", "
-        << "numMembers=" << groupDesc.numMembers
-        << "}";
+                               << "name=" << groupDesc.name << ", "
+                               << "leaderIndex=" << groupDesc.leaderIndex << ", "
+                               << "numMembers=" << groupDesc.numMembers << "}";
     return stream;
 }
 
@@ -482,44 +448,41 @@ struct FeaturesDefinition
 
 QDataStream& operator>>(QDataStream& stream, FeaturesDefinition& featuresDefinition)
 {
-    stream >> featuresDefinition.hostName >> featuresDefinition.osRelease
-           >> featuresDefinition.version >> featuresDefinition.arch
-           >> featuresDefinition.nrCpusOnline >> featuresDefinition.nrCpusAvailable
-           >> featuresDefinition.cpuDesc >> featuresDefinition.cpuId
-           >> featuresDefinition.totalMem >> featuresDefinition.cmdline
-           >> featuresDefinition.buildIds
-           >> featuresDefinition.siblingCores >> featuresDefinition.siblingThreads
-           >> featuresDefinition.numaTopology >> featuresDefinition.pmuMappings
-           >> featuresDefinition.groupDescs;
+    stream >> featuresDefinition.hostName >> featuresDefinition.osRelease >> featuresDefinition.version
+        >> featuresDefinition.arch >> featuresDefinition.nrCpusOnline >> featuresDefinition.nrCpusAvailable
+        >> featuresDefinition.cpuDesc >> featuresDefinition.cpuId >> featuresDefinition.totalMem
+        >> featuresDefinition.cmdline >> featuresDefinition.buildIds >> featuresDefinition.siblingCores
+        >> featuresDefinition.siblingThreads >> featuresDefinition.numaTopology >> featuresDefinition.pmuMappings
+        >> featuresDefinition.groupDescs;
     return stream;
 }
 
 QDebug operator<<(QDebug stream, const FeaturesDefinition& featuresDefinition)
 {
     stream.noquote().nospace() << "FeaturesDefinition{"
-        << "hostName=" << featuresDefinition.hostName << ", "
-        << "osRelease=" << featuresDefinition.osRelease << ", "
-        << "version=" << featuresDefinition.version << ", "
-        << "arch=" << featuresDefinition.arch << ", "
-        << "nrCpusOnline=" << featuresDefinition.nrCpusOnline << ", "
-        << "nrCpusAvailable=" << featuresDefinition.nrCpusAvailable << ", "
-        << "cpuDesc=" << featuresDefinition.cpuDesc << ", "
-        << "cpuId=" << featuresDefinition.cpuId << ", "
-        << "totalMem=" << featuresDefinition.totalMem << ", "
-        << "cmdline=" << featuresDefinition.cmdline << ", "
-        << "buildIds=" << featuresDefinition.buildIds << ", "
-        << "siblingCores=" << featuresDefinition.siblingCores << ", "
-        << "siblingThreads=" << featuresDefinition.siblingThreads << ", "
-        << "numaTopology=" << featuresDefinition.numaTopology << ", "
-        << "pmuMappings=" << featuresDefinition.pmuMappings << ", "
-        << "groupDesc=" << featuresDefinition.groupDescs
-        << "}";
+                               << "hostName=" << featuresDefinition.hostName << ", "
+                               << "osRelease=" << featuresDefinition.osRelease << ", "
+                               << "version=" << featuresDefinition.version << ", "
+                               << "arch=" << featuresDefinition.arch << ", "
+                               << "nrCpusOnline=" << featuresDefinition.nrCpusOnline << ", "
+                               << "nrCpusAvailable=" << featuresDefinition.nrCpusAvailable << ", "
+                               << "cpuDesc=" << featuresDefinition.cpuDesc << ", "
+                               << "cpuId=" << featuresDefinition.cpuId << ", "
+                               << "totalMem=" << featuresDefinition.totalMem << ", "
+                               << "cmdline=" << featuresDefinition.cmdline << ", "
+                               << "buildIds=" << featuresDefinition.buildIds << ", "
+                               << "siblingCores=" << featuresDefinition.siblingCores << ", "
+                               << "siblingThreads=" << featuresDefinition.siblingThreads << ", "
+                               << "numaTopology=" << featuresDefinition.numaTopology << ", "
+                               << "pmuMappings=" << featuresDefinition.pmuMappings << ", "
+                               << "groupDesc=" << featuresDefinition.groupDescs << "}";
     return stream;
 }
 
 struct Error
 {
-    enum Code {
+    enum Code
+    {
         BrokenDataFile = 1,
         MissingElfFile = 2,
         InvalidKallsyms = 3,
@@ -544,15 +507,14 @@ QDataStream& operator>>(QDataStream& stream, Error& error)
 QDebug operator<<(QDebug stream, const Error& error)
 {
     stream.noquote().nospace() << "Error{"
-        << "code=" << error.code << ", "
-        << "message=" << error.message
-        << "}";
+                               << "code=" << error.code << ", "
+                               << "message=" << error.message << "}";
     return stream;
 }
 
-void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& location,
-                          int type, quint64 cost, QSet<Data::Symbol>* recursionGuard,
-                          Data::CallerCalleeResults* callerCalleeResult, int numCosts)
+void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& location, int type, quint64 cost,
+                          QSet<Data::Symbol>* recursionGuard, Data::CallerCalleeResults* callerCalleeResult,
+                          int numCosts)
 {
     auto recursionIt = recursionGuard->find(symbol);
     if (recursionIt == recursionGuard->end()) {
@@ -576,7 +538,7 @@ class PerfParserPrivate : public QObject
 {
     Q_OBJECT
 public:
-    explicit PerfParserPrivate(QObject *parent = nullptr)
+    explicit PerfParserPrivate(QObject* parent = nullptr)
         : QObject(parent)
         , stopRequested(false)
     {
@@ -597,60 +559,60 @@ public:
         }
         const auto bytesAvailable = process.bytesAvailable();
         switch (state) {
-            case HEADER: {
-                const auto magic = QByteArrayLiteral("QPERFSTREAM");
-                // + 1 to include the trailing \0
-                if (bytesAvailable >= magic.size() + 1) {
-                    process.read(buffer.buffer().data(), magic.size() + 1);
-                    if (buffer.buffer().data() != magic) {
-                        state = PARSE_ERROR;
-                        qCWarning(LOG_PERFPARSER) << "Failed to read header magic";
-                        return false;
-                    } else {
-                        state = DATA_STREAM_VERSION;
-                        return true;
-                    }
+        case HEADER: {
+            const auto magic = QByteArrayLiteral("QPERFSTREAM");
+            // + 1 to include the trailing \0
+            if (bytesAvailable >= magic.size() + 1) {
+                process.read(buffer.buffer().data(), magic.size() + 1);
+                if (buffer.buffer().data() != magic) {
+                    state = PARSE_ERROR;
+                    qCWarning(LOG_PERFPARSER) << "Failed to read header magic";
+                    return false;
+                } else {
+                    state = DATA_STREAM_VERSION;
+                    return true;
                 }
-                break;
             }
-            case DATA_STREAM_VERSION: {
-                qint32 dataStreamVersion = 0;
-                if (bytesAvailable >= static_cast<qint64>(sizeof(dataStreamVersion))) {
-                    process.read(buffer.buffer().data(), sizeof(dataStreamVersion));
-                    dataStreamVersion = qFromLittleEndian(*reinterpret_cast<qint32*>(buffer.buffer().data()));
-                    stream.setVersion(dataStreamVersion);
-                    qCDebug(LOG_PERFPARSER) << "data stream version is:" << dataStreamVersion;
-                    state = EVENT_HEADER;
-                    return true;
-                }
-                break;
+            break;
+        }
+        case DATA_STREAM_VERSION: {
+            qint32 dataStreamVersion = 0;
+            if (bytesAvailable >= static_cast<qint64>(sizeof(dataStreamVersion))) {
+                process.read(buffer.buffer().data(), sizeof(dataStreamVersion));
+                dataStreamVersion = qFromLittleEndian(*reinterpret_cast<qint32*>(buffer.buffer().data()));
+                stream.setVersion(dataStreamVersion);
+                qCDebug(LOG_PERFPARSER) << "data stream version is:" << dataStreamVersion;
+                state = EVENT_HEADER;
+                return true;
             }
-            case EVENT_HEADER:
-                if (bytesAvailable >= static_cast<qint64>(sizeof(eventSize))) {
-                    process.read(buffer.buffer().data(), sizeof(eventSize));
-                    eventSize = qFromLittleEndian(*reinterpret_cast<quint32*>(buffer.buffer().data()));
-                    qCDebug(LOG_PERFPARSER) << "next event size is:" << eventSize;
-                    state = EVENT;
-                    return true;
+            break;
+        }
+        case EVENT_HEADER:
+            if (bytesAvailable >= static_cast<qint64>(sizeof(eventSize))) {
+                process.read(buffer.buffer().data(), sizeof(eventSize));
+                eventSize = qFromLittleEndian(*reinterpret_cast<quint32*>(buffer.buffer().data()));
+                qCDebug(LOG_PERFPARSER) << "next event size is:" << eventSize;
+                state = EVENT;
+                return true;
+            }
+            break;
+        case EVENT:
+            if (bytesAvailable >= static_cast<qint64>(eventSize)) {
+                buffer.buffer().resize(eventSize);
+                process.read(buffer.buffer().data(), eventSize);
+                if (!parseEvent()) {
+                    state = PARSE_ERROR;
+                    return false;
                 }
-                break;
-            case EVENT:
-                if (bytesAvailable >= static_cast<qint64>(eventSize)) {
-                    buffer.buffer().resize(eventSize);
-                    process.read(buffer.buffer().data(), eventSize);
-                    if (!parseEvent()) {
-                        state = PARSE_ERROR;
-                        return false;
-                    }
-                    // await next event
-                    state = EVENT_HEADER;
-                    eventSize = 0;
-                    return true;
-                }
-                break;
-            case PARSE_ERROR:
-                // do nothing
-                break;
+                // await next event
+                state = EVENT_HEADER;
+                eventSize = 0;
+                return true;
+            }
+            break;
+        case PARSE_ERROR:
+            // do nothing
+            break;
         }
         return false;
     }
@@ -676,129 +638,129 @@ public:
         }
 
         switch (static_cast<EventType>(eventType)) {
-            case EventType::Sample43: // fall-through
-            case EventType::Sample45:
-                qCWarning(LOG_PERFPARSER) << "unexpected legacy type encountered" << eventType;
-                break;
-            case EventType::Sample: {
-                Sample sample;
-                stream >> sample;
-                qCDebug(LOG_PERFPARSER) << "parsed:" << sample;
-                for (auto& sampleCost : sample.costs) {
-                    if (!sampleCost.cost) {
-                        const auto& attribute = attributes.value(sampleCost.attributeId);
-                        if (!attribute.usesFrequency) {
-                            sampleCost.cost = attribute.frequencyOrPeriod;
-                        }
+        case EventType::Sample43: // fall-through
+        case EventType::Sample45:
+            qCWarning(LOG_PERFPARSER) << "unexpected legacy type encountered" << eventType;
+            break;
+        case EventType::Sample: {
+            Sample sample;
+            stream >> sample;
+            qCDebug(LOG_PERFPARSER) << "parsed:" << sample;
+            for (auto& sampleCost : sample.costs) {
+                if (!sampleCost.cost) {
+                    const auto& attribute = attributes.value(sampleCost.attributeId);
+                    if (!attribute.usesFrequency) {
+                        sampleCost.cost = attribute.frequencyOrPeriod;
                     }
                 }
+            }
 
-                addRecord(sample);
-                addSample(sample);
-                break;
-            }
-            case EventType::ThreadStart: {
-                ThreadStart threadStart;
-                stream >> threadStart;
-                qCDebug(LOG_PERFPARSER) << "parsed:" << threadStart;
-                addRecord(threadStart);
-                // override start time explicitly
-                addThread(threadStart)->timeStart = threadStart.time;
-                break;
-            }
-            case EventType::ThreadEnd: {
-                ThreadEnd threadEnd;
-                stream >> threadEnd;
-                qCDebug(LOG_PERFPARSER) << "parsed:" << threadEnd;
-                addRecord(threadEnd);
-                addThreadEnd(threadEnd);
-                break;
-            }
-            case EventType::Command: {
-                Command command;
-                stream >> command;
-                qCDebug(LOG_PERFPARSER) << "parsed:" << command;
-                addRecord(command);
-                addCommand(command);
-                break;
-            }
-            case EventType::LocationDefinition: {
-                LocationDefinition locationDefinition;
-                stream >> locationDefinition;
-                qCDebug(LOG_PERFPARSER) << "parsed:" << locationDefinition;
-                addLocation(locationDefinition);
-                break;
-            }
-            case EventType::SymbolDefinition: {
-                SymbolDefinition symbolDefinition;
-                stream >> symbolDefinition;
-                qCDebug(LOG_PERFPARSER) << "parsed:" << symbolDefinition;
-                addSymbol(symbolDefinition);
-                break;
-            }
-            case EventType::AttributesDefinition: {
-                AttributesDefinition attributesDefinition;
-                stream >> attributesDefinition;
-                qCDebug(LOG_PERFPARSER) << "parsed:" << attributesDefinition;
-                addAttributes(attributesDefinition);
-                break;
-            }
-            case EventType::StringDefinition: {
-                StringDefinition stringDefinition;
-                stream >> stringDefinition;
-                qCDebug(LOG_PERFPARSER) << "parsed:" << stringDefinition;
-                addString(stringDefinition);
-                break;
-            }
-            case EventType::LostDefinition: {
-                LostDefinition lostDefinition;
-                stream >> lostDefinition;
-                qCDebug(LOG_PERFPARSER) << "parsed:" << lostDefinition;
-                addRecord(lostDefinition);
-                addLost(lostDefinition);
-                break;
-            }
-            case EventType::FeaturesDefinition: {
-                FeaturesDefinition featuresDefinition;
-                stream >> featuresDefinition;
-                qCDebug(LOG_PERFPARSER) << "parsed:" << featuresDefinition;
-                setFeatures(featuresDefinition);
-                break;
-            }
-            case EventType::Error: {
-                Error error;
-                stream >> error;
-                qCDebug(LOG_PERFPARSER) << "parsed:" << error;
-                addError(error);
-                break;
-            }
-            case EventType::ContextSwitchDefinition: {
-                ContextSwitchDefinition contextSwitch;
-                stream >> contextSwitch;
-                qCDebug(LOG_PERFPARSER) << "parsed:" << contextSwitch;
-                addRecord(contextSwitch);
-                addContextSwitch(contextSwitch);
-                break;
-            }
-            case EventType::Progress: {
-                float percent = 0;
-                stream >> percent;
-                qCDebug(LOG_PERFPARSER) << "parsed:" << percent;
-                emit progress(percent);
-                break;
-            }
-            case EventType::TracePointFormat:
-            case EventType::TracePointSample: {
-                // TODO: implement me
-                return true;
-            }
-            case EventType::InvalidType:
-                break;
+            addRecord(sample);
+            addSample(sample);
+            break;
+        }
+        case EventType::ThreadStart: {
+            ThreadStart threadStart;
+            stream >> threadStart;
+            qCDebug(LOG_PERFPARSER) << "parsed:" << threadStart;
+            addRecord(threadStart);
+            // override start time explicitly
+            addThread(threadStart)->timeStart = threadStart.time;
+            break;
+        }
+        case EventType::ThreadEnd: {
+            ThreadEnd threadEnd;
+            stream >> threadEnd;
+            qCDebug(LOG_PERFPARSER) << "parsed:" << threadEnd;
+            addRecord(threadEnd);
+            addThreadEnd(threadEnd);
+            break;
+        }
+        case EventType::Command: {
+            Command command;
+            stream >> command;
+            qCDebug(LOG_PERFPARSER) << "parsed:" << command;
+            addRecord(command);
+            addCommand(command);
+            break;
+        }
+        case EventType::LocationDefinition: {
+            LocationDefinition locationDefinition;
+            stream >> locationDefinition;
+            qCDebug(LOG_PERFPARSER) << "parsed:" << locationDefinition;
+            addLocation(locationDefinition);
+            break;
+        }
+        case EventType::SymbolDefinition: {
+            SymbolDefinition symbolDefinition;
+            stream >> symbolDefinition;
+            qCDebug(LOG_PERFPARSER) << "parsed:" << symbolDefinition;
+            addSymbol(symbolDefinition);
+            break;
+        }
+        case EventType::AttributesDefinition: {
+            AttributesDefinition attributesDefinition;
+            stream >> attributesDefinition;
+            qCDebug(LOG_PERFPARSER) << "parsed:" << attributesDefinition;
+            addAttributes(attributesDefinition);
+            break;
+        }
+        case EventType::StringDefinition: {
+            StringDefinition stringDefinition;
+            stream >> stringDefinition;
+            qCDebug(LOG_PERFPARSER) << "parsed:" << stringDefinition;
+            addString(stringDefinition);
+            break;
+        }
+        case EventType::LostDefinition: {
+            LostDefinition lostDefinition;
+            stream >> lostDefinition;
+            qCDebug(LOG_PERFPARSER) << "parsed:" << lostDefinition;
+            addRecord(lostDefinition);
+            addLost(lostDefinition);
+            break;
+        }
+        case EventType::FeaturesDefinition: {
+            FeaturesDefinition featuresDefinition;
+            stream >> featuresDefinition;
+            qCDebug(LOG_PERFPARSER) << "parsed:" << featuresDefinition;
+            setFeatures(featuresDefinition);
+            break;
+        }
+        case EventType::Error: {
+            Error error;
+            stream >> error;
+            qCDebug(LOG_PERFPARSER) << "parsed:" << error;
+            addError(error);
+            break;
+        }
+        case EventType::ContextSwitchDefinition: {
+            ContextSwitchDefinition contextSwitch;
+            stream >> contextSwitch;
+            qCDebug(LOG_PERFPARSER) << "parsed:" << contextSwitch;
+            addRecord(contextSwitch);
+            addContextSwitch(contextSwitch);
+            break;
+        }
+        case EventType::Progress: {
+            float percent = 0;
+            stream >> percent;
+            qCDebug(LOG_PERFPARSER) << "parsed:" << percent;
+            emit progress(percent);
+            break;
+        }
+        case EventType::TracePointFormat:
+        case EventType::TracePointSample: {
+            // TODO: implement me
+            return true;
+        }
+        case EventType::InvalidType:
+            break;
         }
 
         if (!stream.atEnd()) {
-            qCWarning(LOG_PERFPARSER) << "did not consume all bytes for event of type" << eventType
-                                      << buffer.pos() << buffer.size();
+            qCWarning(LOG_PERFPARSER) << "did not consume all bytes for event of type" << eventType << buffer.pos()
+                                      << buffer.size();
             return false;
         }
 
@@ -887,8 +849,7 @@ public:
         // we started the application, otherwise we override the start time when
         // we encounter a ThreadStart event
         thread.timeStart = applicationStartTime;
-        thread.name = commands.value(thread.pid)
-                              .value(thread.tid);
+        thread.name = commands.value(thread.pid).value(thread.tid);
         eventResult.threads.push_back(thread);
         return &eventResult.threads.last();
     }
@@ -924,10 +885,8 @@ public:
                 locationString += QLatin1Char(':') + QString::number(location.location.line);
             }
         }
-        bottomUpResult.locations.push_back({
-            location.location.parentLocationId,
-            {location.location.address, locationString}
-        });
+        bottomUpResult.locations.push_back(
+            {location.location.parentLocationId, {location.location.address, locationString}});
         bottomUpResult.symbols.push_back({});
     }
 
@@ -941,8 +900,7 @@ public:
         const auto pathString = strings.value(symbol.symbol.path.id);
         bottomUpResult.symbols[symbol.id] = {symbolString, binaryString, pathString};
         if (symbolString.isEmpty() && !binaryString.isEmpty()
-            && !reportedMissingDebugInfoModules.contains(symbol.symbol.binary.id))
-        {
+            && !reportedMissingDebugInfoModules.contains(symbol.symbol.binary.id)) {
             reportedMissingDebugInfoModules.insert(symbol.symbol.binary.id);
             summaryResult.errors << PerfParser::tr("Module \"%1\" is missing (some) debug symbols.").arg(binaryString);
         }
@@ -1003,11 +961,9 @@ public:
     {
         if (perfScriptOutput) {
             *perfScriptOutput << commands.value(sample.pid).value(sample.pid) << '\t' << sample.pid << '\t'
-                              << sample.time / 1000000000 << '.'
-                              << qSetFieldWidth(9) << qSetPadChar(QLatin1Char('0'))
-                              << sample.time % 1000000000
-                              << qSetFieldWidth(0)
-                              << ":\t" << sampleCost.cost << ' ' << strings.value(attributes.value(sampleCost.attributeId).name.id) << '\n';
+                              << sample.time / 1000000000 << '.' << qSetFieldWidth(9) << qSetPadChar(QLatin1Char('0'))
+                              << sample.time % 1000000000 << qSetFieldWidth(0) << ":\t" << sampleCost.cost << ' '
+                              << strings.value(attributes.value(sampleCost.attributeId).name.id) << '\n';
         }
 
         QSet<Data::Symbol> recursionGuard;
@@ -1019,18 +975,15 @@ public:
             return;
         }
 
-        auto frameCallback = [this, &recursionGuard, &sampleCost, type] (const Data::Symbol& symbol, const Data::Location& location)
-        {
-            addCallerCalleeEvent(symbol, location, type, sampleCost.cost,
-                                 &recursionGuard, &callerCalleeResult,
+        auto frameCallback = [this, &recursionGuard, &sampleCost, type](const Data::Symbol& symbol,
+                                                                        const Data::Location& location) {
+            addCallerCalleeEvent(symbol, location, type, sampleCost.cost, &recursionGuard, &callerCalleeResult,
                                  bottomUpResult.costs.numTypes());
 
             if (perfScriptOutput) {
-                    *perfScriptOutput << '\t' << hex << qSetFieldWidth(16)
-                        << location.address
-                        << qSetFieldWidth(0) << dec << ' '
-                        << (symbol.symbol.isEmpty() ? QStringLiteral("[unknown]") : symbol.symbol)
-                        << " (" << symbol.binary << ")\n";
+                *perfScriptOutput << '\t' << hex << qSetFieldWidth(16) << location.address << qSetFieldWidth(0) << dec
+                                  << ' ' << (symbol.symbol.isEmpty() ? QStringLiteral("[unknown]") : symbol.symbol)
+                                  << " (" << symbol.binary << ")\n";
             }
         };
 
@@ -1039,7 +992,6 @@ public:
         if (perfScriptOutput) {
             *perfScriptOutput << "\n";
         }
-
     }
 
     void buildTopDownResult()
@@ -1104,9 +1056,7 @@ public:
             qint32 stackId = -1;
             if (!thread->events.isEmpty() && m_schedSwitchCostId != -1) {
                 auto it = std::find_if(thread->events.rbegin(), thread->events.rend(),
-                                       [this](const Data::Event& event) {
-                                           return event.type == m_schedSwitchCostId;
-                                       });
+                                       [this](const Data::Event& event) { return event.type == m_schedSwitchCostId; });
                 if (it != thread->events.rend()) {
                     stackId = it->stackId;
                 }
@@ -1114,13 +1064,10 @@ public:
             if (stackId != -1) {
                 const auto& frames = eventResult.stacks[stackId];
                 QSet<Data::Symbol> recursionGuard;
-                auto frameCallback = [this, &recursionGuard, switchTime]
-                        (const Data::Symbol& symbol, const Data::Location& location)
-                {
-                    addCallerCalleeEvent(symbol, location,
-                                         eventResult.offCpuTimeCostId, switchTime,
-                                         &recursionGuard, &callerCalleeResult,
-                                         bottomUpResult.costs.numTypes());
+                auto frameCallback = [this, &recursionGuard, switchTime](const Data::Symbol& symbol,
+                                                                         const Data::Location& location) {
+                    addCallerCalleeEvent(symbol, location, eventResult.offCpuTimeCostId, switchTime, &recursionGuard,
+                                         &callerCalleeResult, bottomUpResult.costs.numTypes());
                 };
                 bottomUpResult.addEvent(eventResult.offCpuTimeCostId, switchTime, frames, frameCallback);
             }
@@ -1135,9 +1082,7 @@ public:
         }
 
         thread->lastSwitchTime = contextSwitch.time;
-        thread->state = contextSwitch.switchOut
-                            ? Data::ThreadEvents::OffCpu
-                            : Data::ThreadEvents::OnCpu;
+        thread->state = contextSwitch.switchOut ? Data::ThreadEvents::OffCpu : Data::ThreadEvents::OnCpu;
     }
 
     void addLost(const LostDefinition& /*lost*/)
@@ -1178,7 +1123,8 @@ public:
         }
     }
 
-    enum State {
+    enum State
+    {
         HEADER,
         DATA_STREAM_VERSION,
         EVENT_HEADER,
@@ -1186,7 +1132,8 @@ public:
         PARSE_ERROR
     };
 
-    enum class EventType {
+    enum class EventType
+    {
         Sample43, // now obsolete
         ThreadStart,
         ThreadEnd,
@@ -1251,44 +1198,33 @@ PerfParser::PerfParser(QObject* parent)
     , m_stopRequested(false)
 {
     // set data via signal/slot connection to ensure we don't introduce a data race
-    connect(this, &PerfParser::bottomUpDataAvailable,
-            this, [this](const Data::BottomUpResults& data) {
-                if (m_bottomUpResults.root.children.isEmpty()) {
-                    m_bottomUpResults = data;
-                }
-            });
-    connect(this, &PerfParser::callerCalleeDataAvailable,
-            this, [this](const Data::CallerCalleeResults& data) {
-                if (m_callerCalleeResults.entries.isEmpty()) {
-                    m_callerCalleeResults = data;
-                }
-            });
-    connect(this, &PerfParser::eventsAvailable,
-            this, [this](const Data::EventResults& data) {
-                if (m_events.threads.isEmpty()) {
-                    m_events = data;
-                }
-            });
-    connect(this, &PerfParser::parsingStarted,
-            this, [this]() {
-                m_isParsing = true;
-                m_stopRequested = false;
-            });
-    connect(this, &PerfParser::parsingFailed,
-            this, [this]() {
-                m_isParsing = false;
-            });
-    connect(this, &PerfParser::parsingFinished,
-            this, [this]() {
-                m_isParsing = false;
-            });
+    connect(this, &PerfParser::bottomUpDataAvailable, this, [this](const Data::BottomUpResults& data) {
+        if (m_bottomUpResults.root.children.isEmpty()) {
+            m_bottomUpResults = data;
+        }
+    });
+    connect(this, &PerfParser::callerCalleeDataAvailable, this, [this](const Data::CallerCalleeResults& data) {
+        if (m_callerCalleeResults.entries.isEmpty()) {
+            m_callerCalleeResults = data;
+        }
+    });
+    connect(this, &PerfParser::eventsAvailable, this, [this](const Data::EventResults& data) {
+        if (m_events.threads.isEmpty()) {
+            m_events = data;
+        }
+    });
+    connect(this, &PerfParser::parsingStarted, this, [this]() {
+        m_isParsing = true;
+        m_stopRequested = false;
+    });
+    connect(this, &PerfParser::parsingFailed, this, [this]() { m_isParsing = false; });
+    connect(this, &PerfParser::parsingFinished, this, [this]() { m_isParsing = false; });
 }
 
 PerfParser::~PerfParser() = default;
 
-void PerfParser::startParseFile(const QString& path, const QString& sysroot,
-                                const QString& kallsyms, const QString& debugPaths,
-                                const QString& extraLibPaths, const QString& appPath,
+void PerfParser::startParseFile(const QString& path, const QString& sysroot, const QString& kallsyms,
+                                const QString& debugPaths, const QString& extraLibPaths, const QString& appPath,
                                 const QString& arch)
 {
     Q_ASSERT(!m_isParsing);
@@ -1316,10 +1252,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
         return;
     }
 
-    QStringList parserArgs = {
-        QStringLiteral("--input"), path,
-        QStringLiteral("--max-frames"), QStringLiteral("1024")
-    };
+    QStringList parserArgs = {QStringLiteral("--input"), path, QStringLiteral("--max-frames"), QStringLiteral("1024")};
     if (!sysroot.isEmpty()) {
         parserArgs += {QStringLiteral("--sysroot"), sysroot};
     }
@@ -1351,22 +1284,22 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
         connect(&d, &PerfParserPrivate::progress, this, &PerfParser::progress);
         connect(this, &PerfParser::stopRequested, &d, &PerfParserPrivate::stop);
 
-        connect(&d.process, &QProcess::readyRead,
-                &d.process, [&d] {
-                    while (d.tryParse()) {
-                        // just call tryParse until it fails
-                    }
-                });
+        connect(&d.process, &QProcess::readyRead, &d.process, [&d] {
+            while (d.tryParse()) {
+                // just call tryParse until it fails
+            }
+        });
 
-        connect(&d.process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-                &d.process, [&d, this] (int exitCode, QProcess::ExitStatus exitStatus) {
+        connect(&d.process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), &d.process,
+                [&d, this](int exitCode, QProcess::ExitStatus exitStatus) {
                     if (m_stopRequested) {
                         emit parsingFailed(tr("Parsing stopped."));
                         return;
                     }
                     qCDebug(LOG_PERFPARSER) << exitCode << exitStatus;
 
-                    enum ErrorCodes {
+                    enum ErrorCodes
+                    {
                         NoError,
                         TcpSocketError,
                         CannotOpen,
@@ -1377,47 +1310,52 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
                         InvalidOption
                     };
                     switch (exitCode) {
-                        case NoError:
-                            d.finalize();
-                            emit bottomUpDataAvailable(d.bottomUpResult);
-                            emit topDownDataAvailable(d.topDownResult);
-                            emit summaryDataAvailable(d.summaryResult);
-                            emit callerCalleeDataAvailable(d.callerCalleeResult);
-                            emit eventsAvailable(d.eventResult);
-                            emit parsingFinished();
-                            break;
-                        case TcpSocketError:
-                            emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1 (TCP socket error).").arg(exitCode));
-                            break;
-                        case CannotOpen:
-                            emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1 (file could not be opened).").arg(exitCode));
-                            break;
-                        case BadMagic:
-                        case HeaderError:
-                        case DataError:
-                        case MissingData:
-                            emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1 (invalid perf data file).").arg(exitCode));
-                            break;
-                        case InvalidOption:
-                            emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1 (invalid option).").arg(exitCode));
-                            break;
-                        default:
-                            emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1.").arg(exitCode));
-                            break;
+                    case NoError:
+                        d.finalize();
+                        emit bottomUpDataAvailable(d.bottomUpResult);
+                        emit topDownDataAvailable(d.topDownResult);
+                        emit summaryDataAvailable(d.summaryResult);
+                        emit callerCalleeDataAvailable(d.callerCalleeResult);
+                        emit eventsAvailable(d.eventResult);
+                        emit parsingFinished();
+                        break;
+                    case TcpSocketError:
+                        emit parsingFailed(
+                            tr("The hotspot-perfparser binary exited with code %1 (TCP socket error).").arg(exitCode));
+                        break;
+                    case CannotOpen:
+                        emit parsingFailed(
+                            tr("The hotspot-perfparser binary exited with code %1 (file could not be opened).")
+                                .arg(exitCode));
+                        break;
+                    case BadMagic:
+                    case HeaderError:
+                    case DataError:
+                    case MissingData:
+                        emit parsingFailed(
+                            tr("The hotspot-perfparser binary exited with code %1 (invalid perf data file).")
+                                .arg(exitCode));
+                        break;
+                    case InvalidOption:
+                        emit parsingFailed(
+                            tr("The hotspot-perfparser binary exited with code %1 (invalid option).").arg(exitCode));
+                        break;
+                    default:
+                        emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1.").arg(exitCode));
+                        break;
                     }
                 });
 
-        connect(&d.process, &QProcess::errorOccurred,
-                &d.process, [&d, this] (QProcess::ProcessError error) {
-                    if (m_stopRequested) {
-                        emit parsingFailed(tr("Parsing stopped."));
-                        return;
-                    }
+        connect(&d.process, &QProcess::errorOccurred, &d.process, [&d, this](QProcess::ProcessError error) {
+            if (m_stopRequested) {
+                emit parsingFailed(tr("Parsing stopped."));
+                return;
+            }
 
-                    qCWarning(LOG_PERFPARSER) << error << d.process.errorString();
+            qCWarning(LOG_PERFPARSER) << error << d.process.errorString();
 
-                    emit parsingFailed(d.process.errorString());
-                });
+            emit parsingFailed(d.process.errorString());
+        });
 
         d.process.start(parserBinary, parserArgs);
         if (!d.process.waitForStarted()) {
@@ -1426,8 +1364,8 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot,
         }
 
         QEventLoop loop;
-        connect(&d.process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-                &loop, &QEventLoop::quit);
+        connect(&d.process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), &loop,
+                &QEventLoop::quit);
         loop.exec();
     });
 }
@@ -1438,8 +1376,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
 
     emit parsingStarted();
     using namespace ThreadWeaver;
-    stream() << make_job([this, filter]()
-    {
+    stream() << make_job([this, filter]() {
         Data::BottomUpResults bottomUp;
         Data::EventResults events = m_events;
         Data::CallerCalleeResults callerCallee;
@@ -1447,9 +1384,8 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         const bool filterByCpu = filter.cpuId != std::numeric_limits<quint32>::max();
         const bool excludeByCpu = !filter.excludeCpuIds.isEmpty();
         if (!filterByTime && filter.processId == Data::INVALID_PID && filter.threadId == Data::INVALID_TID
-            && !filterByCpu && !excludeByCpu
-            && filter.excludeProcessIds.isEmpty() && filter.excludeThreadIds.isEmpty())
-        {
+            && !filterByCpu && !excludeByCpu && filter.excludeProcessIds.isEmpty()
+            && filter.excludeThreadIds.isEmpty()) {
             bottomUp = m_bottomUpResults;
             callerCallee = m_callerCalleeResults;
         } else {
@@ -1472,29 +1408,27 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                     return;
                 }
 
-                if ((filter.processId != Data::INVALID_PID && thread.pid != filter.processId) ||
-                    (filter.threadId != Data::INVALID_TID && thread.tid != filter.threadId) ||
-                    (filterByTime && (thread.timeStart > filter.endTime || thread.timeEnd < filter.startTime)) ||
-                    filter.excludeProcessIds.contains(thread.pid) ||
-                    filter.excludeThreadIds.contains(thread.tid))
-                {
+                if ((filter.processId != Data::INVALID_PID && thread.pid != filter.processId)
+                    || (filter.threadId != Data::INVALID_TID && thread.tid != filter.threadId)
+                    || (filterByTime && (thread.timeStart > filter.endTime || thread.timeEnd < filter.startTime))
+                    || filter.excludeProcessIds.contains(thread.pid) || filter.excludeThreadIds.contains(thread.tid)) {
                     thread.events.clear();
                     continue;
                 }
 
                 if (filterByTime || filterByCpu || excludeByCpu) {
-                    auto it = std::remove_if(thread.events.begin(),
-                                            thread.events.end(),
-                                            [filter, filterByTime, filterByCpu, excludeByCpu] (const Data::Event& event) {
-                                                if (filterByTime && (event.time < filter.startTime || event.time >= filter.endTime)) {
-                                                    return true;
-                                                } else if (filterByCpu && event.cpuId != filter.cpuId) {
-                                                    return true;
-                                                } else if (excludeByCpu && filter.excludeCpuIds.contains(event.cpuId)) {
-                                                    return true;
-                                                }
-                                                return false;
-                                            });
+                    auto it = std::remove_if(
+                        thread.events.begin(), thread.events.end(),
+                        [filter, filterByTime, filterByCpu, excludeByCpu](const Data::Event& event) {
+                            if (filterByTime && (event.time < filter.startTime || event.time >= filter.endTime)) {
+                                return true;
+                            } else if (filterByCpu && event.cpuId != filter.cpuId) {
+                                return true;
+                            } else if (excludeByCpu && filter.excludeCpuIds.contains(event.cpuId)) {
+                                return true;
+                            }
+                            return false;
+                        });
                     thread.events.erase(it, thread.events.end());
                 }
                 if (m_stopRequested) {
@@ -1510,26 +1444,19 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                     }
 
                     QSet<Data::Symbol> recursionGuard;
-                    auto frameCallback = [&callerCallee, &recursionGuard, &event, numCosts]
-                        (const Data::Symbol& symbol, const Data::Location& location)
-                    {
-                        addCallerCalleeEvent(symbol, location,
-                                             event.type, event.cost,
-                                             &recursionGuard, &callerCallee,
+                    auto frameCallback = [&callerCallee, &recursionGuard, &event,
+                                          numCosts](const Data::Symbol& symbol, const Data::Location& location) {
+                        addCallerCalleeEvent(symbol, location, event.type, event.cost, &recursionGuard, &callerCallee,
                                              numCosts);
                     };
 
-                    bottomUp.addEvent(event.type, event.cost,
-                                      events.stacks.at(event.stackId),
-                                      frameCallback);
+                    bottomUp.addEvent(event.type, event.cost, events.stacks.at(event.stackId), frameCallback);
                 }
             }
 
             // remove threads that have no events within the selected time span
             auto it = std::remove_if(events.threads.begin(), events.threads.end(),
-                                     [](const Data::ThreadEvents& thread) {
-                                        return thread.events.isEmpty();
-                                    });
+                                     [](const Data::ThreadEvents& thread) { return thread.events.isEmpty(); });
             events.threads.erase(it, events.threads.end());
 
             Data::BottomUp::initializeParents(&bottomUp.root);

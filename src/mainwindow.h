@@ -51,7 +51,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget* parent = 0);
     ~MainWindow();
 
     void setSysroot(const QString& path);
@@ -73,8 +73,8 @@ public slots:
     void aboutKDAB();
     void aboutHotspot();
 
-    void setCodeNavigationIDE(QAction *action);
-    void navigateToCode(const QString &url, int lineNumber, int columnNumber);
+    void setCodeNavigationIDE(QAction* action);
+    void navigateToCode(const QString& url, int lineNumber, int columnNumber);
 
 signals:
     void openFileError(const QString& errorMessage);

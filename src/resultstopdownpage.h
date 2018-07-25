@@ -45,7 +45,7 @@ class ResultsTopDownPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsTopDownPage(PerfParser *parser, QWidget *parent = nullptr);
+    explicit ResultsTopDownPage(PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsTopDownPage();
 
 signals:

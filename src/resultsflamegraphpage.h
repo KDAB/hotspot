@@ -43,7 +43,7 @@ class ResultsFlameGraphPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsFlameGraphPage(PerfParser *parser, QWidget *parent = nullptr);
+    explicit ResultsFlameGraphPage(PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsFlameGraphPage();
 
 signals:

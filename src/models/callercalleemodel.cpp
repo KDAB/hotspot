@@ -49,10 +49,10 @@ QVariant CallerCalleeModel::headerCell(int column, int role) const
         return Qt::DescendingOrder;
     } else if (role == Qt::DisplayRole) {
         switch (column) {
-            case Symbol:
-                return tr("Symbol");
-            case Binary:
-                return tr("Binary");
+        case Symbol:
+            return tr("Symbol");
+        case Binary:
+            return tr("Binary");
         }
         column -= NUM_BASE_COLUMNS;
         if (column < m_results.selfCosts.numTypes()) {
@@ -62,17 +62,19 @@ QVariant CallerCalleeModel::headerCell(int column, int role) const
         return tr("%1 (incl.)").arg(m_results.inclusiveCosts.typeName(column));
     } else if (role == Qt::ToolTipRole) {
         switch (column) {
-            case Symbol:
-                return tr("The symbol's function name. May be empty when debug information is missing.");
-            case Binary:
-                return tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
+        case Symbol:
+            return tr("The symbol's function name. May be empty when debug information is missing.");
+        case Binary:
+            return tr(
+                "The name of the executable the symbol resides in. May be empty when debug information is missing.");
         }
 
         column -= 2;
         if (column < m_results.selfCosts.numTypes()) {
             return tr("The aggregated sample costs directly attributed to this symbol.");
         }
-        return tr("The aggregated sample costs attributed to this symbol, both directly and indirectly. This includes the costs of all functions called by this symbol plus its self cost.");
+        return tr("The aggregated sample costs attributed to this symbol, both directly and indirectly. This includes "
+                  "the costs of all functions called by this symbol plus its self cost.");
     }
 
     return {};
@@ -85,10 +87,10 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
         return QVariant::fromValue(symbol);
     } else if (role == SortRole) {
         switch (column) {
-            case Symbol:
-                return symbol.symbol;
-            case Binary:
-                return symbol.binary;
+        case Symbol:
+            return symbol.symbol;
+        case Binary:
+            return symbol.binary;
         }
         column -= NUM_BASE_COLUMNS;
         if (column < m_results.selfCosts.numTypes()) {
@@ -109,10 +111,10 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
         return QString(symbol.symbol + symbol.binary);
     } else if (role == Qt::DisplayRole) {
         switch (column) {
-            case Symbol:
-                return symbol.symbol.isEmpty() ? tr("??") : symbol.symbol;
-            case Binary:
-                return symbol.binary;
+        case Symbol:
+            return symbol.symbol.isEmpty() ? tr("??") : symbol.symbol;
+        case Binary:
+            return symbol.binary;
         }
         column -= 2;
         if (column < m_results.selfCosts.numTypes()) {
@@ -133,8 +135,7 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
     } else if (role == InclusiveCostsRole) {
         return QVariant::fromValue(m_results.inclusiveCosts);
     } else if (role == Qt::ToolTipRole) {
-        return Util::formatTooltip(entry.id, symbol,
-                                   m_results.selfCosts, m_results.inclusiveCosts);
+        return Util::formatTooltip(entry.id, symbol, m_results.selfCosts, m_results.inclusiveCosts);
     }
 
     return {};
@@ -178,7 +179,5 @@ SourceMapModel::~SourceMapModel() = default;
 
 int CallerCalleeModel::numColumns() const
 {
-    return NUM_BASE_COLUMNS
-        + m_results.inclusiveCosts.numTypes()
-        + m_results.selfCosts.numTypes();
+    return NUM_BASE_COLUMNS + m_results.inclusiveCosts.numTypes() + m_results.selfCosts.numTypes();
 }

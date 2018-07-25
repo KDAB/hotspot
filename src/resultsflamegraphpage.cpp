@@ -30,24 +30,19 @@
 
 #include "parsers/perf/perfparser.h"
 
-ResultsFlameGraphPage::ResultsFlameGraphPage(PerfParser *parser, QWidget *parent)
+ResultsFlameGraphPage::ResultsFlameGraphPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsFlameGraphPage)
 {
     ui->setupUi(this);
 
-    connect(parser, &PerfParser::bottomUpDataAvailable,
-            this, [this] (const Data::BottomUpResults& data) {
-                ui->flameGraph->setBottomUpData(data);
-            });
+    connect(parser, &PerfParser::bottomUpDataAvailable, this,
+            [this](const Data::BottomUpResults& data) { ui->flameGraph->setBottomUpData(data); });
 
-    connect(parser, &PerfParser::topDownDataAvailable,
-            this, [this] (const Data::TopDownResults& data) {
-                ui->flameGraph->setTopDownData(data);
-            });
+    connect(parser, &PerfParser::topDownDataAvailable, this,
+            [this](const Data::TopDownResults& data) { ui->flameGraph->setTopDownData(data); });
 
-    connect(ui->flameGraph, &FlameGraph::jumpToCallerCallee,
-            this, &ResultsFlameGraphPage::jumpToCallerCallee);
+    connect(ui->flameGraph, &FlameGraph::jumpToCallerCallee, this, &ResultsFlameGraphPage::jumpToCallerCallee);
 }
 
 ResultsFlameGraphPage::~ResultsFlameGraphPage() = default;

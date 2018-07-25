@@ -34,7 +34,7 @@
 #include "models/hashmodel.h"
 #include "models/treemodel.h"
 
-ResultsTopDownPage::ResultsTopDownPage(PerfParser *parser, QWidget *parent)
+ResultsTopDownPage::ResultsTopDownPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsTopDownPage)
 {
@@ -44,13 +44,14 @@ ResultsTopDownPage::ResultsTopDownPage(PerfParser *parser, QWidget *parent)
     ResultsUtil::setupTreeView(ui->topDownTreeView, ui->topDownSearch, topDownCostModel);
     ResultsUtil::setupCostDelegate(topDownCostModel, ui->topDownTreeView);
     ResultsUtil::setupContextMenu(ui->topDownTreeView, topDownCostModel,
-                                  [this] (const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
+                                  [this](const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
 
-    connect(parser, &PerfParser::topDownDataAvailable,
-            this, [this, topDownCostModel] (const Data::TopDownResults& data) {
+    connect(parser, &PerfParser::topDownDataAvailable, this,
+            [this, topDownCostModel](const Data::TopDownResults& data) {
                 topDownCostModel->setData(data);
                 ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->topDownTreeView, TopDownModel::NUM_BASE_COLUMNS);
-                ResultsUtil::hideEmptyColumns(data.selfCosts, ui->topDownTreeView, TopDownModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes());
+                ResultsUtil::hideEmptyColumns(data.selfCosts, ui->topDownTreeView,
+                                              TopDownModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes());
             });
 }
 

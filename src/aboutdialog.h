@@ -37,12 +37,12 @@ class AboutDialog : public QDialog
 {
     Q_OBJECT
 public:
-    explicit AboutDialog(QWidget *parent = nullptr);
+    explicit AboutDialog(QWidget* parent = nullptr);
     ~AboutDialog();
 
-    void setTitle(const QString &title);
-    void setText(const QString &text);
-    void setLogo(const QString &iconFileName);
+    void setTitle(const QString& title);
+    void setText(const QString& text);
+    void setLogo(const QString& iconFileName);
 
 private:
     QScopedPointer<Ui::AboutDialog> ui;

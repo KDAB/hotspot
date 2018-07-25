@@ -27,9 +27,9 @@
 
 #pragma once
 
-#include <QObject>
-#include <memory>
 #include <atomic>
+#include <memory>
+#include <QObject>
 
 #include <models/data.h>
 
@@ -41,10 +41,8 @@ public:
     explicit PerfParser(QObject* parent = nullptr);
     ~PerfParser();
 
-    void startParseFile(const QString& path, const QString& sysroot,
-                        const QString& kallsyms, const QString& debugPaths,
-                        const QString& extraLibPaths, const QString& appPath,
-                        const QString& arch);
+    void startParseFile(const QString& path, const QString& sysroot, const QString& kallsyms, const QString& debugPaths,
+                        const QString& extraLibPaths, const QString& appPath, const QString& arch);
 
     void filterResults(const Data::FilterAction& filter);
 

@@ -23,12 +23,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-double  __attribute__((noinline)) asdf(double a, double b)
+double __attribute__((noinline)) asdf(double a, double b)
 {
     return (a * a) / (b * b);
 }
 
-double  __attribute__((noinline)) bar(unsigned long max)
+double __attribute__((noinline)) bar(unsigned long max)
 {
     double d = 1;
     for (unsigned long i = 0; i < max; ++i) {
@@ -37,7 +37,7 @@ double  __attribute__((noinline)) bar(unsigned long max)
     return d;
 }
 
-int  __attribute__((noinline)) foo(unsigned long max)
+int __attribute__((noinline)) foo(unsigned long max)
 {
     return bar(max);
 }

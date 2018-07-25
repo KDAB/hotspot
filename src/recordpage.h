@@ -27,9 +27,9 @@
 
 #pragma once
 
-#include <QWidget>
-#include <QFutureWatcher>
 #include <QElapsedTimer>
+#include <QFutureWatcher>
+#include <QWidget>
 
 #include "processlist.h"
 
@@ -56,7 +56,7 @@ class RecordPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit RecordPage(QWidget *parent = nullptr);
+    explicit RecordPage(QWidget* parent = nullptr);
     ~RecordPage();
 
     void showRecordPage();
@@ -92,8 +92,8 @@ private:
     QElapsedTimer m_recordTimer;
     QTimer* m_updateRuntimeTimer;
 
-    ProcessModel *m_processModel;
-    ProcessFilterModel *m_processProxyModel;
+    ProcessModel* m_processModel;
+    ProcessFilterModel* m_processProxyModel;
 
-    QFutureWatcher<ProcDataList> *m_watcher;
+    QFutureWatcher<ProcDataList>* m_watcher;
 };

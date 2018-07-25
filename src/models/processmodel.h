@@ -37,20 +37,21 @@ class ProcessModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    explicit ProcessModel(QObject *parent = nullptr);
+    explicit ProcessModel(QObject* parent = nullptr);
     virtual ~ProcessModel();
 
-    void setProcesses(const ProcDataList &processes);
-    void mergeProcesses(const ProcDataList &processes);
-    ProcData dataForIndex(const QModelIndex &index) const;
+    void setProcesses(const ProcDataList& processes);
+    void mergeProcesses(const ProcDataList& processes);
+    ProcData dataForIndex(const QModelIndex& index) const;
     ProcData dataForRow(int row) const;
-    QModelIndex indexForPid(const QString &pid) const;
+    QModelIndex indexForPid(const QString& pid) const;
 
     ProcDataList processes() const;
 
     void clear();
 
-    enum Columns {
+    enum Columns
+    {
         PIDColumn,
         NameColumn,
         StateColumn,
@@ -58,21 +59,21 @@ public:
         COLUMN_COUNT
     };
 
-    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-    enum CustomRoles {
+    enum CustomRoles
+    {
         PIDRole = Qt::UserRole,
         NameRole,
         StateRole,
         UserRole
     };
 
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
 
-    QVariant headerData(int section, Qt::Orientation orientation,
-                        int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
 private:
     ProcDataList m_data;

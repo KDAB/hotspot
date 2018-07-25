@@ -43,7 +43,7 @@ class ResultsSummaryPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsSummaryPage(PerfParser *parser, QWidget *parent = nullptr);
+    explicit ResultsSummaryPage(PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsSummaryPage();
 
 signals:

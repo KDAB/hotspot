@@ -30,11 +30,11 @@
 
 #include "parsers/perf/perfparser.h"
 
-#include "resultssummarypage.h"
 #include "resultsbottomuppage.h"
-#include "resultstopdownpage.h"
-#include "resultsflamegraphpage.h"
 #include "resultscallercalleepage.h"
+#include "resultsflamegraphpage.h"
+#include "resultssummarypage.h"
+#include "resultstopdownpage.h"
 #include "resultsutil.h"
 
 #include "models/eventmodel.h"
@@ -43,11 +43,11 @@
 #include <KLocalizedString>
 #include <KRecursiveFilterProxyModel>
 
-#include <QProgressBar>
 #include <QDebug>
 #include <QEvent>
+#include <QProgressBar>
 
-ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
+ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsPage)
     , m_resultsSummaryPage(new ResultsSummaryPage(parser, this))
@@ -71,8 +71,8 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
         ui->resultsTabWidget->setTabToolTip(i, ui->resultsTabWidget->widget(i)->toolTip());
     }
 
-    auto *eventModel = new EventModel(this);
-    auto *timeLineProxy = new KRecursiveFilterProxyModel(this);
+    auto* eventModel = new EventModel(this);
+    auto* timeLineProxy = new KRecursiveFilterProxyModel(this);
     timeLineProxy->setSourceModel(eventModel);
     timeLineProxy->setSortRole(EventModel::SortRole);
     timeLineProxy->setFilterKeyColumn(EventModel::ThreadColumn);
@@ -90,69 +90,56 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     ui->timeLineEventFilterButton->setMenu(timeLineDelegate->filterMenu());
     ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, timeLineDelegate);
 
-    connect(timeLineProxy, &QAbstractItemModel::rowsInserted,
-            this, [this]() { ui->timeLineView->expandToDepth(1); });
-    connect(timeLineProxy, &QAbstractItemModel::modelReset,
-            this, [this]() { ui->timeLineView->expandToDepth(1); });
+    connect(timeLineProxy, &QAbstractItemModel::rowsInserted, this, [this]() { ui->timeLineView->expandToDepth(1); });
+    connect(timeLineProxy, &QAbstractItemModel::modelReset, this, [this]() { ui->timeLineView->expandToDepth(1); });
 
-    connect(parser, &PerfParser::bottomUpDataAvailable,
-            this, [this] (const Data::BottomUpResults& data) {
-                ResultsUtil::fillEventSourceComboBox(ui->timeLineEventSource, data.costs,
-                                                     ki18n("Show timeline for %1 events."));
-            });
-    connect(parser, &PerfParser::eventsAvailable,
-            this, [this, eventModel] (const Data::EventResults& data) {
-                eventModel->setData(data);
-                if (data.offCpuTimeCostId != -1) {
-                    // remove the off-CPU time event source, we only want normal sched switches
-                    for (int i = 0, c = ui->timeLineEventSource->count(); i < c; ++i) {
-                        if (ui->timeLineEventSource->itemData(i).toInt() == data.offCpuTimeCostId) {
-                            ui->timeLineEventSource->removeItem(i);
-                            break;
-                        }
-                    }
+    connect(parser, &PerfParser::bottomUpDataAvailable, this, [this](const Data::BottomUpResults& data) {
+        ResultsUtil::fillEventSourceComboBox(ui->timeLineEventSource, data.costs,
+                                             ki18n("Show timeline for %1 events."));
+    });
+    connect(parser, &PerfParser::eventsAvailable, this, [this, eventModel](const Data::EventResults& data) {
+        eventModel->setData(data);
+        if (data.offCpuTimeCostId != -1) {
+            // remove the off-CPU time event source, we only want normal sched switches
+            for (int i = 0, c = ui->timeLineEventSource->count(); i < c; ++i) {
+                if (ui->timeLineEventSource->itemData(i).toInt() == data.offCpuTimeCostId) {
+                    ui->timeLineEventSource->removeItem(i);
+                    break;
                 }
-            });
-    connect(timeLineDelegate, &TimeLineDelegate::filterRequested,
-            parser, &PerfParser::filterResults);
+            }
+        }
+    });
+    connect(timeLineDelegate, &TimeLineDelegate::filterRequested, parser, &PerfParser::filterResults);
 
-    connect(ui->timeLineEventSource, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, [this, timeLineDelegate] (int index) {
+    connect(ui->timeLineEventSource, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
+            [this, timeLineDelegate](int index) {
                 const auto typeId = ui->timeLineEventSource->itemData(index).toInt();
                 timeLineDelegate->setEventType(typeId);
             });
 
     ui->timeLineArea->hide();
-    connect(ui->resultsTabWidget, &QTabWidget::currentChanged,
-            this, [this, summaryTabIndex](int index) {
-                ui->timeLineArea->setVisible(index != summaryTabIndex);
-            });
-    connect(parser, &PerfParser::parsingStarted,
-            this, [this]() {
-                // disable when we apply a filter
-                // TODO: show some busy indicator?
-                ui->timeLineArea->setEnabled(false);
-                repositionFilterBusyIndicator();
-                m_filterBusyIndicator->setVisible(true);
-            });
-    connect(parser, &PerfParser::parsingFinished,
-            this, [this]() {
-                // re-enable when we finished filtering
-                ui->timeLineArea->setEnabled(true);
-                m_filterBusyIndicator->setVisible(false);
-            });
+    connect(ui->resultsTabWidget, &QTabWidget::currentChanged, this,
+            [this, summaryTabIndex](int index) { ui->timeLineArea->setVisible(index != summaryTabIndex); });
+    connect(parser, &PerfParser::parsingStarted, this, [this]() {
+        // disable when we apply a filter
+        // TODO: show some busy indicator?
+        ui->timeLineArea->setEnabled(false);
+        repositionFilterBusyIndicator();
+        m_filterBusyIndicator->setVisible(true);
+    });
+    connect(parser, &PerfParser::parsingFinished, this, [this]() {
+        // re-enable when we finished filtering
+        ui->timeLineArea->setEnabled(true);
+        m_filterBusyIndicator->setVisible(false);
+    });
 
-    connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode,
-            this, &ResultsPage::onNavigateToCode);
+    connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode, this, &ResultsPage::onNavigateToCode);
 
-    connect(m_resultsSummaryPage, &ResultsSummaryPage::jumpToCallerCallee,
-            this, &ResultsPage::onJumpToCallerCallee);
-    connect(m_resultsBottomUpPage, &ResultsBottomUpPage::jumpToCallerCallee,
-            this, &ResultsPage::onJumpToCallerCallee);
-    connect(m_resultsTopDownPage, &ResultsTopDownPage::jumpToCallerCallee,
-            this, &ResultsPage::onJumpToCallerCallee);
-    connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::jumpToCallerCallee,
-            this, &ResultsPage::onJumpToCallerCallee);
+    connect(m_resultsSummaryPage, &ResultsSummaryPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
+    connect(m_resultsBottomUpPage, &ResultsBottomUpPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
+    connect(m_resultsTopDownPage, &ResultsTopDownPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
+    connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::jumpToCallerCallee, this,
+            &ResultsPage::onJumpToCallerCallee);
 
     {
         // create a busy indicator
@@ -173,7 +160,7 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
 
 ResultsPage::~ResultsPage() = default;
 
-void ResultsPage::onNavigateToCode(const QString &url, int lineNumber, int columnNumber)
+void ResultsPage::onNavigateToCode(const QString& url, int lineNumber, int columnNumber)
 {
     emit navigateToCode(url, lineNumber, columnNumber);
 }
@@ -188,7 +175,7 @@ void ResultsPage::setAppPath(const QString& path)
     m_resultsCallerCalleePage->setAppPath(path);
 }
 
-void ResultsPage::onJumpToCallerCallee(const Data::Symbol &symbol)
+void ResultsPage::onJumpToCallerCallee(const Data::Symbol& symbol)
 {
     m_resultsCallerCalleePage->jumpToCallerCallee(symbol);
     ui->resultsTabWidget->setCurrentWidget(m_resultsCallerCalleePage);
@@ -213,7 +200,6 @@ void ResultsPage::repositionFilterBusyIndicator()
     const auto dx = rect.width() / 4;
     const auto dy = rect.height() / 4;
     rect.adjust(dx, dy, -dx, -dy);
-    QRect mapped(ui->timeLineView->mapTo(this, rect.topLeft()),
-                 ui->timeLineView->mapTo(this, rect.bottomRight()));
+    QRect mapped(ui->timeLineView->mapTo(this, rect.topLeft()), ui->timeLineView->mapTo(this, rect.bottomRight()));
     m_filterBusyIndicator->setGeometry(mapped);
 }

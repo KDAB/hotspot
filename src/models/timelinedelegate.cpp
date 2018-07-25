@@ -27,16 +27,16 @@
 
 #include "timelinedelegate.h"
 
-#include <QPainter>
-#include <QToolTip>
+#include <QAbstractItemView>
+#include <QDebug>
 #include <QEvent>
 #include <QHelpEvent>
-#include <QDebug>
-#include <QAbstractItemView>
 #include <QMenu>
+#include <QPainter>
+#include <QToolTip>
 
-#include "eventmodel.h"
 #include "../util.h"
+#include "eventmodel.h"
 
 #include <KColorScheme>
 
@@ -44,12 +44,11 @@
 
 TimeLineData::TimeLineData()
     : TimeLineData({}, 0, 0, 0, 0, 0, {})
-{}
+{
+}
 
-TimeLineData::TimeLineData(const Data::Events& events, quint64 maxCost,
-                           quint64 minTime, quint64 maxTime,
-                           quint64 threadStartTime, quint64 threadEndTime,
-                           QRect rect)
+TimeLineData::TimeLineData(const Data::Events& events, quint64 maxCost, quint64 minTime, quint64 maxTime,
+                           quint64 threadStartTime, quint64 threadEndTime, QRect rect)
     : events(events)
     , maxCost(maxCost)
     , minTime(minTime)
@@ -90,32 +89,24 @@ void TimeLineData::zoom(quint64 newMinTime, quint64 newMaxTime)
 
 namespace {
 
-TimeLineData dataFromIndex(const QModelIndex& index, QRect rect,
-                           const QVector<QPair<quint64, quint64>>& zoomStack)
+TimeLineData dataFromIndex(const QModelIndex& index, QRect rect, const QVector<QPair<quint64, quint64>>& zoomStack)
 {
-    TimeLineData data(index.data(EventModel::EventsRole).value<Data::Events>(),
-                        index.data(EventModel::MaxCostRole).value<quint64>(),
-                        index.data(EventModel::MinTimeRole).value<quint64>(),
-                        index.data(EventModel::MaxTimeRole).value<quint64>(),
-                        index.data(EventModel::ThreadStartRole).value<quint64>(),
-                        index.data(EventModel::ThreadEndRole).value<quint64>(),
-                        rect);
+    TimeLineData data(
+        index.data(EventModel::EventsRole).value<Data::Events>(), index.data(EventModel::MaxCostRole).value<quint64>(),
+        index.data(EventModel::MinTimeRole).value<quint64>(), index.data(EventModel::MaxTimeRole).value<quint64>(),
+        index.data(EventModel::ThreadStartRole).value<quint64>(),
+        index.data(EventModel::ThreadEndRole).value<quint64>(), rect);
     if (!zoomStack.isEmpty()) {
         data.zoom(zoomStack.last().first, zoomStack.last().second);
     }
     return data;
 }
 
-Data::Events::const_iterator findEvent(Data::Events::const_iterator begin,
-                                       Data::Events::const_iterator end,
+Data::Events::const_iterator findEvent(Data::Events::const_iterator begin, Data::Events::const_iterator end,
                                        quint64 time)
 {
-    return std::lower_bound(begin, end, time,
-                            [](const Data::Event& event, quint64 time) {
-                                return event.time < time;
-                            });
+    return std::lower_bound(begin, end, time, [](const Data::Event& event, quint64 time) { return event.time < time; });
 }
-
 }
 
 TimeLineDelegate::TimeLineDelegate(QAbstractItemView* view)
@@ -125,19 +116,20 @@ TimeLineDelegate::TimeLineDelegate(QAbstractItemView* view)
 {
     m_view->viewport()->installEventFilter(this);
 
-    m_filterOutAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-remove-filters")),
-        tr("Filter Out"), this, &TimeLineDelegate::filterOut);
-    m_resetFilterAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("view-filter")),
-        tr("Reset Filter"), this, &TimeLineDelegate::resetFilter);
+    m_filterOutAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-remove-filters")), tr("Filter Out"),
+                                                this, &TimeLineDelegate::filterOut);
+    m_resetFilterAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("view-filter")), tr("Reset Filter"),
+                                                  this, &TimeLineDelegate::resetFilter);
 
     m_filterMenu->addSeparator();
 
-    m_zoomOutAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-out")),
-        tr("Zoom Out"), this, &TimeLineDelegate::zoomOut);
-    m_resetZoomAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-original")),
-        tr("Reset Zoom"), this, &TimeLineDelegate::resetZoom);
-    m_resetZoomAndFilterAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("edit-clear")),
-        tr("Reset Zoom And Filter"), this, &TimeLineDelegate::resetZoomAndFilter);
+    m_zoomOutAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-out")), tr("Zoom Out"), this,
+                                              &TimeLineDelegate::zoomOut);
+    m_resetZoomAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-original")), tr("Reset Zoom"),
+                                                this, &TimeLineDelegate::resetZoom);
+    m_resetZoomAndFilterAction =
+        m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("edit-clear")), tr("Reset Zoom And Filter"), this,
+                                &TimeLineDelegate::resetZoomAndFilter);
 
     updateFilterActions();
 }
@@ -149,16 +141,14 @@ QMenu* TimeLineDelegate::filterMenu() const
     return m_filterMenu.data();
 }
 
-void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
-                             const QModelIndex& index) const
+void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const auto data = dataFromIndex(index, option.rect, m_zoomStack);
     const auto offCpuCostId = index.data(EventModel::EventResultsRole).value<Data::EventResults>().offCpuTimeCostId;
     const bool is_alternate = option.features & QStyleOptionViewItem::Alternate;
     const auto& palette = option.palette;
 
-    painter->fillRect(option.rect, is_alternate ? palette.base()
-                                                : palette.alternateBase());
+    painter->fillRect(option.rect, is_alternate ? palette.base() : palette.alternateBase());
 
     // skip threads that are outside the visible (zoomed) region
     painter->save();
@@ -170,9 +160,8 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
     // visualize the time where the thread was active
     // i.e. paint events for threads that have any in the selected time range
-    auto threadTimeRect = QRect(QPoint(data.mapTimeToX(data.threadStartTime), 0),
-                                QPoint(data.mapTimeToX(data.threadEndTime),
-                                data.h));
+    auto threadTimeRect =
+        QRect(QPoint(data.mapTimeToX(data.threadStartTime), 0), QPoint(data.mapTimeToX(data.threadEndTime), data.h));
     if (threadTimeRect.left() < option.rect.width() && threadTimeRect.right() > 0) {
         if (threadTimeRect.left() < 0)
             threadTimeRect.setLeft(0);
@@ -240,8 +229,7 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         const auto startX = std::max(data.mapTimeToX(m_timeSliceStart), 0);
         const auto endX = std::min(data.mapTimeToX(m_timeSliceEnd), data.w);
         // undo vertical padding manually to fill complete height
-        QRect timeSlice(startX, -data.padding,
-                        endX - startX, option.rect.height());
+        QRect timeSlice(startX, -data.padding, endX - startX, option.rect.height());
 
         auto brush = palette.highlight();
         auto color = brush.color();
@@ -253,8 +241,7 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     painter->restore();
 }
 
-bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
-                                 const QStyleOptionViewItem& option,
+bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, const QStyleOptionViewItem& option,
                                  const QModelIndex& index)
 {
     if (event->type() == QEvent::ToolTip) {
@@ -264,7 +251,8 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
         const auto time = data.mapXToTime(mappedX);
         const auto start = findEvent(data.events.constBegin(), data.events.constEnd(), time);
         // find the maximum sample cost in the range spanned by one pixel
-        struct FoundSamples {
+        struct FoundSamples
+        {
             uint numSamples = 0;
             quint64 maxCost = 0;
             quint64 totalCost = 0;
@@ -313,18 +301,20 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view,
         const auto formattedTime = Util::formatTimeString(time - data.minTime);
         const auto totalCosts = index.data(EventModel::TotalCostsRole).value<QVector<Data::CostSummary>>();
         if (found.numSamples > 0 && found.type == offCpuCostId) {
-            QToolTip::showText(event->globalPos(), tr("time: %1\nsched switches: %2\ntotal off-CPU time: %3\nlongest sched switch: %4")
-                .arg(formattedTime, QString::number(found.numSamples),
-                     Util::formatTimeString(found.totalCost),
-                     Util::formatTimeString(found.maxCost)));
+            QToolTip::showText(event->globalPos(),
+                               tr("time: %1\nsched switches: %2\ntotal off-CPU time: %3\nlongest sched switch: %4")
+                                   .arg(formattedTime, QString::number(found.numSamples),
+                                        Util::formatTimeString(found.totalCost),
+                                        Util::formatTimeString(found.maxCost)));
         } else if (found.numSamples > 0) {
-            QToolTip::showText(event->globalPos(), tr("time: %1\n%5 samples: %2\ntotal sample cost: %3\nmax sample cost: %4")
-                .arg(formattedTime, QString::number(found.numSamples),
-                     Util::formatCost(found.totalCost), Util::formatCost(found.maxCost),
-                     totalCosts.value(found.type).label));
+            QToolTip::showText(event->globalPos(),
+                               tr("time: %1\n%5 samples: %2\ntotal sample cost: %3\nmax sample cost: %4")
+                                   .arg(formattedTime, QString::number(found.numSamples),
+                                        Util::formatCost(found.totalCost), Util::formatCost(found.maxCost),
+                                        totalCosts.value(found.type).label));
         } else {
-            QToolTip::showText(event->globalPos(), tr("time: %1 (no %2 samples)")
-                .arg(formattedTime, totalCosts.value(m_eventType).label));
+            QToolTip::showText(event->globalPos(),
+                               tr("time: %1 (no %2 samples)").arg(formattedTime, totalCosts.value(m_eventType).label));
         }
         return true;
     }
@@ -344,11 +334,9 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         return false;
     }
 
-    const auto *mouseEvent = static_cast<QMouseEvent*>(event);
-    const bool isLeftButtonEvent = mouseEvent->button() == Qt::LeftButton ||
-                                    mouseEvent->buttons() == Qt::LeftButton;
-    const bool isRightButtonEvent = mouseEvent->button() == Qt::RightButton ||
-                                    mouseEvent->buttons() == Qt::RightButton;
+    const auto* mouseEvent = static_cast<QMouseEvent*>(event);
+    const bool isLeftButtonEvent = mouseEvent->button() == Qt::LeftButton || mouseEvent->buttons() == Qt::LeftButton;
+    const bool isRightButtonEvent = mouseEvent->button() == Qt::RightButton || mouseEvent->buttons() == Qt::RightButton;
 
     const auto pos = mouseEvent->localPos();
     // the pos may lay outside any valid index, but for the code below we need
@@ -377,8 +365,9 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     const bool isTimeSpanSelected = m_timeSliceStart != m_timeSliceEnd;
     const auto index = m_view->indexAt(pos.toPoint());
     const bool haveContextInfo = index.isValid() || isZoomed || isFiltered;
-    const bool showContextMenu = isButtonRelease && ((isRightButtonEvent && haveContextInfo) || (isLeftButtonEvent && isTimeSpanSelected))
-        && index.isValid() && !index.model()->rowCount(index); // when the index has children, don't show the context menu
+    const bool showContextMenu = isButtonRelease
+        && ((isRightButtonEvent && haveContextInfo) || (isLeftButtonEvent && isTimeSpanSelected)) && index.isValid()
+        && !index.model()->rowCount(index); // when the index has children, don't show the context menu
 
     if (showContextMenu) {
         auto contextMenu = new QMenu(m_view->viewport());
@@ -397,21 +386,18 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         const auto numCpus = index.data(EventModel::NumCpusRole).value<uint>();
 
         if (isTimeSpanSelected && (minTime != timeSliceStart || maxTime != timeSliceEnd)) {
-            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
-                                   tr("Zoom In On Selection"), this, [this](){
-                                       zoomIn(m_timeSliceStart, m_timeSliceEnd);
-                                   });
+            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")), tr("Zoom In On Selection"), this,
+                                   [this]() { zoomIn(m_timeSliceStart, m_timeSliceEnd); });
         }
 
         if (isRightButtonEvent && index.isValid() && threadStartTime != threadEndTime && numThreads > 1
-            && threadId != Data::INVALID_TID && ((!isZoomed && !isMainThread)
-            || (isZoomed && m_zoomStack.last().first != threadStartTime && m_zoomStack.last().second != threadEndTime)))
-        {
-            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
-                                   tr("Zoom In On Thread #%1 By Time").arg(threadId),
-                                   this, [this, threadStartTime, threadEndTime](){
-                                        zoomIn(threadStartTime, threadEndTime);
-                                   });
+            && threadId != Data::INVALID_TID
+            && ((!isZoomed && !isMainThread)
+                || (isZoomed && m_zoomStack.last().first != threadStartTime
+                    && m_zoomStack.last().second != threadEndTime))) {
+            contextMenu->addAction(
+                QIcon::fromTheme(QStringLiteral("zoom-in")), tr("Zoom In On Thread #%1 By Time").arg(threadId), this,
+                [this, threadStartTime, threadEndTime]() { zoomIn(threadStartTime, threadEndTime); });
         }
 
         if (isRightButtonEvent && isZoomed) {
@@ -421,61 +407,50 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
 
         contextMenu->addSeparator();
 
-        if (isTimeSpanSelected && (!isFiltered
-                || m_filterStack.last().startTime != timeSliceStart
-                || m_filterStack.last().endTime != timeSliceEnd))
-        {
-            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                   tr("Filter In On Selection"), this, [this](){
-                                       filterInByTime(m_timeSliceStart, m_timeSliceEnd);
-                                   });
+        if (isTimeSpanSelected
+            && (!isFiltered || m_filterStack.last().startTime != timeSliceStart
+                || m_filterStack.last().endTime != timeSliceEnd)) {
+            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")), tr("Filter In On Selection"),
+                                   this, [this]() { filterInByTime(m_timeSliceStart, m_timeSliceEnd); });
         }
 
         if (isRightButtonEvent && index.isValid() && numThreads > 1 && threadId != Data::INVALID_TID) {
             if ((!isFiltered && !isMainThread)
-                || (isFiltered && m_filterStack.last().startTime != threadStartTime && m_filterStack.last().endTime != threadEndTime))
-            {
-                contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                       tr("Filter In On Thread #%1 By Time").arg(threadId),
-                                       this, [this, threadStartTime, threadEndTime](){
-                                            filterInByTime(threadStartTime, threadEndTime);
-                                       });
+                || (isFiltered && m_filterStack.last().startTime != threadStartTime
+                    && m_filterStack.last().endTime != threadEndTime)) {
+                contextMenu->addAction(
+                    QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                    tr("Filter In On Thread #%1 By Time").arg(threadId), this,
+                    [this, threadStartTime, threadEndTime]() { filterInByTime(threadStartTime, threadEndTime); });
             }
             if ((!isFiltered || m_filterStack.last().threadId == Data::INVALID_TID)) {
                 contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                       tr("Filter In On Thread #%1").arg(threadId), this, [this, threadId](){
-                                            filterInByThread(threadId);
-                                       });
+                                       tr("Filter In On Thread #%1").arg(threadId), this,
+                                       [this, threadId]() { filterInByThread(threadId); });
                 contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                       tr("Exclude Thread #%1").arg(threadId), this, [this, threadId](){
-                                            filterOutByThread(threadId);
-                                       });
+                                       tr("Exclude Thread #%1").arg(threadId), this,
+                                       [this, threadId]() { filterOutByThread(threadId); });
             }
-            if (numProcesses > 1 && (!isFiltered
-                    || (m_filterStack.last().processId == Data::INVALID_PID && m_filterStack.last().threadId == Data::INVALID_TID)))
-            {
+            if (numProcesses > 1
+                && (!isFiltered
+                    || (m_filterStack.last().processId == Data::INVALID_PID
+                        && m_filterStack.last().threadId == Data::INVALID_TID))) {
                 contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                       tr("Filter In On Process #%1").arg(processId), this, [this, processId](){
-                                            filterInByProcess(processId);
-                                       });
+                                       tr("Filter In On Process #%1").arg(processId), this,
+                                       [this, processId]() { filterInByProcess(processId); });
                 contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                       tr("Exclude Process #%1").arg(processId), this, [this, processId](){
-                                            filterOutByProcess(processId);
-                                       });
+                                       tr("Exclude Process #%1").arg(processId), this,
+                                       [this, processId]() { filterOutByProcess(processId); });
             }
         }
 
         if (isRightButtonEvent && index.isValid() && cpuId != Data::INVALID_CPU_ID && numCpus > 1
-            && (!isFiltered || m_filterStack.last().cpuId != cpuId))
-        {
+            && (!isFiltered || m_filterStack.last().cpuId != cpuId)) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                    tr("Filter In On CPU #%1").arg(cpuId), this, [this, cpuId](){
-                                        filterInByCpu(cpuId);
-                                    });
-            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                    tr("Exclude CPU #%1").arg(cpuId), this, [this, cpuId](){
-                                        filterOutByCpu(cpuId);
-                                    });
+                                   tr("Filter In On CPU #%1").arg(cpuId), this,
+                                   [this, cpuId]() { filterInByCpu(cpuId); });
+            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")), tr("Exclude CPU #%1").arg(cpuId),
+                                   this, [this, cpuId]() { filterOutByCpu(cpuId); });
         }
 
         if (isRightButtonEvent && isFiltered) {
@@ -516,11 +491,10 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                            tr("ΔT: %1\n"
                               "Events: %2 (%3) from %4 thread(s), %5 process(es)\n"
                               "sum of %6: %7 (%8)")
-                                .arg(Util::formatTimeString(timeDelta),
-                                     Util::formatCost(numEvents), Util::formatFrequency(numEvents, timeDelta),
-                                     QString::number(threads.size()), QString::number(processes.size()),
-                                     data.totalCosts.value(m_eventType).label,
-                                     Util::formatCost(cost), Util::formatFrequency(cost, timeDelta)),
+                               .arg(Util::formatTimeString(timeDelta), Util::formatCost(numEvents),
+                                    Util::formatFrequency(numEvents, timeDelta), QString::number(threads.size()),
+                                    QString::number(processes.size()), data.totalCosts.value(m_eventType).label,
+                                    Util::formatCost(cost), Util::formatFrequency(cost, timeDelta)),
                            m_view);
     }
 

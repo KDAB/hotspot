@@ -28,8 +28,8 @@
 #ifndef FLAMEGRAPH_H
 #define FLAMEGRAPH_H
 
-#include <QWidget>
 #include <QVector>
+#include <QWidget>
 
 #include <models/data.h>
 

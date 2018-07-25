@@ -28,8 +28,8 @@
 #include <QCoreApplication>
 #include <QDebug>
 
-#include "perfparser.h"
 #include "../testutils.h"
+#include "perfparser.h"
 
 int main(int argc, char** argv)
 {
@@ -51,31 +51,27 @@ int main(int argc, char** argv)
         auto parser = new PerfParser(&app);
         parser->startParseFile(arg, {}, {}, {}, {}, {}, {});
         ++runningParsers;
-        QObject::connect(parser, &PerfParser::parsingFinished,
-                         parser, [&runningParsers, &app]() {
-                            --runningParsers;
-                            if (!runningParsers)
-                                app.quit();
-                        });
-        QObject::connect(parser, &PerfParser::parsingFailed,
-                         parser, [&runningParsers, &app](const QString& error) {
-                            qWarning() << error;
-                            --runningParsers;
-                            if (!runningParsers)
-                                app.quit();
-                        });
-        QObject::connect(parser, &PerfParser::bottomUpDataAvailable,
-                         parser, [arg](const Data::BottomUpResults& data) {
-                            qDebug() << arg;
-                            dumpList(printTree(data));
-                        });
-        QObject::connect(parser, &PerfParser::summaryDataAvailable,
-                         parser, [arg](const Data::Summary& data) {
-                            qDebug() << "summary for" << arg;
-                            qDebug() << "runtime:" << Util::formatTimeString(data.applicationRunningTime);
-                            qDebug() << "on-CPU:" << Util::formatTimeString(data.onCpuTime);
-                            qDebug() << "off-CPU:" << Util::formatTimeString(data.offCpuTime);
-                        });
+        QObject::connect(parser, &PerfParser::parsingFinished, parser, [&runningParsers, &app]() {
+            --runningParsers;
+            if (!runningParsers)
+                app.quit();
+        });
+        QObject::connect(parser, &PerfParser::parsingFailed, parser, [&runningParsers, &app](const QString& error) {
+            qWarning() << error;
+            --runningParsers;
+            if (!runningParsers)
+                app.quit();
+        });
+        QObject::connect(parser, &PerfParser::bottomUpDataAvailable, parser, [arg](const Data::BottomUpResults& data) {
+            qDebug() << arg;
+            dumpList(printTree(data));
+        });
+        QObject::connect(parser, &PerfParser::summaryDataAvailable, parser, [arg](const Data::Summary& data) {
+            qDebug() << "summary for" << arg;
+            qDebug() << "runtime:" << Util::formatTimeString(data.applicationRunningTime);
+            qDebug() << "on-CPU:" << Util::formatTimeString(data.onCpuTime);
+            qDebug() << "off-CPU:" << Util::formatTimeString(data.offCpuTime);
+        });
     }
 
     return app.exec();

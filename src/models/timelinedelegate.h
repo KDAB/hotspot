@@ -27,9 +27,9 @@
 
 #pragma once
 
+#include <QScopedPointer>
 #include <QStyledItemDelegate>
 #include <QVector>
-#include <QScopedPointer>
 
 #include "data.h"
 
@@ -41,10 +41,8 @@ struct TimeLineData
 {
     TimeLineData();
 
-    TimeLineData(const Data::Events& events, quint64 maxCost,
-                 quint64 minTime, quint64 maxTime,
-                 quint64 threadStartTime, quint64 threadEndTime,
-                 QRect rect);
+    TimeLineData(const Data::Events& events, quint64 maxCost, quint64 minTime, quint64 maxTime, quint64 threadStartTime,
+                 quint64 threadEndTime, QRect rect);
 
     int mapTimeToX(quint64 time) const;
 
@@ -76,11 +74,9 @@ public:
     explicit TimeLineDelegate(QAbstractItemView* view);
     virtual ~TimeLineDelegate();
 
-    void paint(QPainter* painter, const QStyleOptionViewItem& option,
-               const QModelIndex& index) const override;
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
-    bool helpEvent(QHelpEvent* event, QAbstractItemView* view,
-                   const QStyleOptionViewItem& option,
+    bool helpEvent(QHelpEvent* event, QAbstractItemView* view, const QStyleOptionViewItem& option,
                    const QModelIndex& index) override;
 
     void setEventType(int type);

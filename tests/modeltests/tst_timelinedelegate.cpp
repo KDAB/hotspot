@@ -25,9 +25,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <QDebug>
 #include <QObject>
 #include <QTest>
-#include <QDebug>
 #include <QTextStream>
 
 #include <models/timelinedelegate.h>
@@ -83,48 +83,30 @@ private slots:
         QRect rect(0, 0, 1000, 10);
         quint64 minTime = 1000;
         const quint64 maxTime = minTime + 10000;
-        TimeLineData data({}, 0,
-                          minTime, maxTime,
-                          minTime, maxTime,
-                          rect);
+        TimeLineData data({}, 0, minTime, maxTime, minTime, maxTime, rect);
         QCOMPARE(data.w, rect.width() - 2 * data.padding);
         QCOMPARE(data.h, rect.height() - 2 * data.padding);
 
-        QTest::newRow("minTime") << data
-            << 0 << minTime
-            << minTime << maxTime;
-        QTest::newRow("halfTime") << data
-            << (rect.width() / 2) << (minTime + (maxTime - minTime) / 2)
-            << minTime << maxTime;
-        QTest::newRow("maxTime") << data
-            << rect.width() << maxTime
-            << minTime << maxTime;
+        QTest::newRow("minTime") << data << 0 << minTime << minTime << maxTime;
+        QTest::newRow("halfTime") << data << (rect.width() / 2) << (minTime + (maxTime - minTime) / 2) << minTime
+                                  << maxTime;
+        QTest::newRow("maxTime") << data << rect.width() << maxTime << minTime << maxTime;
 
         // zoom into the 2nd half
         minTime = 6000;
         data.zoom(minTime, maxTime);
-        QTest::newRow("minTime_zoom_2nd_half") << data
-            << 0 << minTime
-            << minTime << maxTime;
-        QTest::newRow("halfTime_zoom_2nd_half") << data
-            << (rect.width() / 2) << (minTime + (maxTime - minTime) / 2)
-            << minTime << maxTime;
-        QTest::newRow("maxTime_zoom_2nd_half") << data
-            << rect.width() << maxTime
-            << minTime << maxTime;
+        QTest::newRow("minTime_zoom_2nd_half") << data << 0 << minTime << minTime << maxTime;
+        QTest::newRow("halfTime_zoom_2nd_half")
+            << data << (rect.width() / 2) << (minTime + (maxTime - minTime) / 2) << minTime << maxTime;
+        QTest::newRow("maxTime_zoom_2nd_half") << data << rect.width() << maxTime << minTime << maxTime;
 
         // zoom into the 4th quadrant
         minTime = 8500;
         data.zoom(minTime, maxTime);
-        QTest::newRow("minTime_zoom_4th_quadrant") << data
-            << 0 << minTime
-            << minTime << maxTime;
-        QTest::newRow("halfTime_zoom_4th_quadrant") << data
-            << (rect.width() / 2) << (minTime + (maxTime - minTime) / 2)
-            << minTime << maxTime;
-        QTest::newRow("maxTime_zoom_4th_quadrant") << data
-            << rect.width() << maxTime
-            << minTime << maxTime;
+        QTest::newRow("minTime_zoom_4th_quadrant") << data << 0 << minTime << minTime << maxTime;
+        QTest::newRow("halfTime_zoom_4th_quadrant")
+            << data << (rect.width() / 2) << (minTime + (maxTime - minTime) / 2) << minTime << maxTime;
+        QTest::newRow("maxTime_zoom_4th_quadrant") << data << rect.width() << maxTime << minTime << maxTime;
     }
 };
 

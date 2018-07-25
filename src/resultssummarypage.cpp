@@ -32,21 +32,21 @@
 #include <QStringListModel>
 #include <QTextStream>
 
-#include <KRecursiveFilterProxyModel>
-#include <KLocalizedString>
 #include <KFormat>
+#include <KLocalizedString>
+#include <KRecursiveFilterProxyModel>
 
 #include "parsers/perf/perfparser.h"
-#include "util.h"
 #include "resultsutil.h"
+#include "util.h"
 
-#include "models/hashmodel.h"
-#include "models/costdelegate.h"
-#include "models/treemodel.h"
-#include "models/topproxy.h"
 #include "models/callercalleemodel.h"
+#include "models/costdelegate.h"
+#include "models/hashmodel.h"
+#include "models/topproxy.h"
+#include "models/treemodel.h"
 
-ResultsSummaryPage::ResultsSummaryPage(PerfParser *parser, QWidget *parent)
+ResultsSummaryPage::ResultsSummaryPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsSummaryPage)
 {
@@ -62,18 +62,19 @@ ResultsSummaryPage::ResultsSummaryPage(PerfParser *parser, QWidget *parent)
 
     ui->topHotspotsTableView->setSortingEnabled(false);
     ui->topHotspotsTableView->setModel(topHotspotsProxy);
-    ResultsUtil::setupCostDelegate<BottomUpModel> (bottomUpCostModel, ui->topHotspotsTableView);
+    ResultsUtil::setupCostDelegate<BottomUpModel>(bottomUpCostModel, ui->topHotspotsTableView);
     ResultsUtil::stretchFirstColumn(ui->topHotspotsTableView);
     ResultsUtil::setupContextMenu(ui->topHotspotsTableView, bottomUpCostModel,
-                                  [this] (const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
+                                  [this](const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
 
-    connect(ui->eventSourceComboBox, static_cast<void (QComboBox::*) (int)>(&QComboBox::currentIndexChanged),
-            this, [topHotspotsProxy, this]() {
-                topHotspotsProxy->setCostColumn(ui->eventSourceComboBox->currentData().toInt() + BottomUpModel::NUM_BASE_COLUMNS);
+    connect(ui->eventSourceComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
+            [topHotspotsProxy, this]() {
+                topHotspotsProxy->setCostColumn(ui->eventSourceComboBox->currentData().toInt()
+                                                + BottomUpModel::NUM_BASE_COLUMNS);
             });
 
-    connect(parser, &PerfParser::bottomUpDataAvailable,
-            this, [this, bottomUpCostModel, topHotspotsProxy] (const Data::BottomUpResults& data) {
+    connect(parser, &PerfParser::bottomUpDataAvailable, this,
+            [this, bottomUpCostModel, topHotspotsProxy](const Data::BottomUpResults& data) {
                 bottomUpCostModel->setData(data);
                 ResultsUtil::hideEmptyColumns(data.costs, ui->topHotspotsTableView, BottomUpModel::NUM_BASE_COLUMNS);
                 ResultsUtil::fillEventSourceComboBox(ui->eventSourceComboBox, data.costs,
@@ -83,92 +84,96 @@ ResultsSummaryPage::ResultsSummaryPage(PerfParser *parser, QWidget *parent)
     auto parserErrorsModel = new QStringListModel(this);
     ui->parserErrorsView->setModel(parserErrorsModel);
 
-    connect(parser, &PerfParser::summaryDataAvailable,
-            this, [this, parserErrorsModel] (const Data::Summary& data) {
-                auto formatSummaryText = [] (const QString& description, const QString& value) -> QString {
-                    return QString(QLatin1String("<tr><td>") + description + QLatin1String(": </td><td>")
-                                   + value + QLatin1String("</td></tr>"));
-                };
+    connect(parser, &PerfParser::summaryDataAvailable, this, [this, parserErrorsModel](const Data::Summary& data) {
+        auto formatSummaryText = [](const QString& description, const QString& value) -> QString {
+            return QString(QLatin1String("<tr><td>") + description + QLatin1String(": </td><td>") + value
+                           + QLatin1String("</td></tr>"));
+        };
 
-                QString summaryText;
-                {
-                    const auto indent = QLatin1String("&nbsp;&nbsp;&nbsp;&nbsp;");
-                    QTextStream stream(&summaryText);
-                    stream << "<qt><table>"
-                           << formatSummaryText(tr("Command"), QLatin1String("<tt>") + data.command.toHtmlEscaped() + QLatin1String("</tt>"))
-                           << formatSummaryText(tr("Run Time"), Util::formatTimeString(data.applicationRunningTime));
-                    if (data.offCpuTime > 0 || data.onCpuTime > 0) {
-                        stream << formatSummaryText(indent + tr("On CPU Time"), Util::formatTimeString(data.onCpuTime))
-                               << formatSummaryText(indent + tr("Off CPU Time"), Util::formatTimeString(data.offCpuTime));
-                    }
-                    stream << formatSummaryText(tr("Processes"), QString::number(data.processCount))
-                           << formatSummaryText(tr("Threads"), QString::number(data.threadCount));
-                    if (data.offCpuTime > 0 || data.onCpuTime > 0) {
-                        stream << formatSummaryText(indent + tr("Avg. Running"), Util::formatCostRelative(data.onCpuTime, data.applicationRunningTime * 100))
-                               << formatSummaryText(indent + tr("Avg. Sleeping"), Util::formatCostRelative(data.offCpuTime, data.applicationRunningTime * 100));
-                    }
-                    stream << formatSummaryText(tr("Total Samples"), tr("%1 (%4)")
-                                .arg(QString::number(data.sampleCount), Util::formatFrequency(data.sampleCount, data.applicationRunningTime)));
-                    for (const auto& costSummary : data.costs) {
-                        if (!costSummary.sampleCount) {
-                            continue;
-                        }
-                        if (costSummary.unit == Data::Costs::Unit::Time) {
-                            // we show the on/off CPU time already above
-                            continue;
-                        }
-                        stream << formatSummaryText(indent + costSummary.label.toHtmlEscaped(),
-                                                    tr("%1 (%2 samples, %3% of total, %4)")
-                                                        .arg(Util::formatCost(costSummary.totalPeriod),
-                                                             Util::formatCost(costSummary.sampleCount),
-                                                             Util::formatCostRelative(costSummary.sampleCount, data.sampleCount),
-                                                             Util::formatFrequency(costSummary.sampleCount, data.applicationRunningTime)));
-                        if ((costSummary.sampleCount * 1E9 / data.applicationRunningTime) < 100) {
-                            stream << formatSummaryText(indent + tr("<b>WARNING</b>"), tr("Sampling frequency below 100Hz"));
-                        }
-                    }
-                    stream << formatSummaryText(tr("Lost Chunks"), QString::number(data.lostChunks))
-                           << "</table></qt>";
+        QString summaryText;
+        {
+            const auto indent = QLatin1String("&nbsp;&nbsp;&nbsp;&nbsp;");
+            QTextStream stream(&summaryText);
+            stream << "<qt><table>"
+                   << formatSummaryText(tr("Command"),
+                                        QLatin1String("<tt>") + data.command.toHtmlEscaped() + QLatin1String("</tt>"))
+                   << formatSummaryText(tr("Run Time"), Util::formatTimeString(data.applicationRunningTime));
+            if (data.offCpuTime > 0 || data.onCpuTime > 0) {
+                stream << formatSummaryText(indent + tr("On CPU Time"), Util::formatTimeString(data.onCpuTime))
+                       << formatSummaryText(indent + tr("Off CPU Time"), Util::formatTimeString(data.offCpuTime));
+            }
+            stream << formatSummaryText(tr("Processes"), QString::number(data.processCount))
+                   << formatSummaryText(tr("Threads"), QString::number(data.threadCount));
+            if (data.offCpuTime > 0 || data.onCpuTime > 0) {
+                stream << formatSummaryText(indent + tr("Avg. Running"),
+                                            Util::formatCostRelative(data.onCpuTime, data.applicationRunningTime * 100))
+                       << formatSummaryText(
+                              indent + tr("Avg. Sleeping"),
+                              Util::formatCostRelative(data.offCpuTime, data.applicationRunningTime * 100));
+            }
+            stream << formatSummaryText(
+                tr("Total Samples"),
+                tr("%1 (%4)").arg(QString::number(data.sampleCount),
+                                  Util::formatFrequency(data.sampleCount, data.applicationRunningTime)));
+            for (const auto& costSummary : data.costs) {
+                if (!costSummary.sampleCount) {
+                    continue;
                 }
-                ui->summaryLabel->setText(summaryText);
+                if (costSummary.unit == Data::Costs::Unit::Time) {
+                    // we show the on/off CPU time already above
+                    continue;
+                }
+                stream << formatSummaryText(
+                    indent + costSummary.label.toHtmlEscaped(),
+                    tr("%1 (%2 samples, %3% of total, %4)")
+                        .arg(Util::formatCost(costSummary.totalPeriod), Util::formatCost(costSummary.sampleCount),
+                             Util::formatCostRelative(costSummary.sampleCount, data.sampleCount),
+                             Util::formatFrequency(costSummary.sampleCount, data.applicationRunningTime)));
+                if ((costSummary.sampleCount * 1E9 / data.applicationRunningTime) < 100) {
+                    stream << formatSummaryText(indent + tr("<b>WARNING</b>"), tr("Sampling frequency below 100Hz"));
+                }
+            }
+            stream << formatSummaryText(tr("Lost Chunks"), QString::number(data.lostChunks)) << "</table></qt>";
+        }
+        ui->summaryLabel->setText(summaryText);
 
-                QString systemInfoText;
-                if (!data.hostName.isEmpty()) {
-                    KFormat format;
-                    QTextStream stream(&systemInfoText);
-                    stream << "<qt><table>"
-                           << formatSummaryText(tr("Host Name"), data.hostName)
-                           << formatSummaryText(tr("Linux Kernel Version"), data.linuxKernelVersion)
-                           << formatSummaryText(tr("Perf Version"), data.perfVersion)
-                           << formatSummaryText(tr("CPU Description"), data.cpuDescription)
-                           << formatSummaryText(tr("CPU ID"), data.cpuId)
-                           << formatSummaryText(tr("CPU Architecture"), data.cpuArchitecture)
-                           << formatSummaryText(tr("CPUs Online"), QString::number(data.cpusOnline))
-                           << formatSummaryText(tr("CPUs Available"), QString::number(data.cpusAvailable))
-                           << formatSummaryText(tr("CPU Sibling Cores"), data.cpuSiblingCores)
-                           << formatSummaryText(tr("CPU Sibling Threads"), data.cpuSiblingThreads)
-                           << formatSummaryText(tr("Total Memory"), format.formatByteSize(data.totalMemoryInKiB * 1024, 1, KFormat::MetricBinaryDialect))
-                           << "</table></qt>";
-                }
-                ui->systemInfoGroupBox->setVisible(!systemInfoText.isEmpty());
-                ui->systemInfoLabel->setText(systemInfoText);
+        QString systemInfoText;
+        if (!data.hostName.isEmpty()) {
+            KFormat format;
+            QTextStream stream(&systemInfoText);
+            stream << "<qt><table>" << formatSummaryText(tr("Host Name"), data.hostName)
+                   << formatSummaryText(tr("Linux Kernel Version"), data.linuxKernelVersion)
+                   << formatSummaryText(tr("Perf Version"), data.perfVersion)
+                   << formatSummaryText(tr("CPU Description"), data.cpuDescription)
+                   << formatSummaryText(tr("CPU ID"), data.cpuId)
+                   << formatSummaryText(tr("CPU Architecture"), data.cpuArchitecture)
+                   << formatSummaryText(tr("CPUs Online"), QString::number(data.cpusOnline))
+                   << formatSummaryText(tr("CPUs Available"), QString::number(data.cpusAvailable))
+                   << formatSummaryText(tr("CPU Sibling Cores"), data.cpuSiblingCores)
+                   << formatSummaryText(tr("CPU Sibling Threads"), data.cpuSiblingThreads)
+                   << formatSummaryText(
+                          tr("Total Memory"),
+                          format.formatByteSize(data.totalMemoryInKiB * 1024, 1, KFormat::MetricBinaryDialect))
+                   << "</table></qt>";
+        }
+        ui->systemInfoGroupBox->setVisible(!systemInfoText.isEmpty());
+        ui->systemInfoLabel->setText(systemInfoText);
 
-                if (data.lostChunks > 0) {
-                    ui->lostMessage->setText(i18np("Lost one chunk - Check IO/CPU overload!",
-                                                   "Lost %1 chunks - Check IO/CPU overload!",
-                                                   data.lostChunks));
-                    ui->lostMessage->setVisible(true);
-                } else {
-                    ui->lostMessage->setVisible(false);
-                }
+        if (data.lostChunks > 0) {
+            ui->lostMessage->setText(i18np("Lost one chunk - Check IO/CPU overload!",
+                                           "Lost %1 chunks - Check IO/CPU overload!", data.lostChunks));
+            ui->lostMessage->setVisible(true);
+        } else {
+            ui->lostMessage->setVisible(false);
+        }
 
-                if (data.errors.isEmpty()) {
-                    ui->parserErrorsBox->setVisible(false);
-                } else {
-                    parserErrorsModel->setStringList(data.errors);
-                    ui->parserErrorsBox->setVisible(true);
-                }
-            });
+        if (data.errors.isEmpty()) {
+            ui->parserErrorsBox->setVisible(false);
+        } else {
+            parserErrorsModel->setStringList(data.errors);
+            ui->parserErrorsBox->setVisible(true);
+        }
+    });
 }
 
 ResultsSummaryPage::~ResultsSummaryPage() = default;

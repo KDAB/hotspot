@@ -57,11 +57,13 @@ QVariant BottomUpModel::headerColumnData(int column, int role) const
         case Symbol:
             return tr("The symbol's function name. May be empty when debug information is missing.");
         case Binary:
-            return tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
+            return tr(
+                "The name of the executable the symbol resides in. May be empty when debug information is missing.");
         }
 
-        return tr("The symbol's inclusive cost of type \"%1\", i.e. the aggregated sample costs attributed to this symbol, both directly and indirectly.")
-                .arg(m_results.costs.typeName(column - NUM_BASE_COLUMNS));
+        return tr("The symbol's inclusive cost of type \"%1\", i.e. the aggregated sample costs attributed to this "
+                  "symbol, both directly and indirectly.")
+            .arg(m_results.costs.typeName(column - NUM_BASE_COLUMNS));
     } else {
         return {};
     }
@@ -123,20 +125,24 @@ QVariant TopDownModel::headerColumnData(int column, int role) const
         case Symbol:
             return tr("The symbol's function name. May be empty when debug information is missing.");
         case Binary:
-            return tr("The name of the executable the symbol resides in. May be empty when debug information is missing.");
+            return tr(
+                "The name of the executable the symbol resides in. May be empty when debug information is missing.");
         }
         column -= NUM_BASE_COLUMNS;
         if (column < m_results.inclusiveCosts.numTypes()) {
-            return tr("The symbol's inclusive cost of type \"%1\", i.e. the aggregated sample costs attributed to this symbol, "
-                      "both directly and indirectly. This includes the costs of all functions called by this symbol plus "
+            return tr("The symbol's inclusive cost of type \"%1\", i.e. the aggregated sample costs attributed to this "
+                      "symbol, "
+                      "both directly and indirectly. This includes the costs of all functions called by this symbol "
+                      "plus "
                       "its self cost.")
-                    .arg(m_results.inclusiveCosts.typeName(column));
+                .arg(m_results.inclusiveCosts.typeName(column));
         }
 
         column -= m_results.inclusiveCosts.numTypes();
-        return tr("The symbol's self cost of type \"%1\", i.e. the aggregated sample costs directly attributed to this symbol. "
+        return tr("The symbol's self cost of type \"%1\", i.e. the aggregated sample costs directly attributed to this "
+                  "symbol. "
                   "This excludes the costs of all functions called by this symbol.")
-                .arg(m_results.selfCosts.typeName(column));
+            .arg(m_results.selfCosts.typeName(column));
     } else {
         return {};
     }
@@ -176,9 +182,7 @@ QVariant TopDownModel::rowData(const Data::TopDown* row, int column, int role) c
         column -= m_results.inclusiveCosts.numTypes();
         return m_results.selfCosts.totalCost(column);
     } else if (role == Qt::ToolTipRole) {
-        return Util::formatTooltip(row->id, row->symbol,
-                                   m_results.selfCosts,
-                                   m_results.inclusiveCosts);
+        return Util::formatTooltip(row->id, row->symbol, m_results.selfCosts, m_results.inclusiveCosts);
     } else {
         return {};
     }
@@ -186,7 +190,5 @@ QVariant TopDownModel::rowData(const Data::TopDown* row, int column, int role) c
 
 int TopDownModel::numColumns() const
 {
-    return NUM_BASE_COLUMNS
-           + m_results.selfCosts.numTypes()
-           + m_results.inclusiveCosts.numTypes();
+    return NUM_BASE_COLUMNS + m_results.selfCosts.numTypes() + m_results.inclusiveCosts.numTypes();
 }

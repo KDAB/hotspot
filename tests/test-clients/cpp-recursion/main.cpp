@@ -23,10 +23,10 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <string>
 #include <iostream>
+#include <string>
 
-unsigned long long  __attribute__((noinline)) fibonacci(unsigned i)
+unsigned long long __attribute__((noinline)) fibonacci(unsigned i)
 {
     if (i == 0 || i == 1)
         return 1ull;

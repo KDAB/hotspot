@@ -43,39 +43,32 @@ struct Symbol;
 namespace ResultsUtil {
 void stretchFirstColumn(QTreeView* view);
 
-void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter,
-                   QAbstractItemModel* model, int initialSortColumn,
+void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, QAbstractItemModel* model, int initialSortColumn,
                    int sortRole, int filterRole);
 
 template<typename Model>
 void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, Model* model)
 {
-    setupTreeView(view, filter, model, Model::InitialSortColumn,
-                  Model::SortRole, Model::FilterRole);
+    setupTreeView(view, filter, model, Model::InitialSortColumn, Model::SortRole, Model::FilterRole);
 }
 
-void setupCostDelegate(QAbstractItemModel* model, QTreeView* view,
-                       int sortRole, int totalCostRole, int numBaseColumns);
+void setupCostDelegate(QAbstractItemModel* model, QTreeView* view, int sortRole, int totalCostRole, int numBaseColumns);
 
 template<typename Model>
 void setupCostDelegate(Model* model, QTreeView* view)
 {
-    setupCostDelegate(model, view, Model::SortRole, Model::TotalCostRole,
-                      Model::NUM_BASE_COLUMNS);
+    setupCostDelegate(model, view, Model::SortRole, Model::TotalCostRole, Model::NUM_BASE_COLUMNS);
 }
 
-void setupContextMenu(QTreeView* view, int symbolRole,
-                      std::function<void(const Data::Symbol&)> callback);
+void setupContextMenu(QTreeView* view, int symbolRole, std::function<void(const Data::Symbol&)> callback);
 
 template<typename Model>
-void setupContextMenu(QTreeView* view, Model* /*model*/,
-                      std::function<void(const Data::Symbol&)> callback)
+void setupContextMenu(QTreeView* view, Model* /*model*/, std::function<void(const Data::Symbol&)> callback)
 {
     setupContextMenu(view, Model::SymbolRole, callback);
 }
 
 void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns);
 
-void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs,
-                             const KLocalizedString& tooltipTemplate);
+void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs, const KLocalizedString& tooltipTemplate);
 }

@@ -38,12 +38,14 @@ public:
     explicit EventModel(QObject* parent = nullptr);
     virtual ~EventModel();
 
-    enum Columns {
+    enum Columns
+    {
         ThreadColumn = 0,
         EventsColumn,
         NUM_COLUMNS
     };
-    enum Roles {
+    enum Roles
+    {
         EventsRole = Qt::UserRole,
         MaxTimeRole,
         MinTimeRole,

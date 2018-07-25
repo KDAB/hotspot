@@ -31,10 +31,10 @@
 #include <QStringList>
 #include <QTextStream>
 
-#include <models/data.h>
-#include <models/treemodel.h>
-#include <models/topproxy.h>
 #include <models/callercalleemodel.h>
+#include <models/data.h>
+#include <models/topproxy.h>
+#include <models/treemodel.h>
 
 #include <algorithm>
 
@@ -85,17 +85,15 @@ inline QStringList printMap(const Data::CallerCalleeResults& results)
         ids.insert(it->id);
         list.push_back(it.key().symbol + '=' + printCost(it.value(), results));
         QStringList subList;
-        for (auto callersIt = it->callers.begin(), callersEnd = it->callers.end();
-             callersIt != callersEnd; ++callersIt)
-        {
+        for (auto callersIt = it->callers.begin(), callersEnd = it->callers.end(); callersIt != callersEnd;
+             ++callersIt) {
             subList.push_back(it.key().symbol + '<' + callersIt.key().symbol + '='
-                                + QString::number(callersIt.value()[0]));
+                              + QString::number(callersIt.value()[0]));
         }
-        for (auto calleesIt = it->callees.begin(), calleesEnd = it->callees.end();
-             calleesIt != calleesEnd; ++calleesIt)
-        {
+        for (auto calleesIt = it->callees.begin(), calleesEnd = it->callees.end(); calleesIt != calleesEnd;
+             ++calleesIt) {
             subList.push_back(it.key().symbol + '>' + calleesIt.key().symbol + '='
-                                + QString::number(calleesIt.value()[0]));
+                              + QString::number(calleesIt.value()[0]));
         }
         subList.sort();
         list += subList;
@@ -110,10 +108,9 @@ inline QStringList printMap(const Data::CallerCalleeResults& results)
         }
         return string.midRef(0, idx);
     };
-    std::stable_sort(list.begin(), list.end(),
-                    [symbolSubString](const QString& lhs, const QString& rhs) {
-                        return symbolSubString(lhs) < symbolSubString(rhs);
-                    });
+    std::stable_sort(list.begin(), list.end(), [symbolSubString](const QString& lhs, const QString& rhs) {
+        return symbolSubString(lhs) < symbolSubString(rhs);
+    });
     return list;
 };
 
@@ -126,23 +123,16 @@ inline QStringList printCallerCalleeModel(const CallerCalleeModel& model)
         const auto symbol = symbolIndex.data().toString();
         const auto& selfCostIndex = model.index(i, CallerCalleeModel::Binary + 1);
         const auto& inclusiveCostIndex = model.index(i, CallerCalleeModel::Binary + 2);
-        list.push_back(symbol
-                        + "=s:" + selfCostIndex.data(CallerCalleeModel::SortRole).toString()
-                        + ",i:" + inclusiveCostIndex.data(CallerCalleeModel::SortRole).toString());
+        list.push_back(symbol + "=s:" + selfCostIndex.data(CallerCalleeModel::SortRole).toString()
+                       + ",i:" + inclusiveCostIndex.data(CallerCalleeModel::SortRole).toString());
         QStringList subList;
         const auto& callers = symbolIndex.data(CallerCalleeModel::CallersRole).value<Data::CallerMap>();
-        for (auto callersIt = callers.begin(), callersEnd = callers.end();
-             callersIt != callersEnd; ++callersIt)
-        {
-            subList.push_back(symbol + '<' + callersIt.key().symbol + '='
-                                + QString::number(callersIt.value()[0]));
+        for (auto callersIt = callers.begin(), callersEnd = callers.end(); callersIt != callersEnd; ++callersIt) {
+            subList.push_back(symbol + '<' + callersIt.key().symbol + '=' + QString::number(callersIt.value()[0]));
         }
         const auto& callees = symbolIndex.data(CallerCalleeModel::CalleesRole).value<Data::CalleeMap>();
-        for (auto calleesIt = callees.begin(), calleesEnd = callees.end();
-             calleesIt != calleesEnd; ++calleesIt)
-        {
-            subList.push_back(symbol + '>' + calleesIt.key().symbol + '='
-                                + QString::number(calleesIt.value()[0]));
+        for (auto calleesIt = callees.begin(), calleesEnd = callees.end(); calleesIt != calleesEnd; ++calleesIt) {
+            subList.push_back(symbol + '>' + calleesIt.key().symbol + '=' + QString::number(calleesIt.value()[0]));
         }
         subList.sort();
         list += subList;
@@ -157,10 +147,9 @@ inline QStringList printCallerCalleeModel(const CallerCalleeModel& model)
         }
         return string.midRef(0, idx);
     };
-    std::stable_sort(list.begin(), list.end(),
-                    [symbolSubString](const QString& lhs, const QString& rhs) {
-                        return symbolSubString(lhs) < symbolSubString(rhs);
-                    });
+    std::stable_sort(list.begin(), list.end(), [symbolSubString](const QString& lhs, const QString& rhs) {
+        return symbolSubString(lhs) < symbolSubString(rhs);
+    });
     return list;
 };
 

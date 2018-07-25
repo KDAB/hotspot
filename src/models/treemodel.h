@@ -38,7 +38,8 @@ public:
     explicit AbstractTreeModel(QObject* parent = nullptr);
     ~AbstractTreeModel();
 
-    enum Roles {
+    enum Roles
+    {
         SortRole = Qt::UserRole,
         TotalCostRole,
         FilterRole,
@@ -53,7 +54,8 @@ public:
     using TreeNode = TreeNode_t;
     TreeModel(QObject* parent = nullptr)
         : AbstractTreeModel(parent)
-    {}
+    {
+    }
     ~TreeModel() = default;
 
     int rowCount(const QModelIndex& parent = {}) const final override
@@ -175,7 +177,8 @@ public:
     using Base = TreeModel<decltype(Results::root), ModelImpl>;
     CostTreeModel(QObject* parent = nullptr)
         : Base(parent)
-    {}
+    {
+    }
     ~CostTreeModel() = default;
 
     using Base::setData;
@@ -201,11 +204,13 @@ class BottomUpModel : public CostTreeModel<Data::BottomUpResults, BottomUpModel>
 public:
     explicit BottomUpModel(QObject* parent = nullptr);
     ~BottomUpModel();
-    enum Columns {
+    enum Columns
+    {
         Symbol = 0,
         Binary,
     };
-    enum {
+    enum
+    {
         NUM_BASE_COLUMNS = Binary + 1,
         InitialSortColumn = Binary + 1 // the first cost column
     };
@@ -222,11 +227,13 @@ public:
     explicit TopDownModel(QObject* parent = nullptr);
     ~TopDownModel();
 
-    enum Columns {
+    enum Columns
+    {
         Symbol = 0,
         Binary,
     };
-    enum {
+    enum
+    {
         NUM_BASE_COLUMNS = Binary + 1,
         InitialSortColumn = Binary + 1 // the first cost column
     };
