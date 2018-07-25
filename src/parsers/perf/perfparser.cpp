@@ -1012,6 +1012,13 @@ public:
 
         QSet<Data::Symbol> recursionGuard;
         const auto type = attributeIdsToCostIds.value(sampleCost.attributeId, -1);
+
+        if (type < 0) {
+            qCWarning(LOG_PERFPARSER) << "Unexpected attribute id:" << sampleCost.attributeId << "Only know about"
+                                      << attributeIdsToCostIds.size() << "attributes so far";
+            return;
+        }
+
         auto frameCallback = [this, &recursionGuard, &sampleCost, type] (const Data::Symbol& symbol, const Data::Location& location)
         {
             addCallerCalleeEvent(symbol, location, type, sampleCost.cost,
