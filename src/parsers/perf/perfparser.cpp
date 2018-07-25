@@ -1072,8 +1072,8 @@ public:
         for (const auto& sampleCost : sample.costs) {
             const auto type = attributeIdsToCostIds.value(sampleCost.attributeId, -1);
             if (type < 0) {
-                qWarning() << "Unexpected attribute id:" << sampleCost.attributeId
-                        << "Only know about" << attributeIdsToCostIds.size() << "attributes so far";
+                qCWarning(LOG_PERFPARSER) << "Unexpected attribute id:" << sampleCost.attributeId << "Only know about"
+                                          << attributeIdsToCostIds.size() << "attributes so far";
             } else {
                 auto& costSummary = summaryResult.costs[type];
                 ++costSummary.sampleCount;
