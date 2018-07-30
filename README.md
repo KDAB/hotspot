@@ -158,11 +158,7 @@ If you need help building this project for your platform, [contact us for help](
 
 ### ArchLinux
 
-Install hotspot via AUR (https://aur.archlinux.org/packages/hotspot)
-
-```
-pacman -S hotspot
-```
+hotspot is available in AUR (https://aur.archlinux.org/packages/hotspot).
 
 ### For any Linux distro: AppImage
 
