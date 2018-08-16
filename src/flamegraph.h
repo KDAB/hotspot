@@ -45,7 +45,7 @@ class FlameGraph : public QWidget
 {
     Q_OBJECT
 public:
-    explicit FlameGraph(QWidget* parent = nullptr, Qt::WindowFlags flags = 0);
+    explicit FlameGraph(QWidget* parent = nullptr, Qt::WindowFlags flags = {});
     ~FlameGraph();
 
     void setTopDownData(const Data::TopDownResults& topDownData);

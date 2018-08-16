@@ -563,7 +563,7 @@ void FlameGraph::setBottomUpData(const Data::BottomUpResults& bottomUpData)
 {
     m_bottomUpData = bottomUpData;
 
-    disconnect(m_costSource, 0, this, 0);
+    disconnect(m_costSource, nullptr, this, nullptr);
     ResultsUtil::fillEventSourceComboBox(m_costSource, bottomUpData.costs,
                                          ki18n("Show a flame graph over the aggregated %1 sample costs."));
     connect(m_costSource, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
