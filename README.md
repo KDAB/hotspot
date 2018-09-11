@@ -125,7 +125,9 @@ dnf install cmake gcc glibc-static gcc-c++ libstdc++-static qt5 qt5-devel \
 ### Arch Linux
 ```
 pacman -Sy cmake gcc extra-cmake-modules threadweaver ki18n kconfigwidgets \
-    kitemviews kitemmodels kwindowsystem kio solid libelf gettext qt5-base
+    kitemviews kitemmodels kwindowsystem kio solid libelf gettext qt5-base \
+    kauth kcoreaddons kcodecs kconfig kwidgetaddons kservice kbookmarks \
+    kcompletion kjobwidgets kxmlgui
 ```
 
 ### OpenSUSE
