@@ -642,6 +642,7 @@ public:
         case EventType::Sample45:
             qCWarning(LOG_PERFPARSER) << "unexpected legacy type encountered" << eventType;
             break;
+        case EventType::TracePointSample:
         case EventType::Sample: {
             Sample sample;
             stream >> sample;
@@ -657,6 +658,9 @@ public:
 
             addRecord(sample);
             addSample(sample);
+
+            if (static_cast<EventType>(eventType) == EventType::TracePointSample)
+                return true; // TODO: read full data
             break;
         }
         case EventType::ThreadStart: {
@@ -750,10 +754,8 @@ public:
             break;
         }
         case EventType::TracePointFormat:
-        case EventType::TracePointSample: {
             // TODO: implement me
             return true;
-        }
         case EventType::InvalidType:
             break;
         }
