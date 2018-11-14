@@ -47,6 +47,8 @@
 #include <QEvent>
 #include <QProgressBar>
 
+static const int SUMMARY_TABINDEX = 0;
+
 ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsPage)
@@ -56,11 +58,12 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     , m_resultsFlameGraphPage(new ResultsFlameGraphPage(parser, this))
     , m_resultsCallerCalleePage(new ResultsCallerCalleePage(parser, this))
     , m_filterBusyIndicator(nullptr) // create after we setup the UI to keep it on top
+    , m_timelineVisible(true)
 {
     ui->setupUi(this);
 
     ui->resultsTabWidget->setFocus();
-    const int summaryTabIndex = ui->resultsTabWidget->addTab(m_resultsSummaryPage, tr("Summary"));
+    ui->resultsTabWidget->addTab(m_resultsSummaryPage, tr("Summary"));
     ui->resultsTabWidget->addTab(m_resultsBottomUpPage, tr("Bottom Up"));
     ui->resultsTabWidget->addTab(m_resultsTopDownPage, tr("Top Down"));
     ui->resultsTabWidget->addTab(m_resultsFlameGraphPage, tr("Flame Graph"));
@@ -119,7 +122,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
 
     ui->timeLineArea->hide();
     connect(ui->resultsTabWidget, &QTabWidget::currentChanged, this,
-            [this, summaryTabIndex](int index) { ui->timeLineArea->setVisible(index != summaryTabIndex); });
+            [this](int index) { ui->timeLineArea->setVisible(index != SUMMARY_TABINDEX && m_timelineVisible); });
     connect(parser, &PerfParser::parsingStarted, this, [this]() {
         // disable when we apply a filter
         // TODO: show some busy indicator?
@@ -202,4 +205,10 @@ void ResultsPage::repositionFilterBusyIndicator()
     rect.adjust(dx, dy, -dx, -dy);
     QRect mapped(ui->timeLineView->mapTo(this, rect.topLeft()), ui->timeLineView->mapTo(this, rect.bottomRight()));
     m_filterBusyIndicator->setGeometry(mapped);
+}
+
+void ResultsPage::setTimelineVisible(bool visible)
+{
+    m_timelineVisible = visible;
+    ui->timeLineArea->setVisible(visible && ui->resultsTabWidget->currentIndex() != SUMMARY_TABINDEX);
 }

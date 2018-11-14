@@ -44,8 +44,14 @@
      <string>Setti&amp;ngs</string>
     </property>
    </widget>
+   <widget class="QMenu" name="viewMenu">
+    <property name="title">
+     <string>View</string>
+    </property>
+   </widget>
    <addaction name="fileMenu"/>
    <addaction name="settingsMenu"/>
+   <addaction name="viewMenu"/>
    <addaction name="helpMenu"/>
   </widget>
   <action name="actionAbout_Hotspot">

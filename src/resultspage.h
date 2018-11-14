@@ -59,6 +59,7 @@ public:
 public slots:
     void onNavigateToCode(const QString& url, int lineNumber, int columnNumber);
     void onJumpToCallerCallee(const Data::Symbol& symbol);
+    void setTimelineVisible(bool visible);
 
 signals:
     void navigateToCode(const QString& url, int lineNumber, int columnNumber);
@@ -75,4 +76,5 @@ private:
     ResultsFlameGraphPage* m_resultsFlameGraphPage;
     ResultsCallerCalleePage* m_resultsCallerCalleePage;
     QWidget* m_filterBusyIndicator;
+    bool m_timelineVisible;
 };

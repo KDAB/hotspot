@@ -148,6 +148,12 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionAbout_KDAB, &QAction::triggered, this, &MainWindow::aboutKDAB);
     connect(ui->actionAbout_Hotspot, &QAction::triggered, this, &MainWindow::aboutHotspot);
 
+    auto *showTimelineAction = ui->viewMenu->addAction(tr("Show Timeline"));
+    showTimelineAction->setCheckable(true);
+    showTimelineAction->setChecked(true);
+    showTimelineAction->setShortcut(tr("Ctrl+T"));
+    connect(showTimelineAction, &QAction::toggled, m_resultsPage, &ResultsPage::setTimelineVisible);
+
     setupCodeNavigationMenu();
     setupPathSettingsMenu();
 
