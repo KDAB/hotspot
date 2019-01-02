@@ -1,4 +1,4 @@
- The Hotspot software is Copyright (C) 2016-2018 Klaralvdalens Datakonsult AB.
+ The Hotspot software is Copyright (C) 2016-2019 Klaralvdalens Datakonsult AB.
 
  You may use, distribute and copy the Hotspot software under the terms of
  the GNU General Public License version 2 or under the terms of GNU General
