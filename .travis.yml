@@ -36,7 +36,7 @@ script:
   - set -e # Exit immediately if anything fails
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DAPPIMAGE_BUILD=ON
+  - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DAPPIMAGE_BUILD=ON
   - make -j$(nproc)
   - make DESTDIR=appdir install ; find appdir/
   - mkdir -p appdir/usr/share/applications/ # FIXME: Do in CMakeLists.txt
