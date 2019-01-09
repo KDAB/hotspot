@@ -1,0 +1,6 @@
+build*/
+.git
+*.AppImage
+**/perf.data
+**/perf.data.old
+**/a.out
