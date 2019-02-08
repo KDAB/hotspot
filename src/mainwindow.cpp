@@ -154,6 +154,9 @@ MainWindow::MainWindow(QWidget* parent)
     showTimelineAction->setShortcut(tr("Ctrl+T"));
     connect(showTimelineAction, &QAction::toggled, m_resultsPage, &ResultsPage::setTimelineVisible);
 
+    ui->viewMenu->addSeparator();
+    ui->viewMenu->addActions(m_resultsPage->filterMenu()->actions());
+
     setupCodeNavigationMenu();
     setupPathSettingsMenu();
 

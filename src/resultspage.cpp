@@ -58,6 +58,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     , m_resultsFlameGraphPage(new ResultsFlameGraphPage(parser, this))
     , m_resultsCallerCalleePage(new ResultsCallerCalleePage(parser, this))
     , m_filterBusyIndicator(nullptr) // create after we setup the UI to keep it on top
+    , m_timeLineDelegate(nullptr)
     , m_timelineVisible(true)
 {
     ui->setupUi(this);
@@ -89,9 +90,9 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     // due to the increased width leading to a zoom effect
     ui->timeLineView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
-    auto* timeLineDelegate = new TimeLineDelegate(ui->timeLineView);
-    ui->timeLineEventFilterButton->setMenu(timeLineDelegate->filterMenu());
-    ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, timeLineDelegate);
+    m_timeLineDelegate = new TimeLineDelegate(ui->timeLineView);
+    ui->timeLineEventFilterButton->setMenu(m_timeLineDelegate->filterMenu());
+    ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, m_timeLineDelegate);
 
     connect(timeLineProxy, &QAbstractItemModel::rowsInserted, this, [this]() { ui->timeLineView->expandToDepth(1); });
     connect(timeLineProxy, &QAbstractItemModel::modelReset, this, [this]() { ui->timeLineView->expandToDepth(1); });
@@ -112,12 +113,12 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
             }
         }
     });
-    connect(timeLineDelegate, &TimeLineDelegate::filterRequested, parser, &PerfParser::filterResults);
+    connect(m_timeLineDelegate, &TimeLineDelegate::filterRequested, parser, &PerfParser::filterResults);
 
     connect(ui->timeLineEventSource, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
-            [this, timeLineDelegate](int index) {
+            [this](int index) {
                 const auto typeId = ui->timeLineEventSource->itemData(index).toInt();
-                timeLineDelegate->setEventType(typeId);
+                m_timeLineDelegate->setEventType(typeId);
             });
 
     ui->timeLineArea->hide();
@@ -187,6 +188,11 @@ void ResultsPage::onJumpToCallerCallee(const Data::Symbol& symbol)
 void ResultsPage::selectSummaryTab()
 {
     ui->resultsTabWidget->setCurrentWidget(m_resultsSummaryPage);
+}
+
+QMenu* ResultsPage::filterMenu() const
+{
+    return m_timeLineDelegate->filterMenu();
 }
 
 bool ResultsPage::eventFilter(QObject* watched, QEvent* event)

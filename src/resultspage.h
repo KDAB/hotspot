@@ -29,6 +29,8 @@
 
 #include <QWidget>
 
+class QMenu;
+
 namespace Ui {
 class ResultsPage;
 }
@@ -43,6 +45,7 @@ class ResultsBottomUpPage;
 class ResultsTopDownPage;
 class ResultsFlameGraphPage;
 class ResultsCallerCalleePage;
+class TimeLineDelegate;
 
 class ResultsPage : public QWidget
 {
@@ -55,6 +58,7 @@ public:
     void setAppPath(const QString& path);
 
     void selectSummaryTab();
+    QMenu* filterMenu() const;
 
 public slots:
     void onNavigateToCode(const QString& url, int lineNumber, int columnNumber);
@@ -75,6 +79,7 @@ private:
     ResultsTopDownPage* m_resultsTopDownPage;
     ResultsFlameGraphPage* m_resultsFlameGraphPage;
     ResultsCallerCalleePage* m_resultsCallerCalleePage;
+    TimeLineDelegate* m_timeLineDelegate;
     QWidget* m_filterBusyIndicator;
     bool m_timelineVisible;
 };
