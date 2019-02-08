@@ -600,16 +600,62 @@ struct EventResults
     }
 };
 
+struct TimeRange
+{
+    TimeRange() = default;
+    TimeRange(quint64 start, quint64 end)
+        : start(start)
+        , end(end)
+    {}
+
+    quint64 start = 0;
+    quint64 end = 0;
+
+    bool isValid() const
+    {
+        return start > 0 || end > 0;
+    }
+
+    bool isEmpty() const
+    {
+        return start != end;
+    }
+
+    TimeRange normalized() const
+    {
+        if (end < start)
+            return {end, start};
+        return *this;
+    }
+};
+
 struct FilterAction
 {
-    quint64 startTime = 0;
-    quint64 endTime = 0;
-    qint32 processId = Data::INVALID_PID;
-    qint32 threadId = Data::INVALID_PID;
+    TimeRange time;
+    qint32 processId = INVALID_PID;
+    qint32 threadId = INVALID_PID;
     quint32 cpuId = INVALID_CPU_ID;
     QVector<qint32> excludeProcessIds;
     QVector<qint32> excludeThreadIds;
     QVector<quint32> excludeCpuIds;
+
+    bool isValid() const
+    {
+        return time.isValid() || processId != INVALID_PID
+            || threadId != INVALID_PID || cpuId != INVALID_CPU_ID
+            || excludeProcessIds.isEmpty() || excludeThreadIds.isEmpty()
+            || excludeCpuIds.isEmpty();
+    }
+};
+
+struct ZoomAction
+{
+    TimeRange time;
+
+    bool isValid() const
+    {
+        return time.isValid();
+    }
 };
 }
 
@@ -663,4 +709,6 @@ Q_DECLARE_TYPEINFO(Data::CostSummary, Q_MOVABLE_TYPE);
 Q_DECLARE_METATYPE(Data::EventResults)
 Q_DECLARE_TYPEINFO(Data::EventResults, Q_MOVABLE_TYPE);
 
+Q_DECLARE_TYPEINFO(Data::TimeRange, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(Data::FilterAction, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Data::ZoomAction, Q_MOVABLE_TYPE);

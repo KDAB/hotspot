@@ -39,6 +39,7 @@
 
 #include "models/eventmodel.h"
 #include "models/timelinedelegate.h"
+#include "models/filterandzoomstack.h"
 
 #include <KLocalizedString>
 #include <KRecursiveFilterProxyModel>
@@ -46,6 +47,7 @@
 #include <QDebug>
 #include <QEvent>
 #include <QProgressBar>
+#include <QMenu>
 
 static const int SUMMARY_TABINDEX = 0;
 
@@ -57,10 +59,23 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     , m_resultsTopDownPage(new ResultsTopDownPage(parser, this))
     , m_resultsFlameGraphPage(new ResultsFlameGraphPage(parser, this))
     , m_resultsCallerCalleePage(new ResultsCallerCalleePage(parser, this))
-    , m_filterBusyIndicator(nullptr) // create after we setup the UI to keep it on top
+    , m_filterAndZoomStack(new FilterAndZoomStack(this))
+    , m_filterMenu(new QMenu(this))
     , m_timeLineDelegate(nullptr)
+    , m_filterBusyIndicator(nullptr) // create after we setup the UI to keep it on top
     , m_timelineVisible(true)
 {
+    {
+        const auto actions = m_filterAndZoomStack->actions();
+        m_filterMenu->addAction(actions.filterOut);
+        m_filterMenu->addAction(actions.resetFilter);
+        m_filterMenu->addSeparator();
+        m_filterMenu->addAction(actions.zoomOut);
+        m_filterMenu->addAction(actions.resetZoom);
+        m_filterMenu->addSeparator();
+        m_filterMenu->addAction(actions.resetFilterAndZoom);
+    }
+
     ui->setupUi(this);
 
     ui->resultsTabWidget->setFocus();
@@ -90,8 +105,8 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     // due to the increased width leading to a zoom effect
     ui->timeLineView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
-    m_timeLineDelegate = new TimeLineDelegate(ui->timeLineView);
-    ui->timeLineEventFilterButton->setMenu(m_timeLineDelegate->filterMenu());
+    m_timeLineDelegate = new TimeLineDelegate(m_filterAndZoomStack, ui->timeLineView);
+    ui->timeLineEventFilterButton->setMenu(m_filterMenu);
     ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, m_timeLineDelegate);
 
     connect(timeLineProxy, &QAbstractItemModel::rowsInserted, this, [this]() { ui->timeLineView->expandToDepth(1); });
@@ -113,7 +128,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
             }
         }
     });
-    connect(m_timeLineDelegate, &TimeLineDelegate::filterRequested, parser, &PerfParser::filterResults);
+    connect(m_filterAndZoomStack, &FilterAndZoomStack::filterChanged, parser, &PerfParser::filterResults);
 
     connect(ui->timeLineEventSource, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             [this](int index) {
@@ -192,7 +207,7 @@ void ResultsPage::selectSummaryTab()
 
 QMenu* ResultsPage::filterMenu() const
 {
-    return m_timeLineDelegate->filterMenu();
+    return m_filterMenu;
 }
 
 bool ResultsPage::eventFilter(QObject* watched, QEvent* event)

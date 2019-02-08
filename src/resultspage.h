@@ -46,6 +46,7 @@ class ResultsTopDownPage;
 class ResultsFlameGraphPage;
 class ResultsCallerCalleePage;
 class TimeLineDelegate;
+class FilterAndZoomStack;
 
 class ResultsPage : public QWidget
 {
@@ -79,6 +80,8 @@ private:
     ResultsTopDownPage* m_resultsTopDownPage;
     ResultsFlameGraphPage* m_resultsFlameGraphPage;
     ResultsCallerCalleePage* m_resultsCallerCalleePage;
+    FilterAndZoomStack* m_filterAndZoomStack;
+    QMenu* m_filterMenu;
     TimeLineDelegate* m_timeLineDelegate;
     QWidget* m_filterBusyIndicator;
     bool m_timelineVisible;

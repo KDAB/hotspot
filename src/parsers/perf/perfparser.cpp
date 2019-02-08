@@ -1382,7 +1382,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         Data::BottomUpResults bottomUp;
         Data::EventResults events = m_events;
         Data::CallerCalleeResults callerCallee;
-        const bool filterByTime = filter.startTime != 0 && filter.endTime != 0;
+        const bool filterByTime = filter.time.isValid();
         const bool filterByCpu = filter.cpuId != std::numeric_limits<quint32>::max();
         const bool excludeByCpu = !filter.excludeCpuIds.isEmpty();
         if (!filterByTime && filter.processId == Data::INVALID_PID && filter.threadId == Data::INVALID_TID
@@ -1412,7 +1412,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
 
                 if ((filter.processId != Data::INVALID_PID && thread.pid != filter.processId)
                     || (filter.threadId != Data::INVALID_TID && thread.tid != filter.threadId)
-                    || (filterByTime && (thread.timeStart > filter.endTime || thread.timeEnd < filter.startTime))
+                    || (filterByTime && (thread.timeStart > filter.time.end || thread.timeEnd < filter.time.start))
                     || filter.excludeProcessIds.contains(thread.pid) || filter.excludeThreadIds.contains(thread.tid)) {
                     thread.events.clear();
                     continue;
@@ -1422,7 +1422,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                     auto it = std::remove_if(
                         thread.events.begin(), thread.events.end(),
                         [filter, filterByTime, filterByCpu, excludeByCpu](const Data::Event& event) {
-                            if (filterByTime && (event.time < filter.startTime || event.time >= filter.endTime)) {
+                            if (filterByTime && (event.time < filter.time.start || event.time >= filter.time.end)) {
                                 return true;
                             } else if (filterByCpu && event.cpuId != filter.cpuId) {
                                 return true;
