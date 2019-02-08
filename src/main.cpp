@@ -33,6 +33,9 @@
 #include "mainwindow.h"
 #include "models/data.h"
 
+#include <ThreadWeaver/ThreadWeaver>
+#include <QThread>
+
 int main(int argc, char** argv)
 {
     QCoreApplication::setOrganizationName(QStringLiteral("KDAB"));
@@ -101,6 +104,8 @@ int main(int argc, char** argv)
         QStringLiteral("[files...]"));
 
     parser.process(app);
+
+    ThreadWeaver::Queue::instance()->setMaximumNumberOfThreads(QThread::idealThreadCount());
 
     auto applyCliArgs = [&](MainWindow* window) {
         if (parser.isSet(sysroot)) {
