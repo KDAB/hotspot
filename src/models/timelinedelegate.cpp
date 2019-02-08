@@ -118,18 +118,23 @@ TimeLineDelegate::TimeLineDelegate(QAbstractItemView* view)
 
     m_filterOutAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-remove-filters")), tr("Filter Out"),
                                                 this, &TimeLineDelegate::filterOut);
+    m_filterOutAction->setToolTip(tr("Undo the last filter and show more data in the views."));
     m_resetFilterAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("view-filter")), tr("Reset Filter"),
                                                   this, &TimeLineDelegate::resetFilter);
+    m_resetFilterAction->setToolTip(tr("Reset all filters and show the full data in the views."));
 
     m_filterMenu->addSeparator();
 
     m_zoomOutAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-out")), tr("Zoom Out"), this,
                                               &TimeLineDelegate::zoomOut);
+    m_zoomOutAction->setToolTip(tr("Undo the last zoom operation and show a larger range in the time line."));
     m_resetZoomAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-original")), tr("Reset Zoom"),
                                                 this, &TimeLineDelegate::resetZoom);
+    m_resetZoomAction->setToolTip(tr("Reset the zoom level to show the full range in the time line."));
     m_resetZoomAndFilterAction =
         m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("edit-clear")), tr("Reset Zoom And Filter"), this,
                                 &TimeLineDelegate::resetZoomAndFilter);
+    m_resetZoomAndFilterAction->setToolTip(tr("Reset both, filters and zoom level to show the full data in both, views and timeline."));
 
     updateFilterActions();
 }
