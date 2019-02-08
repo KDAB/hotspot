@@ -669,7 +669,7 @@ public:
             qCDebug(LOG_PERFPARSER) << "parsed:" << threadStart;
             addRecord(threadStart);
             // override start time explicitly
-            addThread(threadStart)->timeStart = threadStart.time;
+            addThread(threadStart)->time.start = threadStart.time;
             break;
         }
         case EventType::ThreadEnd: {
@@ -773,7 +773,7 @@ public:
     {
         Data::BottomUp::initializeParents(&bottomUpResult.root);
 
-        summaryResult.applicationRunningTime = applicationEndTime - applicationStartTime;
+        summaryResult.applicationRunningTime = applicationTime.delta();
         summaryResult.threadCount = uniqueThreads.size();
         summaryResult.processCount = uniqueProcess.size();
 
@@ -781,8 +781,8 @@ public:
         buildCallerCalleeResult();
 
         for (auto& thread : eventResult.threads) {
-            thread.timeStart = std::max(thread.timeStart, applicationStartTime);
-            thread.timeEnd = std::min(thread.timeEnd, applicationEndTime);
+            thread.time.start = std::max(thread.time.start, applicationTime.start);
+            thread.time.end = std::min(thread.time.end, applicationTime.end);
             if (thread.name.isEmpty()) {
                 thread.name = PerfParser::tr("#%1").arg(thread.tid);
             }
@@ -790,13 +790,12 @@ public:
             // we may have been switched out before detaching perf, so increment
             // the off-CPU time in this case
             if (thread.state == Data::ThreadEvents::OffCpu) {
-                thread.offCpuTime += thread.timeEnd - thread.lastSwitchTime;
+                thread.offCpuTime += thread.time.end - thread.lastSwitchTime;
             }
 
             if (thread.offCpuTime > 0) {
-                const auto runTime = thread.timeEnd - thread.timeStart;
                 summaryResult.offCpuTime += thread.offCpuTime;
-                summaryResult.onCpuTime += runTime - thread.offCpuTime;
+                summaryResult.onCpuTime += thread.time.delta() - thread.offCpuTime;
             }
         }
 
@@ -850,7 +849,7 @@ public:
         // when we encounter a thread the first time it was probably alive when
         // we started the application, otherwise we override the start time when
         // we encounter a ThreadStart event
-        thread.timeStart = applicationStartTime;
+        thread.time.start = applicationTime.start;
         thread.name = commands.value(thread.pid).value(thread.tid);
         eventResult.threads.push_back(thread);
         return &eventResult.threads.last();
@@ -860,7 +859,7 @@ public:
     {
         auto* thread = eventResult.findThread(threadEnd.pid, threadEnd.tid);
         if (thread) {
-            thread->timeEnd = threadEnd.time;
+            thread->time.end = threadEnd.time;
         }
     }
 
@@ -1011,11 +1010,11 @@ public:
         uniqueProcess.insert(record.pid);
         uniqueThreads.insert(record.tid);
 
-        if (record.time < applicationStartTime || applicationStartTime == 0) {
-            applicationStartTime = record.time;
+        if (record.time < applicationTime.start || applicationTime.start == 0) {
+            applicationTime.start = record.time;
         }
-        if (record.time > applicationEndTime || applicationEndTime == 0) {
-            applicationEndTime = record.time;
+        if (record.time > applicationTime.end || applicationTime.end == 0) {
+            applicationTime.end = record.time;
         }
     }
 
@@ -1164,8 +1163,7 @@ public:
     QVector<QString> strings;
     QProcess process;
     Data::Summary summaryResult;
-    quint64 applicationStartTime = 0;
-    quint64 applicationEndTime = 0;
+    Data::TimeRange applicationTime;
     QSet<quint32> uniqueThreads;
     QSet<quint32> uniqueProcess;
     Data::BottomUpResults bottomUpResult;
@@ -1412,7 +1410,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
 
                 if ((filter.processId != Data::INVALID_PID && thread.pid != filter.processId)
                     || (filter.threadId != Data::INVALID_TID && thread.tid != filter.threadId)
-                    || (filterByTime && (thread.timeStart > filter.time.end || thread.timeEnd < filter.time.start))
+                    || (filterByTime && (thread.time.start > filter.time.end || thread.time.end < filter.time.start))
                     || filter.excludeProcessIds.contains(thread.pid) || filter.excludeThreadIds.contains(thread.tid)) {
                     thread.events.clear();
                     continue;
@@ -1422,7 +1420,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                     auto it = std::remove_if(
                         thread.events.begin(), thread.events.end(),
                         [filter, filterByTime, filterByCpu, excludeByCpu](const Data::Event& event) {
-                            if (filterByTime && (event.time < filter.time.start || event.time >= filter.time.end)) {
+                            if (filterByTime && filter.time.contains(event.time)) {
                                 return true;
                             } else if (filterByCpu && event.cpuId != filter.cpuId) {
                                 return true;

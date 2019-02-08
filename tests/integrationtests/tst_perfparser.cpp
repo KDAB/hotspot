@@ -379,8 +379,8 @@ private slots:
         quint64 lastTime = 0;
         for (int i = 0; i < 11; ++i) {
             const auto& thread = m_eventData.threads[i];
-            QVERIFY(thread.timeStart > lastTime);
-            lastTime = thread.timeStart;
+            QVERIFY(thread.time.start > lastTime);
+            lastTime = thread.time.start;
             if (i == 0) {
                 QCOMPARE(thread.name, QStringLiteral("cpp-threadnames"));
                 QVERIFY(thread.offCpuTime > 1E9); // sleeps about 1s in total
@@ -389,7 +389,7 @@ private slots:
                 QVERIFY(thread.offCpuTime > 1E8);
                 QVERIFY(thread.offCpuTime < 1E9);
             }
-            QVERIFY((thread.timeEnd - thread.timeStart) > thread.offCpuTime);
+            QVERIFY(thread.time.delta() > thread.offCpuTime);
         }
     }
 
@@ -648,9 +648,9 @@ private:
             VERIFY_OR_THROW(!thread.name.isEmpty());
             VERIFY_OR_THROW(thread.pid != 0);
             VERIFY_OR_THROW(thread.tid != 0);
-            VERIFY_OR_THROW(thread.timeStart != 0);
-            VERIFY_OR_THROW(thread.timeEnd > thread.timeStart);
-            VERIFY_OR_THROW(thread.offCpuTime == 0 || thread.offCpuTime < (thread.timeEnd - thread.timeStart));
+            VERIFY_OR_THROW(thread.time.isValid());
+            VERIFY_OR_THROW(thread.time.end > thread.time.start);
+            VERIFY_OR_THROW(thread.offCpuTime == 0 || thread.offCpuTime < thread.time.delta());
         }
         VERIFY_OR_THROW(!m_eventData.totalCosts.isEmpty());
         for (const auto& costs : m_eventData.totalCosts) {

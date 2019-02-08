@@ -42,8 +42,8 @@ struct TimeLineData
 {
     TimeLineData();
 
-    TimeLineData(const Data::Events& events, quint64 maxCost, quint64 minTime, quint64 maxTime, quint64 threadStartTime,
-                 quint64 threadEndTime, QRect rect);
+    TimeLineData(const Data::Events& events, quint64 maxCost, const Data::TimeRange& time,
+                 const Data::TimeRange& threadTime, QRect rect);
 
     int mapTimeToX(quint64 time) const;
 
@@ -56,11 +56,8 @@ struct TimeLineData
     static const constexpr int padding = 2;
     Data::Events events;
     quint64 maxCost;
-    quint64 minTime;
-    quint64 maxTime;
-    quint64 timeDelta;
-    quint64 threadStartTime;
-    quint64 threadEndTime;
+    Data::TimeRange time;
+    Data::TimeRange threadTime;
     int h;
     int w;
     double xMultiplicator;

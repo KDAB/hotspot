@@ -115,9 +115,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
     }
 
     if (role == MaxTimeRole) {
-        return m_maxTime;
+        return m_time.end;
     } else if (role == MinTimeRole) {
-        return m_minTime;
+        return m_time.start;
     } else if (role == MaxCostRole) {
         return m_maxCost;
     } else if (role == NumProcessesRole) {
@@ -162,9 +162,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
     }
 
     if (role == ThreadStartRole) {
-        return thread ? thread->timeStart : m_minTime;
+        return thread ? thread->time.start : m_time.start;
     } else if (role == ThreadEndRole) {
-        return thread ? thread->timeEnd : m_maxTime;
+        return thread ? thread->time.end : m_time.end;
     } else if (role == ThreadNameRole) {
         return thread ? thread->name : tr("CPU #%1").arg(cpu->cpuId);
     } else if (role == ThreadIdRole) {
@@ -191,8 +191,8 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
                                   : tr("Thread %1, tid = %2, pid = %3\n")
                                         .arg(thread->name, QString::number(thread->tid), QString::number(thread->pid));
             if (thread) {
-                const auto runtime = thread->timeEnd - thread->timeStart;
-                const auto totalRuntime = m_maxTime - m_minTime;
+                const auto runtime = thread->time.delta();
+                const auto totalRuntime = m_time.delta();
                 tooltip += tr("Runtime: %1 (%2% of total runtime)\n")
                                .arg(Util::formatTimeString(runtime), Util::formatCostRelative(runtime, totalRuntime));
                 if (m_totalOffCpuTime > 0) {
@@ -235,18 +235,16 @@ void EventModel::setData(const Data::EventResults& data)
     m_totalOnCpuTime = 0;
     m_totalOffCpuTime = 0;
     if (data.threads.isEmpty()) {
-        m_minTime = 0;
-        m_maxTime = 0;
+        m_time = {};
     } else {
-        m_minTime = data.threads.first().timeStart;
-        m_maxTime = data.threads.first().timeEnd;
+        m_time = data.threads.first().time;
         QSet<quint32> processes;
         QSet<quint32> threads;
         for (const auto& thread : data.threads) {
-            m_minTime = std::min(thread.timeStart, m_minTime);
-            m_maxTime = std::max(thread.timeEnd, m_maxTime);
+            m_time.start = std::min(thread.time.start, m_time.start);
+            m_time.end = std::max(thread.time.end, m_time.end);
             m_totalOffCpuTime += thread.offCpuTime;
-            m_totalOnCpuTime += thread.timeEnd - thread.timeStart - thread.offCpuTime;
+            m_totalOnCpuTime += thread.time.delta() - thread.offCpuTime;
             m_totalEvents += thread.events.size();
             processes.insert(thread.pid);
             threads.insert(thread.tid);

@@ -491,14 +491,64 @@ struct Event
 
 using Events = QVector<Event>;
 
+struct TimeRange
+{
+    constexpr TimeRange() = default;
+    constexpr TimeRange(quint64 start, quint64 end)
+        : start(start)
+        , end(end)
+    {
+    }
+
+    quint64 start = 0;
+    quint64 end = 0;
+
+    bool isValid() const
+    {
+        return start > 0 || end > 0;
+    }
+
+    bool isEmpty() const
+    {
+        return start != end;
+    }
+
+    quint64 delta() const
+    {
+        return end - start;
+    }
+
+    bool contains(quint64 time) const
+    {
+        return time >= start && time <= end;
+    }
+
+    TimeRange normalized() const
+    {
+        if (end < start)
+            return {end, start};
+        return *this;
+    }
+
+    bool operator==(const TimeRange& rhs) const
+    {
+        return std::tie(start, end) == std::tie(rhs.start, rhs.end);
+    }
+
+    bool operator!=(const TimeRange& rhs) const
+    {
+        return !operator==(rhs);
+    }
+};
+
 const constexpr auto MAX_TIME = std::numeric_limits<quint64>::max();
+const constexpr auto MAX_TIME_RANGE = TimeRange {0, MAX_TIME};
 
 struct ThreadEvents
 {
     qint32 pid = INVALID_PID;
     qint32 tid = INVALID_TID;
-    quint64 timeStart = 0;
-    quint64 timeEnd = MAX_TIME;
+    TimeRange time = MAX_TIME_RANGE;
     Events events;
     QString name;
     quint64 lastSwitchTime = MAX_TIME;
@@ -513,9 +563,9 @@ struct ThreadEvents
 
     bool operator==(const ThreadEvents& rhs) const
     {
-        return std::tie(pid, tid, timeStart, timeEnd, events, name, lastSwitchTime, offCpuTime, state)
-            == std::tie(rhs.pid, rhs.tid, rhs.timeStart, rhs.timeEnd, rhs.events, rhs.name, rhs.lastSwitchTime,
-                        rhs.offCpuTime, rhs.state);
+        return std::tie(pid, tid, time, events, name, lastSwitchTime, offCpuTime, state)
+            == std::tie(rhs.pid, rhs.tid, rhs.time, rhs.events, rhs.name, rhs.lastSwitchTime, rhs.offCpuTime,
+                        rhs.state);
     }
 };
 
@@ -600,35 +650,6 @@ struct EventResults
     }
 };
 
-struct TimeRange
-{
-    TimeRange() = default;
-    TimeRange(quint64 start, quint64 end)
-        : start(start)
-        , end(end)
-    {}
-
-    quint64 start = 0;
-    quint64 end = 0;
-
-    bool isValid() const
-    {
-        return start > 0 || end > 0;
-    }
-
-    bool isEmpty() const
-    {
-        return start != end;
-    }
-
-    TimeRange normalized() const
-    {
-        if (end < start)
-            return {end, start};
-        return *this;
-    }
-};
-
 struct FilterAction
 {
     TimeRange time;
@@ -709,6 +730,8 @@ Q_DECLARE_TYPEINFO(Data::CostSummary, Q_MOVABLE_TYPE);
 Q_DECLARE_METATYPE(Data::EventResults)
 Q_DECLARE_TYPEINFO(Data::EventResults, Q_MOVABLE_TYPE);
 
+Q_DECLARE_METATYPE(Data::TimeRange)
 Q_DECLARE_TYPEINFO(Data::TimeRange, Q_MOVABLE_TYPE);
+
 Q_DECLARE_TYPEINFO(Data::FilterAction, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(Data::ZoomAction, Q_MOVABLE_TYPE);

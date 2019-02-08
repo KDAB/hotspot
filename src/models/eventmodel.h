@@ -78,8 +78,7 @@ public:
 
 private:
     Data::EventResults m_data;
-    quint64 m_minTime = 0;
-    quint64 m_maxTime = 0;
+    Data::TimeRange m_time;
     quint64 m_totalOnCpuTime = 0;
     quint64 m_totalOffCpuTime = 0;
     quint64 m_totalEvents = 0;

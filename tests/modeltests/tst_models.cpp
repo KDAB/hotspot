@@ -214,16 +214,14 @@ private slots:
         {
             thread1.pid = 1234;
             thread1.tid = 1234;
-            thread1.timeStart = 0;
-            thread1.timeEnd = endTime;
+            thread1.time = {0, endTime};
             thread1.name = "foobar";
         }
         auto& thread2 = events.threads[1];
         {
             thread2.pid = 1234;
             thread2.tid = 1235;
-            thread2.timeStart = deltaTime;
-            thread2.timeEnd = endTime - deltaTime;
+            thread2.time = {deltaTime, endTime - deltaTime};
             thread2.name = "asdf";
         }
 
@@ -241,7 +239,7 @@ private slots:
         };
         for (quint64 time = 0; time < endTime; time += deltaTime) {
             thread1.events << generateEvent(time, 0);
-            if (time >= thread2.timeStart && time <= thread2.timeEnd) {
+            if (thread2.time.contains(time)) {
                 thread2.events << generateEvent(time, 2);
             }
         }
@@ -311,8 +309,8 @@ private slots:
                 } else {
                     const auto& thread = events.threads[j];
                     QCOMPARE(rowEvents, thread.events);
-                    QCOMPARE(threadStart, thread.timeStart);
-                    QCOMPARE(threadEnd, thread.timeEnd);
+                    QCOMPARE(threadStart, thread.time.start);
+                    QCOMPARE(threadEnd, thread.time.end);
                     QCOMPARE(threadId, thread.tid);
                     QCOMPARE(processId, thread.pid);
                     QCOMPARE(cpuId, Data::INVALID_CPU_ID);

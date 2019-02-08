@@ -44,34 +44,31 @@
 #include <algorithm>
 
 TimeLineData::TimeLineData()
-    : TimeLineData({}, 0, 0, 0, 0, 0, {})
+    : TimeLineData({}, 0, {}, {}, {})
 {
 }
 
-TimeLineData::TimeLineData(const Data::Events& events, quint64 maxCost, quint64 minTime, quint64 maxTime,
-                           quint64 threadStartTime, quint64 threadEndTime, QRect rect)
+TimeLineData::TimeLineData(const Data::Events& events, quint64 maxCost, const Data::TimeRange& time,
+                           const Data::TimeRange& threadTime, QRect rect)
     : events(events)
     , maxCost(maxCost)
-    , minTime(minTime)
-    , maxTime(maxTime)
-    , timeDelta(maxTime - minTime)
-    , threadStartTime(threadStartTime)
-    , threadEndTime(threadEndTime)
+    , time(time)
+    , threadTime(threadTime)
     , h(rect.height() - 2 * padding)
     , w(rect.width() - 2 * padding)
-    , xMultiplicator(double(w) / timeDelta)
+    , xMultiplicator(double(w) / time.delta())
     , yMultiplicator(double(h) / maxCost)
 {
 }
 
-int TimeLineData::mapTimeToX(quint64 time) const
+int TimeLineData::mapTimeToX(quint64 t) const
 {
-    return minTime > time ? 0 : int(double(time - minTime) * xMultiplicator);
+    return time.start > t ? 0 : int(double(t - time.start) * xMultiplicator);
 }
 
 quint64 TimeLineData::mapXToTime(int x) const
 {
-    return quint64(double(x) / xMultiplicator) + minTime;
+    return quint64(double(x) / xMultiplicator) + time.start;
 }
 
 int TimeLineData::mapCostToY(quint64 cost) const
@@ -79,13 +76,10 @@ int TimeLineData::mapCostToY(quint64 cost) const
     return double(cost) * yMultiplicator;
 }
 
-void TimeLineData::zoom(const Data::TimeRange &time)
+void TimeLineData::zoom(const Data::TimeRange& t)
 {
-    const auto newTimeDelta = (time.end - time.start);
-    minTime = time.start;
-    maxTime = time.end;
-    timeDelta = newTimeDelta;
-    xMultiplicator = double(w) / newTimeDelta;
+    time = t;
+    xMultiplicator = double(w) / time.delta();
 }
 
 namespace {
@@ -94,9 +88,10 @@ TimeLineData dataFromIndex(const QModelIndex& index, QRect rect, const Data::Zoo
 {
     TimeLineData data(
         index.data(EventModel::EventsRole).value<Data::Events>(), index.data(EventModel::MaxCostRole).value<quint64>(),
-        index.data(EventModel::MinTimeRole).value<quint64>(), index.data(EventModel::MaxTimeRole).value<quint64>(),
-        index.data(EventModel::ThreadStartRole).value<quint64>(),
-        index.data(EventModel::ThreadEndRole).value<quint64>(), rect);
+        {index.data(EventModel::MinTimeRole).value<quint64>(), index.data(EventModel::MaxTimeRole).value<quint64>()},
+        {index.data(EventModel::ThreadStartRole).value<quint64>(),
+         index.data(EventModel::ThreadEndRole).value<quint64>()},
+        rect);
     if (zoom.isValid()) {
         data.zoom(zoom.time);
     }
@@ -143,7 +138,7 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     // visualize the time where the thread was active
     // i.e. paint events for threads that have any in the selected time range
     auto threadTimeRect =
-        QRect(QPoint(data.mapTimeToX(data.threadStartTime), 0), QPoint(data.mapTimeToX(data.threadEndTime), data.h));
+        QRect(QPoint(data.mapTimeToX(data.threadTime.start), 0), QPoint(data.mapTimeToX(data.threadTime.end), data.h));
     if (threadTimeRect.left() < option.rect.width() && threadTimeRect.right() > 0) {
         if (threadTimeRect.left() < 0)
             threadTimeRect.setLeft(0);
@@ -280,7 +275,7 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, con
             found = findSamples(offCpuCostId, true);
         }
 
-        const auto formattedTime = Util::formatTimeString(time - data.minTime);
+        const auto formattedTime = Util::formatTimeString(time - data.time.start);
         const auto totalCosts = index.data(EventModel::TotalCostsRole).value<QVector<Data::CostSummary>>();
         if (found.numSamples > 0 && found.type == offCpuCostId) {
             QToolTip::showText(event->globalPos(),
@@ -445,7 +440,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         return true;
     } else if (isTimeSpanSelected && isLeftButtonEvent) {
         const auto& data = alwaysValidIndex.data(EventModel::EventResultsRole).value<Data::EventResults>();
-        const auto timeDelta = m_timeSlice.end - m_timeSlice.start;
+        const auto timeDelta = m_timeSlice.delta();
         quint64 cost = 0;
         quint64 numEvents = 0;
         QSet<qint32> threads;
