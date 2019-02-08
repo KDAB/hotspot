@@ -30,11 +30,12 @@
 
 #include "parsers/perf/perfparser.h"
 
-ResultsFlameGraphPage::ResultsFlameGraphPage(PerfParser* parser, QWidget* parent)
+ResultsFlameGraphPage::ResultsFlameGraphPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsFlameGraphPage)
 {
     ui->setupUi(this);
+    ui->flameGraph->setFilterStack(filterStack);
 
     connect(parser, &PerfParser::bottomUpDataAvailable, this,
             [this](const Data::BottomUpResults& data) { ui->flameGraph->setBottomUpData(data); });

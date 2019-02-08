@@ -42,12 +42,13 @@ class QModelIndex;
 
 class PerfParser;
 class CallerCalleeModel;
+class FilterAndZoomStack;
 
 class ResultsCallerCalleePage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsCallerCalleePage(PerfParser* parser, QWidget* parent = nullptr);
+    explicit ResultsCallerCalleePage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsCallerCalleePage();
 
     void setSysroot(const QString& path);

@@ -40,12 +40,13 @@ struct Symbol;
 class QTreeView;
 
 class PerfParser;
+class FilterAndZoomStack;
 
 class ResultsTopDownPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsTopDownPage(PerfParser* parser, QWidget* parent = nullptr);
+    explicit ResultsTopDownPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsTopDownPage();
 
 signals:

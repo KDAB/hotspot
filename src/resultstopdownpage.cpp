@@ -34,7 +34,7 @@
 #include "models/hashmodel.h"
 #include "models/treemodel.h"
 
-ResultsTopDownPage::ResultsTopDownPage(PerfParser* parser, QWidget* parent)
+ResultsTopDownPage::ResultsTopDownPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsTopDownPage)
 {
@@ -43,7 +43,7 @@ ResultsTopDownPage::ResultsTopDownPage(PerfParser* parser, QWidget* parent)
     auto topDownCostModel = new TopDownModel(this);
     ResultsUtil::setupTreeView(ui->topDownTreeView, ui->topDownSearch, topDownCostModel);
     ResultsUtil::setupCostDelegate(topDownCostModel, ui->topDownTreeView);
-    ResultsUtil::setupContextMenu(ui->topDownTreeView, topDownCostModel,
+    ResultsUtil::setupContextMenu(ui->topDownTreeView, topDownCostModel, filterStack,
                                   [this](const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
 
     connect(parser, &PerfParser::topDownDataAvailable, this,

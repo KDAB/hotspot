@@ -54,6 +54,20 @@ FilterAndZoomStack::FilterAndZoomStack(QObject* parent)
     connect(m_actions.resetFilterAndZoom, &QAction::triggered, this, &FilterAndZoomStack::resetFilterAndZoom);
     m_actions.resetFilterAndZoom->setToolTip(tr("Reset both, filters and zoom level to show the full data in both, views and timeline."));
 
+    m_actions.filterInBySymbol = new QAction(QIcon::fromTheme(QStringLiteral("view-filter")), tr("Filter In By Symbol"), this);
+    connect(m_actions.filterInBySymbol, &QAction::triggered, this, [this](){
+        const auto data = m_actions.filterInBySymbol->data();
+        Q_ASSERT(data.canConvert<Data::Symbol>());
+        filterInBySymbol(data.value<Data::Symbol>());
+    });
+
+    m_actions.filterOutBySymbol = new QAction(QIcon::fromTheme(QStringLiteral("view-filter")), tr("Filter Out By Symbol"));
+    connect(m_actions.filterOutBySymbol, &QAction::triggered, this, [this](){
+        const auto data = m_actions.filterInBySymbol->data();
+        Q_ASSERT(data.canConvert<Data::Symbol>());
+        filterOutBySymbol(data.value<Data::Symbol>());
+    });
+
     connect(this, &FilterAndZoomStack::filterChanged, this, &FilterAndZoomStack::updateActions);
     connect(this, &FilterAndZoomStack::zoomChanged, this, &FilterAndZoomStack::updateActions);
     updateActions();
@@ -127,6 +141,20 @@ void FilterAndZoomStack::filterOutByCpu(quint32 cpuId)
     applyFilter(filter);
 }
 
+void FilterAndZoomStack::filterInBySymbol(const Data::Symbol &symbol)
+{
+    Data::FilterAction filter;
+    filter.includeSymbols.insert(symbol);
+    applyFilter(filter);
+}
+
+void FilterAndZoomStack::filterOutBySymbol(const Data::Symbol &symbol)
+{
+    Data::FilterAction filter;
+    filter.excludeSymbols.insert(symbol);
+    applyFilter(filter);
+}
+
 void FilterAndZoomStack::applyFilter(Data::FilterAction filter)
 {
     if (!m_filterStack.isEmpty()) {
@@ -145,6 +173,9 @@ void FilterAndZoomStack::applyFilter(Data::FilterAction filter)
         filter.excludeProcessIds += lastFilter.excludeProcessIds;
         filter.excludeThreadIds += lastFilter.excludeThreadIds;
         filter.excludeCpuIds += lastFilter.excludeCpuIds;
+        filter.excludeSymbols += lastFilter.excludeSymbols;
+        filter.includeSymbols += lastFilter.includeSymbols;
+        filter.includeSymbols.subtract(filter.excludeSymbols);
     }
 
     m_filterStack.push_back(filter);

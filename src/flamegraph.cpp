@@ -54,6 +54,7 @@
 #include <ThreadWeaver/ThreadWeaver>
 
 #include "resultsutil.h"
+#include "models/filterandzoomstack.h"
 
 namespace {
 enum SearchMatchType
@@ -494,6 +495,11 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
 
 FlameGraph::~FlameGraph() = default;
 
+void FlameGraph::setFilterStack(FilterAndZoomStack* filterStack)
+{
+    m_filterStack = filterStack;
+}
+
 bool FlameGraph::eventFilter(QObject* object, QEvent* event)
 {
     bool ret = QObject::eventFilter(object, event);
@@ -536,18 +542,19 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
         auto item = static_cast<FrameGraphicsItem*>(m_view->itemAt(m_view->mapFromGlobal(contextEvent->globalPos())));
 
         QMenu contextMenu;
-        QAction* viewCallerCallee = nullptr;
         if (item) {
-            viewCallerCallee = contextMenu.addAction(tr("View Caller/Callee"));
+            auto* viewCallerCallee = contextMenu.addAction(tr("View Caller/Callee"));
+            connect(viewCallerCallee, &QAction::triggered, this, [this, item](){
+                emit jumpToCallerCallee(item->symbol());
+            });
             contextMenu.addSeparator();
         }
+        ResultsUtil::addFilterActions(&contextMenu, item->symbol(), m_filterStack);
+        contextMenu.addSeparator();
         contextMenu.addActions(actions());
 
-        QAction* action = contextMenu.exec(QCursor::pos());
-
-        if (action && action == viewCallerCallee) {
-            emit jumpToCallerCallee(item->symbol());
-        }
+        contextMenu.exec(QCursor::pos());
+        return true;
     } else if (event->type() == QEvent::ToolTip) {
         const auto& tooltip = m_displayLabel->toolTip();
         if (tooltip.isEmpty()) {

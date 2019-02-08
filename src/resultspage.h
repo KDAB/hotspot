@@ -75,12 +75,12 @@ private:
 
     QScopedPointer<Ui::ResultsPage> ui;
 
+    FilterAndZoomStack* m_filterAndZoomStack;
     ResultsSummaryPage* m_resultsSummaryPage;
     ResultsBottomUpPage* m_resultsBottomUpPage;
     ResultsTopDownPage* m_resultsTopDownPage;
     ResultsFlameGraphPage* m_resultsFlameGraphPage;
     ResultsCallerCalleePage* m_resultsCallerCalleePage;
-    FilterAndZoomStack* m_filterAndZoomStack;
     QMenu* m_filterMenu;
     TimeLineDelegate* m_timeLineDelegate;
     QWidget* m_filterBusyIndicator;

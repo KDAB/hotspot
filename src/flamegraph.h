@@ -41,6 +41,7 @@ class QLineEdit;
 class QPushButton;
 
 class FrameGraphicsItem;
+class FilterAndZoomStack;
 
 class FlameGraph : public QWidget
 {
@@ -49,6 +50,7 @@ public:
     explicit FlameGraph(QWidget* parent = nullptr, Qt::WindowFlags flags = {});
     ~FlameGraph();
 
+    void setFilterStack(FilterAndZoomStack *filterStack);
     void setTopDownData(const Data::TopDownResults& topDownData);
     void setBottomUpData(const Data::BottomUpResults& bottomUpData);
 
@@ -75,6 +77,7 @@ private:
     Data::TopDownResults m_topDownData;
     Data::BottomUpResults m_bottomUpData;
 
+    FilterAndZoomStack* m_filterStack = nullptr;
     QComboBox* m_costSource;
     QGraphicsScene* m_scene;
     QGraphicsView* m_view;

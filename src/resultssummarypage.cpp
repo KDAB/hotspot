@@ -46,7 +46,7 @@
 #include "models/topproxy.h"
 #include "models/treemodel.h"
 
-ResultsSummaryPage::ResultsSummaryPage(PerfParser* parser, QWidget* parent)
+ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsSummaryPage)
 {
@@ -64,7 +64,7 @@ ResultsSummaryPage::ResultsSummaryPage(PerfParser* parser, QWidget* parent)
     ui->topHotspotsTableView->setModel(topHotspotsProxy);
     ResultsUtil::setupCostDelegate<BottomUpModel>(bottomUpCostModel, ui->topHotspotsTableView);
     ResultsUtil::stretchFirstColumn(ui->topHotspotsTableView);
-    ResultsUtil::setupContextMenu(ui->topHotspotsTableView, bottomUpCostModel,
+    ResultsUtil::setupContextMenu(ui->topHotspotsTableView, bottomUpCostModel, filterStack,
                                   [this](const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
 
     connect(ui->eventSourceComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,

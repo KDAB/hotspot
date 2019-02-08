@@ -38,12 +38,13 @@ struct Symbol;
 }
 
 class PerfParser;
+class FilterAndZoomStack;
 
 class ResultsFlameGraphPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsFlameGraphPage(PerfParser* parser, QWidget* parent = nullptr);
+    explicit ResultsFlameGraphPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsFlameGraphPage();
 
 signals:

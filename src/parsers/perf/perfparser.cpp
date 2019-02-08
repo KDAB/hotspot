@@ -1383,9 +1383,11 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         const bool filterByTime = filter.time.isValid();
         const bool filterByCpu = filter.cpuId != std::numeric_limits<quint32>::max();
         const bool excludeByCpu = !filter.excludeCpuIds.isEmpty();
-        if (!filterByTime && filter.processId == Data::INVALID_PID && filter.threadId == Data::INVALID_TID
-            && !filterByCpu && !excludeByCpu && filter.excludeProcessIds.isEmpty()
-            && filter.excludeThreadIds.isEmpty()) {
+        const bool includeBySymbol = !filter.includeSymbols.isEmpty();
+        const bool excludeBySymbol = !filter.excludeSymbols.isEmpty();
+        const bool filterByStack = includeBySymbol || excludeBySymbol;
+
+        if (!filter.isValid()) {
             bottomUp = m_bottomUpResults;
             callerCallee = m_callerCalleeResults;
         } else {
@@ -1398,6 +1400,30 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
             // rebuild per-CPU data, i.e. wipe all the events and then re-add them
             for (auto& cpu : events.cpus) {
                 cpu.events.clear();
+            }
+
+            // we filter all available stacks and then remember the stack ids that should be
+            // included, which is hopefully less work than filtering the stack for every event
+            QVector<bool> filterStacks;
+            if (filterByStack) {
+                filterStacks.resize(m_events.stacks.size());
+                // TODO: parallelize
+                for (qint32 stackId = 0, c = m_events.stacks.size(); stackId < c; ++stackId) {
+                    // if empty, then all include filters are matched
+                    auto included = filter.includeSymbols;
+                    // if false, then none of the exclude filters matched
+                    bool excluded = false;
+                    m_bottomUpResults.foreachFrame(m_events.stacks.at(stackId), [&included, &excluded, &filter](const Data::Symbol& symbol, const Data::Location& /*location*/){
+                        excluded = filter.excludeSymbols.contains(symbol);
+                        if (excluded) {
+                            return false;
+                        }
+                        included.remove(symbol);
+                        // only stop when we included everything and no exclude filter is set
+                        return !included.isEmpty() || !filter.excludeSymbols.isEmpty();
+                    });
+                    filterStacks[stackId] = !excluded && included.isEmpty();
+                }
             }
 
             // remove events that lie outside the selected time span
@@ -1416,15 +1442,17 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                     continue;
                 }
 
-                if (filterByTime || filterByCpu || excludeByCpu) {
+                if (filterByTime || filterByCpu || excludeByCpu || filterByStack) {
                     auto it = std::remove_if(
                         thread.events.begin(), thread.events.end(),
-                        [filter, filterByTime, filterByCpu, excludeByCpu](const Data::Event& event) {
+                        [filter, filterByTime, filterByCpu, excludeByCpu, filterByStack, filterStacks](const Data::Event& event) {
                             if (filterByTime && filter.time.contains(event.time)) {
                                 return true;
                             } else if (filterByCpu && event.cpuId != filter.cpuId) {
                                 return true;
                             } else if (excludeByCpu && filter.excludeCpuIds.contains(event.cpuId)) {
+                                return true;
+                            } else if (filterByStack && !filterStacks[event.stackId]) {
                                 return true;
                             }
                             return false;

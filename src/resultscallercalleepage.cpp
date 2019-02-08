@@ -41,6 +41,7 @@
 #include "models/costdelegate.h"
 #include "models/hashmodel.h"
 #include "models/treemodel.h"
+#include "models/filterandzoomstack.h"
 
 namespace {
 template<typename Model>
@@ -69,7 +70,7 @@ void connectCallerOrCalleeModel(QTreeView* view, CallerCalleeModel* callerCallee
 }
 }
 
-ResultsCallerCalleePage::ResultsCallerCalleePage(PerfParser* parser, QWidget* parent)
+ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsCallerCalleePage)
 {
@@ -82,6 +83,7 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(PerfParser* parser, QWidget* pa
     ui->callerCalleeFilter->setProxy(m_callerCalleeProxy);
     ui->callerCalleeTableView->setSortingEnabled(true);
     ui->callerCalleeTableView->setModel(m_callerCalleeProxy);
+    ResultsUtil::setupContextMenu(ui->callerCalleeTableView, CallerCalleeModel::SymbolRole, filterStack, {});
     ResultsUtil::stretchFirstColumn(ui->callerCalleeTableView);
     ResultsUtil::setupCostDelegate(m_callerCalleeCostModel, ui->callerCalleeTableView);
 
@@ -117,6 +119,8 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(PerfParser* parser, QWidget* pa
     };
     connectCallerOrCalleeModel<CalleeModel>(ui->calleesView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
     connectCallerOrCalleeModel<CallerModel>(ui->callersView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
+    ResultsUtil::setupContextMenu(ui->calleesView, CalleeModel::SymbolRole, filterStack, {});
+    ResultsUtil::setupContextMenu(ui->callersView, CallerModel::SymbolRole, filterStack, {});
 
     ui->sourceMapView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->sourceMapView, &QTreeView::customContextMenuRequested, this,

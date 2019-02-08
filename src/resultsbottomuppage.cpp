@@ -40,7 +40,7 @@
 #include "models/topproxy.h"
 #include "models/treemodel.h"
 
-ResultsBottomUpPage::ResultsBottomUpPage(PerfParser* parser, QWidget* parent)
+ResultsBottomUpPage::ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsBottomUpPage)
 {
@@ -49,7 +49,7 @@ ResultsBottomUpPage::ResultsBottomUpPage(PerfParser* parser, QWidget* parent)
     auto bottomUpCostModel = new BottomUpModel(this);
     ResultsUtil::setupTreeView(ui->bottomUpTreeView, ui->bottomUpSearch, bottomUpCostModel);
     ResultsUtil::setupCostDelegate(bottomUpCostModel, ui->bottomUpTreeView);
-    ResultsUtil::setupContextMenu(ui->bottomUpTreeView, bottomUpCostModel,
+    ResultsUtil::setupContextMenu(ui->bottomUpTreeView, bottomUpCostModel, filterStack,
                                   [this](const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
 
     auto topHotspotsProxy = new TopProxy(this);

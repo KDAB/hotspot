@@ -29,6 +29,7 @@
 
 #include <functional>
 
+class QMenu;
 class QTreeView;
 class QComboBox;
 class KFilterProxySearchLine;
@@ -39,6 +40,8 @@ namespace Data {
 class Costs;
 struct Symbol;
 }
+
+class FilterAndZoomStack;
 
 namespace ResultsUtil {
 void stretchFirstColumn(QTreeView* view);
@@ -60,12 +63,14 @@ void setupCostDelegate(Model* model, QTreeView* view)
     setupCostDelegate(model, view, Model::SortRole, Model::TotalCostRole, Model::NUM_BASE_COLUMNS);
 }
 
-void setupContextMenu(QTreeView* view, int symbolRole, std::function<void(const Data::Symbol&)> callback);
+void addFilterActions(QMenu* menu, const Data::Symbol &symbol, FilterAndZoomStack* filterStack);
+
+void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filterStack, std::function<void(const Data::Symbol&)> callback);
 
 template<typename Model>
-void setupContextMenu(QTreeView* view, Model* /*model*/, std::function<void(const Data::Symbol&)> callback)
+void setupContextMenu(QTreeView* view, Model* /*model*/, FilterAndZoomStack* filterStack, std::function<void(const Data::Symbol&)> callback)
 {
-    setupContextMenu(view, Model::SymbolRole, callback);
+    setupContextMenu(view, Model::SymbolRole, filterStack, callback);
 }
 
 void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns);

@@ -39,6 +39,7 @@
 
 #include "models/costdelegate.h"
 #include "models/data.h"
+#include "models/filterandzoomstack.h"
 
 namespace ResultsUtil {
 
@@ -63,25 +64,43 @@ void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, QAbstractIte
     stretchFirstColumn(view);
 }
 
-void setupContextMenu(QTreeView* view, int symbolRole, std::function<void(const Data::Symbol&)> callback)
+void addFilterActions(QMenu* menu, const Data::Symbol& symbol, FilterAndZoomStack* filterStack)
+{
+    if (symbol.isValid()) {
+        auto filterActions = filterStack->actions();
+        filterActions.filterInBySymbol->setData(QVariant::fromValue(symbol));
+        filterActions.filterOutBySymbol->setData(filterActions.filterInBySymbol->data());
+
+        menu->addAction(filterActions.filterInBySymbol);
+        menu->addAction(filterActions.filterOutBySymbol);
+        menu->addSeparator();
+    }
+
+    menu->addAction(filterStack->actions().filterOut);
+    menu->addAction(filterStack->actions().resetFilter);
+}
+
+void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filterStack,
+                      std::function<void(const Data::Symbol&)> callback)
 {
     view->setContextMenuPolicy(Qt::CustomContextMenu);
     QObject::connect(
-        view, &QTreeView::customContextMenuRequested, view, [view, symbolRole, callback](const QPoint& point) {
+        view, &QTreeView::customContextMenuRequested, view, [view, symbolRole, filterStack, callback](const QPoint& point) {
             const auto index = view->indexAt(point);
-            if (!index.isValid()) {
-                return;
-            }
+            const auto symbol = index.data(symbolRole).value<Data::Symbol>();
 
             QMenu contextMenu;
-            auto* viewCallerCallee = contextMenu.addAction(QCoreApplication::translate("Util", "View Caller/Callee"));
-            auto* action = contextMenu.exec(QCursor::pos());
-            if (action == viewCallerCallee) {
-                const auto symbol = index.data(symbolRole).value<Data::Symbol>();
-
-                if (symbol.isValid()) {
+            if (callback && symbol.isValid()) {
+                auto* viewCallerCallee = contextMenu.addAction(QCoreApplication::translate("Util", "View Caller/Callee"));
+                QObject::connect(viewCallerCallee, &QAction::triggered, &contextMenu, [symbol, callback](){
                     callback(symbol);
-                }
+                });
+                contextMenu.addSeparator();
+            }
+            addFilterActions(&contextMenu, symbol, filterStack);
+
+            if (!contextMenu.actions().isEmpty()) {
+                contextMenu.exec(QCursor::pos());
             }
         });
 }

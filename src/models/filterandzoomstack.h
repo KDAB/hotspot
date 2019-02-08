@@ -50,6 +50,8 @@ public:
         QAction* zoomOut = nullptr;
         QAction* resetZoom = nullptr;
         QAction* resetFilterAndZoom = nullptr;
+        QAction* filterInBySymbol = nullptr;
+        QAction* filterOutBySymbol = nullptr;
     };
 
     Actions actions() const;
@@ -62,6 +64,8 @@ public slots:
     void filterOutByThread(qint32 threadId);
     void filterInByCpu(quint32 cpuId);
     void filterOutByCpu(quint32 cpuId);
+    void filterInBySymbol(const Data::Symbol &symbol);
+    void filterOutBySymbol(const Data::Symbol &symbol);
     void applyFilter(Data::FilterAction filter);
     void resetFilter();
     void filterOut();

@@ -32,6 +32,7 @@
 #include <QString>
 #include <QTypeInfo>
 #include <QVector>
+#include <QSet>
 
 #include "../util.h"
 
@@ -367,14 +368,63 @@ struct BottomUpResults
     QVector<Data::Symbol> symbols;
     QVector<Data::FrameLocation> locations;
 
-    using FrameCallback = std::function<void(const Symbol&, const Location&)>;
+    // callback should return true to continue iteration or false otherwise
+    template<typename FrameCallback>
+    void foreachFrame(const QVector<qint32>& frames, FrameCallback frameCallback) const
+    {
+        for (auto id : frames) {
+            if (!handleFrame(id, frameCallback)) {
+                break;
+            }
+        }
+    }
 
-    const BottomUp* addEvent(int type, quint64 cost, const QVector<qint32>& frames, const FrameCallback& frameCallback);
+    // callback return type is ignored, all frames will be iterated over
+    template<typename FrameCallback>
+    const BottomUp* addEvent(int type, quint64 cost, const QVector<qint32>& frames, FrameCallback frameCallback)
+    {
+        costs.addTotalCost(type, cost);
+        auto parent = &root;
+        foreachFrame(frames, [this, type, cost, &parent, frameCallback](const Data::Symbol &symbol, const Data::Location &location) {
+            parent = parent->entryForSymbol(symbol, &maxBottomUpId);
+            costs.add(type, parent->id, cost);
+            frameCallback(symbol, location);
+            return true;
+        });
+        return parent;
+    }
 
 private:
     quint32 maxBottomUpId = 0;
-    BottomUp* addFrame(BottomUp* parent, qint32 locationId, int type, quint64 period,
-                       const FrameCallback& frameCallback);
+
+    template<typename FrameCallback>
+    bool handleFrame(qint32 locationId, FrameCallback frameCallback) const
+    {
+        bool skipNextFrame = false;
+        while (locationId != -1) {
+            const auto& location = locations.value(locationId);
+            if (skipNextFrame) {
+                locationId = location.parentLocationId;
+                skipNextFrame = false;
+                continue;
+            }
+
+            auto symbol = symbols.value(locationId);
+            if (!symbol.isValid()) {
+                // we get function entry points from the perfparser but
+                // those are imo not interesting - skip them
+                symbol = symbols.value(location.parentLocationId);
+                skipNextFrame = true;
+            }
+
+            if (!frameCallback(symbol, location.location)) {
+                return false;
+            }
+
+            locationId = location.parentLocationId;
+        }
+        return true;
+    }
 };
 
 struct TopDown : SymbolTree<TopDown>
@@ -659,13 +709,16 @@ struct FilterAction
     QVector<qint32> excludeProcessIds;
     QVector<qint32> excludeThreadIds;
     QVector<quint32> excludeCpuIds;
+    QSet<Data::Symbol> includeSymbols;
+    QSet<Data::Symbol> excludeSymbols;
 
     bool isValid() const
     {
         return time.isValid() || processId != INVALID_PID
             || threadId != INVALID_PID || cpuId != INVALID_CPU_ID
-            || excludeProcessIds.isEmpty() || excludeThreadIds.isEmpty()
-            || excludeCpuIds.isEmpty();
+            || !excludeProcessIds.isEmpty() || !excludeThreadIds.isEmpty()
+            || !excludeCpuIds.isEmpty() || !includeSymbols.isEmpty()
+            || !excludeSymbols.isEmpty();
     }
 };
 
