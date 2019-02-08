@@ -131,6 +131,9 @@ TimeLineDelegate::TimeLineDelegate(QAbstractItemView* view)
     m_resetZoomAction = m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-original")), tr("Reset Zoom"),
                                                 this, &TimeLineDelegate::resetZoom);
     m_resetZoomAction->setToolTip(tr("Reset the zoom level to show the full range in the time line."));
+
+    m_filterMenu->addSeparator();
+
     m_resetZoomAndFilterAction =
         m_filterMenu->addAction(QIcon::fromTheme(QStringLiteral("edit-clear")), tr("Reset Zoom And Filter"), this,
                                 &TimeLineDelegate::resetZoomAndFilter);
