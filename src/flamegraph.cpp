@@ -549,7 +549,7 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
             });
             contextMenu.addSeparator();
         }
-        ResultsUtil::addFilterActions(&contextMenu, item->symbol(), m_filterStack);
+        ResultsUtil::addFilterActions(&contextMenu, item ? item->symbol() : Data::Symbol(), m_filterStack);
         contextMenu.addSeparator();
         contextMenu.addActions(actions());
 
