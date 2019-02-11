@@ -31,6 +31,9 @@ install:
   - wget -c "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
   - chmod a+x appimagetool-*.AppImage
   - sudo mv appimagetool-*.AppImage /usr/bin/appimagetool
+  - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
+  - chmod a+x upload.sh
+  - sudo mv upload.sh /usr/bin/github-upload
 
 script:
   - set -e # Exit immediately if anything fails
@@ -61,8 +64,15 @@ script:
   - chmod +x ./appdir/AppRun
   - # Actually create the final image
   - appimagetool ./appdir/
-  - curl --upload-file ./Hotspot-*.AppImage https://transfer.sh/Hotspot-git.$(git rev-parse --short HEAD)-x86_64.AppImage
+  - # upload the appimage to GitHub
+  - mv Hotspot-*.AppImage Hotspot-git.$(git rev-parse --short HEAD)-x86_64.AppImage
+  - github-upload ./Hotspot-git.*-x86_64.AppImage
   - # finally run unit tests (we may want to get access to the app image independently from test failures)
   - set +e
   - source /opt/qt*/bin/qt*-env.sh
   - ctest -VV .
+
+branches:
+  except:
+    - # Do not build tags that we create when we upload to GitHub Releases
+    - /^(?i:continuous)$/
