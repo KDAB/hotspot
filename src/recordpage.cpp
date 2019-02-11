@@ -640,8 +640,9 @@ void RecordPage::updateProcessesFinished()
 
 void RecordPage::appendOutput(const QString& text)
 {
-    ui->perfResultsTextEdit->insertPlainText(text);
-    ui->perfResultsTextEdit->moveCursor(QTextCursor::End);
+    QTextCursor cursor(ui->perfResultsTextEdit->document());
+    cursor.movePosition(QTextCursor::End);
+    cursor.insertText(text);
 }
 
 void RecordPage::setError(const QString& message)
