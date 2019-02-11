@@ -74,7 +74,7 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
             });
 
     connect(parser, &PerfParser::bottomUpDataAvailable, this,
-            [this, bottomUpCostModel, topHotspotsProxy](const Data::BottomUpResults& data) {
+            [this, bottomUpCostModel](const Data::BottomUpResults& data) {
                 bottomUpCostModel->setData(data);
                 ResultsUtil::hideEmptyColumns(data.costs, ui->topHotspotsTableView, BottomUpModel::NUM_BASE_COLUMNS);
                 ResultsUtil::fillEventSourceComboBox(ui->eventSourceComboBox, data.costs,
