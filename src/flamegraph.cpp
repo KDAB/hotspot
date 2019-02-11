@@ -411,6 +411,9 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     m_forwardButton->setToolTip(QStringLiteral("Go forward in symbol view history"));
 
     auto bottomUpCheckbox = new QCheckBox(i18n("Bottom-Up View"), this);
+    connect(this, &FlameGraph::uiResetRequested, bottomUpCheckbox, [bottomUpCheckbox](){
+        bottomUpCheckbox->setChecked(false);
+    });
     bottomUpCheckbox->setToolTip(i18n(
         "Enable the bottom-up flame graph view. When this is unchecked, the top-down view is enabled by default."));
     bottomUpCheckbox->setChecked(m_showBottomUpData);
@@ -420,6 +423,9 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     });
 
     auto collapseRecursionCheckbox = new QCheckBox(i18n("Collapse Recursion"), this);
+    connect(this, &FlameGraph::uiResetRequested, collapseRecursionCheckbox, [collapseRecursionCheckbox](){
+        collapseRecursionCheckbox->setChecked(false);
+    });
     collapseRecursionCheckbox->setChecked(m_collapseRecursion);
     collapseRecursionCheckbox->setToolTip(
         i18n("Collapse stack frames for functions calling themselves. "
@@ -435,7 +441,10 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     costThreshold->setMaximum(99.90);
     costThreshold->setPrefix(i18n("Cost Threshold: "));
     costThreshold->setSuffix(QStringLiteral("%"));
-    costThreshold->setValue(m_costThreshold);
+    costThreshold->setValue(DEFAULT_COST_THRESHOLD);
+    connect(this, &FlameGraph::uiResetRequested, costThreshold, [costThreshold](){
+        costThreshold->setValue(DEFAULT_COST_THRESHOLD);
+    });
     costThreshold->setSingleStep(0.01);
     costThreshold->setToolTip(
         i18n("<qt>The cost threshold defines a fractional cut-off value. "
@@ -453,6 +462,9 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     m_searchInput->setToolTip(i18n("<qt>Search the flame graph for a symbol.</qt>"));
     m_searchInput->setClearButtonEnabled(true);
     connect(m_searchInput, &QLineEdit::textChanged, this, &FlameGraph::setSearchValue);
+    connect(this, &FlameGraph::uiResetRequested, this, [this](){
+        m_searchInput->clear();
+    });
 
     auto controls = new QWidget(this);
     controls->setLayout(new QHBoxLayout);
@@ -589,6 +601,11 @@ void FlameGraph::setBottomUpData(const Data::BottomUpResults& bottomUpData)
                                          ki18n("Show a flame graph over the aggregated %1 sample costs."));
     connect(m_costSource, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             &FlameGraph::showData);
+}
+
+void FlameGraph::clear()
+{
+    emit uiResetRequested();
 }
 
 void FlameGraph::showData()

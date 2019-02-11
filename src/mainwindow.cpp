@@ -244,6 +244,7 @@ void MainWindow::clear()
     m_pageStack->setCurrentWidget(m_startPage);
     m_recordPage->stopRecording();
     m_resultsPage->selectSummaryTab();
+    m_resultsPage->clear();
 }
 
 void MainWindow::openFile(const QString& path)

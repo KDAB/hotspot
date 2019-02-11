@@ -63,3 +63,8 @@ ResultsBottomUpPage::ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfPa
 }
 
 ResultsBottomUpPage::~ResultsBottomUpPage() = default;
+
+void ResultsBottomUpPage::clear()
+{
+    ui->bottomUpSearch->setText({});
+}

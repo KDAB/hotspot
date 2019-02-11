@@ -56,3 +56,8 @@ ResultsTopDownPage::ResultsTopDownPage(FilterAndZoomStack* filterStack, PerfPars
 }
 
 ResultsTopDownPage::~ResultsTopDownPage() = default;
+
+void ResultsTopDownPage::clear()
+{
+    ui->topDownSearch->setText({});
+}

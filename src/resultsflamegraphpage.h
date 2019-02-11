@@ -47,6 +47,8 @@ public:
     explicit ResultsFlameGraphPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsFlameGraphPage();
 
+    void clear();
+
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
 

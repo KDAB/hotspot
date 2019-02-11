@@ -205,6 +205,14 @@ void ResultsPage::selectSummaryTab()
     ui->resultsTabWidget->setCurrentWidget(m_resultsSummaryPage);
 }
 
+void ResultsPage::clear()
+{
+    m_resultsBottomUpPage->clear();
+    m_resultsTopDownPage->clear();
+    m_resultsCallerCalleePage->clear();
+    m_resultsFlameGraphPage->clear();
+}
+
 QMenu* ResultsPage::filterMenu() const
 {
     return m_filterMenu;

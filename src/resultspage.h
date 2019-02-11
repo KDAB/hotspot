@@ -59,6 +59,7 @@ public:
     void setAppPath(const QString& path);
 
     void selectSummaryTab();
+    void clear();
     QMenu* filterMenu() const;
 
 public slots:

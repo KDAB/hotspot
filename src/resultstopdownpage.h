@@ -49,6 +49,8 @@ public:
     explicit ResultsTopDownPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsTopDownPage();
 
+    void clear();
+
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
 

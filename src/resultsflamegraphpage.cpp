@@ -46,4 +46,9 @@ ResultsFlameGraphPage::ResultsFlameGraphPage(FilterAndZoomStack* filterStack, Pe
     connect(ui->flameGraph, &FlameGraph::jumpToCallerCallee, this, &ResultsFlameGraphPage::jumpToCallerCallee);
 }
 
+void ResultsFlameGraphPage::clear()
+{
+    ui->flameGraph->clear();
+}
+
 ResultsFlameGraphPage::~ResultsFlameGraphPage() = default;

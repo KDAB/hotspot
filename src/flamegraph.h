@@ -53,6 +53,7 @@ public:
     void setFilterStack(FilterAndZoomStack *filterStack);
     void setTopDownData(const Data::TopDownResults& topDownData);
     void setBottomUpData(const Data::BottomUpResults& bottomUpData);
+    void clear();
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
@@ -65,6 +66,7 @@ private slots:
 
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
+    void uiResetRequested();
 
 private:
     void setTooltipItem(const FrameGraphicsItem* item);
@@ -98,7 +100,8 @@ private:
     bool m_collapseRecursion = false;
     bool m_buildingScene = false;
     // cost threshold in percent, items below that value will not be shown
-    double m_costThreshold = 0.1;
+    static const constexpr double DEFAULT_COST_THRESHOLD = 0.1;
+    double m_costThreshold = DEFAULT_COST_THRESHOLD;
 };
 
 #endif // FLAMEGRAPH_H

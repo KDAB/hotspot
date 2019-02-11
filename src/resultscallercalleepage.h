@@ -53,6 +53,7 @@ public:
 
     void setSysroot(const QString& path);
     void setAppPath(const QString& path);
+    void clear();
 
     void jumpToCallerCallee(const Data::Symbol& symbol);
 
