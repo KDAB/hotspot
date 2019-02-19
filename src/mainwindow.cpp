@@ -181,8 +181,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::setSysroot(const QString& path)
 {
-    m_sysroot = path;
-    m_resultsPage->setSysroot(path);
+    m_sysroot = path.trimmed();
+    m_resultsPage->setSysroot(path.trimmed());
 }
 
 void MainWindow::setKallsyms(const QString& path)
