@@ -117,6 +117,9 @@ MainWindow::MainWindow(QWidget* parent)
     layout->addWidget(m_pageStack);
     centralWidget()->setLayout(layout);
 
+    connect(this, &MainWindow::sysrootChanged, m_resultsPage, &ResultsPage::setSysroot);
+    connect(this, &MainWindow::appPathChanged, m_resultsPage, &ResultsPage::setAppPath);
+
     connect(m_startPage, &StartPage::openFileButtonClicked, this, &MainWindow::onOpenFileButtonClicked);
     connect(m_startPage, &StartPage::recordButtonClicked, this, &MainWindow::onRecordButtonClicked);
     connect(m_startPage, &StartPage::stopParseButtonClicked, this, &MainWindow::clear);
@@ -182,33 +185,37 @@ void MainWindow::closeEvent(QCloseEvent* event)
 void MainWindow::setSysroot(const QString& path)
 {
     m_sysroot = path.trimmed();
-    m_resultsPage->setSysroot(path.trimmed());
+    emit sysrootChanged(m_sysroot);
 }
 
 void MainWindow::setKallsyms(const QString& path)
 {
     m_kallsyms = path;
+    emit kallsymsChanged(m_kallsyms);
 }
 
 void MainWindow::setDebugPaths(const QString& paths)
 {
     m_debugPaths = paths;
+    emit debugPathsChanged(m_debugPaths);
 }
 
 void MainWindow::setExtraLibPaths(const QString& paths)
 {
     m_extraLibPaths = paths;
+    emit extraLibPathsChanged(m_extraLibPaths);
 }
 
 void MainWindow::setAppPath(const QString& path)
 {
     m_appPath = path;
-    m_resultsPage->setAppPath(path);
+    emit appPathChanged(m_appPath);
 }
 
 void MainWindow::setArch(const QString& arch)
 {
     m_arch = arch;
+    emit archChanged(m_arch);
 }
 
 void MainWindow::onOpenFileButtonClicked()
@@ -318,34 +325,34 @@ void MainWindow::aboutHotspot()
 void MainWindow::setupPathSettingsMenu()
 {
     auto menu = new QMenu(this);
-    auto addPathAction = [menu](const QString& label, std::function<void(const QString& newValue)> setPath,
-                                QString* value, const QString& placeHolder, const QString& tooltip) {
+    auto addPathAction = [this, menu](const QString& label, void (MainWindow::*setPath)(const QString&),
+                                      void (MainWindow::*pathChanged)(const QString&),
+                                      const QString& placeHolder, const QString& tooltip) {
         auto action = new QWidgetAction(menu);
         auto container = new QWidget;
         auto layout = new QHBoxLayout;
         layout->addWidget(new QLabel(label));
         auto lineEdit = new QLineEdit;
         lineEdit->setPlaceholderText(placeHolder);
-        lineEdit->setText(*value);
-        connect(lineEdit, &QLineEdit::textChanged, lineEdit, [setPath](const QString& newValue) { setPath(newValue); });
+        connect(this, pathChanged, lineEdit, &QLineEdit::setText);
+        connect(lineEdit, &QLineEdit::textChanged, this, setPath);
         layout->addWidget(lineEdit);
         container->setToolTip(tooltip);
         container->setLayout(layout);
         action->setDefaultWidget(container);
         menu->addAction(action);
     };
-    addPathAction(tr("Sysroot:"), [this](const QString& newValue) { setSysroot(newValue); }, &m_sysroot,
+    addPathAction(tr("Sysroot:"), &MainWindow::setSysroot, &MainWindow::sysrootChanged,
                   tr("local machine"), tr("Path to the sysroot. Leave empty to use the local machine."));
-    addPathAction(tr("Application Path:"), [this](const QString& newValue) { setAppPath(newValue); }, &m_appPath,
+    addPathAction(tr("Application Path:"), &MainWindow::setAppPath, &MainWindow::appPathChanged,
                   tr("auto-detect"), tr("Path to the application binary and library."));
-    addPathAction(tr("Extra Library Paths:"), [this](const QString& newValue) { setExtraLibPaths(newValue); },
-                  &m_extraLibPaths, tr("empty"),
-                  tr("List of colon-separated paths that contain additional libraries."));
-    addPathAction(tr("Debug Paths:"), [this](const QString& newValue) { setDebugPaths(newValue); }, &m_debugPaths,
+    addPathAction(tr("Extra Library Paths:"), &MainWindow::setExtraLibPaths, &MainWindow::extraLibPathsChanged,
+                  tr("empty"), tr("List of colon-separated paths that contain additional libraries."));
+    addPathAction(tr("Debug Paths:"), &MainWindow::setDebugPaths, &MainWindow::debugPathsChanged,
                   tr("auto-detect"), tr("List of colon-separated paths that contain debug information."));
-    addPathAction(tr("Kallsyms:"), [this](const QString& newValue) { setKallsyms(newValue); }, &m_kallsyms,
+    addPathAction(tr("Kallsyms:"), &MainWindow::setKallsyms, &MainWindow::kallsymsChanged,
                   tr("auto-detect"), tr("Path to the kernel symbol mapping."));
-    addPathAction(tr("Architecture:"), [this](const QString& newValue) { setArch(newValue); }, &m_arch,
+    addPathAction(tr("Architecture:"), &MainWindow::setArch, &MainWindow::archChanged,
                   tr("auto-detect"), tr("System architecture, e.g. x86_64, arm, aarch64 etc."));
     m_startPage->setPathSettingsMenu(menu);
 }

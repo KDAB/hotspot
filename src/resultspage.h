@@ -55,14 +55,14 @@ public:
     explicit ResultsPage(PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsPage();
 
-    void setSysroot(const QString& path);
-    void setAppPath(const QString& path);
-
     void selectSummaryTab();
     void clear();
     QMenu* filterMenu() const;
 
 public slots:
+    void setSysroot(const QString& path);
+    void setAppPath(const QString& path);
+
     void onNavigateToCode(const QString& url, int lineNumber, int columnNumber);
     void onJumpToCallerCallee(const Data::Symbol& symbol);
     void setTimelineVisible(bool visible);
