@@ -203,8 +203,8 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     if (m_timeSlice.isValid()) {
         // the painter is translated to option.rect.topLeft
         // clamp to available width to prevent us from painting over the other columns
-        const auto startX = std::max(data.mapTimeToX(m_timeSlice.start), 0);
-        const auto endX = std::min(data.mapTimeToX(m_timeSlice.end), data.w);
+        const auto startX = std::max(data.mapTimeToX(m_timeSlice.normalized().start), 0);
+        const auto endX = std::min(data.mapTimeToX(m_timeSlice.normalized().end), data.w);
         // undo vertical padding manually to fill complete height
         QRect timeSlice(startX, -data.padding, endX - startX, option.rect.height());
 
@@ -334,7 +334,6 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
             m_timeSlice.start = time;
         }
         m_timeSlice.end = time;
-        m_timeSlice = m_timeSlice.normalized();
 
         // trigger an update of the viewport, to ensure our paint method gets called again
         updateView();
@@ -346,6 +345,8 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     const bool showContextMenu = isButtonRelease
         && ((isRightButtonEvent && haveContextInfo) || (isLeftButtonEvent && isTimeSpanSelected)) && index.isValid()
         && !index.model()->rowCount(index); // when the index has children, don't show the context menu
+
+    const auto timeSlice = m_timeSlice.normalized();
 
     if (showContextMenu) {
         auto contextMenu = new QMenu(m_view->viewport());
@@ -362,10 +363,9 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         const auto isMainThread = threadStartTime == minTime && threadEndTime == maxTime;
         const auto cpuId = index.data(EventModel::CpuIdRole).value<quint32>();
         const auto numCpus = index.data(EventModel::NumCpusRole).value<uint>();
-
-        if (isTimeSpanSelected && (minTime != m_timeSlice.start || maxTime != m_timeSlice.end)) {
+        if (isTimeSpanSelected && (minTime != timeSlice.start || maxTime != timeSlice.end)) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")), tr("Zoom In On Selection"), this,
-                                   [this]() { m_filterAndZoomStack->zoomIn(m_timeSlice); });
+                                   [this, timeSlice]() { m_filterAndZoomStack->zoomIn(timeSlice); });
         }
 
         if (isRightButtonEvent && index.isValid() && threadStartTime != threadEndTime && numThreads > 1
@@ -385,9 +385,9 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         contextMenu->addSeparator();
 
         if (isTimeSpanSelected
-            && (!isFiltered || filter.time.end != m_timeSlice.start || filter.time.end != m_timeSlice.end)) {
+            && (!isFiltered || filter.time.end != timeSlice.start || filter.time.end != timeSlice.end)) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")), tr("Filter In On Selection"),
-                                   this, [this]() { m_filterAndZoomStack->filterInByTime(m_timeSlice); });
+                                   this, [this, timeSlice]() { m_filterAndZoomStack->filterInByTime(timeSlice); });
         }
 
         if (isRightButtonEvent && index.isValid() && numThreads > 1 && threadId != Data::INVALID_TID) {
@@ -440,14 +440,14 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         return true;
     } else if (isTimeSpanSelected && isLeftButtonEvent) {
         const auto& data = alwaysValidIndex.data(EventModel::EventResultsRole).value<Data::EventResults>();
-        const auto timeDelta = m_timeSlice.delta();
+        const auto timeDelta = timeSlice.delta();
         quint64 cost = 0;
         quint64 numEvents = 0;
         QSet<qint32> threads;
         QSet<qint32> processes;
         for (const auto& thread : data.threads) {
-            const auto start = findEvent(thread.events.begin(), thread.events.end(), m_timeSlice.start);
-            const auto end = findEvent(start, thread.events.end(), m_timeSlice.end);
+            const auto start = findEvent(thread.events.begin(), thread.events.end(), timeSlice.start);
+            const auto end = findEvent(start, thread.events.end(), timeSlice.end);
             if (start != end) {
                 threads.insert(thread.tid);
                 processes.insert(thread.pid);
