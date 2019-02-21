@@ -340,7 +340,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         updateView();
     }
 
-    const bool isTimeSpanSelected = m_timeSlice.isEmpty();
+    const bool isTimeSpanSelected = !m_timeSlice.isEmpty();
     const auto index = m_view->indexAt(pos.toPoint());
     const bool haveContextInfo = index.isValid() || isZoomed || isFiltered;
     const bool showContextMenu = isButtonRelease

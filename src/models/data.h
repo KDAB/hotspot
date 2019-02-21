@@ -560,7 +560,7 @@ struct TimeRange
 
     bool isEmpty() const
     {
-        return start != end;
+        return start == end;
     }
 
     quint64 delta() const

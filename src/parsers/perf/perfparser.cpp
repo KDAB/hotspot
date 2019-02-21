@@ -1446,7 +1446,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                     auto it = std::remove_if(
                         thread.events.begin(), thread.events.end(),
                         [filter, filterByTime, filterByCpu, excludeByCpu, filterByStack, filterStacks](const Data::Event& event) {
-                            if (filterByTime && filter.time.contains(event.time)) {
+                            if (filterByTime && !filter.time.contains(event.time)) {
                                 return true;
                             } else if (filterByCpu && event.cpuId != filter.cpuId) {
                                 return true;
