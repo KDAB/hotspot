@@ -54,6 +54,7 @@ public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
+public slots:
     void setSysroot(const QString& path);
     void setKallsyms(const QString& path);
     void setDebugPaths(const QString& paths);
@@ -61,7 +62,6 @@ public:
     void setAppPath(const QString& path);
     void setArch(const QString& arch);
 
-public slots:
     void clear();
     void openFile(const QString& path);
     void openFile(const QUrl& url);
@@ -78,6 +78,12 @@ public slots:
 
 signals:
     void openFileError(const QString& errorMessage);
+    void sysrootChanged(const QString& path);
+    void kallsymsChanged(const QString& path);
+    void debugPathsChanged(const QString& paths);
+    void extraLibPathsChanged(const QString& paths);
+    void appPathChanged(const QString& path);
+    void archChanged(const QString& arch);
 
 private:
     void closeEvent(QCloseEvent* event) override;
