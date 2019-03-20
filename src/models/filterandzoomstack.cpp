@@ -61,7 +61,7 @@ FilterAndZoomStack::FilterAndZoomStack(QObject* parent)
         filterInBySymbol(data.value<Data::Symbol>());
     });
 
-    m_actions.filterOutBySymbol = new QAction(QIcon::fromTheme(QStringLiteral("view-filter")), tr("Filter Out By Symbol"));
+    m_actions.filterOutBySymbol = new QAction(QIcon::fromTheme(QStringLiteral("view-filter")), tr("Filter Out By Symbol"), this);
     connect(m_actions.filterOutBySymbol, &QAction::triggered, this, [this](){
         const auto data = m_actions.filterInBySymbol->data();
         Q_ASSERT(data.canConvert<Data::Symbol>());
