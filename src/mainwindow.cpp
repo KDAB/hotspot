@@ -145,6 +145,9 @@ MainWindow::MainWindow(QWidget* parent)
     m_recentFilesAction = KStandardAction::openRecent(this, SLOT(openFile(QUrl)), this);
     m_recentFilesAction->loadEntries(m_config->group("RecentFiles"));
     ui->fileMenu->addAction(m_recentFilesAction);
+    m_reloadAction = KStandardAction::redisplay(this, SLOT(reload()), this);
+    m_reloadAction->setText(tr("Reload"));
+    ui->fileMenu->addAction(m_reloadAction);
     ui->fileMenu->addAction(KStandardAction::close(this, SLOT(clear()), this));
     ui->fileMenu->addAction(KStandardAction::quit(this, SLOT(close()), this));
     connect(ui->actionAbout_Qt, &QAction::triggered, qApp, &QApplication::aboutQt);
@@ -252,6 +255,7 @@ void MainWindow::clear()
     m_recordPage->stopRecording();
     m_resultsPage->selectSummaryTab();
     m_resultsPage->clear();
+    m_reloadAction->setEnabled(false);
 }
 
 void MainWindow::openFile(const QString& path)
@@ -266,6 +270,8 @@ void MainWindow::openFile(const QString& path)
 
     // TODO: support input files of different types via plugins
     m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths, m_extraLibPaths, m_appPath, m_arch);
+    m_reloadAction->setEnabled(true);
+    m_reloadAction->setData(path);
 
     m_recentFilesAction->addUrl(QUrl::fromLocalFile(file.absoluteFilePath()));
     m_recentFilesAction->saveEntries(m_config->group("RecentFiles"));
@@ -280,6 +286,12 @@ void MainWindow::openFile(const QUrl& url)
     }
     openFile(url.toLocalFile());
 }
+
+void MainWindow::reload()
+{
+    openFile(m_reloadAction->data().toString());
+}
+
 void MainWindow::aboutKDAB()
 {
     AboutDialog dialog(this);
