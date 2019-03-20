@@ -56,6 +56,7 @@ public:
     static bool canProfileOffCpu();
     static bool canSampleCpu();
     static bool canSwitchEvents();
+    static bool canUseAio();
 
     static QStringList offCpuProfilingOptions();
 

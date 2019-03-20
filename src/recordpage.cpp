@@ -341,6 +341,7 @@ RecordPage::RecordPage(QWidget* parent)
     ui->sampleCpuCheckBox->setChecked(config().readEntry(QStringLiteral("sampleCpu"), true));
     ui->mmapPagesSpinBox->setValue(config().readEntry(QStringLiteral("mmapPages"), 0));
     ui->mmapPagesUnitComboBox->setCurrentIndex(config().readEntry(QStringLiteral("mmapPagesUnit"), 2));
+    ui->useAioCheckBox->setChecked(config().readEntry(QStringLiteral("useAio"), PerfRecord::canUseAio()));
 
     const auto callGraph = config().readEntry("callGraph", ui->callGraphComboBox->currentData());
     const auto callGraphIdx = ui->callGraphComboBox->findData(callGraph);
@@ -381,6 +382,10 @@ RecordPage::RecordPage(QWidget* parent)
     if (!PerfRecord::canSwitchEvents()) {
         ui->offCpuCheckBox->hide();
         ui->offCpuLabel->hide();
+    }
+    if (!PerfRecord::canUseAio()) {
+        ui->useAioCheckBox->hide();
+        ui->useAioLabel->hide();
     }
 }
 
@@ -436,6 +441,12 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
             perfOptions += PerfRecord::offCpuProfilingOptions();
         }
         config().writeEntry(QStringLiteral("offCpuProfiling"), offCpuProfilingEnabled);
+
+        const bool useAioEnabled = ui->useAioCheckBox->isChecked();
+        if (useAioEnabled && PerfRecord::canUseAio()) {
+            perfOptions += QStringLiteral("--aio");
+        }
+        config().writeEntry(QStringLiteral("useAio"), useAioEnabled);
 
         const bool elevatePrivileges = ui->elevatePrivilegesCheckBox->isChecked();
 
