@@ -134,7 +134,7 @@ MainWindow::MainWindow(QWidget* parent)
             [this](const QString& errorMessage) { emit openFileError(errorMessage); });
 
     auto* recordDataAction = new QAction(this);
-    recordDataAction->setText(QStringLiteral("&Record Data"));
+    recordDataAction->setText(tr("&Record Data"));
     recordDataAction->setIcon(QIcon::fromTheme(QStringLiteral("media-record")));
     recordDataAction->setShortcut(Qt::CTRL + Qt::Key_R);
     ui->fileMenu->addAction(recordDataAction);
