@@ -87,7 +87,6 @@ signals:
 
 private:
     void closeEvent(QCloseEvent* event) override;
-    void updateBackground();
     void setupCodeNavigationMenu();
     void setupPathSettingsMenu();
 
