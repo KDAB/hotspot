@@ -97,7 +97,7 @@ void StartPage::paintEvent(QPaintEvent* /*event*/)
 
 void StartPage::changeEvent(QEvent* event)
 {
-    parent()->event(event);
+    QWidget::changeEvent(event);
 
     if (event->type() == QEvent::PaletteChange) {
         updateBackground();
