@@ -76,7 +76,7 @@ static QStringList sudoOptions(const QString& sudoBinary)
 }
 
 void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
-                                const QStringList& recordOptions, const QString& workingDirectory)
+                                const QStringList& recordOptions, const QStringList& env, const QString& workingDirectory)
 {
     if (elevatePrivileges) {
         // elevate privileges temporarily as root
@@ -128,7 +128,7 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfO
                 });
         // poll the file for new input, readyRead isn't being emitted by QFile (cf. docs)
         auto* readTimer = new QTimer(outputFile);
-        auto readSlot = [this, outputFile, perfOptions, outputPath, recordOptions, workingDirectory]() {
+        auto readSlot = [this, outputFile, perfOptions, outputPath, recordOptions, env, workingDirectory]() {
             const auto data = outputFile->readAll();
             if (data.isEmpty()) {
                 return;
@@ -137,7 +137,7 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfO
             if (data.contains("\nprivileges elevated!\n")) {
                 emit recordingOutput(QString::fromUtf8(data));
                 emit recordingOutput(QStringLiteral("\n"));
-                startRecording(perfOptions, outputPath, recordOptions, workingDirectory);
+                startRecording(perfOptions, outputPath, recordOptions, env, workingDirectory);
             } else if (data.contains("Error:")) {
                 emit recordingFailed(tr("Failed to elevate privileges: %1").arg(QString::fromUtf8(data)));
             } else {
@@ -158,12 +158,12 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfO
 
         m_elevatePrivilegesProcess->start(sudoBinary, options);
     } else {
-        startRecording(perfOptions, outputPath, recordOptions, workingDirectory);
+        startRecording(perfOptions, outputPath, recordOptions, env, workingDirectory);
     }
 }
 
 void PerfRecord::startRecording(const QStringList& perfOptions, const QString& outputPath,
-                                const QStringList& recordOptions, const QString& workingDirectory)
+                                const QStringList& recordOptions, const QStringList& env, const QString& workingDirectory)
 {
     // Reset perf record process to avoid getting signals from old processes
     if (m_perfRecordProcess) {
@@ -172,6 +172,7 @@ void PerfRecord::startRecording(const QStringList& perfOptions, const QString& o
     }
     m_perfRecordProcess = new QProcess(this);
     m_perfRecordProcess->setProcessChannelMode(QProcess::MergedChannels);
+    m_perfRecordProcess->setEnvironment(QProcess::systemEnvironment() + env);
 
     QFileInfo outputFileInfo(outputPath);
     QString folderPath = outputFileInfo.dir().path();
@@ -245,7 +246,7 @@ void PerfRecord::record(const QStringList& perfOptions, const QString& outputPat
 }
 
 void PerfRecord::record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
-                        const QString& exePath, const QStringList& exeOptions, const QString& workingDirectory)
+                        const QString& exePath, const QStringList& exeOptions, const QStringList& exeEnv, const QString& workingDirectory)
 {
     QFileInfo exeFileInfo(exePath);
 
@@ -269,7 +270,7 @@ void PerfRecord::record(const QStringList& perfOptions, const QString& outputPat
     QStringList recordOptions = {exeFileInfo.absoluteFilePath()};
     recordOptions += exeOptions;
 
-    startRecording(elevatePrivileges, perfOptions, outputPath, recordOptions, workingDirectory);
+    startRecording(elevatePrivileges, perfOptions, outputPath, recordOptions, exeEnv, workingDirectory);
 }
 
 void PerfRecord::recordSystem(const QStringList& perfOptions, const QString& outputPath)
