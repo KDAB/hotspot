@@ -40,7 +40,7 @@ public:
     ~PerfRecord();
 
     void record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
-                const QString& exePath, const QStringList& exeOptions, const QStringList& exeEnv, const QString& workingDirectory = QString());
+                const QString& exePath, const QStringList& exeOptions, const QStringList& exeEnv = {}, const QString& workingDirectory = QString());
     void record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
                 const QStringList& pids);
     void recordSystem(const QStringList& perfOptions, const QString& outputPath);
