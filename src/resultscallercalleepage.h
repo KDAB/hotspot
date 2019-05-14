@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -38,29 +38,45 @@ struct Symbol;
 }
 
 class QSortFilterProxyModel;
+class QModelIndex;
 
 class PerfParser;
 class CallerCalleeModel;
+class FilterAndZoomStack;
 
 class ResultsCallerCalleePage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsCallerCalleePage(PerfParser *parser, QWidget *parent = nullptr);
+    explicit ResultsCallerCalleePage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsCallerCalleePage();
 
     void setSysroot(const QString& path);
     void setAppPath(const QString& path);
+    void clear();
 
-    void jumpToCallerCallee(const Data::Symbol &symbol);
+    void jumpToCallerCallee(const Data::Symbol& symbol);
 
 private slots:
-    void onSourceMapContextMenu(const QPoint &pos);
+    void onSourceMapContextMenu(const QPoint& pos);
+    void onSourceMapActivated(const QModelIndex& index);
 
 signals:
-    void navigateToCode(const QString &url, int lineNumber, int columnNumber);
+    void navigateToCode(const QString& url, int lineNumber, int columnNumber);
 
 private:
+    struct SourceMapLocation
+    {
+        inline explicit operator bool() const
+        {
+            return !path.isEmpty();
+        }
+
+        QString path;
+        int lineNumber = -1;
+    };
+    SourceMapLocation toSourceMapLocation(const QModelIndex& index);
+
     QScopedPointer<Ui::ResultsCallerCalleePage> ui;
 
     CallerCalleeModel* m_callerCalleeCostModel;

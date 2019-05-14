@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2016-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2016-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -37,7 +37,8 @@ class HashModel : public QAbstractTableModel
 public:
     explicit HashModel(QObject* parent = nullptr)
         : QAbstractTableModel(parent)
-    {}
+    {
+    }
     virtual ~HashModel() = default;
 
     int columnCount(const QModelIndex& parent = {}) const final override
@@ -45,7 +46,7 @@ public:
         return parent.isValid() ? 0 : numColumns();
     }
 
-    int rowCount(const QModelIndex &parent = {}) const final override
+    int rowCount(const QModelIndex& parent = {}) const final override
     {
         return parent.isValid() ? 0 : m_keys.size();
     }

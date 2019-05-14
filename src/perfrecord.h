@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -39,12 +39,11 @@ public:
     explicit PerfRecord(QObject* parent = nullptr);
     ~PerfRecord();
 
-    void record(const QStringList &perfOptions, const QString &outputPath,
-                bool elevatePrivileges, const QString &exePath, const QStringList &exeOptions,
-                const QString &workingDirectory = QString());
-    void record(const QStringList &perfOptions, const QString &outputPath,
-                bool elevatePrivileges, const QStringList &pids);
-    void recordSystem(const QStringList &perfOptions, const QString &outputPath);
+    void record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
+                const QString& exePath, const QStringList& exeOptions, const QString& workingDirectory = QString());
+    void record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
+                const QStringList& pids);
+    void recordSystem(const QStringList& perfOptions, const QString& outputPath);
 
     const QString perfCommand();
     void stopRecording();
@@ -55,14 +54,19 @@ public:
 
     static bool canTrace(const QString& path);
     static bool canProfileOffCpu();
+    static bool canSampleCpu();
+    static bool canSwitchEvents();
+    static bool canUseAio();
 
     static QStringList offCpuProfilingOptions();
 
+    static bool isPerfInstalled();
+
 signals:
-    void recordingStarted(const QString &perfBinary, const QStringList &arguments);
-    void recordingFinished(const QString &fileLocation);
-    void recordingFailed(const QString &errorMessage);
-    void recordingOutput(const QString &errorMessage);
+    void recordingStarted(const QString& perfBinary, const QStringList& arguments);
+    void recordingFinished(const QString& fileLocation);
+    void recordingFailed(const QString& errorMessage);
+    void recordingOutput(const QString& errorMessage);
 
 private:
     QPointer<QProcess> m_perfRecordProcess;
@@ -70,10 +74,8 @@ private:
     QString m_outputPath;
     bool m_userTerminated;
 
-    void startRecording(bool elevatePrivileges, const QStringList &perfOptions,
-                        const QString &outputPath, const QStringList &recordOptions,
-                        const QString &workingDirectory = QString());
-    void startRecording(const QStringList &perfOptions, const QString &outputPath,
-                        const QStringList &recordOptions,
-                        const QString &workingDirectory = QString());
+    void startRecording(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
+                        const QStringList& recordOptions, const QString& workingDirectory = QString());
+    void startRecording(const QStringList& perfOptions, const QString& outputPath, const QStringList& recordOptions,
+                        const QString& workingDirectory = QString());
 };

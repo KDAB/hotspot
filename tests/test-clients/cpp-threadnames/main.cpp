@@ -1,7 +1,7 @@
 /*
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -23,10 +23,10 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <thread>
-#include <string>
 #include <chrono>
 #include <pthread.h>
+#include <string>
+#include <thread>
 
 using namespace std;
 

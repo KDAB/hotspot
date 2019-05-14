@@ -1,7 +1,7 @@
 /*
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -23,12 +23,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-double  __attribute__((noinline)) asdf(double a, double b)
+double __attribute__((noinline)) asdf(double a, double b)
 {
     return (a * a) / (b * b);
 }
 
-double  __attribute__((noinline)) bar(unsigned long max)
+double __attribute__((noinline)) bar(unsigned long max)
 {
     double d = 1;
     for (unsigned long i = 0; i < max; ++i) {
@@ -37,7 +37,7 @@ double  __attribute__((noinline)) bar(unsigned long max)
     return d;
 }
 
-int  __attribute__((noinline)) foo(unsigned long max)
+int __attribute__((noinline)) foo(unsigned long max)
 {
     return bar(max);
 }

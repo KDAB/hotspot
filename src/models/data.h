@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2016-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2016-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -27,18 +27,19 @@
 
 #pragma once
 
+#include <QHash>
 #include <QMetaType>
 #include <QString>
 #include <QTypeInfo>
 #include <QVector>
-#include <QHash>
+#include <QSet>
 
 #include "../util.h"
 
+#include <functional>
+#include <limits>
 #include <tuple>
 #include <valarray>
-#include <limits>
-#include <functional>
 
 namespace Data {
 struct Symbol
@@ -47,7 +48,8 @@ struct Symbol
         : symbol(symbol)
         , binary(binary)
         , path(path)
-    {}
+    {
+    }
 
     // function name
     QString symbol;
@@ -58,8 +60,7 @@ struct Symbol
 
     bool operator<(const Symbol& rhs) const
     {
-        return std::tie(symbol, binary, path)
-             < std::tie(rhs.symbol, rhs.binary, rhs.path);
+        return std::tie(symbol, binary, path) < std::tie(rhs.symbol, rhs.binary, rhs.path);
     }
 
     bool isValid() const
@@ -72,8 +73,7 @@ QDebug operator<<(QDebug stream, const Symbol& symbol);
 
 inline bool operator==(const Symbol& lhs, const Symbol& rhs)
 {
-    return std::tie(lhs.symbol, lhs.binary, lhs.path)
-        == std::tie(rhs.symbol, rhs.binary, rhs.path);
+    return std::tie(lhs.symbol, lhs.binary, lhs.path) == std::tie(rhs.symbol, rhs.binary, rhs.path);
 }
 
 inline bool operator!=(const Symbol& lhs, const Symbol& rhs)
@@ -95,7 +95,8 @@ struct Location
     Location(quint64 address = 0, const QString& location = {})
         : address(address)
         , location(location)
-    {}
+    {
+    }
 
     quint64 address = 0;
     // file + line
@@ -103,8 +104,7 @@ struct Location
 
     bool operator<(const Location& rhs) const
     {
-        return std::tie(address, location)
-             < std::tie(rhs.address, rhs.location);
+        return std::tie(address, location) < std::tie(rhs.address, rhs.location);
     }
 };
 
@@ -112,8 +112,7 @@ QDebug operator<<(QDebug stream, const Location& location);
 
 inline bool operator==(const Location& lhs, const Location& rhs)
 {
-    return std::tie(lhs.address, lhs.location)
-        == std::tie(rhs.address, rhs.location);
+    return std::tie(lhs.address, lhs.location) == std::tie(rhs.address, rhs.location);
 }
 
 inline bool operator!=(const Location& lhs, const Location& rhs)
@@ -134,7 +133,8 @@ struct FrameLocation
     FrameLocation(qint32 parentLocationId = -1, const Data::Location& location = {})
         : parentLocationId(parentLocationId)
         , location(location)
-    { }
+    {
+    }
 
     qint32 parentLocationId = -1;
     Data::Location location;
@@ -147,7 +147,8 @@ QDebug operator<<(QDebug stream, const ItemCost& cost);
 class Costs
 {
 public:
-    enum class Unit {
+    enum class Unit
+    {
         Unknown,
         Time
     };
@@ -258,10 +259,10 @@ public:
     QString formatCost(int type, quint64 cost) const
     {
         switch (m_units[type]) {
-            case Unit::Time:
-                return Util::formatTimeString(cost);
-            case Unit::Unknown:
-                break;
+        case Unit::Time:
+            return Util::formatTimeString(cost);
+        case Unit::Unknown:
+            break;
         }
         return Util::formatCost(cost);
     }
@@ -320,9 +321,7 @@ struct SymbolTree : Tree<Impl>
         Impl* ret = nullptr;
 
         auto& children = this->children;
-        for (auto row = children.data(), end = row + children.size();
-             row != end; ++row)
-        {
+        for (auto row = children.data(), end = row + children.size(); row != end; ++row) {
             if (row->symbol == symbol) {
                 ret = row;
                 break;
@@ -346,9 +345,7 @@ struct SymbolTree : Tree<Impl>
         const Impl* ret = nullptr;
 
         auto& children = this->children;
-        for (auto row = children.data(), end = row + children.size();
-             row != end; ++row)
-        {
+        for (auto row = children.data(), end = row + children.size(); row != end; ++row) {
             if (row->symbol == symbol) {
                 ret = row;
                 break;
@@ -371,23 +368,68 @@ struct BottomUpResults
     QVector<Data::Symbol> symbols;
     QVector<Data::FrameLocation> locations;
 
-    using FrameCallback = std::function<void(const Symbol&, const Location&)>;
+    // callback should return true to continue iteration or false otherwise
+    template<typename FrameCallback>
+    void foreachFrame(const QVector<qint32>& frames, FrameCallback frameCallback) const
+    {
+        for (auto id : frames) {
+            if (!handleFrame(id, frameCallback)) {
+                break;
+            }
+        }
+    }
 
-    const BottomUp* addEvent(int type, quint64 cost,
-                             const QVector<qint32>& frames,
-                             const FrameCallback& frameCallback);
+    // callback return type is ignored, all frames will be iterated over
+    template<typename FrameCallback>
+    const BottomUp* addEvent(int type, quint64 cost, const QVector<qint32>& frames, FrameCallback frameCallback)
+    {
+        costs.addTotalCost(type, cost);
+        auto parent = &root;
+        foreachFrame(frames, [this, type, cost, &parent, frameCallback](const Data::Symbol &symbol, const Data::Location &location) {
+            parent = parent->entryForSymbol(symbol, &maxBottomUpId);
+            costs.add(type, parent->id, cost);
+            frameCallback(symbol, location);
+            return true;
+        });
+        return parent;
+    }
 
 private:
     quint32 maxBottomUpId = 0;
-    BottomUp* addFrame(BottomUp* parent, qint32 locationId,
-                       int type, quint64 period,
-                       const FrameCallback& frameCallback);
+
+    template<typename FrameCallback>
+    bool handleFrame(qint32 locationId, FrameCallback frameCallback) const
+    {
+        bool skipNextFrame = false;
+        while (locationId != -1) {
+            const auto& location = locations.value(locationId);
+            if (skipNextFrame) {
+                locationId = location.parentLocationId;
+                skipNextFrame = false;
+                continue;
+            }
+
+            auto symbol = symbols.value(locationId);
+            if (!symbol.isValid()) {
+                // we get function entry points from the perfparser but
+                // those are imo not interesting - skip them
+                symbol = symbols.value(location.parentLocationId);
+                skipNextFrame = true;
+            }
+
+            if (!frameCallback(symbol, location.location)) {
+                return false;
+            }
+
+            locationId = location.parentLocationId;
+        }
+        return true;
+    }
 };
 
 struct TopDown : SymbolTree<TopDown>
 {
     quint32 id;
-
 };
 
 struct TopDownResults
@@ -407,7 +449,8 @@ struct LocationCost
     LocationCost(int numTypes = 0)
         : selfCost(numTypes)
         , inclusiveCost(numTypes)
-    {}
+    {
+    }
 
     ItemCost selfCost;
     ItemCost inclusiveCost;
@@ -498,19 +541,70 @@ struct Event
 
 using Events = QVector<Event>;
 
+struct TimeRange
+{
+    constexpr TimeRange() = default;
+    constexpr TimeRange(quint64 start, quint64 end)
+        : start(start)
+        , end(end)
+    {
+    }
+
+    quint64 start = 0;
+    quint64 end = 0;
+
+    bool isValid() const
+    {
+        return start > 0 || end > 0;
+    }
+
+    bool isEmpty() const
+    {
+        return start == end;
+    }
+
+    quint64 delta() const
+    {
+        return end - start;
+    }
+
+    bool contains(quint64 time) const
+    {
+        return time >= start && time <= end;
+    }
+
+    TimeRange normalized() const
+    {
+        if (end < start)
+            return {end, start};
+        return *this;
+    }
+
+    bool operator==(const TimeRange& rhs) const
+    {
+        return std::tie(start, end) == std::tie(rhs.start, rhs.end);
+    }
+
+    bool operator!=(const TimeRange& rhs) const
+    {
+        return !operator==(rhs);
+    }
+};
+
 const constexpr auto MAX_TIME = std::numeric_limits<quint64>::max();
+const constexpr auto MAX_TIME_RANGE = TimeRange {0, MAX_TIME};
 
 struct ThreadEvents
 {
     qint32 pid = INVALID_PID;
     qint32 tid = INVALID_TID;
-    quint64 timeStart = 0;
-    quint64 timeEnd = MAX_TIME;
+    TimeRange time = MAX_TIME_RANGE;
     Events events;
     QString name;
     quint64 lastSwitchTime = MAX_TIME;
     quint64 offCpuTime = 0;
-    enum State {
+    enum State
+    {
         Unknown,
         OnCpu,
         OffCpu
@@ -519,10 +613,9 @@ struct ThreadEvents
 
     bool operator==(const ThreadEvents& rhs) const
     {
-        return std::tie(pid, tid, timeStart, timeEnd, events,
-                        name, lastSwitchTime, offCpuTime, state)
-            == std::tie(rhs.pid, rhs.tid, rhs.timeStart, rhs.timeEnd, rhs.events,
-                        rhs.name, rhs.lastSwitchTime, rhs.offCpuTime, rhs.state);
+        return std::tie(pid, tid, time, events, name, lastSwitchTime, offCpuTime, state)
+            == std::tie(rhs.pid, rhs.tid, rhs.time, rhs.events, rhs.name, rhs.lastSwitchTime, rhs.offCpuTime,
+                        rhs.state);
     }
 };
 
@@ -533,26 +626,29 @@ struct CpuEvents
 
     bool operator==(const CpuEvents& rhs) const
     {
-        return std::tie(cpuId, events)
-            == std::tie(rhs.cpuId, rhs.events);
+        return std::tie(cpuId, events) == std::tie(rhs.cpuId, rhs.events);
     }
 };
 
 struct CostSummary
 {
     CostSummary() = default;
-    CostSummary(const QString &label, quint64 sampleCount, quint64 totalPeriod)
-        : label(label), sampleCount(sampleCount), totalPeriod(totalPeriod)
-    {}
+    CostSummary(const QString& label, quint64 sampleCount, quint64 totalPeriod, Costs::Unit unit)
+        : label(label)
+        , sampleCount(sampleCount)
+        , totalPeriod(totalPeriod)
+        , unit(unit)
+    {
+    }
 
     QString label;
     quint64 sampleCount = 0;
     quint64 totalPeriod = 0;
+    Costs::Unit unit = Costs::Unit::Unknown;
 
     bool operator==(const CostSummary& rhs) const
     {
-        return std::tie(label, sampleCount, totalPeriod)
-            == std::tie(rhs.label, rhs.sampleCount, rhs.totalPeriod);
+        return std::tie(label, sampleCount, totalPeriod) == std::tie(rhs.label, rhs.sampleCount, rhs.totalPeriod);
     }
 };
 
@@ -604,15 +700,36 @@ struct EventResults
     }
 };
 
-struct FilterAction {
-    quint64 startTime = 0;
-    quint64 endTime = 0;
-    qint32 processId = Data::INVALID_PID;
-    qint32 threadId = Data::INVALID_PID;
+struct FilterAction
+{
+    TimeRange time;
+    qint32 processId = INVALID_PID;
+    qint32 threadId = INVALID_PID;
     quint32 cpuId = INVALID_CPU_ID;
     QVector<qint32> excludeProcessIds;
     QVector<qint32> excludeThreadIds;
     QVector<quint32> excludeCpuIds;
+    QSet<Data::Symbol> includeSymbols;
+    QSet<Data::Symbol> excludeSymbols;
+
+    bool isValid() const
+    {
+        return time.isValid() || processId != INVALID_PID
+            || threadId != INVALID_PID || cpuId != INVALID_CPU_ID
+            || !excludeProcessIds.isEmpty() || !excludeThreadIds.isEmpty()
+            || !excludeCpuIds.isEmpty() || !includeSymbols.isEmpty()
+            || !excludeSymbols.isEmpty();
+    }
+};
+
+struct ZoomAction
+{
+    TimeRange time;
+
+    bool isValid() const
+    {
+        return time.isValid();
+    }
 };
 }
 
@@ -666,4 +783,8 @@ Q_DECLARE_TYPEINFO(Data::CostSummary, Q_MOVABLE_TYPE);
 Q_DECLARE_METATYPE(Data::EventResults)
 Q_DECLARE_TYPEINFO(Data::EventResults, Q_MOVABLE_TYPE);
 
+Q_DECLARE_METATYPE(Data::TimeRange)
+Q_DECLARE_TYPEINFO(Data::TimeRange, Q_MOVABLE_TYPE);
+
 Q_DECLARE_TYPEINFO(Data::FilterAction, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(Data::ZoomAction, Q_MOVABLE_TYPE);

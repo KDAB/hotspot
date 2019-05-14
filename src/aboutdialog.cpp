@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2013-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2013-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Volker Krause <volker.krause@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -28,28 +28,31 @@
 #include "aboutdialog.h"
 #include "ui_aboutdialog.h"
 
-AboutDialog::AboutDialog(QWidget *parent)
+AboutDialog::AboutDialog(QWidget* parent)
     : QDialog(parent)
     , ui(new Ui::AboutDialog)
 {
     ui->setupUi(this);
 }
 
-AboutDialog::~AboutDialog()
-{
-}
+AboutDialog::~AboutDialog() {}
 
-void AboutDialog::setTitle(const QString &title)
+void AboutDialog::setTitle(const QString& title)
 {
     ui->titleLabel->setText(title);
 }
 
-void AboutDialog::setText(const QString &text)
+void AboutDialog::setText(const QString& text)
 {
     ui->textLabel->setText(text);
 }
 
-void AboutDialog::setLogo(const QString &iconFileName)
+void AboutDialog::setLogo(const QString& iconFileName)
 {
-    ui->logoLabel->setPixmap(iconFileName);
+    QPixmap pixmap(iconFileName);
+    // scale down pixmap (while keeping aspect ratio) if required
+    if (pixmap.width() > 100) {
+        pixmap = pixmap.scaledToWidth(100, Qt::SmoothTransformation);
+    }
+    ui->logoLabel->setPixmap(pixmap);
 }

@@ -5,9 +5,9 @@ EXTRA kdabcopyright,kdabcommercial
 
 #additional checks
 EXTRA defines,null
-#EXTRA style
 
 #coding style settings
+EXCLUDE style
 STYLE_CPPSTYLE qt
 STYLE_OFFSET 4
 STYLE_LINEMAX 0

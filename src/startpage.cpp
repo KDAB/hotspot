@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -32,7 +32,7 @@
 #include <QMainWindow>
 #include <QPainter>
 
-StartPage::StartPage(QWidget *parent)
+StartPage::StartPage(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::StartPage)
 {
@@ -64,7 +64,7 @@ void StartPage::showParseFileProgress()
     ui->openFileProgressBar->setMaximum(0);
 }
 
-void StartPage::setPathSettingsMenu(QMenu *menu)
+void StartPage::setPathSettingsMenu(QMenu* menu)
 {
     ui->pathSettings->setMenu(menu);
 }
@@ -97,7 +97,7 @@ void StartPage::paintEvent(QPaintEvent* /*event*/)
 
 void StartPage::changeEvent(QEvent* event)
 {
-    parent()->event(event);
+    QWidget::changeEvent(event);
 
     if (event->type() == QEvent::PaletteChange) {
         updateBackground();

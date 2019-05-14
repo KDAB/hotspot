@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -27,24 +27,23 @@
 
 #pragma once
 
+#include <QScopedPointer>
 #include <QStyledItemDelegate>
 #include <QVector>
-#include <QScopedPointer>
 
 #include "data.h"
 
 class QAbstractItemView;
-class QMenu;
 class QAction;
+
+class FilterAndZoomStack;
 
 struct TimeLineData
 {
     TimeLineData();
 
-    TimeLineData(const Data::Events& events, quint64 maxCost,
-                 quint64 minTime, quint64 maxTime,
-                 quint64 threadStartTime, quint64 threadEndTime,
-                 QRect rect);
+    TimeLineData(const Data::Events& events, quint64 maxCost, const Data::TimeRange& time,
+                 const Data::TimeRange& threadTime, QRect rect);
 
     int mapTimeToX(quint64 time) const;
 
@@ -52,16 +51,13 @@ struct TimeLineData
 
     int mapCostToY(quint64 cost) const;
 
-    void zoom(quint64 timeStart, quint64 timeEnd);
+    void zoom(const Data::TimeRange &time);
 
     static const constexpr int padding = 2;
     Data::Events events;
     quint64 maxCost;
-    quint64 minTime;
-    quint64 maxTime;
-    quint64 timeDelta;
-    quint64 threadStartTime;
-    quint64 threadEndTime;
+    Data::TimeRange time;
+    Data::TimeRange threadTime;
     int h;
     int w;
     double xMultiplicator;
@@ -73,56 +69,25 @@ class TimeLineDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    explicit TimeLineDelegate(QAbstractItemView* view);
+    explicit TimeLineDelegate(FilterAndZoomStack* filterAndZoomStack, QAbstractItemView* view);
     virtual ~TimeLineDelegate();
 
-    void paint(QPainter* painter, const QStyleOptionViewItem& option,
-               const QModelIndex& index) const override;
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
-    bool helpEvent(QHelpEvent* event, QAbstractItemView* view,
-                   const QStyleOptionViewItem& option,
+    bool helpEvent(QHelpEvent* event, QAbstractItemView* view, const QStyleOptionViewItem& option,
                    const QModelIndex& index) override;
 
     void setEventType(int type);
-
-    QMenu* filterMenu() const;
-
-signals:
-    // emitted when user wants to filter by time, process id or thread id
-    // a zero for any of the values means "show everything"
-    void filterRequested(const Data::FilterAction& filterAction);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
-    void filterInByTime(quint64 timeStart, quint64 timeEnd);
-    void filterInByProcess(qint32 processId);
-    void filterOutByProcess(qint32 processId);
-    void filterInByThread(qint32 threadId);
-    void filterOutByThread(qint32 threadId);
-    void filterInByCpu(quint32 cpuId);
-    void filterOutByCpu(quint32 cpuId);
-    void applyFilter(Data::FilterAction filter);
-    void zoomIn(quint64 startTime, quint64 endTime);
+    void updateView();
     void updateZoomState();
-    void resetFilter();
-    void filterOut();
-    void resetZoom();
-    void zoomOut();
-    void resetZoomAndFilter();
-    void updateFilterActions();
 
+    FilterAndZoomStack* m_filterAndZoomStack = nullptr;
     QAbstractItemView* m_view = nullptr;
-    quint64 m_timeSliceStart = 0;
-    quint64 m_timeSliceEnd = 0;
-    QVector<QPair<quint64, quint64>> m_zoomStack;
-    QVector<Data::FilterAction> m_filterStack;
+    Data::TimeRange m_timeSlice;
     int m_eventType = 0;
-    QScopedPointer<QMenu> m_filterMenu;
-    QAction* m_filterOutAction;
-    QAction* m_resetFilterAction;
-    QAction* m_zoomOutAction;
-    QAction* m_resetZoomAction;
-    QAction* m_resetZoomAndFilterAction;
 };

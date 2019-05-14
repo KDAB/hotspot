@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -44,6 +44,7 @@ public:
     bool filterAcceptsColumn(int source_column, const QModelIndex& source_parent) const override;
 
     int rowCount(const QModelIndex& parent = {}) const override;
+
 private:
     int m_costColumn;
 };

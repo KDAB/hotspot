@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Authors: Milian Wolff <milian.wolff@kdab.com>
            Nate Rogers <nate.rogers@kdab.com>
 
@@ -35,14 +35,13 @@ class ProcessFilterModel : public KRecursiveFilterProxyModel
 {
     Q_OBJECT
 public:
-    explicit ProcessFilterModel(QObject *parent);
+    explicit ProcessFilterModel(QObject* parent);
 
-    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
-    bool filterAcceptsColumn(int source_column,
-                             const QModelIndex &source_parent) const override;
+    bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
+    bool filterAcceptsColumn(int source_column, const QModelIndex& source_parent) const override;
 
 private:
-    bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
+    bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
     QString m_currentProcId;
     QString m_currentUser;
 };

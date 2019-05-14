@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -28,8 +28,8 @@
 #ifndef FLAMEGRAPH_H
 #define FLAMEGRAPH_H
 
-#include <QWidget>
 #include <QVector>
+#include <QWidget>
 
 #include <models/data.h>
 
@@ -38,18 +38,22 @@ class QGraphicsView;
 class QComboBox;
 class QLabel;
 class QLineEdit;
+class QPushButton;
 
 class FrameGraphicsItem;
+class FilterAndZoomStack;
 
 class FlameGraph : public QWidget
 {
     Q_OBJECT
 public:
-    explicit FlameGraph(QWidget* parent = nullptr, Qt::WindowFlags flags = 0);
+    explicit FlameGraph(QWidget* parent = nullptr, Qt::WindowFlags flags = {});
     ~FlameGraph();
 
+    void setFilterStack(FilterAndZoomStack *filterStack);
     void setTopDownData(const Data::TopDownResults& topDownData);
     void setBottomUpData(const Data::BottomUpResults& bottomUpData);
+    void clear();
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
@@ -62,6 +66,7 @@ private slots:
 
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
+    void uiResetRequested();
 
 private:
     void setTooltipItem(const FrameGraphicsItem* item);
@@ -74,6 +79,7 @@ private:
     Data::TopDownResults m_topDownData;
     Data::BottomUpResults m_bottomUpData;
 
+    FilterAndZoomStack* m_filterStack = nullptr;
     QComboBox* m_costSource;
     QGraphicsScene* m_scene;
     QGraphicsView* m_view;
@@ -83,6 +89,8 @@ private:
     QAction* m_forwardAction = nullptr;
     QAction* m_backAction = nullptr;
     QAction* m_resetAction = nullptr;
+    QPushButton* m_backButton = nullptr;
+    QPushButton* m_forwardButton = nullptr;
     const FrameGraphicsItem* m_tooltipItem = nullptr;
     FrameGraphicsItem* m_rootItem = nullptr;
     QVector<FrameGraphicsItem*> m_selectionHistory;
@@ -92,7 +100,8 @@ private:
     bool m_collapseRecursion = false;
     bool m_buildingScene = false;
     // cost threshold in percent, items below that value will not be shown
-    double m_costThreshold = 0.1;
+    static const constexpr double DEFAULT_COST_THRESHOLD = 0.1;
+    double m_costThreshold = DEFAULT_COST_THRESHOLD;
 };
 
 #endif // FLAMEGRAPH_H

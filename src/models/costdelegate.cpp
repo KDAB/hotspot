@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2016-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2016-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -33,9 +33,9 @@
 #include <cmath>
 
 CostDelegate::CostDelegate(quint32 sortRole, quint32 totalCostRole, QObject* parent)
-    : QStyledItemDelegate(parent),
-      m_sortRole(sortRole),
-      m_totalCostRole(totalCostRole)
+    : QStyledItemDelegate(parent)
+    , m_sortRole(sortRole)
+    , m_totalCostRole(totalCostRole)
 {
 }
 

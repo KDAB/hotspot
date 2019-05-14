@@ -158,11 +158,11 @@ If you need help building this project for your platform, [contact us for help](
 
 ### ArchLinux
 
-Install hotspot via AUR (https://aur.archlinux.org/packages/hotspot)
+hotspot is available in AUR (https://aur.archlinux.org/packages/hotspot).
 
-```
-pacman -S hotspot
-```
+### Gentoo
+
+hotspot ebuilds are available from our overlay (https://github.com/KDAB/kdab-overlay).
 
 ### For any Linux distro: AppImage
 

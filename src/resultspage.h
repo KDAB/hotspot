@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -29,6 +29,8 @@
 
 #include <QWidget>
 
+class QMenu;
+
 namespace Ui {
 class ResultsPage;
 }
@@ -43,25 +45,30 @@ class ResultsBottomUpPage;
 class ResultsTopDownPage;
 class ResultsFlameGraphPage;
 class ResultsCallerCalleePage;
+class TimeLineDelegate;
+class FilterAndZoomStack;
 
 class ResultsPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsPage(PerfParser *parser, QWidget *parent = nullptr);
+    explicit ResultsPage(PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsPage();
 
+    void selectSummaryTab();
+    void clear();
+    QMenu* filterMenu() const;
+
+public slots:
     void setSysroot(const QString& path);
     void setAppPath(const QString& path);
 
-    void selectSummaryTab();
-
-public slots:
-    void onNavigateToCode(const QString &url, int lineNumber, int columnNumber);
-    void onJumpToCallerCallee(const Data::Symbol &symbol);
+    void onNavigateToCode(const QString& url, int lineNumber, int columnNumber);
+    void onJumpToCallerCallee(const Data::Symbol& symbol);
+    void setTimelineVisible(bool visible);
 
 signals:
-    void navigateToCode(const QString &url, int lineNumber, int columnNumber);
+    void navigateToCode(const QString& url, int lineNumber, int columnNumber);
 
 private:
     bool eventFilter(QObject* watched, QEvent* event) override;
@@ -69,10 +76,14 @@ private:
 
     QScopedPointer<Ui::ResultsPage> ui;
 
+    FilterAndZoomStack* m_filterAndZoomStack;
     ResultsSummaryPage* m_resultsSummaryPage;
     ResultsBottomUpPage* m_resultsBottomUpPage;
     ResultsTopDownPage* m_resultsTopDownPage;
     ResultsFlameGraphPage* m_resultsFlameGraphPage;
     ResultsCallerCalleePage* m_resultsCallerCalleePage;
+    QMenu* m_filterMenu;
+    TimeLineDelegate* m_timeLineDelegate;
     QWidget* m_filterBusyIndicator;
+    bool m_timelineVisible;
 };

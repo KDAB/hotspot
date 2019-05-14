@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2016-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2016-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -51,9 +51,10 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = 0);
+    explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
+public slots:
     void setSysroot(const QString& path);
     void setKallsyms(const QString& path);
     void setDebugPaths(const QString& paths);
@@ -61,10 +62,10 @@ public:
     void setAppPath(const QString& path);
     void setArch(const QString& arch);
 
-public slots:
     void clear();
     void openFile(const QString& path);
     void openFile(const QUrl& url);
+    void reload();
 
     void onOpenFileButtonClicked();
     void onRecordButtonClicked();
@@ -73,15 +74,20 @@ public slots:
     void aboutKDAB();
     void aboutHotspot();
 
-    void setCodeNavigationIDE(QAction *action);
-    void navigateToCode(const QString &url, int lineNumber, int columnNumber);
+    void setCodeNavigationIDE(QAction* action);
+    void navigateToCode(const QString& url, int lineNumber, int columnNumber);
 
 signals:
     void openFileError(const QString& errorMessage);
+    void sysrootChanged(const QString& path);
+    void kallsymsChanged(const QString& path);
+    void debugPathsChanged(const QString& paths);
+    void extraLibPathsChanged(const QString& paths);
+    void appPathChanged(const QString& path);
+    void archChanged(const QString& arch);
 
 private:
     void closeEvent(QCloseEvent* event) override;
-    void updateBackground();
     void setupCodeNavigationMenu();
     void setupPathSettingsMenu();
 
@@ -100,4 +106,5 @@ private:
     QString m_appPath;
     QString m_arch;
     KRecentFilesAction* m_recentFilesAction = nullptr;
+    QAction* m_reloadAction = nullptr;
 };

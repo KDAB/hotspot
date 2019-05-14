@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -25,9 +25,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <QDebug>
 #include <QObject>
 #include <QTest>
-#include <QDebug>
 #include <QTextStream>
 
 #include "modeltest.h"
@@ -81,7 +81,6 @@ Data::BottomUpResults generateTree1()
         C
     )");
 }
-
 }
 
 class TestModels : public QObject
@@ -107,29 +106,9 @@ private slots:
 
         QCOMPARE(tree.costs.totalCost(0), qint64(9));
 
-        const QStringList expectedTree = {
-            "C=5",
-            " B=1",
-            "  A=1",
-            " E=1",
-            "  C=1",
-            "   B=1",
-            "    A=1",
-            " C=1",
-            "  B=1",
-            "   A=1",
-            "D=2",
-            " B=2",
-            "  A=2",
-            "E=2",
-            " C=2",
-            "  B=1",
-            "   A=1",
-            "  E=1",
-            "   C=1",
-            "    B=1",
-            "     A=1"
-        };
+        const QStringList expectedTree = {"C=5",  " B=1",  "  A=1",  " E=1",  "  C=1",  "   B=1",  "    A=1",
+                                          " C=1", "  B=1", "   A=1", "D=2",   " B=2",   "  A=2",   "E=2",
+                                          " C=2", "  B=1", "   A=1", "  E=1", "   C=1", "    B=1", "     A=1"};
         QCOMPARE(printTree(tree), expectedTree);
 
         BottomUpModel model;
@@ -145,19 +124,12 @@ private slots:
         QCOMPARE(tree.inclusiveCosts.totalCost(0), qint64(9));
         QCOMPARE(tree.selfCosts.totalCost(0), qint64(9));
 
-        const QStringList expectedTree = {
-            "A=s:0,i:7",
-            " B=s:0,i:7",
-            "  C=s:1,i:5",
-            "   E=s:1,i:3",
-            "    C=s:1,i:2",
-            "     E=s:1,i:1",
-            "   C=s:1,i:1",
-            "  D=s:2,i:2",
-            "C=s:2,i:2"
-        };
-        QTextStream(stdout) << "Actual:\n" << printTree(tree).join("\n")
-                            << "\nExpected:\n" << expectedTree.join("\n") << "\n";
+        const QStringList expectedTree = {"A=s:0,i:7",    " B=s:0,i:7",    "  C=s:1,i:5",
+                                          "   E=s:1,i:3", "    C=s:1,i:2", "     E=s:1,i:1",
+                                          "   C=s:1,i:1", "  D=s:2,i:2",   "C=s:2,i:2"};
+        QTextStream(stdout) << "Actual:\n"
+                            << printTree(tree).join("\n") << "\nExpected:\n"
+                            << expectedTree.join("\n") << "\n";
         QCOMPARE(printTree(tree), expectedTree);
 
         TopDownModel model;
@@ -193,26 +165,12 @@ private slots:
         Data::CallerCalleeResults results;
         Data::callerCalleesFromBottomUpData(tree, &results);
         const QStringList expectedMap = {
-            "A=s:0,i:7",
-            "A>B=7",
-            "B=s:0,i:7",
-            "B<A=7",
-            "B>C=5",
-            "B>D=2",
-            "C=s:5,i:7",
-            "C<B=5",
-            "C<C=1",
-            "C<E=2",
-            "C>C=1",
-            "C>E=3",
-            "D=s:2,i:2",
-            "D<B=2",
-            "E=s:2,i:3",
-            "E<C=3",
-            "E>C=2",
+            "A=s:0,i:7", "A>B=7", "B=s:0,i:7", "B<A=7",     "B>C=5", "B>D=2",     "C=s:5,i:7", "C<B=5", "C<C=1",
+            "C<E=2",     "C>C=1", "C>E=3",     "D=s:2,i:2", "D<B=2", "E=s:2,i:3", "E<C=3",     "E>C=2",
         };
-        QTextStream(stdout) << "Actual:\n" << printMap(results).join("\n")
-                            << "\n\nExpected:\n" << expectedMap.join("\n") << "\n";
+        QTextStream(stdout) << "Actual:\n"
+                            << printMap(results).join("\n") << "\n\nExpected:\n"
+                            << expectedMap.join("\n") << "\n";
         QCOMPARE(printMap(results), expectedMap);
 
         CallerCalleeModel model;
@@ -256,20 +214,18 @@ private slots:
         {
             thread1.pid = 1234;
             thread1.tid = 1234;
-            thread1.timeStart = 0;
-            thread1.timeEnd = endTime;
+            thread1.time = {0, endTime};
             thread1.name = "foobar";
         }
         auto& thread2 = events.threads[1];
         {
             thread2.pid = 1234;
             thread2.tid = 1235;
-            thread2.timeStart = deltaTime;
-            thread2.timeEnd = endTime - deltaTime;
+            thread2.time = {deltaTime, endTime - deltaTime};
             thread2.name = "asdf";
         }
 
-        Data::CostSummary costSummary("cycles", 0, 0);
+        Data::CostSummary costSummary("cycles", 0, 0, Data::Costs::Unit::Unknown);
         auto generateEvent = [&costSummary, &events](quint64 time, quint32 cpuId) -> Data::Event {
             Data::Event event;
             event.cost = 10;
@@ -283,7 +239,7 @@ private slots:
         };
         for (quint64 time = 0; time < endTime; time += deltaTime) {
             thread1.events << generateEvent(time, 0);
-            if (time >= thread2.timeStart && time <= thread2.timeEnd) {
+            if (thread2.time.contains(time)) {
                 thread2.events << generateEvent(time, 2);
             }
         }
@@ -299,7 +255,7 @@ private slots:
         auto simplifiedEvents = events;
         simplifiedEvents.cpus.remove(1);
 
-        auto verifyCommonData = [&] (const QModelIndex& idx) {
+        auto verifyCommonData = [&](const QModelIndex& idx) {
             const auto eventResults = idx.data(EventModel::EventResultsRole).value<Data::EventResults>();
             QCOMPARE(eventResults, simplifiedEvents);
             const auto maxTime = idx.data(EventModel::MaxTimeRole).value<quint64>();
@@ -353,8 +309,8 @@ private slots:
                 } else {
                     const auto& thread = events.threads[j];
                     QCOMPARE(rowEvents, thread.events);
-                    QCOMPARE(threadStart, thread.timeStart);
-                    QCOMPARE(threadEnd, thread.timeEnd);
+                    QCOMPARE(threadStart, thread.time.start);
+                    QCOMPARE(threadEnd, thread.time.end);
                     QCOMPARE(threadId, thread.tid);
                     QCOMPARE(processId, thread.pid);
                     QCOMPARE(cpuId, Data::INVALID_CPU_ID);

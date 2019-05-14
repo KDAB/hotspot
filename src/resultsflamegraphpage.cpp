@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -30,24 +30,25 @@
 
 #include "parsers/perf/perfparser.h"
 
-ResultsFlameGraphPage::ResultsFlameGraphPage(PerfParser *parser, QWidget *parent)
+ResultsFlameGraphPage::ResultsFlameGraphPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsFlameGraphPage)
 {
     ui->setupUi(this);
+    ui->flameGraph->setFilterStack(filterStack);
 
-    connect(parser, &PerfParser::bottomUpDataAvailable,
-            this, [this] (const Data::BottomUpResults& data) {
-                ui->flameGraph->setBottomUpData(data);
-            });
+    connect(parser, &PerfParser::bottomUpDataAvailable, this,
+            [this](const Data::BottomUpResults& data) { ui->flameGraph->setBottomUpData(data); });
 
-    connect(parser, &PerfParser::topDownDataAvailable,
-            this, [this] (const Data::TopDownResults& data) {
-                ui->flameGraph->setTopDownData(data);
-            });
+    connect(parser, &PerfParser::topDownDataAvailable, this,
+            [this](const Data::TopDownResults& data) { ui->flameGraph->setTopDownData(data); });
 
-    connect(ui->flameGraph, &FlameGraph::jumpToCallerCallee,
-            this, &ResultsFlameGraphPage::jumpToCallerCallee);
+    connect(ui->flameGraph, &FlameGraph::jumpToCallerCallee, this, &ResultsFlameGraphPage::jumpToCallerCallee);
+}
+
+void ResultsFlameGraphPage::clear()
+{
+    ui->flameGraph->clear();
 }
 
 ResultsFlameGraphPage::~ResultsFlameGraphPage() = default;

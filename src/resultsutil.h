@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -29,6 +29,7 @@
 
 #include <functional>
 
+class QMenu;
 class QTreeView;
 class QComboBox;
 class KFilterProxySearchLine;
@@ -40,42 +41,39 @@ class Costs;
 struct Symbol;
 }
 
+class FilterAndZoomStack;
+
 namespace ResultsUtil {
 void stretchFirstColumn(QTreeView* view);
 
-void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter,
-                   QAbstractItemModel* model, int initialSortColumn,
+void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, QAbstractItemModel* model, int initialSortColumn,
                    int sortRole, int filterRole);
 
 template<typename Model>
 void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, Model* model)
 {
-    setupTreeView(view, filter, model, Model::InitialSortColumn,
-                  Model::SortRole, Model::FilterRole);
+    setupTreeView(view, filter, model, Model::InitialSortColumn, Model::SortRole, Model::FilterRole);
 }
 
-void setupCostDelegate(QAbstractItemModel* model, QTreeView* view,
-                       int sortRole, int totalCostRole, int numBaseColumns);
+void setupCostDelegate(QAbstractItemModel* model, QTreeView* view, int sortRole, int totalCostRole, int numBaseColumns);
 
 template<typename Model>
 void setupCostDelegate(Model* model, QTreeView* view)
 {
-    setupCostDelegate(model, view, Model::SortRole, Model::TotalCostRole,
-                      Model::NUM_BASE_COLUMNS);
+    setupCostDelegate(model, view, Model::SortRole, Model::TotalCostRole, Model::NUM_BASE_COLUMNS);
 }
 
-void setupContextMenu(QTreeView* view, int symbolRole,
-                      std::function<void(const Data::Symbol&)> callback);
+void addFilterActions(QMenu* menu, const Data::Symbol &symbol, FilterAndZoomStack* filterStack);
+
+void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filterStack, std::function<void(const Data::Symbol&)> callback);
 
 template<typename Model>
-void setupContextMenu(QTreeView* view, Model* /*model*/,
-                      std::function<void(const Data::Symbol&)> callback)
+void setupContextMenu(QTreeView* view, Model* /*model*/, FilterAndZoomStack* filterStack, std::function<void(const Data::Symbol&)> callback)
 {
-    setupContextMenu(view, Model::SymbolRole, callback);
+    setupContextMenu(view, Model::SymbolRole, filterStack, callback);
 }
 
 void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns);
 
-void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs,
-                             const KLocalizedString& tooltipTemplate);
+void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs, const KLocalizedString& tooltipTemplate);
 }

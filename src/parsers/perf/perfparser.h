@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2016-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2016-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -27,9 +27,9 @@
 
 #pragma once
 
-#include <QObject>
-#include <memory>
 #include <atomic>
+#include <memory>
+#include <QObject>
 
 #include <models/data.h>
 
@@ -41,10 +41,8 @@ public:
     explicit PerfParser(QObject* parent = nullptr);
     ~PerfParser();
 
-    void startParseFile(const QString& path, const QString& sysroot,
-                        const QString& kallsyms, const QString& debugPaths,
-                        const QString& extraLibPaths, const QString& appPath,
-                        const QString& arch);
+    void startParseFile(const QString& path, const QString& sysroot, const QString& kallsyms, const QString& debugPaths,
+                        const QString& extraLibPaths, const QString& appPath, const QString& arch);
 
     void filterResults(const Data::FilterAction& filter);
 

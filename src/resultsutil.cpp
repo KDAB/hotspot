@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -27,18 +27,19 @@
 
 #include "resultsutil.h"
 
-#include <QTreeView>
+#include <QComboBox>
+#include <QCoreApplication>
 #include <QHeaderView>
 #include <QMenu>
-#include <QCoreApplication>
-#include <QComboBox>
+#include <QTreeView>
 
-#include <KRecursiveFilterProxyModel>
 #include <KFilterProxySearchLine>
 #include <KLocalizedString>
+#include <KRecursiveFilterProxyModel>
 
 #include "models/costdelegate.h"
 #include "models/data.h"
+#include "models/filterandzoomstack.h"
 
 namespace ResultsUtil {
 
@@ -48,8 +49,7 @@ void stretchFirstColumn(QTreeView* view)
     view->header()->setSectionResizeMode(0, QHeaderView::Stretch);
 }
 
-void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter,
-                   QAbstractItemModel* model, int initialSortColumn,
+void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, QAbstractItemModel* model, int initialSortColumn,
                    int sortRole, int filterRole)
 {
     auto proxy = new KRecursiveFilterProxyModel(view);
@@ -64,40 +64,56 @@ void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter,
     stretchFirstColumn(view);
 }
 
-void setupContextMenu(QTreeView* view, int symbolRole,
+void addFilterActions(QMenu* menu, const Data::Symbol& symbol, FilterAndZoomStack* filterStack)
+{
+    if (symbol.isValid()) {
+        auto filterActions = filterStack->actions();
+        filterActions.filterInBySymbol->setData(QVariant::fromValue(symbol));
+        filterActions.filterOutBySymbol->setData(filterActions.filterInBySymbol->data());
+
+        menu->addAction(filterActions.filterInBySymbol);
+        menu->addAction(filterActions.filterOutBySymbol);
+        menu->addSeparator();
+    }
+
+    menu->addAction(filterStack->actions().filterOut);
+    menu->addAction(filterStack->actions().resetFilter);
+}
+
+void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filterStack,
                       std::function<void(const Data::Symbol&)> callback)
 {
     view->setContextMenuPolicy(Qt::CustomContextMenu);
-    QObject::connect(view, &QTreeView::customContextMenuRequested,
-                     view, [view, symbolRole, callback](const QPoint &point) {
-                        const auto index = view->indexAt(point);
-                        if (!index.isValid()) {
-                            return;
-                        }
+    QObject::connect(
+        view, &QTreeView::customContextMenuRequested, view, [view, symbolRole, filterStack, callback](const QPoint& point) {
+            const auto index = view->indexAt(point);
+            const auto symbol = index.data(symbolRole).value<Data::Symbol>();
 
-                        QMenu contextMenu;
-                        auto *viewCallerCallee = contextMenu.addAction(QCoreApplication::translate("Util", "View Caller/Callee"));
-                        auto *action = contextMenu.exec(QCursor::pos());
-                        if (action == viewCallerCallee) {
-                            const auto symbol = index.data(symbolRole).value<Data::Symbol>();
+            QMenu contextMenu;
+            if (callback && symbol.isValid()) {
+                auto* viewCallerCallee = contextMenu.addAction(QCoreApplication::translate("Util", "View Caller/Callee"));
+                QObject::connect(viewCallerCallee, &QAction::triggered, &contextMenu, [symbol, callback](){
+                    callback(symbol);
+                });
+                contextMenu.addSeparator();
+            }
+            addFilterActions(&contextMenu, symbol, filterStack);
 
-                            if (symbol.isValid()) {
-                                callback(symbol);
-                            }
-                        }
-                    });
+            if (!contextMenu.actions().isEmpty()) {
+                contextMenu.exec(QCursor::pos());
+            }
+        });
 }
 
-void setupCostDelegate(QAbstractItemModel* model, QTreeView* view,
-                       int sortRole, int totalCostRole, int numBaseColumns)
+void setupCostDelegate(QAbstractItemModel* model, QTreeView* view, int sortRole, int totalCostRole, int numBaseColumns)
 {
     auto costDelegate = new CostDelegate(sortRole, totalCostRole, view);
-    QObject::connect(model, &QAbstractItemModel::modelReset,
-                     costDelegate, [costDelegate, model, view, numBaseColumns]() {
-                        for (int i = numBaseColumns, c = model->columnCount(); i < c; ++i) {
-                            view->setItemDelegateForColumn(i, costDelegate);
-                        }
-                    });
+    QObject::connect(model, &QAbstractItemModel::modelReset, costDelegate,
+                     [costDelegate, model, view, numBaseColumns]() {
+                         for (int i = numBaseColumns, c = model->columnCount(); i < c; ++i) {
+                             view->setItemDelegateForColumn(i, costDelegate);
+                         }
+                     });
 }
 
 void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns)
@@ -111,6 +127,9 @@ void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColu
 
 void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs, const KLocalizedString& tooltipTemplate)
 {
+    // restore selection if possible
+    const auto oldData = combo->currentData();
+
     combo->clear();
     for (int i = 0, c = costs.numTypes(); i < c; ++i) {
         if (!costs.totalCost(i)) {
@@ -120,6 +139,10 @@ void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs, const K
         combo->addItem(typeName, QVariant::fromValue(i));
         combo->setItemData(i, tooltipTemplate.subs(typeName).toString(), Qt::ToolTipRole);
     }
-}
 
+    const auto index = combo->findData(oldData);
+    if (index != -1) {
+        combo->setCurrentIndex(index);
+    }
+}
 }

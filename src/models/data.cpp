@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -27,23 +27,21 @@
 
 #include "data.h"
 
-#include <QSet>
 #include <QDebug>
+#include <QSet>
 
 using namespace Data;
 
 namespace {
 
-ItemCost buildTopDownResult(const BottomUp& bottomUpData, const Costs& bottomUpCosts,
-                            TopDown* topDownData, Costs* inclusiveCosts, Costs* selfCosts,
-                            quint32* maxId)
+ItemCost buildTopDownResult(const BottomUp& bottomUpData, const Costs& bottomUpCosts, TopDown* topDownData,
+                            Costs* inclusiveCosts, Costs* selfCosts, quint32* maxId)
 {
     ItemCost totalCost;
     totalCost.resize(bottomUpCosts.numTypes(), 0);
     for (const auto& row : bottomUpData.children) {
         // recurse and find the cost attributed to children
-        const auto childCost = buildTopDownResult(row, bottomUpCosts, topDownData,
-                                                  inclusiveCosts, selfCosts, maxId);
+        const auto childCost = buildTopDownResult(row, bottomUpCosts, topDownData, inclusiveCosts, selfCosts, maxId);
         const auto rowCost = bottomUpCosts.itemCost(row.id);
         const auto diff = rowCost - childCost;
         if (diff.sum() != 0) {
@@ -79,8 +77,7 @@ void add(ItemCost& lhs, const ItemCost& rhs)
     }
 }
 
-ItemCost buildCallerCalleeResult(const BottomUp& data, const Costs& bottomUpCosts,
-                                 CallerCalleeResults* results)
+ItemCost buildCallerCalleeResult(const BottomUp& data, const Costs& bottomUpCosts, CallerCalleeResults* results)
 {
     ItemCost totalCost;
     totalCost.resize(bottomUpCosts.numTypes(), 0);
@@ -144,8 +141,7 @@ TopDownResults TopDownResults::fromBottomUp(const BottomUpResults& bottomUpData)
     results.selfCosts.initializeCostsFrom(bottomUpData.costs);
     results.inclusiveCosts.initializeCostsFrom(bottomUpData.costs);
     quint32 maxId = 0;
-    buildTopDownResult(bottomUpData.root, bottomUpData.costs,
-                       &results.root, &results.inclusiveCosts,
+    buildTopDownResult(bottomUpData.root, bottomUpData.costs, &results.root, &results.inclusiveCosts,
                        &results.selfCosts, &maxId);
     TopDown::initializeParents(&results.root);
     return results;
@@ -161,18 +157,16 @@ void Data::callerCalleesFromBottomUpData(const BottomUpResults& bottomUpData, Ca
 QDebug Data::operator<<(QDebug stream, const Symbol& symbol)
 {
     stream.noquote().nospace() << "Symbol{"
-        << "symbol=" << symbol.symbol << ", "
-        << "binary=" << symbol.binary
-        << "}";
+                               << "symbol=" << symbol.symbol << ", "
+                               << "binary=" << symbol.binary << "}";
     return stream.resetFormat().space();
 }
 
 QDebug Data::operator<<(QDebug stream, const Location& location)
 {
     stream.noquote().nospace() << "Location{"
-        << "address=" << location.address << ", "
-        << "location=" << location.location
-        << "}";
+                               << "address=" << location.address << ", "
+                               << "location=" << location.location << "}";
     return stream.resetFormat().space();
 }
 
@@ -189,10 +183,9 @@ QDebug Data::operator<<(QDebug stream, const ItemCost& cost)
 QDebug Data::operator<<(QDebug stream, const CostSummary& cost)
 {
     stream.noquote().nospace() << "CostSummary{"
-        << "label = " << cost.label << ", "
-        << "sampleCount = " << cost.sampleCount << ", "
-        << "totalPeriod = " << cost.totalPeriod
-        << "}";
+                               << "label = " << cost.label << ", "
+                               << "sampleCount = " << cost.sampleCount << ", "
+                               << "totalPeriod = " << cost.totalPeriod << "}";
     return stream.resetFormat().space();
 }
 
@@ -206,49 +199,4 @@ Data::ThreadEvents* Data::EventResults::findThread(qint32 pid, qint32 tid)
     }
 
     return nullptr;
-}
-
-BottomUp* Data::BottomUpResults::addFrame(BottomUp* parent, qint32 locationId,
-                                          int type, quint64 period,
-                                          const FrameCallback& frameCallback)
-{
-    bool skipNextFrame = false;
-    while (locationId != -1) {
-        const auto& location = locations.value(locationId);
-        if (skipNextFrame) {
-            locationId = location.parentLocationId;
-            skipNextFrame = false;
-            continue;
-        }
-
-        auto symbol = symbols.value(locationId);
-        if (!symbol.isValid()) {
-            // we get function entry points from the perfparser but
-            // those are imo not interesting - skip them
-            symbol = symbols.value(location.parentLocationId);
-            skipNextFrame = true;
-        }
-
-        auto ret = parent->entryForSymbol(symbol, &maxBottomUpId);
-        costs.add(type, ret->id, period);
-
-        frameCallback(symbol, location.location);
-
-        parent = ret;
-        locationId = location.parentLocationId;
-    }
-
-    return parent;
-}
-
-const BottomUp* Data::BottomUpResults::addEvent(int type, quint64 cost,
-                                                const QVector<qint32>& frames,
-                                                const FrameCallback& frameCallback)
-{
-    costs.addTotalCost(type, cost);
-    auto parent = &root;
-    for (auto id : frames) {
-        parent = addFrame(parent, id, type, cost, frameCallback);
-    }
-    return parent;
 }

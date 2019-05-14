@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2013-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2013-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Volker Krause <volker.krause@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -37,12 +37,12 @@ class AboutDialog : public QDialog
 {
     Q_OBJECT
 public:
-    explicit AboutDialog(QWidget *parent = nullptr);
+    explicit AboutDialog(QWidget* parent = nullptr);
     ~AboutDialog();
 
-    void setTitle(const QString &title);
-    void setText(const QString &text);
-    void setLogo(const QString &iconFileName);
+    void setTitle(const QString& title);
+    void setText(const QString& text);
+    void setLogo(const QString& iconFileName);
 
 private:
     QScopedPointer<Ui::AboutDialog> ui;

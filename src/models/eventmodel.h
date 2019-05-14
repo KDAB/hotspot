@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -38,12 +38,14 @@ public:
     explicit EventModel(QObject* parent = nullptr);
     virtual ~EventModel();
 
-    enum Columns {
+    enum Columns
+    {
         ThreadColumn = 0,
         EventsColumn,
         NUM_COLUMNS
     };
-    enum Roles {
+    enum Roles
+    {
         EventsRole = Qt::UserRole,
         MaxTimeRole,
         MinTimeRole,
@@ -76,8 +78,7 @@ public:
 
 private:
     Data::EventResults m_data;
-    quint64 m_minTime = 0;
-    quint64 m_maxTime = 0;
+    Data::TimeRange m_time;
     quint64 m_totalOnCpuTime = 0;
     quint64 m_totalOffCpuTime = 0;
     quint64 m_totalEvents = 0;

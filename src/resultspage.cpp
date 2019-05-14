@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -30,37 +30,56 @@
 
 #include "parsers/perf/perfparser.h"
 
-#include "resultssummarypage.h"
 #include "resultsbottomuppage.h"
-#include "resultstopdownpage.h"
-#include "resultsflamegraphpage.h"
 #include "resultscallercalleepage.h"
+#include "resultsflamegraphpage.h"
+#include "resultssummarypage.h"
+#include "resultstopdownpage.h"
 #include "resultsutil.h"
 
 #include "models/eventmodel.h"
 #include "models/timelinedelegate.h"
+#include "models/filterandzoomstack.h"
 
 #include <KLocalizedString>
 #include <KRecursiveFilterProxyModel>
 
-#include <QProgressBar>
 #include <QDebug>
 #include <QEvent>
+#include <QProgressBar>
+#include <QMenu>
 
-ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
+static const int SUMMARY_TABINDEX = 0;
+
+ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsPage)
-    , m_resultsSummaryPage(new ResultsSummaryPage(parser, this))
-    , m_resultsBottomUpPage(new ResultsBottomUpPage(parser, this))
-    , m_resultsTopDownPage(new ResultsTopDownPage(parser, this))
-    , m_resultsFlameGraphPage(new ResultsFlameGraphPage(parser, this))
-    , m_resultsCallerCalleePage(new ResultsCallerCalleePage(parser, this))
+    , m_filterAndZoomStack(new FilterAndZoomStack(this))
+    , m_resultsSummaryPage(new ResultsSummaryPage(m_filterAndZoomStack, parser, this))
+    , m_resultsBottomUpPage(new ResultsBottomUpPage(m_filterAndZoomStack, parser, this))
+    , m_resultsTopDownPage(new ResultsTopDownPage(m_filterAndZoomStack, parser, this))
+    , m_resultsFlameGraphPage(new ResultsFlameGraphPage(m_filterAndZoomStack, parser, this))
+    , m_resultsCallerCalleePage(new ResultsCallerCalleePage(m_filterAndZoomStack, parser, this))
+    , m_filterMenu(new QMenu(this))
+    , m_timeLineDelegate(nullptr)
     , m_filterBusyIndicator(nullptr) // create after we setup the UI to keep it on top
+    , m_timelineVisible(true)
 {
+    {
+        const auto actions = m_filterAndZoomStack->actions();
+        m_filterMenu->addAction(actions.filterOut);
+        m_filterMenu->addAction(actions.resetFilter);
+        m_filterMenu->addSeparator();
+        m_filterMenu->addAction(actions.zoomOut);
+        m_filterMenu->addAction(actions.resetZoom);
+        m_filterMenu->addSeparator();
+        m_filterMenu->addAction(actions.resetFilterAndZoom);
+    }
+
     ui->setupUi(this);
 
     ui->resultsTabWidget->setFocus();
-    const int summaryTabIndex = ui->resultsTabWidget->addTab(m_resultsSummaryPage, tr("Summary"));
+    ui->resultsTabWidget->addTab(m_resultsSummaryPage, tr("Summary"));
     ui->resultsTabWidget->addTab(m_resultsBottomUpPage, tr("Bottom Up"));
     ui->resultsTabWidget->addTab(m_resultsTopDownPage, tr("Top Down"));
     ui->resultsTabWidget->addTab(m_resultsFlameGraphPage, tr("Flame Graph"));
@@ -71,8 +90,8 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
         ui->resultsTabWidget->setTabToolTip(i, ui->resultsTabWidget->widget(i)->toolTip());
     }
 
-    auto *eventModel = new EventModel(this);
-    auto *timeLineProxy = new KRecursiveFilterProxyModel(this);
+    auto* eventModel = new EventModel(this);
+    auto* timeLineProxy = new KRecursiveFilterProxyModel(this);
     timeLineProxy->setSourceModel(eventModel);
     timeLineProxy->setSortRole(EventModel::SortRole);
     timeLineProxy->setFilterKeyColumn(EventModel::ThreadColumn);
@@ -86,73 +105,60 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
     // due to the increased width leading to a zoom effect
     ui->timeLineView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
-    auto* timeLineDelegate = new TimeLineDelegate(ui->timeLineView);
-    ui->timeLineEventFilterButton->setMenu(timeLineDelegate->filterMenu());
-    ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, timeLineDelegate);
+    m_timeLineDelegate = new TimeLineDelegate(m_filterAndZoomStack, ui->timeLineView);
+    ui->timeLineEventFilterButton->setMenu(m_filterMenu);
+    ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, m_timeLineDelegate);
 
-    connect(timeLineProxy, &QAbstractItemModel::rowsInserted,
-            this, [this]() { ui->timeLineView->expandToDepth(1); });
-    connect(timeLineProxy, &QAbstractItemModel::modelReset,
-            this, [this]() { ui->timeLineView->expandToDepth(1); });
+    connect(timeLineProxy, &QAbstractItemModel::rowsInserted, this, [this]() { ui->timeLineView->expandToDepth(1); });
+    connect(timeLineProxy, &QAbstractItemModel::modelReset, this, [this]() { ui->timeLineView->expandToDepth(1); });
 
-    connect(parser, &PerfParser::bottomUpDataAvailable,
-            this, [this] (const Data::BottomUpResults& data) {
-                ResultsUtil::fillEventSourceComboBox(ui->timeLineEventSource, data.costs,
-                                                     ki18n("Show timeline for %1 events."));
-            });
-    connect(parser, &PerfParser::eventsAvailable,
-            this, [this, eventModel] (const Data::EventResults& data) {
-                eventModel->setData(data);
-                if (data.offCpuTimeCostId != -1) {
-                    // remove the off-CPU time event source, we only want normal sched switches
-                    for (int i = 0, c = ui->timeLineEventSource->count(); i < c; ++i) {
-                        if (ui->timeLineEventSource->itemData(i).toInt() == data.offCpuTimeCostId) {
-                            ui->timeLineEventSource->removeItem(i);
-                            break;
-                        }
-                    }
+    connect(parser, &PerfParser::bottomUpDataAvailable, this, [this](const Data::BottomUpResults& data) {
+        ResultsUtil::fillEventSourceComboBox(ui->timeLineEventSource, data.costs,
+                                             ki18n("Show timeline for %1 events."));
+    });
+    connect(parser, &PerfParser::eventsAvailable, this, [this, eventModel](const Data::EventResults& data) {
+        eventModel->setData(data);
+        if (data.offCpuTimeCostId != -1) {
+            // remove the off-CPU time event source, we only want normal sched switches
+            for (int i = 0, c = ui->timeLineEventSource->count(); i < c; ++i) {
+                if (ui->timeLineEventSource->itemData(i).toInt() == data.offCpuTimeCostId) {
+                    ui->timeLineEventSource->removeItem(i);
+                    break;
                 }
-            });
-    connect(timeLineDelegate, &TimeLineDelegate::filterRequested,
-            parser, &PerfParser::filterResults);
+            }
+        }
+    });
+    connect(m_filterAndZoomStack, &FilterAndZoomStack::filterChanged, parser, &PerfParser::filterResults);
 
-    connect(ui->timeLineEventSource, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, [this, timeLineDelegate] (int index) {
+    connect(ui->timeLineEventSource, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
+            [this](int index) {
                 const auto typeId = ui->timeLineEventSource->itemData(index).toInt();
-                timeLineDelegate->setEventType(typeId);
+                m_timeLineDelegate->setEventType(typeId);
             });
 
     ui->timeLineArea->hide();
-    connect(ui->resultsTabWidget, &QTabWidget::currentChanged,
-            this, [this, summaryTabIndex](int index) {
-                ui->timeLineArea->setVisible(index != summaryTabIndex);
-            });
-    connect(parser, &PerfParser::parsingStarted,
-            this, [this]() {
-                // disable when we apply a filter
-                // TODO: show some busy indicator?
-                ui->timeLineArea->setEnabled(false);
-                repositionFilterBusyIndicator();
-                m_filterBusyIndicator->setVisible(true);
-            });
-    connect(parser, &PerfParser::parsingFinished,
-            this, [this]() {
-                // re-enable when we finished filtering
-                ui->timeLineArea->setEnabled(true);
-                m_filterBusyIndicator->setVisible(false);
-            });
+    connect(ui->resultsTabWidget, &QTabWidget::currentChanged, this,
+            [this](int index) { ui->timeLineArea->setVisible(index != SUMMARY_TABINDEX && m_timelineVisible); });
+    connect(parser, &PerfParser::parsingStarted, this, [this]() {
+        // disable when we apply a filter
+        // TODO: show some busy indicator?
+        ui->timeLineArea->setEnabled(false);
+        repositionFilterBusyIndicator();
+        m_filterBusyIndicator->setVisible(true);
+    });
+    connect(parser, &PerfParser::parsingFinished, this, [this]() {
+        // re-enable when we finished filtering
+        ui->timeLineArea->setEnabled(true);
+        m_filterBusyIndicator->setVisible(false);
+    });
 
-    connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode,
-            this, &ResultsPage::onNavigateToCode);
+    connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode, this, &ResultsPage::onNavigateToCode);
 
-    connect(m_resultsSummaryPage, &ResultsSummaryPage::jumpToCallerCallee,
-            this, &ResultsPage::onJumpToCallerCallee);
-    connect(m_resultsBottomUpPage, &ResultsBottomUpPage::jumpToCallerCallee,
-            this, &ResultsPage::onJumpToCallerCallee);
-    connect(m_resultsTopDownPage, &ResultsTopDownPage::jumpToCallerCallee,
-            this, &ResultsPage::onJumpToCallerCallee);
-    connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::jumpToCallerCallee,
-            this, &ResultsPage::onJumpToCallerCallee);
+    connect(m_resultsSummaryPage, &ResultsSummaryPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
+    connect(m_resultsBottomUpPage, &ResultsBottomUpPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
+    connect(m_resultsTopDownPage, &ResultsTopDownPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
+    connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::jumpToCallerCallee, this,
+            &ResultsPage::onJumpToCallerCallee);
 
     {
         // create a busy indicator
@@ -173,7 +179,7 @@ ResultsPage::ResultsPage(PerfParser *parser, QWidget *parent)
 
 ResultsPage::~ResultsPage() = default;
 
-void ResultsPage::onNavigateToCode(const QString &url, int lineNumber, int columnNumber)
+void ResultsPage::onNavigateToCode(const QString& url, int lineNumber, int columnNumber)
 {
     emit navigateToCode(url, lineNumber, columnNumber);
 }
@@ -188,7 +194,7 @@ void ResultsPage::setAppPath(const QString& path)
     m_resultsCallerCalleePage->setAppPath(path);
 }
 
-void ResultsPage::onJumpToCallerCallee(const Data::Symbol &symbol)
+void ResultsPage::onJumpToCallerCallee(const Data::Symbol& symbol)
 {
     m_resultsCallerCalleePage->jumpToCallerCallee(symbol);
     ui->resultsTabWidget->setCurrentWidget(m_resultsCallerCalleePage);
@@ -197,6 +203,19 @@ void ResultsPage::onJumpToCallerCallee(const Data::Symbol &symbol)
 void ResultsPage::selectSummaryTab()
 {
     ui->resultsTabWidget->setCurrentWidget(m_resultsSummaryPage);
+}
+
+void ResultsPage::clear()
+{
+    m_resultsBottomUpPage->clear();
+    m_resultsTopDownPage->clear();
+    m_resultsCallerCalleePage->clear();
+    m_resultsFlameGraphPage->clear();
+}
+
+QMenu* ResultsPage::filterMenu() const
+{
+    return m_filterMenu;
 }
 
 bool ResultsPage::eventFilter(QObject* watched, QEvent* event)
@@ -213,7 +232,12 @@ void ResultsPage::repositionFilterBusyIndicator()
     const auto dx = rect.width() / 4;
     const auto dy = rect.height() / 4;
     rect.adjust(dx, dy, -dx, -dy);
-    QRect mapped(ui->timeLineView->mapTo(this, rect.topLeft()),
-                 ui->timeLineView->mapTo(this, rect.bottomRight()));
+    QRect mapped(ui->timeLineView->mapTo(this, rect.topLeft()), ui->timeLineView->mapTo(this, rect.bottomRight()));
     m_filterBusyIndicator->setGeometry(mapped);
+}
+
+void ResultsPage::setTimelineVisible(bool visible)
+{
+    m_timelineVisible = visible;
+    ui->timeLineArea->setVisible(visible && ui->resultsTabWidget->currentIndex() != SUMMARY_TABINDEX);
 }

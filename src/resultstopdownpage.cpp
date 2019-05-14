@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -34,7 +34,7 @@
 #include "models/hashmodel.h"
 #include "models/treemodel.h"
 
-ResultsTopDownPage::ResultsTopDownPage(PerfParser *parser, QWidget *parent)
+ResultsTopDownPage::ResultsTopDownPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsTopDownPage)
 {
@@ -43,15 +43,21 @@ ResultsTopDownPage::ResultsTopDownPage(PerfParser *parser, QWidget *parent)
     auto topDownCostModel = new TopDownModel(this);
     ResultsUtil::setupTreeView(ui->topDownTreeView, ui->topDownSearch, topDownCostModel);
     ResultsUtil::setupCostDelegate(topDownCostModel, ui->topDownTreeView);
-    ResultsUtil::setupContextMenu(ui->topDownTreeView, topDownCostModel,
-                                  [this] (const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
+    ResultsUtil::setupContextMenu(ui->topDownTreeView, topDownCostModel, filterStack,
+                                  [this](const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
 
-    connect(parser, &PerfParser::topDownDataAvailable,
-            this, [this, topDownCostModel] (const Data::TopDownResults& data) {
+    connect(parser, &PerfParser::topDownDataAvailable, this,
+            [this, topDownCostModel](const Data::TopDownResults& data) {
                 topDownCostModel->setData(data);
                 ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->topDownTreeView, TopDownModel::NUM_BASE_COLUMNS);
-                ResultsUtil::hideEmptyColumns(data.selfCosts, ui->topDownTreeView, TopDownModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes());
+                ResultsUtil::hideEmptyColumns(data.selfCosts, ui->topDownTreeView,
+                                              TopDownModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes());
             });
 }
 
 ResultsTopDownPage::~ResultsTopDownPage() = default;
+
+void ResultsTopDownPage::clear()
+{
+    ui->topDownSearch->setText({});
+}

@@ -1,0 +1,50 @@
+---
+BasedOnStyle:  WebKit
+Language:        Cpp
+AlignAfterOpenBracket: true
+AlwaysBreakTemplateDeclarations: true
+SpaceAfterTemplateKeyword: false
+BreakBeforeBraces: Custom
+BreakConstructorInitializersBeforeComma: true
+BreakBeforeBinaryOperators: NonAssignment
+BraceWrapping:
+    AfterClass: true
+    AfterControlStatement: false
+    AfterEnum: true
+    AfterFunction: true
+    AfterNamespace: false
+    AfterObjCDeclaration: false
+    AfterStruct: true
+    AfterUnion: false
+    BeforeCatch: false
+    BeforeElse: false
+    IndentBraces: false
+ColumnLimit: 120
+Standard:        Cpp11
+IndentWidth:     4
+TabWidth:        8
+UseTab:          Never
+PointerAlignment: Left
+SpacesInParentheses: false
+SpacesInAngles:  false
+SpaceInEmptyParentheses: false
+SpacesInCStyleCastParentheses: false
+SpaceAfterControlStatementKeyword: true
+SpaceBeforeAssignmentOperators: true
+ContinuationIndentWidth: 4
+Cpp11BracedListStyle: true
+IncludeCategories:
+  - Regex:           '^<boost/'
+    Priority:        1
+  - Regex:           '^<Q'
+    Priority:        2
+AllowShortFunctionsOnASingleLine: Empty
+ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH, forever, Q_FOREVER, QBENCHMARK, QBENCHMARK_ONCE, TEST_CASE, SECTION ]
+NamespaceIndentation: None
+BinPackArguments: true
+BinPackParameters: true
+# Only for newer clang-format versions
+#MacroBlockBegin: BEGINTESTFUNCIMPL
+#MacroBlockEnd: ENDTESTFUNCIMPL
+...
+

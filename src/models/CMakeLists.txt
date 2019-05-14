@@ -9,6 +9,7 @@ add_library(models STATIC
     processlist_unix.cpp
     timelinedelegate.cpp
     eventmodel.cpp
+    filterandzoomstack.cpp
     ../util.cpp
 )
 

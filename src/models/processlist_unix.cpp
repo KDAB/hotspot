@@ -32,24 +32,24 @@
 
 #include "processlist.h"
 
-#include <QProcess>
-#include <QDir>
 #include <QDebug>
+#include <QDir>
+#include <QProcess>
 
 #include <algorithm>
 #include <functional>
 
-QDebug operator<<(QDebug d, const ProcData &data)
+QDebug operator<<(QDebug d, const ProcData& data)
 {
-    d << "ProcData{.ppid=" << data.ppid << ", .name=" << data.name
-      << ", .state=" << data.state << ", .user=" << data.user << ", .type=" << "}";
+    d << "ProcData{.ppid=" << data.ppid << ", .name=" << data.name << ", .state=" << data.state
+      << ", .user=" << data.user << ", .type="
+      << "}";
     return d;
 }
 
-static bool isUnixProcessId(const QString &procname)
+static bool isUnixProcessId(const QString& procname)
 {
-    return std::all_of(procname.begin(), procname.end(),
-                       [](QChar c) { return c.isDigit(); });
+    return std::all_of(procname.begin(), procname.end(), [](QChar c) { return c.isDigit(); });
 }
 
 // Determine UNIX processes by running ps
@@ -78,14 +78,14 @@ static ProcDataList unixProcessListPS()
         // we can't just split on blank as the process name might
         // contain them
         const int endOfPid = line.indexOf(blank);
-        const int endOfState = line.indexOf(blank, endOfPid+1);
-        const int endOfUser = line.indexOf(blank, endOfState+1);
+        const int endOfState = line.indexOf(blank, endOfPid + 1);
+        const int endOfUser = line.indexOf(blank, endOfState + 1);
         if (endOfPid >= 0 && endOfState >= 0 && endOfUser >= 0) {
             ProcData procData;
             procData.ppid = line.left(endOfPid);
-            procData.state = line.mid(endOfPid+1, endOfState-endOfPid-1);
-            procData.user = line.mid(endOfState+1, endOfUser-endOfState-1);
-            procData.name = line.right(line.size()-endOfUser-1);
+            procData.state = line.mid(endOfPid + 1, endOfState - endOfPid - 1);
+            procData.user = line.mid(endOfState + 1, endOfUser - endOfState - 1);
+            procData.name = line.right(line.size() - endOfUser - 1);
             rc.push_back(procData);
         }
     }
@@ -102,13 +102,13 @@ ProcDataList processList()
         return unixProcessListPS();
 
     ProcDataList rc;
-    foreach (const QString &procId, procDir.entryList()) {
+    foreach (const QString& procId, procDir.entryList()) {
         if (!isUnixProcessId(procId))
             continue;
 
         QFile file(QLatin1String("/proc/") + procId + QLatin1String("/stat"));
         if (!file.open(QIODevice::ReadOnly))
-            continue;     // process may have exited
+            continue; // process may have exited
 
         const QStringList data = QString::fromLocal8Bit(file.readAll()).split(QLatin1Char(' '));
         ProcData proc;

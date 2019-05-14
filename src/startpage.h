@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -39,20 +39,20 @@ class StartPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit StartPage(QWidget *parent = nullptr);
+    explicit StartPage(QWidget* parent = nullptr);
     ~StartPage();
 
     void showStartPage();
     void showParseFileProgress();
 
-    void setPathSettingsMenu(QMenu *menu);
+    void setPathSettingsMenu(QMenu* menu);
 
 protected:
     void paintEvent(QPaintEvent* event) override;
     void changeEvent(QEvent* event) override;
 
 public slots:
-    void onOpenFileError(const QString &errorMessage);
+    void onOpenFileError(const QString& errorMessage);
     void onParseFileProgress(float percent);
 
 signals:

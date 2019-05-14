@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Authors: Milian Wolff <milian.wolff@kdab.com>
            Nate Rogers <nate.rogers@kdab.com>
 
@@ -32,16 +32,14 @@
 
 #include <algorithm>
 
-ProcessModel::ProcessModel(QObject *parent)
+ProcessModel::ProcessModel(QObject* parent)
     : QAbstractTableModel(parent)
 {
 }
 
-ProcessModel::~ProcessModel()
-{
-}
+ProcessModel::~ProcessModel() {}
 
-void ProcessModel::setProcesses(const ProcDataList &processes)
+void ProcessModel::setProcesses(const ProcDataList& processes)
 {
     beginResetModel();
     m_data = processes;
@@ -50,7 +48,7 @@ void ProcessModel::setProcesses(const ProcDataList &processes)
     endResetModel();
 }
 
-void ProcessModel::mergeProcesses(const ProcDataList &processes)
+void ProcessModel::mergeProcesses(const ProcDataList& processes)
 {
     // sort like m_data
     ProcDataList sortedProcesses = processes;
@@ -59,10 +57,10 @@ void ProcessModel::mergeProcesses(const ProcDataList &processes)
     // iterator over m_data
     int i = 0;
 
-    foreach (const ProcData &newProc, sortedProcesses) {
+    foreach (const ProcData& newProc, sortedProcesses) {
         bool shouldInsert = true;
         while (i < m_data.count()) {
-            const ProcData &oldProc = m_data.at(i);
+            const ProcData& oldProc = m_data.at(i);
             if (oldProc < newProc) {
                 // remove old proc, seems to be outdated
                 beginRemoveRows(QModelIndex(), i, i);
@@ -105,7 +103,7 @@ void ProcessModel::clear()
     endRemoveRows();
 }
 
-ProcData ProcessModel::dataForIndex(const QModelIndex &index) const
+ProcData ProcessModel::dataForIndex(const QModelIndex& index) const
 {
     return m_data.at(index.row());
 }
@@ -115,7 +113,7 @@ ProcData ProcessModel::dataForRow(int row) const
     return m_data.at(row);
 }
 
-QModelIndex ProcessModel::indexForPid(const QString &pid) const
+QModelIndex ProcessModel::indexForPid(const QString& pid) const
 {
     for (int i = 0; i < m_data.size(); ++i) {
         if (m_data.at(i).ppid == pid)
@@ -141,12 +139,12 @@ QVariant ProcessModel::headerData(int section, Qt::Orientation orientation, int 
     return QVariant();
 }
 
-QVariant ProcessModel::data(const QModelIndex &index, int role) const
+QVariant ProcessModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid())
         return QVariant();
 
-    const ProcData &data = m_data.at(index.row());
+    const ProcData& data = m_data.at(index.row());
 
     if (role == Qt::DisplayRole) {
         if (index.column() == PIDColumn)
@@ -172,12 +170,12 @@ QVariant ProcessModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-int ProcessModel::columnCount(const QModelIndex &parent) const
+int ProcessModel::columnCount(const QModelIndex& parent) const
 {
     return parent.isValid() ? 0 : COLUMN_COUNT;
 }
 
-int ProcessModel::rowCount(const QModelIndex &parent) const
+int ProcessModel::rowCount(const QModelIndex& parent) const
 {
     return parent.isValid() ? 0 : m_data.count();
 }
@@ -187,7 +185,7 @@ ProcDataList ProcessModel::processes() const
     return m_data;
 }
 
-Qt::ItemFlags ProcessModel::flags(const QModelIndex &index) const
+Qt::ItemFlags ProcessModel::flags(const QModelIndex& index) const
 {
     const Qt::ItemFlags f = QAbstractItemModel::flags(index);
     return f;

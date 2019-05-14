@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -33,25 +33,25 @@
 #include "util.h"
 
 #include <QDebug>
-#include <QStandardPaths>
-#include <QStandardItemModel>
+#include <QKeyEvent>
 #include <QListView>
+#include <QShortcut>
+#include <QStandardItemModel>
+#include <QStandardPaths>
 #include <QTimer>
 #include <QtConcurrent/QtConcurrentRun>
-#include <QKeyEvent>
-#include <QShortcut>
 
+#include <KColumnResizer>
+#include <KComboBox>
+#include <KConfigGroup>
+#include <KFilterProxySearchLine>
+#include <KRecursiveFilterProxyModel>
+#include <KSharedConfig>
+#include <KShell>
+#include <KUrlCompletion>
 #include <KUrlRequester>
 #include <Solid/Device>
 #include <Solid/Processor>
-#include <KShell>
-#include <KFilterProxySearchLine>
-#include <KRecursiveFilterProxyModel>
-#include <KColumnResizer>
-#include <KComboBox>
-#include <KUrlCompletion>
-#include <KSharedConfig>
-#include <KConfigGroup>
 #include <kio_version.h>
 
 #include "perfrecord.h"
@@ -70,38 +70,41 @@ bool isIntel()
         return false;
     }
 
-    const auto *processor= device.as<Processor>();
+    const auto* processor = device.as<Processor>();
     const auto instructionSets = processor->instructionSets();
 
-    return instructionSets.testFlag(Processor::IntelMmx) ||
-           instructionSets.testFlag(Processor::IntelSse) ||
-           instructionSets.testFlag(Processor::IntelSse2) ||
-           instructionSets.testFlag(Processor::IntelSse3) ||
-           instructionSets.testFlag(Processor::IntelSsse3) ||
-           instructionSets.testFlag(Processor::IntelSse4) ||
-           instructionSets.testFlag(Processor::IntelSse41) ||
-           instructionSets.testFlag(Processor::IntelSse42);
+    return instructionSets.testFlag(Processor::IntelMmx) || instructionSets.testFlag(Processor::IntelSse)
+        || instructionSets.testFlag(Processor::IntelSse2) || instructionSets.testFlag(Processor::IntelSse3)
+        || instructionSets.testFlag(Processor::IntelSsse3) || instructionSets.testFlag(Processor::IntelSse4)
+        || instructionSets.testFlag(Processor::IntelSse41) || instructionSets.testFlag(Processor::IntelSse42);
 }
 
-RecordType selectedRecordType(const QScopedPointer<Ui::RecordPage> &ui)
+RecordType selectedRecordType(const QScopedPointer<Ui::RecordPage>& ui)
 {
     return ui->recordTypeComboBox->currentData().value<RecordType>();
 }
 
-void updateStartRecordingButtonState(const QScopedPointer<Ui::RecordPage> &ui)
+void updateStartRecordingButtonState(const QScopedPointer<Ui::RecordPage>& ui)
 {
+    if (!PerfRecord::isPerfInstalled()) {
+        ui->startRecordingButton->setEnabled(false);
+        ui->applicationRecordErrorMessage->setText(QObject::tr("Please install perf before trying to record."));
+        ui->applicationRecordErrorMessage->setVisible(true);
+        return;
+    }
+
     bool enabled = false;
     switch (selectedRecordType(ui)) {
-        case LaunchApplication:
-            enabled = ui->applicationName->url().isValid();
-            break;
-        case AttachToProcess:
-            enabled = ui->processesTableView->selectionModel()->hasSelection();
-            break;
-        case ProfileSystem:
-            enabled = true;
-        case NUM_RECORD_TYPES:
-            break;
+    case LaunchApplication:
+        enabled = ui->applicationName->url().isValid();
+        break;
+    case AttachToProcess:
+        enabled = ui->processesTableView->selectionModel()->hasSelection();
+        break;
+    case ProfileSystem:
+        enabled = true;
+    case NUM_RECORD_TYPES:
+        break;
     }
     enabled &= ui->applicationRecordErrorMessage->text().isEmpty();
     ui->startRecordingButton->setEnabled(enabled);
@@ -119,8 +122,7 @@ KConfigGroup applicationConfig(const QString& application)
 
 constexpr const int MAX_COMBO_ENTRIES = 10;
 
-void rememberCombobox(KConfigGroup config, const QString& entryName,
-                      const QString& value, QComboBox* combo)
+void rememberCombobox(KConfigGroup config, const QString& entryName, const QString& value, QComboBox* combo)
 {
     // remove the value if it exists already
     auto idx = combo->findText(value);
@@ -141,8 +143,8 @@ void rememberCombobox(KConfigGroup config, const QString& entryName,
     config.writeEntry(entryName, values);
 }
 
-void restoreCombobox(const KConfigGroup& config, const QString& entryName,
-                     QComboBox* combo, const QStringList& defaults = {})
+void restoreCombobox(const KConfigGroup& config, const QString& entryName, QComboBox* combo,
+                     const QStringList& defaults = {})
 {
     combo->clear();
     const auto& values = config.readEntry(entryName, defaults);
@@ -151,8 +153,8 @@ void restoreCombobox(const KConfigGroup& config, const QString& entryName,
     }
 }
 
-void rememberApplication(const QString& application, const QString& appParameters,
-                         const QString& workingDir, KComboBox* combo)
+void rememberApplication(const QString& application, const QString& appParameters, const QString& workingDir,
+                         KComboBox* combo)
 {
     // set the app config early, so when we change the combo box below we can
     // restore the options as expected
@@ -160,13 +162,11 @@ void rememberApplication(const QString& application, const QString& appParameter
     options.writeEntry("params", appParameters);
     options.writeEntry("workingDir", workingDir);
 
-    rememberCombobox(config(), QStringLiteral("applications"),
-                     application, combo);
+    rememberCombobox(config(), QStringLiteral("applications"), application, combo);
+}
 }
 
-}
-
-RecordPage::RecordPage(QWidget *parent)
+RecordPage::RecordPage(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::RecordPage)
     , m_perfRecord(new PerfRecord(this))
@@ -183,8 +183,8 @@ RecordPage::RecordPage(QWidget *parent)
 #if KIO_VERSION >= QT_VERSION_CHECK(5, 31, 0)
     // we are only interested in executable files, so set the mime type filter accordingly
     // note that exe's build with PIE are actually "shared libs"...
-    ui->applicationName->setMimeTypeFilters({QStringLiteral("application/x-executable"),
-                                             QStringLiteral("application/x-sharedlib")});
+    ui->applicationName->setMimeTypeFilters(
+        {QStringLiteral("application/x-executable"), QStringLiteral("application/x-sharedlib")});
 #endif
     ui->workingDirectory->setMode(KFile::Directory | KFile::LocalOnly);
     ui->applicationRecordErrorMessage->setCloseButtonVisible(false);
@@ -203,104 +203,103 @@ RecordPage::RecordPage(QWidget *parent)
     connect(ui->homeButton, &QPushButton::clicked, this, &RecordPage::homeButtonClicked);
     connect(ui->applicationName, &KUrlRequester::textChanged, this, &RecordPage::onApplicationNameChanged);
     // NOTE: workaround until https://phabricator.kde.org/D7968 has landed and we bump the required version
-    connect(ui->applicationName->comboBox()->lineEdit(), &QLineEdit::textChanged,
-            this, &RecordPage::onApplicationNameChanged);
+    connect(ui->applicationName->comboBox()->lineEdit(), &QLineEdit::textChanged, this,
+            &RecordPage::onApplicationNameChanged);
     connect(ui->startRecordingButton, &QPushButton::toggled, this, &RecordPage::onStartRecordingButtonClicked);
     connect(ui->workingDirectory, &KUrlRequester::textChanged, this, &RecordPage::onWorkingDirectoryNameChanged);
-    connect(ui->viewPerfRecordResultsButton, &QPushButton::clicked, this, &RecordPage::onViewPerfRecordResultsButtonClicked);
+    connect(ui->viewPerfRecordResultsButton, &QPushButton::clicked, this,
+            &RecordPage::onViewPerfRecordResultsButtonClicked);
     connect(ui->outputFile, &KUrlRequester::textChanged, this, &RecordPage::onOutputFileNameChanged);
-    connect(ui->outputFile, static_cast<void (KUrlRequester::*)(const QString&)>(&KUrlRequester::returnPressed),
-            this, &RecordPage::onOutputFileNameSelected);
+    connect(ui->outputFile, static_cast<void (KUrlRequester::*)(const QString&)>(&KUrlRequester::returnPressed), this,
+            &RecordPage::onOutputFileNameSelected);
     connect(ui->outputFile, &KUrlRequester::urlSelected, this, &RecordPage::onOutputFileUrlChanged);
 
-    ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-build")),
-                                    tr("Launch Application"), QVariant::fromValue(LaunchApplication));
-    ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-install")),
-                                    tr("Attach To Process(es)"), QVariant::fromValue(AttachToProcess));
-    ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-build-install-root")),
-                                    tr("Profile System"), QVariant::fromValue(ProfileSystem));
-    connect(ui->recordTypeComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-            this, &RecordPage::updateRecordType);
+    ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-build")), tr("Launch Application"),
+                                    QVariant::fromValue(LaunchApplication));
+    ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-install")), tr("Attach To Process(es)"),
+                                    QVariant::fromValue(AttachToProcess));
+    ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-build-install-root")), tr("Profile System"),
+                                    QVariant::fromValue(ProfileSystem));
+    connect(ui->recordTypeComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
+            &RecordPage::updateRecordType);
     updateRecordType();
 
     {
         ui->callGraphComboBox->addItem(tr("None"), QVariant::fromValue(QString()));
-        ui->callGraphComboBox->setItemData(ui->callGraphComboBox->count() - 1,
-                                           tr("<qt>Do not unwind the call stack. This results in tiny data files. "
-                                              " But the data can be hard to make use of, when hotspots lie "
-                                              " in third party or system libraries not under your direct control.</qt>"),
-                                           Qt::ToolTipRole);
+        ui->callGraphComboBox->setItemData(
+            ui->callGraphComboBox->count() - 1,
+            tr("<qt>Do not unwind the call stack. This results in tiny data files. "
+               " But the data can be hard to make use of, when hotspots lie "
+               " in third party or system libraries not under your direct control.</qt>"),
+            Qt::ToolTipRole);
 
         const auto dwarfIdx = ui->callGraphComboBox->count();
         ui->callGraphComboBox->addItem(tr("DWARF"), QVariant::fromValue(QStringLiteral("dwarf")));
-        ui->callGraphComboBox->setItemData(dwarfIdx,
-                                           tr("<qt>Use the DWARF unwinder, which requires debug information to be available."
-                                              " This can result in large data files, but is usually the most portable option to use.</qt>"),
-                                           Qt::ToolTipRole);
+        ui->callGraphComboBox->setItemData(
+            dwarfIdx,
+            tr("<qt>Use the DWARF unwinder, which requires debug information to be available."
+               " This can result in large data files, but is usually the most portable option to use.</qt>"),
+            Qt::ToolTipRole);
 
         ui->callGraphComboBox->addItem(tr("Frame Pointer"), QVariant::fromValue(QStringLiteral("fp")));
-        ui->callGraphComboBox->setItemData(ui->callGraphComboBox->count() - 1,
-                                           tr("<qt>Use the frame pointer for stack unwinding. This only works when your code was compiled"
-                                              " with <tt>-fno-omit-framepointer</tt>, which is usually not the case nowadays."
-                                              " As such, only use this option when you know that you have frame pointers available."
-                                              " If frame pointers are available, this option is the recommended unwinding option,"
-                                              " as it results in smaller data files and has less overhead while recording.</qt>"),
-                                           Qt::ToolTipRole);
+        ui->callGraphComboBox->setItemData(
+            ui->callGraphComboBox->count() - 1,
+            tr("<qt>Use the frame pointer for stack unwinding. This only works when your code was compiled"
+               " with <tt>-fno-omit-framepointer</tt>, which is usually not the case nowadays."
+               " As such, only use this option when you know that you have frame pointers available."
+               " If frame pointers are available, this option is the recommended unwinding option,"
+               " as it results in smaller data files and has less overhead while recording.</qt>"),
+            Qt::ToolTipRole);
 
         if (isIntel()) {
             ui->callGraphComboBox->addItem(tr("Last Branch Record"), QVariant::fromValue(QStringLiteral("lbr")));
-            ui->callGraphComboBox->setItemData(ui->callGraphComboBox->count() - 1,
-                                               tr("<qt>Use the Last Branch Record (LBR) for stack unwinding. This only works on newer Intel CPUs"
-                                                  " but does not require any special compile options. The depth of the LBR is relatively limited,"
-                                                  " which makes this option not too useful for many real-world applications.</qt>"),
-                                                Qt::ToolTipRole);
+            ui->callGraphComboBox->setItemData(
+                ui->callGraphComboBox->count() - 1,
+                tr("<qt>Use the Last Branch Record (LBR) for stack unwinding. This only works on newer Intel CPUs"
+                   " but does not require any special compile options. The depth of the LBR is relatively limited,"
+                   " which makes this option not too useful for many real-world applications.</qt>"),
+                Qt::ToolTipRole);
         }
 
         ui->callGraphComboBox->setCurrentIndex(dwarfIdx);
     }
 
-    connect(m_perfRecord, &PerfRecord::recordingStarted,
-            this, [this] (const QString& perfBinary, const QStringList& arguments) {
+    connect(m_perfRecord, &PerfRecord::recordingStarted, this,
+            [this](const QString& perfBinary, const QStringList& arguments) {
                 m_recordTimer.start();
                 m_updateRuntimeTimer->start();
-                appendOutput(QLatin1String("$ ") + perfBinary + QLatin1Char(' ')
-                                + arguments.join(QLatin1Char(' '))
-                                + QLatin1Char('\n'));
+                appendOutput(QLatin1String("$ ") + perfBinary + QLatin1Char(' ') + arguments.join(QLatin1Char(' '))
+                             + QLatin1Char('\n'));
                 ui->perfInputEdit->setEnabled(true);
             });
 
-    connect(m_perfRecord, &PerfRecord::recordingFinished,
-            this, [this] (const QString& fileLocation) {
-                appendOutput(tr("\nrecording finished after %1")
-                    .arg(Util::formatTimeString(m_recordTimer.nsecsElapsed())));
-                m_resultsFile = fileLocation;
-                setError({});
-                recordingStopped();
-                ui->viewPerfRecordResultsButton->setEnabled(true);
+    connect(m_perfRecord, &PerfRecord::recordingFinished, this, [this](const QString& fileLocation) {
+        appendOutput(tr("\nrecording finished after %1").arg(Util::formatTimeString(m_recordTimer.nsecsElapsed())));
+        m_resultsFile = fileLocation;
+        setError({});
+        recordingStopped();
+        ui->viewPerfRecordResultsButton->setEnabled(true);
     });
 
-    connect(m_perfRecord, &PerfRecord::recordingFailed,
-            this, [this] (const QString& errorMessage) {
-                if (m_recordTimer.isValid()) {
-                    appendOutput(tr("\nrecording failed after %1: %2")
-                        .arg(Util::formatTimeString(m_recordTimer.nsecsElapsed()), errorMessage));
-                } else {
-                    appendOutput(tr("\nrecording failed: %1").arg(errorMessage));
-                }
-                setError(errorMessage);
-                recordingStopped();
-                ui->viewPerfRecordResultsButton->setEnabled(false);
+    connect(m_perfRecord, &PerfRecord::recordingFailed, this, [this](const QString& errorMessage) {
+        if (m_recordTimer.isValid()) {
+            appendOutput(tr("\nrecording failed after %1: %2")
+                             .arg(Util::formatTimeString(m_recordTimer.nsecsElapsed()), errorMessage));
+        } else {
+            appendOutput(tr("\nrecording failed: %1").arg(errorMessage));
+        }
+        setError(errorMessage);
+        recordingStopped();
+        ui->viewPerfRecordResultsButton->setEnabled(false);
     });
 
-    connect(m_perfRecord, &PerfRecord::recordingOutput,
-            this, &RecordPage::appendOutput);
+    connect(m_perfRecord, &PerfRecord::recordingOutput, this, &RecordPage::appendOutput);
 
-    connect(ui->perfInputEdit, &QLineEdit::returnPressed,
-            this, [this]() {
-                m_perfRecord->sendInput(ui->perfInputEdit->text().toUtf8());
-                m_perfRecord->sendInput(QByteArrayLiteral("\n"));
-                ui->perfInputEdit->clear();
-            });
+    connect(ui->perfInputEdit, &QLineEdit::returnPressed, this, [this]() {
+        m_perfRecord->sendInput(ui->perfInputEdit->text().toUtf8());
+        m_perfRecord->sendInput(QByteArrayLiteral("\n"));
+        ui->perfInputEdit->clear();
+    });
 
     m_processModel = new ProcessModel(this);
     m_processProxyModel = new ProcessFilterModel(this);
@@ -315,15 +314,12 @@ RecordPage::RecordPage(QWidget *parent)
     ui->processesTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->processesTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->processesTableView->setSelectionMode(QAbstractItemView::MultiSelection);
-    connect(ui->processesTableView->selectionModel(), &QItemSelectionModel::selectionChanged,
-            this, [this](){
-                updateStartRecordingButtonState(ui);
-            });
+    connect(ui->processesTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this,
+            [this]() { updateStartRecordingButtonState(ui); });
 
     ui->processesFilterBox->setProxy(m_processProxyModel);
 
-    connect(m_watcher, &QFutureWatcher<ProcDataList>::finished,
-            this, &RecordPage::updateProcessesFinished);
+    connect(m_watcher, &QFutureWatcher<ProcDataList>::finished, this, &RecordPage::updateProcessesFinished);
 
     if (m_perfRecord->currentUsername() == QLatin1String("root")) {
         ui->elevatePrivilegesCheckBox->setChecked(true);
@@ -331,23 +327,21 @@ RecordPage::RecordPage(QWidget *parent)
     } else if (m_perfRecord->sudoUtil().isEmpty()) {
         ui->elevatePrivilegesCheckBox->setChecked(false);
         ui->elevatePrivilegesCheckBox->setEnabled(false);
-        ui->elevatePrivilegesCheckBox->setText(tr("(Note: Install kdesudo or kdesu to temporarily elevate perf privileges.)"));
+        ui->elevatePrivilegesCheckBox->setText(
+            tr("(Note: Install kdesudo or kdesu to temporarily elevate perf privileges.)"));
     }
 
-    connect(ui->elevatePrivilegesCheckBox, &QCheckBox::toggled,
-            this, &RecordPage::updateOffCpuCheckboxState);
+    connect(ui->elevatePrivilegesCheckBox, &QCheckBox::toggled, this, &RecordPage::updateOffCpuCheckboxState);
 
-    restoreCombobox(config(), QStringLiteral("applications"),
-                    ui->applicationName->comboBox());
-    restoreCombobox(config(), QStringLiteral("eventType"),
-                    ui->eventTypeBox, {ui->eventTypeBox->currentText()});
-    restoreCombobox(config(), QStringLiteral("customOptions"),
-                    ui->perfParams);
+    restoreCombobox(config(), QStringLiteral("applications"), ui->applicationName->comboBox());
+    restoreCombobox(config(), QStringLiteral("eventType"), ui->eventTypeBox, {ui->eventTypeBox->currentText()});
+    restoreCombobox(config(), QStringLiteral("customOptions"), ui->perfParams);
     ui->elevatePrivilegesCheckBox->setChecked(config().readEntry(QStringLiteral("elevatePrivileges"), false));
     ui->offCpuCheckBox->setChecked(config().readEntry(QStringLiteral("offCpuProfiling"), false));
     ui->sampleCpuCheckBox->setChecked(config().readEntry(QStringLiteral("sampleCpu"), true));
     ui->mmapPagesSpinBox->setValue(config().readEntry(QStringLiteral("mmapPages"), 0));
     ui->mmapPagesUnitComboBox->setCurrentIndex(config().readEntry(QStringLiteral("mmapPagesUnit"), 2));
+    ui->useAioCheckBox->setChecked(config().readEntry(QStringLiteral("useAio"), PerfRecord::canUseAio()));
 
     const auto callGraph = config().readEntry("callGraph", ui->callGraphComboBox->currentData());
     const auto callGraphIdx = ui->callGraphComboBox->findData(callGraph);
@@ -360,29 +354,39 @@ RecordPage::RecordPage(QWidget *parent)
     showRecordPage();
 
     m_updateRuntimeTimer->setInterval(1000);
-    connect(m_updateRuntimeTimer, &QTimer::timeout,
-            this, [this] {
-                // round to the nearest second
-                const auto roundedElapsed = std::round(double(m_recordTimer.nsecsElapsed()) / 1E9) * 1E9;
-                ui->startRecordingButton->setText(tr("Stop Recording (%1)")
-                    .arg(Util::formatTimeString(roundedElapsed, true)));
-            });
+    connect(m_updateRuntimeTimer, &QTimer::timeout, this, [this] {
+        // round to the nearest second
+        const auto roundedElapsed = std::round(double(m_recordTimer.nsecsElapsed()) / 1E9) * 1E9;
+        ui->startRecordingButton->setText(tr("Stop Recording (%1)").arg(Util::formatTimeString(roundedElapsed, true)));
+    });
 
-    auto *stopRecordingShortcut = new QShortcut(Qt::Key_Escape, this);
+    auto* stopRecordingShortcut = new QShortcut(Qt::Key_Escape, this);
     stopRecordingShortcut->setContext(Qt::WidgetWithChildrenShortcut);
-    connect(stopRecordingShortcut, &QShortcut::activated,
-            this, [this] { ui->startRecordingButton->setChecked(false); });
+    connect(stopRecordingShortcut, &QShortcut::activated, this,
+            [this] { ui->startRecordingButton->setChecked(false); });
 
-    auto *startRecordingShortcut = new QShortcut(Qt::Key_Return, this);
+    auto* startRecordingShortcut = new QShortcut(Qt::Key_Return, this);
     startRecordingShortcut->setContext(Qt::WidgetWithChildrenShortcut);
-    connect(startRecordingShortcut, &QShortcut::activated,
-            this, [this] {
-                if (ui->viewPerfRecordResultsButton->isEnabled()) {
-                    ui->viewPerfRecordResultsButton->click();
-                } else if (ui->startRecordingButton->isEnabled()) {
-                    ui->startRecordingButton->setChecked(true);
-                }
-            });
+    connect(startRecordingShortcut, &QShortcut::activated, this, [this] {
+        if (ui->viewPerfRecordResultsButton->isEnabled()) {
+            ui->viewPerfRecordResultsButton->click();
+        } else if (ui->startRecordingButton->isEnabled()) {
+            ui->startRecordingButton->setChecked(true);
+        }
+    });
+
+    if (!PerfRecord::canSampleCpu()) {
+        ui->sampleCpuCheckBox->hide();
+        ui->sampleCpuLabel->hide();
+    }
+    if (!PerfRecord::canSwitchEvents()) {
+        ui->offCpuCheckBox->hide();
+        ui->offCpuLabel->hide();
+    }
+    if (!PerfRecord::canUseAio()) {
+        ui->useAioCheckBox->hide();
+        ui->useAioLabel->hide();
+    }
 }
 
 RecordPage::~RecordPage() = default;
@@ -418,19 +422,17 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         }
 
         const auto eventType = ui->eventTypeBox->currentText();
-        rememberCombobox(config(), QStringLiteral("eventType"),
-                         eventType, ui->eventTypeBox);
+        rememberCombobox(config(), QStringLiteral("eventType"), eventType, ui->eventTypeBox);
         if (!eventType.isEmpty()) {
             perfOptions << QStringLiteral("--event") << eventType;
         }
 
         const auto customOptions = ui->perfParams->currentText();
-        rememberCombobox(config(), QStringLiteral("customOptions"),
-                         customOptions, ui->perfParams);
+        rememberCombobox(config(), QStringLiteral("customOptions"), customOptions, ui->perfParams);
         perfOptions += KShell::splitArgs(customOptions);
 
         const bool offCpuProfilingEnabled = ui->offCpuCheckBox->isChecked();
-        if (offCpuProfilingEnabled) {
+        if (offCpuProfilingEnabled && PerfRecord::canSwitchEvents()) {
             if (eventType.isEmpty()) {
                 // TODO: use clock event in VM context
                 perfOptions += QStringLiteral("--event");
@@ -440,10 +442,16 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         }
         config().writeEntry(QStringLiteral("offCpuProfiling"), offCpuProfilingEnabled);
 
+        const bool useAioEnabled = ui->useAioCheckBox->isChecked();
+        if (useAioEnabled && PerfRecord::canUseAio()) {
+            perfOptions += QStringLiteral("--aio");
+        }
+        config().writeEntry(QStringLiteral("useAio"), useAioEnabled);
+
         const bool elevatePrivileges = ui->elevatePrivilegesCheckBox->isChecked();
 
         const bool sampleCpuEnabled = ui->sampleCpuCheckBox->isChecked();
-        if (sampleCpuEnabled) {
+        if (sampleCpuEnabled && PerfRecord::canSampleCpu()) {
             perfOptions += QStringLiteral("--sample-cpu");
         }
 
@@ -492,15 +500,13 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
             if (workingDir.isEmpty()) {
                 workingDir = ui->workingDirectory->placeholderText();
             }
-            rememberApplication(applicationName, appParameters, workingDir,
-                                ui->applicationName->comboBox());
-            m_perfRecord->record(perfOptions, outputFile, elevatePrivileges,
-                                 applicationName, KShell::splitArgs(appParameters),
-                                 workingDir);
+            rememberApplication(applicationName, appParameters, workingDir, ui->applicationName->comboBox());
+            m_perfRecord->record(perfOptions, outputFile, elevatePrivileges, applicationName,
+                                 KShell::splitArgs(appParameters), workingDir);
             break;
         }
         case AttachToProcess: {
-            QItemSelectionModel *selectionModel = ui->processesTableView->selectionModel();
+            QItemSelectionModel* selectionModel = ui->processesTableView->selectionModel();
             QStringList pids;
 
             for (const auto& item : selectionModel->selectedIndexes()) {
@@ -645,8 +651,9 @@ void RecordPage::updateProcessesFinished()
 
 void RecordPage::appendOutput(const QString& text)
 {
-    ui->perfResultsTextEdit->insertPlainText(text);
-    ui->perfResultsTextEdit->moveCursor(QTextCursor::End);
+    QTextCursor cursor(ui->perfResultsTextEdit->document());
+    cursor.movePosition(QTextCursor::End);
+    cursor.insertText(text);
 }
 
 void RecordPage::setError(const QString& message)
@@ -664,10 +671,10 @@ void RecordPage::updateRecordType()
     ui->perfInputEdit->clear();
     ui->perfResultsTextEdit->clear();
     ui->elevatePrivilegesCheckBox->setEnabled(recordType != ProfileSystem);
-    ui->sampleCpuCheckBox->setEnabled(recordType != ProfileSystem);
+    ui->sampleCpuCheckBox->setEnabled(recordType != ProfileSystem && PerfRecord::canSampleCpu());
     if (recordType == ProfileSystem) {
         ui->elevatePrivilegesCheckBox->setChecked(true);
-        ui->sampleCpuCheckBox->setChecked(true);
+        ui->sampleCpuCheckBox->setChecked(true && PerfRecord::canSampleCpu());
     }
 
     if (recordType == AttachToProcess) {
@@ -679,8 +686,8 @@ void RecordPage::updateRecordType()
 
 void RecordPage::updateOffCpuCheckboxState()
 {
-    const bool enableOffCpuProfiling = ui->elevatePrivilegesCheckBox->isChecked()
-        || PerfRecord::canProfileOffCpu();
+    const bool enableOffCpuProfiling =
+        (ui->elevatePrivilegesCheckBox->isChecked() || PerfRecord::canProfileOffCpu()) && PerfRecord::canSwitchEvents();
 
     if (enableOffCpuProfiling == ui->offCpuCheckBox->isEnabled()) {
         return;

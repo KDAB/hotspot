@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -29,11 +29,12 @@
 
 #include "../util.h"
 
-#include <QSet>
 #include <QDebug>
+#include <QSet>
 
 namespace {
-enum class Tag : quintptr {
+enum class Tag : quintptr
+{
     Invalid = 0,
     Root = 1,
     Overview = 2,
@@ -87,12 +88,10 @@ int EventModel::rowCount(const QModelIndex& parent) const
     return 0;
 }
 
-QVariant EventModel::headerData(int section, Qt::Orientation orientation,
-                                int role) const
+QVariant EventModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (section < 0 || section >= NUM_COLUMNS || orientation != Qt::Horizontal
-        || (role != Qt::DisplayRole && role != Qt::InitialSortOrderRole))
-    {
+        || (role != Qt::DisplayRole && role != Qt::InitialSortOrderRole)) {
         return {};
     }
 
@@ -116,9 +115,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
     }
 
     if (role == MaxTimeRole) {
-        return m_maxTime;
+        return m_time.end;
     } else if (role == MinTimeRole) {
-        return m_minTime;
+        return m_time.start;
     } else if (role == MaxCostRole) {
         return m_maxCost;
     } else if (role == NumProcessesRole) {
@@ -163,9 +162,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
     }
 
     if (role == ThreadStartRole) {
-        return thread ? thread->timeStart : m_minTime;
+        return thread ? thread->time.start : m_time.start;
     } else if (role == ThreadEndRole) {
-        return thread ? thread->timeEnd : m_maxTime;
+        return thread ? thread->time.end : m_time.end;
     } else if (role == ThreadNameRole) {
         return thread ? thread->name : tr("CPU #%1").arg(cpu->cpuId);
     } else if (role == ThreadIdRole) {
@@ -184,44 +183,42 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
     }
 
     switch (static_cast<Columns>(index.column())) {
-        case ThreadColumn:
-            if (role == Qt::DisplayRole) {
-                return cpu ? tr("CPU #%1").arg(cpu->cpuId) : tr("%1 (#%2)").arg(thread->name, QString::number(thread->tid));
-            } else if (role == Qt::ToolTipRole) {
-                QString tooltip = cpu ? tr("CPU #%1\n").arg(cpu->cpuId) : tr("Thread %1, tid = %2, pid = %3\n")
-                                    .arg(thread->name, QString::number(thread->tid), QString::number(thread->pid));
-                if (thread) {
-                    const auto runtime = thread->timeEnd - thread->timeStart;
-                    const auto totalRuntime = m_maxTime - m_minTime;
-                    tooltip += tr("Runtime: %1 (%2% of total runtime)\n")
-                                    .arg(Util::formatTimeString(runtime),
-                                        Util::formatCostRelative(runtime, totalRuntime));
-                    if (m_totalOffCpuTime > 0) {
-                        const auto onCpuTime = runtime - thread->offCpuTime;
-                        tooltip += tr("On-CPU time: %1 (%2% of thread runtime, %3% of total On-CPU time)\n")
-                                        .arg(Util::formatTimeString(onCpuTime),
-                                            Util::formatCostRelative(onCpuTime, runtime),
-                                            Util::formatCostRelative(onCpuTime, m_totalOnCpuTime));
-                        tooltip += tr("Off-CPU time: %1 (%2% of thread runtime, %3% of total Off-CPU time)\n")
-                                        .arg(Util::formatTimeString(thread->offCpuTime),
-                                            Util::formatCostRelative(thread->offCpuTime, runtime),
-                                            Util::formatCostRelative(thread->offCpuTime, m_totalOffCpuTime));
-                    }
+    case ThreadColumn:
+        if (role == Qt::DisplayRole) {
+            return cpu ? tr("CPU #%1").arg(cpu->cpuId) : tr("%1 (#%2)").arg(thread->name, QString::number(thread->tid));
+        } else if (role == Qt::ToolTipRole) {
+            QString tooltip = cpu ? tr("CPU #%1\n").arg(cpu->cpuId)
+                                  : tr("Thread %1, tid = %2, pid = %3\n")
+                                        .arg(thread->name, QString::number(thread->tid), QString::number(thread->pid));
+            if (thread) {
+                const auto runtime = thread->time.delta();
+                const auto totalRuntime = m_time.delta();
+                tooltip += tr("Runtime: %1 (%2% of total runtime)\n")
+                               .arg(Util::formatTimeString(runtime), Util::formatCostRelative(runtime, totalRuntime));
+                if (m_totalOffCpuTime > 0) {
+                    const auto onCpuTime = runtime - thread->offCpuTime;
+                    tooltip += tr("On-CPU time: %1 (%2% of thread runtime, %3% of total On-CPU time)\n")
+                                   .arg(Util::formatTimeString(onCpuTime), Util::formatCostRelative(onCpuTime, runtime),
+                                        Util::formatCostRelative(onCpuTime, m_totalOnCpuTime));
+                    tooltip += tr("Off-CPU time: %1 (%2% of thread runtime, %3% of total Off-CPU time)\n")
+                                   .arg(Util::formatTimeString(thread->offCpuTime),
+                                        Util::formatCostRelative(thread->offCpuTime, runtime),
+                                        Util::formatCostRelative(thread->offCpuTime, m_totalOffCpuTime));
                 }
-                const auto numEvents = thread ? thread->events.size() : cpu->events.size();
-                tooltip += tr("Number of Events: %1 (%2% of the total)")
-                                .arg(QString::number(numEvents),
-                                     Util::formatCostRelative(numEvents, m_totalEvents));
-                return tooltip;
             }
-            break;
-        case EventsColumn:
-            if (role == Qt::DisplayRole)
-                return thread ? thread->events.size() : cpu->events.size();
-            break;
-        case NUM_COLUMNS:
-            // nothing
-            break;
+            const auto numEvents = thread ? thread->events.size() : cpu->events.size();
+            tooltip += tr("Number of Events: %1 (%2% of the total)")
+                           .arg(QString::number(numEvents), Util::formatCostRelative(numEvents, m_totalEvents));
+            return tooltip;
+        }
+        break;
+    case EventsColumn:
+        if (role == Qt::DisplayRole)
+            return thread ? thread->events.size() : cpu->events.size();
+        break;
+    case NUM_COLUMNS:
+        // nothing
+        break;
     }
 
     return {};
@@ -238,18 +235,16 @@ void EventModel::setData(const Data::EventResults& data)
     m_totalOnCpuTime = 0;
     m_totalOffCpuTime = 0;
     if (data.threads.isEmpty()) {
-        m_minTime = 0;
-        m_maxTime = 0;
+        m_time = {};
     } else {
-        m_minTime = data.threads.first().timeStart;
-        m_maxTime = data.threads.first().timeEnd;
+        m_time = data.threads.first().time;
         QSet<quint32> processes;
         QSet<quint32> threads;
         for (const auto& thread : data.threads) {
-            m_minTime = std::min(thread.timeStart, m_minTime);
-            m_maxTime = std::max(thread.timeEnd, m_maxTime);
+            m_time.start = std::min(thread.time.start, m_time.start);
+            m_time.end = std::max(thread.time.end, m_time.end);
             m_totalOffCpuTime += thread.offCpuTime;
-            m_totalOnCpuTime += thread.timeEnd - thread.timeStart - thread.offCpuTime;
+            m_totalOnCpuTime += thread.time.delta() - thread.offCpuTime;
             m_totalEvents += thread.events.size();
             processes.insert(thread.pid);
             threads.insert(thread.tid);
@@ -266,11 +261,8 @@ void EventModel::setData(const Data::EventResults& data)
         m_numThreads = threads.size();
 
         // don't show timeline for CPU cores that did not receive any events
-        auto it = std::remove_if(m_data.cpus.begin(),
-                                m_data.cpus.end(),
-                                [](const Data::CpuEvents& cpuEvents) {
-                                    return cpuEvents.events.isEmpty();
-                                });
+        auto it = std::remove_if(m_data.cpus.begin(), m_data.cpus.end(),
+                                 [](const Data::CpuEvents& cpuEvents) { return cpuEvents.events.isEmpty(); });
         m_data.cpus.erase(it, m_data.cpus.end());
     }
     endResetModel();

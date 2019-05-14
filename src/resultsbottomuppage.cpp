@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2017-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Nate Rogers <nate.rogers@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -35,31 +35,36 @@
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
 
-#include "models/hashmodel.h"
 #include "models/costdelegate.h"
-#include "models/treemodel.h"
+#include "models/hashmodel.h"
 #include "models/topproxy.h"
+#include "models/treemodel.h"
 
-ResultsBottomUpPage::ResultsBottomUpPage(PerfParser *parser, QWidget *parent)
+ResultsBottomUpPage::ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsBottomUpPage)
 {
     ui->setupUi(this);
 
     auto bottomUpCostModel = new BottomUpModel(this);
-    ResultsUtil::setupTreeView(ui->bottomUpTreeView,  ui->bottomUpSearch, bottomUpCostModel);
+    ResultsUtil::setupTreeView(ui->bottomUpTreeView, ui->bottomUpSearch, bottomUpCostModel);
     ResultsUtil::setupCostDelegate(bottomUpCostModel, ui->bottomUpTreeView);
-    ResultsUtil::setupContextMenu(ui->bottomUpTreeView, bottomUpCostModel,
-                                  [this] (const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
+    ResultsUtil::setupContextMenu(ui->bottomUpTreeView, bottomUpCostModel, filterStack,
+                                  [this](const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
 
     auto topHotspotsProxy = new TopProxy(this);
     topHotspotsProxy->setSourceModel(bottomUpCostModel);
 
-    connect(parser, &PerfParser::bottomUpDataAvailable,
-            this, [this, bottomUpCostModel] (const Data::BottomUpResults& data) {
+    connect(parser, &PerfParser::bottomUpDataAvailable, this,
+            [this, bottomUpCostModel](const Data::BottomUpResults& data) {
                 bottomUpCostModel->setData(data);
                 ResultsUtil::hideEmptyColumns(data.costs, ui->bottomUpTreeView, BottomUpModel::NUM_BASE_COLUMNS);
             });
 }
 
 ResultsBottomUpPage::~ResultsBottomUpPage() = default;
+
+void ResultsBottomUpPage::clear()
+{
+    ui->bottomUpSearch->setText({});
+}

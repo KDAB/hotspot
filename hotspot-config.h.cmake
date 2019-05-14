@@ -3,7 +3,7 @@
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2016-2018 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Copyright (C) 2016-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
   Author: Milian Wolff <milian.wolff@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
@@ -35,5 +35,7 @@
 #define HOTSPOT_VERSION ((hotspot_VERSION_MAJOR<<16)|(hotspot_VERSION_MINOR<<8)|(hotspot_VERSION_PATCH))
 
 #define HOTSPOT_LIBEXEC_REL_PATH "@LIBEXEC_REL_PATH@"
+
+#cmakedefine01 APPIMAGE_BUILD
 
 #endif // HOTSPOT_CONFIG_H
