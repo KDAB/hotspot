@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1.0)
-project(hotspot VERSION 1.1.0 LANGUAGES CXX C)
+project(hotspot VERSION 1.2.0 LANGUAGES CXX C)
 
 if (POLICY CMP0063)
     cmake_policy (SET CMP0063 NEW)
