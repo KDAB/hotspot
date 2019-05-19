@@ -153,7 +153,7 @@ void restoreCombobox(const KConfigGroup& config, const QString& entryName, QComb
     }
 }
 
-void rememberApplication(const QString& application, const QString& appParameters, const QString& workingDir,
+void rememberApplication(const QString& application, const QString& appParameters, const QString& appEnv, const QString& workingDir,
                          KComboBox* combo)
 {
     // set the app config early, so when we change the combo box below we can
@@ -161,6 +161,7 @@ void rememberApplication(const QString& application, const QString& appParameter
     auto options = applicationConfig(application);
     options.writeEntry("params", appParameters);
     options.writeEntry("workingDir", workingDir);
+    options.writeEntry("env", appEnv);
 
     rememberCombobox(config(), QStringLiteral("applications"), application, combo);
 }
@@ -496,13 +497,14 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         case LaunchApplication: {
             const auto applicationName = KShell::tildeExpand(ui->applicationName->text());
             const auto appParameters = ui->applicationParametersBox->text();
+            const auto appEnv = ui->applicationEnvBox->text();
             auto workingDir = ui->workingDirectory->text();
             if (workingDir.isEmpty()) {
                 workingDir = ui->workingDirectory->placeholderText();
             }
-            rememberApplication(applicationName, appParameters, workingDir, ui->applicationName->comboBox());
+            rememberApplication(applicationName, appParameters, appEnv, workingDir, ui->applicationName->comboBox());
             m_perfRecord->record(perfOptions, outputFile, elevatePrivileges, applicationName,
-                                 KShell::splitArgs(appParameters), workingDir);
+                                 KShell::splitArgs(appParameters), KShell::splitArgs(appEnv), workingDir);
             break;
         }
         case AttachToProcess: {
@@ -567,6 +569,7 @@ void RecordPage::onApplicationNameChanged(const QString& filePath)
         const auto config = applicationConfig(filePath);
         ui->workingDirectory->setText(config.readEntry("workingDir", QString()));
         ui->applicationParametersBox->setText(config.readEntry("params", QString()));
+        ui->applicationEnvBox->setText(config.readEntry("env", QString()));
         ui->workingDirectory->setPlaceholderText(application.path());
         setError({});
     }

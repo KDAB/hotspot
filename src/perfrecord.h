@@ -40,7 +40,7 @@ public:
     ~PerfRecord();
 
     void record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
-                const QString& exePath, const QStringList& exeOptions, const QString& workingDirectory = QString());
+                const QString& exePath, const QStringList& exeOptions, const QStringList& exeEnv = {}, const QString& workingDirectory = QString());
     void record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
                 const QStringList& pids);
     void recordSystem(const QStringList& perfOptions, const QString& outputPath);
@@ -75,7 +75,7 @@ private:
     bool m_userTerminated;
 
     void startRecording(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
-                        const QStringList& recordOptions, const QString& workingDirectory = QString());
+                        const QStringList& recordOptions, const QStringList &env = {}, const QString& workingDirectory = QString());
     void startRecording(const QStringList& perfOptions, const QString& outputPath, const QStringList& recordOptions,
-                        const QString& workingDirectory = QString());
+                        const QStringList &env = {}, const QString& workingDirectory = QString());
 };
