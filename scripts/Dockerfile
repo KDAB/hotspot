@@ -20,10 +20,6 @@ WORKDIR /opt
 RUN wget -c "https://github.com/chigraph/precompiled-kf5-linux/releases/download/precompiled/kf5-gcc6-linux64-release.tar.xz" && \
     tar --strip-components=2 -xf kf5-gcc6-linux64-release.tar.xz -C /opt/qt510/
 
-# Precompiled version of elfutils in newer version (0.170)
-RUN wget -c "https://swanson.kdab.com/owncloud/index.php/s/RzRwIkFuTKI30t3/download" -O elfutils.tar.bz2 && \
-    sudo tar -xf elfutils.tar.bz2 -C /
-
 # download AppImage tools and extract them, to remove fuse dependency
 
 RUN wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" -O /tmp/linuxdeployqt && \
@@ -47,5 +43,7 @@ FROM hotspot_appimage_intermediate
 
 ADD . /opt/hotspot
 WORKDIR /opt/hotspot
+
+RUN tar -C / -xvf scripts/elfutils/elfutils.build.tar.bz2
 
 CMD ./scripts/build_appimage.sh /opt /artifacts

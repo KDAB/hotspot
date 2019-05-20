@@ -48,7 +48,8 @@ linuxdeployqt ./appdir/$PREFIX/lib/x86_64-linux-gnu/libexec/hotspot-perfparser -
 
 unset LD_LIBRARY_PATH
 # also include the elfutils backend library ABI specific implementations
-cp -va $PREFIX/lib/x86_64-linux-gnu/elfutils/* ./appdir/$PREFIX/lib/x86_64-linux-gnu/libexec/lib/
+elfutils_libs_dir=$(find $PREFIX -path "*/elfutils/libebl_x86_64.so" -print -quit | xargs dirname)
+cp -va "$elfutils_libs_dir/*.so" ./appdir/$PREFIX/lib/
 
 # Share libraries to reduce image size
 mv ./appdir/$PREFIX/lib/x86_64-linux-gnu/libexec/lib/* ./appdir/$PREFIX/lib/
@@ -57,7 +58,7 @@ ln -sr ./appdir/$PREFIX/lib/ ./appdir/$PREFIX/lib/x86_64-linux-gnu/libexec/lib
 
 # include breeze icons
 if [ -d /opt/qt*/share/icons/breeze ]; then
-    cp -va /opt/qt*/share/icons/breeze ./appdir/$PREFIX/share/icons/
+    cp -a /opt/qt*/share/icons/breeze ./appdir/$PREFIX/share/icons/
 fi
 
 # Ensure we prefer the bundled libs also when calling dlopen, cf.: https://github.com/KDAB/hotspot/issues/89
