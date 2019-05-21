@@ -164,6 +164,10 @@ hotspot is available in AUR (https://aur.archlinux.org/packages/hotspot).
 
 hotspot ebuilds are available from our overlay (https://github.com/KDAB/kdab-overlay).
 
+### Fedora
+
+hotspot is available in Fedora repositories.
+
 ### For any Linux distro: AppImage
 
 Head over to our [download page](https://github.com/KDAB/hotspot/releases) and download the latest [AppImage](http://appimage.org/) release and just run it.
