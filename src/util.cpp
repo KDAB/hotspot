@@ -140,7 +140,7 @@ static QString formatTooltipImpl(int id, const Data::Symbol& symbol, const Data:
     Q_ASSERT(!selfCosts || !inclusiveCosts || (selfCosts->numTypes() == inclusiveCosts->numTypes()));
 
     QString toolTip = QCoreApplication::translate("Util", "symbol: <tt>%1</tt><br/>binary: <tt>%2</tt>")
-                          .arg(Util::formatString(symbol.symbol), Util::formatString(symbol.binary));
+                          .arg(Util::formatString(symbol.prettySymbol), Util::formatString(symbol.binary));
 
     auto extendTooltip = [&toolTip, id](int i, const Data::Costs& costs, const QString& formatting) {
         const auto currentCost = costs.cost(i, id);
@@ -187,7 +187,7 @@ QString Util::formatTooltip(const Data::Symbol& symbol, const Data::ItemCost& it
 {
     Q_ASSERT(static_cast<quint32>(totalCosts.numTypes()) == itemCost.size());
     auto toolTip = QCoreApplication::translate("Util", "symbol: <tt>%1</tt><br/>binary: <tt>%2</tt>")
-                       .arg(Util::formatString(symbol.symbol), Util::formatString(symbol.binary));
+                       .arg(Util::formatString(symbol.prettySymbol), Util::formatString(symbol.binary));
     for (int i = 0, c = totalCosts.numTypes(); i < c; ++i) {
         const auto cost = itemCost[i];
         const auto total = totalCosts.totalCost(i);

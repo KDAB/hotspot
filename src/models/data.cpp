@@ -133,6 +133,147 @@ ItemCost buildCallerCalleeResult(const BottomUp& data, const Costs& bottomUpCost
     }
     return totalCost;
 }
+
+bool startsWith(const QStringRef& str, const QLatin1String& prefix, int* size)
+{
+    if (str.startsWith(prefix)) {
+        *size = prefix.size();
+        return true;
+    }
+
+    return false;
+}
+
+int findSameDepth(const QStringRef& str, int offset, QChar ch, bool returnNext = false)
+{
+    const int size = str.size();
+
+    int depth = 0;
+    for (; offset < size; ++offset) {
+        if (str[offset] == QLatin1Char('<')) {
+            ++depth;
+        }
+        else if (str[offset] == QLatin1Char('>')) {
+            --depth;
+        }
+
+        if (depth == 0 && str[offset] == ch) {
+            return offset + (returnNext ? 1 : 0);
+        }
+    }
+    return -1;
+}
+
+QString prettifySymbol(const QStringRef& str)
+{
+    int pos = 0;
+    do {
+        pos = str.indexOf(QLatin1String("std::"), pos);
+        if (pos == -1) {
+            return str.toString();
+        }
+        pos += 5;
+        if (pos == 5
+            || str[pos - 6] == QLatin1Char('<')
+            || str[pos - 6] == QLatin1Char(' ')
+            || str[pos - 6] == QLatin1Char('(')) {
+            break;
+        }
+    } while (true);
+
+    auto result = str.left(pos).toString();
+    auto symbol = str.mid(pos);
+
+    int end;
+    if (startsWith(symbol, QLatin1String("__cxx11::"), &end)
+        || startsWith(symbol, QLatin1String("__1::"), &end)) {
+        // Strip libstdc++/libc++ internal namespace
+        symbol = symbol.mid(end);
+    }
+
+    if (startsWith(symbol, QLatin1String("basic_string<"), &end)) {
+        const int comma = findSameDepth(symbol, end, QLatin1Char(','));
+        if (comma != -1) {
+            const auto type = symbol.mid(end, comma - end);
+            if (type == QLatin1String("char")) {
+                result += QLatin1String("string");
+            }
+            else if (type == QLatin1String("wchar_t")) {
+                result += QLatin1String("wstring");
+            }
+            else {
+                result += symbol.left(end);
+                result += type;
+                result += QLatin1Char('>');
+            }
+            end = findSameDepth(symbol, 0, QLatin1Char('>'), true);
+            symbol = symbol.mid(end);
+
+            if (startsWith(symbol, QLatin1String("::basic_string("), &end)
+                || startsWith(symbol, QLatin1String("::~basic_string("), &end)) {
+                result += QLatin1String("::");
+                if (symbol[2] == QLatin1Char('~')) {
+                    result += QLatin1Char('~');
+                }
+                if (type == QLatin1String("wchar_t")) {
+                    result += QLatin1Char('w');
+                }
+                else if (type != QLatin1String("char")) {
+                    result += QLatin1String("basic_");
+                }
+                result += QLatin1String("string(");
+                symbol = symbol.mid(end);
+            }
+        }
+    }
+    else if (startsWith(symbol, QLatin1String("vector<"), &end)
+             || startsWith(symbol, QLatin1String("set<"), &end)
+             || startsWith(symbol, QLatin1String("deque<"), &end)
+             || startsWith(symbol, QLatin1String("list<"), &end)
+             || startsWith(symbol, QLatin1String("forward_list<"), &end)
+             || startsWith(symbol, QLatin1String("multiset<"), &end)
+             || startsWith(symbol, QLatin1String("unordered_set<"), &end)
+             || startsWith(symbol, QLatin1String("unordered_multiset<"), &end)) {
+        const int comma = findSameDepth(symbol, end, QLatin1Char(','));
+        if (comma != -1) {
+            result += symbol.left(end);
+            result += prettifySymbol(symbol.mid(end, comma - end));
+            result += QLatin1Char('>');
+
+            end = findSameDepth(symbol, 0, QLatin1Char('>'), true);
+            symbol = symbol.mid(end);
+        }
+    }
+    else if (startsWith(symbol, QLatin1String("map<"), &end)
+             || startsWith(symbol, QLatin1String("multimap<"), &end)
+             || startsWith(symbol, QLatin1String("unordered_map<"), &end)
+             || startsWith(symbol, QLatin1String("unordered_multimap<"), &end)) {
+        const int comma1 = findSameDepth(symbol, end, QLatin1Char(','));
+        const int comma2 = findSameDepth(symbol, comma1 + 1, QLatin1Char(','));
+        if (comma1 != -1 && comma2 != -1) {
+            result += symbol.left(end);
+            result += prettifySymbol(symbol.mid(end, comma1 - end));
+            result += prettifySymbol(symbol.mid(comma1, comma2 - comma1));
+            result += QLatin1Char('>');
+
+            end = findSameDepth(symbol, 0, QLatin1Char('>'), true);
+            symbol = symbol.mid(end);
+        }
+    }
+
+    if (!symbol.isEmpty()) {
+        result += prettifySymbol(symbol);
+    }
+
+    return result;
+}
+
+}
+
+QString Data::prettifySymbol(const QString& name)
+{
+    const auto result = ::prettifySymbol(QStringRef(&name));
+    return result == name ? name : result;
 }
 
 TopDownResults TopDownResults::fromBottomUp(const BottomUpResults& bottomUpData)

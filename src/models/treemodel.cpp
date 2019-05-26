@@ -74,7 +74,7 @@ QVariant BottomUpModel::rowData(const Data::BottomUp* row, int column, int role)
     if (role == Qt::DisplayRole || role == SortRole) {
         switch (column) {
         case Symbol:
-            return row->symbol.symbol.isEmpty() ? tr("??") : row->symbol.symbol;
+            return row->symbol.symbol.isEmpty() ? tr("??") : row->symbol.prettySymbol;
         case Binary:
             return row->symbol.binary;
         }
@@ -153,7 +153,7 @@ QVariant TopDownModel::rowData(const Data::TopDown* row, int column, int role) c
     if (role == Qt::DisplayRole || role == SortRole) {
         switch (column) {
         case Symbol:
-            return row->symbol.symbol.isEmpty() ? tr("??") : row->symbol.symbol;
+            return row->symbol.symbol.isEmpty() ? tr("??") : row->symbol.prettySymbol;
         case Binary:
             return row->symbol.binary;
         }

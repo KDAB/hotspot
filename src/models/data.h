@@ -42,10 +42,13 @@
 #include <valarray>
 
 namespace Data {
+QString prettifySymbol(const QString& symbol);
+
 struct Symbol
 {
     Symbol(const QString& symbol = {}, const QString& binary = {}, const QString& path = {})
         : symbol(symbol)
+        , prettySymbol(prettifySymbol(symbol))
         , binary(binary)
         , path(path)
     {
@@ -53,6 +56,8 @@ struct Symbol
 
     // function name
     QString symbol;
+    // prettified function name
+    QString prettySymbol;
     // dso / executable name
     QString binary;
     // path to dso / executable

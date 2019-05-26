@@ -159,7 +159,7 @@ void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 
     const int height = rect().height();
     const auto binary = m_symbol.binary.isEmpty() ? QObject::tr("??") : m_symbol.binary;
-    const auto symbol = m_symbol.symbol.isEmpty() ? QObject::tr("?? [%1]").arg(binary) : m_symbol.symbol;
+    const auto symbol = m_symbol.symbol.isEmpty() ? QObject::tr("?? [%1]").arg(binary) : m_symbol.prettySymbol;
     painter->drawText(margin + rect().x(), rect().y(), width, height,
                       Qt::AlignVCenter | Qt::AlignLeft | Qt::TextSingleLine,
                       option->fontMetrics.elidedText(symbol, Qt::ElideRight, width));
@@ -195,7 +195,7 @@ QString FrameGraphicsItem::description() const
         }
         totalCost = item->cost();
     }
-    const auto symbol = m_symbol.symbol.isEmpty() ? QObject::tr("??") : m_symbol.symbol;
+    const auto symbol = m_symbol.symbol.isEmpty() ? QObject::tr("??") : m_symbol.prettySymbol;
     if (!parentItem()) {
         return symbol;
     }

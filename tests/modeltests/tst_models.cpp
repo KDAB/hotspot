@@ -25,6 +25,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <cxxabi.h>
+#include <deque>
+#include <forward_list>
+#include <memory>
+#include <unordered_map>
+#include <unordered_set>
 #include <QDebug>
 #include <QObject>
 #include <QTest>
@@ -35,6 +41,14 @@
 #include <models/eventmodel.h>
 
 #include "../testutils.h"
+
+namespace mystd {
+template <typename T>
+struct Foo
+{
+    static std::string Bar(std::vector<T>&) { return {}; }
+};
+}
 
 namespace {
 Data::BottomUpResults buildBottomUpTree(const QByteArray& stacks)
@@ -80,6 +94,19 @@ Data::BottomUpResults generateTree1()
         C
         C
     )");
+}
+
+template <typename T>
+QString getPretty()
+{
+    const std::type_info& type = typeid(T);
+    int status;
+    std::unique_ptr<char, void(*)(void*)> name(
+        abi::__cxa_demangle(type.name(), nullptr, nullptr, &status), &free);
+    if (name && status == 0) {
+        return Data::Symbol(QString::fromLatin1(name.get())).prettySymbol;
+    }
+    return {};
 }
 }
 
@@ -322,6 +349,30 @@ private slots:
                 QCOMPARE(idx2.data(EventModel::SortRole).value<int>(), rowEvents.size());
             }
         }
+    }
+
+    void testSymbol()
+    {
+        QCOMPARE(getPretty<int>(), "int");
+        QCOMPARE(getPretty<std::string>(), "std::string");
+        QCOMPARE(getPretty<std::wstring>(), "std::wstring");
+        QCOMPARE(getPretty<std::basic_string<int>>(), "std::basic_string<int>");
+        QCOMPARE(getPretty<std::vector<int>>(), "std::vector<int>");
+        QCOMPARE((getPretty<std::map<int, float>>()), "std::map<int, float>");
+        QCOMPARE((getPretty<std::map<std::string, std::vector<std::map<int, std::string>>>>()),
+                 "std::map<std::string, std::vector<std::map<int, std::string>>>");
+        QCOMPARE(getPretty<mystd::Foo<std::set<int>>>(), "mystd::Foo<std::set<int> >");
+        QCOMPARE(getPretty<decltype(&mystd::Foo<std::map<int, std::wstring>>::Bar)>(),
+                 "std::string (*)(std::vector<std::map<int, std::wstring>>&)");
+        QCOMPARE(getPretty<std::forward_list<std::set<std::multiset<int>>>>(),
+                 "std::forward_list<std::set<std::multiset<int>>>");
+        QCOMPARE(getPretty<std::unordered_set<float>>(),
+                 "std::unordered_set<float>");
+        QCOMPARE((getPretty<std::unordered_multimap<std::string, std::unordered_map<int, int>>>()),
+                 "std::unordered_multimap<std::string, std::unordered_map<int, int>>");
+        QCOMPARE(getPretty<mystd::Foo<std::unordered_set<char>>>(),
+                 "mystd::Foo<std::unordered_set<char> >");
+        QCOMPARE(getPretty<std::deque<int>>(), "std::deque<int>");
     }
 };
 
