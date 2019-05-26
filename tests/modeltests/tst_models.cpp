@@ -323,6 +323,162 @@ private slots:
             }
         }
     }
+
+    void testPrettySymbol_data()
+    {
+        QTest::addColumn<QString>("prettySymbol");
+        QTest::addColumn<QString>("symbol");
+
+        QTest::newRow("string") << "std::string"
+                                << "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >";
+        QTest::newRow("wstring")
+            << "std::wstring"
+            << "std::__cxx11::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >";
+        QTest::newRow("basic_string") << "std::basic_string<int>"
+                                      << "std::__cxx11::basic_string<int, std::char_traits<int>, std::allocator<int> >";
+        QTest::newRow("vector") << "std::vector<int>"
+                                << "std::vector<int, std::allocator<int> >";
+        QTest::newRow("map") << "std::map<int, float>"
+                             << "std::map<int, float, std::less<int>, std::allocator<std::pair<int const, float> > >";
+        QTest::newRow("nested types")
+            << "std::map<std::string, std::vector<std::map<int, std::string>>>"
+            << "std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >,"
+               " std::vector<std::map<int, std::__cxx11::basic_string<char, std::char_traits<char>, "
+               "std::allocator<char> >,"
+               " std::less<int>, std::allocator<std::pair<int const,"
+               " std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >,"
+               " std::allocator<std::map<int, std::__cxx11::basic_string<char, std::char_traits<char>, "
+               "std::allocator<char> >,"
+               " std::less<int>, std::allocator<std::pair<int const, std::__cxx11::basic_string<char, "
+               "std::char_traits<char>,"
+               " std::allocator<char> > > > > > >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>,"
+               " std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, "
+               "std::char_traits<char>,"
+               " std::allocator<char> > const, std::vector<std::map<int, std::__cxx11::basic_string<char, "
+               "std::char_traits<char>,"
+               " std::allocator<char> >, std::less<int>, std::allocator<std::pair<int const,"
+               " std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >,"
+               " std::allocator<std::map<int, std::__cxx11::basic_string<char, std::char_traits<char>, "
+               "std::allocator<char> >,"
+               " std::less<int>, std::allocator<std::pair<int const, std::__cxx11::basic_string<char, "
+               "std::char_traits<char>,"
+               " std::allocator<char> > > > > > > > > >";
+        QTest::newRow("standard type") << "int"
+                                       << "int";
+        QTest::newRow("custom type") << "TFoo"
+                                     << "TFoo";
+        QTest::newRow("custom nested template")
+            << "TBar<std::vector<std::string> >"
+            << "TBar<std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >,"
+               " std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >";
+        QTest::newRow("custom template")
+            << "TYou<int, std::string >"
+            << "TYou<int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >";
+        QTest::newRow("mystd") << "mystd::TFoo"
+                               << "mystd::TFoo";
+        QTest::newRow("mystd template")
+            << "mystd::TBar<std::vector<std::string> >"
+            << "mystd::TBar<std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> "
+               ">,"
+               " std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >";
+        QTest::newRow("function pointer")
+            << "std::string (*)(std::vector<short>)"
+            << "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >"
+               " (*)(std::vector<short, std::allocator<short> >)";
+        QTest::newRow("pair") << "std::pair<int, int>"
+                              << "std::pair<int, int>";
+        QTest::newRow("list")
+            << "std::list<std::string>"
+            << "std::__cxx11::list<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >,"
+               " std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >";
+        QTest::newRow("set") << "std::set<int>"
+                             << "std::set<int, std::less<int>, std::allocator<int> >";
+        QTest::newRow("multiset") << "std::multiset<std::vector<mystd::TFoo>>"
+                                  << "std::multiset<std::vector<mystd::TFoo, std::allocator<mystd::TFoo> >,"
+                                     " std::less<std::vector<mystd::TFoo, std::allocator<mystd::TFoo> > >,"
+                                     " std::allocator<std::vector<mystd::TFoo, std::allocator<mystd::TFoo> > > >";
+        QTest::newRow("multimap")
+            << "std::multimap<std::string, std::string>"
+            << "std::multimap<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >,"
+               " std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >,"
+               " std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >,"
+               " std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>,"
+               " std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>,"
+               " std::allocator<char> > > > >";
+        QTest::newRow("deque") << "std::deque<std::vector<char>>"
+                               << "std::deque<std::vector<char, std::allocator<char> >, "
+                                  "std::allocator<std::vector<char, std::allocator<char> > > >";
+        QTest::newRow("stack") << "std::stack<int, std::deque<int> >"
+                               << "std::stack<int, std::deque<int, std::allocator<int> > >";
+        QTest::newRow("array") << "std::array<int, 3ul>"
+                               << "std::array<int, 3ul>";
+        QTest::newRow("forward_list") << "std::forward_list<std::list<int>>"
+                                      << "std::forward_list<std::__cxx11::list<int, std::allocator<int> >,"
+                                         " std::allocator<std::__cxx11::list<int, std::allocator<int> > > >";
+        QTest::newRow("unordered_set")
+            << "std::unordered_set<int>"
+            << "std::unordered_set<int, std::hash<int>, std::equal_to<int>, std::allocator<int> >";
+        QTest::newRow("unordered_map") << "std::unordered_map<int, float>"
+                                       << "std::unordered_map<int, float, std::hash<int>, std::equal_to<int>, "
+                                          "std::allocator<std::pair<int const, float> > >";
+        QTest::newRow("unordered_multiset")
+            << "std::unordered_multiset<int>"
+            << "std::unordered_multiset<int, std::hash<int>, std::equal_to<int>, std::allocator<int> >";
+        QTest::newRow("unordered_multimap") << "std::unordered_multimap<int, float>"
+                                            << "std::unordered_multimap<int, float, std::hash<int>, std::equal_to<int>,"
+                                               " std::allocator<std::pair<int const, float> > >";
+        QTest::newRow("bound function")
+            << "std::__function::__func<std::__bind<bool (foobar::map::api_v2::DeltaAccessImpl::*)"
+               "(std::string const&, std::string const&, std::string const&,"
+               " std::weak_ptr<stream::Downloader> const&,"
+               " std::string const&, std::string const&, std::string const&"
+               "), foobar::map::api_v2::DeltaAccessImpl*,"
+               " std::string const&, std::string const&, std::string const&,"
+               " std::weak_ptr<stream::Downloader> const&,"
+               " char const (&) [1], char const (&) [1],"
+               " std::string const&"
+               ">, std::allocator<...>,"
+               " bool ()>::operator()()"
+            << "std::__1::__function::__func<std::__1::__bind<bool (foobar::map::api_v2::DeltaAccessImpl::*)"
+               "(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::weak_ptr<stream::Downloader> const&,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&"
+               "), foobar::map::api_v2::DeltaAccessImpl*,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::weak_ptr<stream::Downloader> const&,"
+               " char const (&) [1], char const (&) [1],"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&"
+               ">, std::__1::allocator<std::__1::__bind<bool (foobar::map::api_v2::DeltaAccessImpl::*)"
+               "(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::weak_ptr<stream::Downloader> const&,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&"
+               "), foobar::map::api_v2::DeltaAccessImpl*,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&,"
+               " std::__1::weak_ptr<stream::Downloader> const&,"
+               " char const (&) [1], char const (&) [1],"
+               " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&"
+               "> >, bool ()>::operator()()";
+    }
+
+    void testPrettySymbol()
+    {
+        QFETCH(QString, prettySymbol);
+        QFETCH(QString, symbol);
+
+        QCOMPARE(Data::Symbol(symbol).prettySymbol, prettySymbol);
+    }
 };
 
 QTEST_GUILESS_MAIN(TestModels);

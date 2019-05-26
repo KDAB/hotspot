@@ -53,8 +53,9 @@
 #include <KStandardAction>
 #include <ThreadWeaver/ThreadWeaver>
 
-#include "resultsutil.h"
 #include "models/filterandzoomstack.h"
+#include "resultsutil.h"
+#include "settings.h"
 
 namespace {
 enum SearchMatchType
@@ -158,11 +159,12 @@ void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
     }
 
     const int height = rect().height();
-    const auto binary = m_symbol.binary.isEmpty() ? QObject::tr("??") : m_symbol.binary;
-    const auto symbol = m_symbol.symbol.isEmpty() ? QObject::tr("?? [%1]").arg(binary) : m_symbol.symbol;
+    const auto binary = Util::formatString(m_symbol.binary);
+    const auto symbol = Util::formatSymbol(m_symbol, false);
+    const auto symbolText = symbol.isEmpty() ? QObject::tr("?? [%1]").arg(binary) : symbol;
     painter->drawText(margin + rect().x(), rect().y(), width, height,
                       Qt::AlignVCenter | Qt::AlignLeft | Qt::TextSingleLine,
-                      option->fontMetrics.elidedText(symbol, Qt::ElideRight, width));
+                      option->fontMetrics.elidedText(symbolText, Qt::ElideRight, width));
 
     if (m_searchMatch == NoMatch) {
         painter->setPen(oldPen);
@@ -195,7 +197,7 @@ QString FrameGraphicsItem::description() const
         }
         totalCost = item->cost();
     }
-    const auto symbol = m_symbol.symbol.isEmpty() ? QObject::tr("??") : m_symbol.symbol;
+    const auto symbol = Util::formatSymbol(m_symbol);
     if (!parentItem()) {
         return symbol;
     }
@@ -397,6 +399,11 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     qRegisterMetaType<FrameGraphicsItem*>();
 
     m_costSource->setToolTip(i18n("Select the data source that should be visualized in the flame graph."));
+
+    connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, [this]() {
+        m_scene->update(m_scene->sceneRect());
+        updateTooltip();
+    });
 
     m_scene->setItemIndexMethod(QGraphicsScene::NoIndex);
     m_view->setScene(m_scene);

@@ -23,7 +23,6 @@ ecm_install_icons(ICONS
 
 set(hotspot_SRCS
     main.cpp
-    util.cpp
 
     parsers/perf/perfparser.cpp
     perfrecord.cpp

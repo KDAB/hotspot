@@ -30,6 +30,7 @@
 #include <QAbstractItemModel>
 #include <QVector>
 
+#include "../settings.h"
 #include "data.h"
 #include "hashmodel.h"
 
@@ -83,6 +84,13 @@ public:
     explicit SymbolCostModelImpl(QObject* parent = nullptr)
         : HashModel<Data::SymbolCostMap, ModelImpl>(parent)
     {
+        using Parent = HashModel<Data::SymbolCostMap, ModelImpl>;
+        Parent::connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, [this]() {
+            if (Parent::rowCount() == 0) {
+                return;
+            }
+            emit Parent::dataChanged(Parent::index(0, Symbol), Parent::index(Parent::rowCount() - 1, Symbol));
+        });
     }
 
     virtual ~SymbolCostModelImpl() = default;
@@ -145,7 +153,7 @@ public:
         if (role == SortRole) {
             switch (column) {
             case Symbol:
-                return symbol.symbol;
+                return Util::formatSymbol(symbol);
             case Binary:
                 return symbol.binary;
             }
@@ -154,11 +162,11 @@ public:
             return m_costs.totalCost(column - NUM_BASE_COLUMNS);
         } else if (role == FilterRole) {
             // TODO: optimize this
-            return QString(symbol.symbol + symbol.binary);
+            return QString(Util::formatSymbol(symbol, false) + symbol.binary);
         } else if (role == Qt::DisplayRole) {
             switch (column) {
             case Symbol:
-                return symbol.symbol.isEmpty() ? ModelImpl::tr("??") : symbol.symbol;
+                return Util::formatSymbol(symbol);
             case Binary:
                 return symbol.binary;
             }

@@ -28,6 +28,7 @@
 #include "mainwindow.h"
 #include "recordpage.h"
 #include "resultspage.h"
+#include "settings.h"
 #include "startpage.h"
 #include "ui_mainwindow.h"
 
@@ -159,6 +160,14 @@ MainWindow::MainWindow(QWidget* parent)
     showTimelineAction->setChecked(true);
     showTimelineAction->setShortcut(tr("Ctrl+T"));
     connect(showTimelineAction, &QAction::toggled, m_resultsPage, &ResultsPage::setTimelineVisible);
+
+    auto* prettifySymbolsAction = ui->viewMenu->addAction(tr("Prettify Symbols"));
+    prettifySymbolsAction->setCheckable(true);
+    prettifySymbolsAction->setChecked(Settings::instance()->prettifySymbols());
+    prettifySymbolsAction->setToolTip(
+        tr("Replace fully qualified and expanded STL type names with their shorter and more commonly used equivalents. "
+           "E.g. show std::string instead of std::basic_string<char, ...>"));
+    connect(prettifySymbolsAction, &QAction::toggled, Settings::instance(), &Settings::setPrettifySymbols);
 
     ui->viewMenu->addSeparator();
     ui->viewMenu->addActions(m_resultsPage->filterMenu()->actions());

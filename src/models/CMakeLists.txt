@@ -10,6 +10,7 @@ add_library(models STATIC
     timelinedelegate.cpp
     eventmodel.cpp
     filterandzoomstack.cpp
+    ../settings.cpp
     ../util.cpp
 )
 

@@ -26,6 +26,7 @@
 */
 
 #include "treemodel.h"
+#include "../settings.h"
 #include "../util.h"
 
 AbstractTreeModel::AbstractTreeModel(QObject* parent)
@@ -38,6 +39,12 @@ AbstractTreeModel::~AbstractTreeModel() = default;
 BottomUpModel::BottomUpModel(QObject* parent)
     : CostTreeModel(parent)
 {
+    connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, [this]() {
+        if (rowCount() == 0) {
+            return;
+        }
+        emit dataChanged(index(0, Symbol), index(rowCount() - 1, Symbol));
+    });
 }
 
 BottomUpModel::~BottomUpModel() = default;
@@ -74,7 +81,7 @@ QVariant BottomUpModel::rowData(const Data::BottomUp* row, int column, int role)
     if (role == Qt::DisplayRole || role == SortRole) {
         switch (column) {
         case Symbol:
-            return row->symbol.symbol.isEmpty() ? tr("??") : row->symbol.symbol;
+            return Util::formatSymbol(row->symbol);
         case Binary:
             return row->symbol.binary;
         }
@@ -100,6 +107,12 @@ int BottomUpModel::numColumns() const
 TopDownModel::TopDownModel(QObject* parent)
     : CostTreeModel(parent)
 {
+    connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, [this]() {
+        if (rowCount() == 0) {
+            return;
+        }
+        emit dataChanged(index(0, Symbol), index(rowCount() - 1, Symbol));
+    });
 }
 
 TopDownModel::~TopDownModel() = default;
@@ -153,7 +166,7 @@ QVariant TopDownModel::rowData(const Data::TopDown* row, int column, int role) c
     if (role == Qt::DisplayRole || role == SortRole) {
         switch (column) {
         case Symbol:
-            return row->symbol.symbol.isEmpty() ? tr("??") : row->symbol.symbol;
+            return Util::formatSymbol(row->symbol);
         case Binary:
             return row->symbol.binary;
         }
