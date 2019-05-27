@@ -160,6 +160,12 @@ MainWindow::MainWindow(QWidget* parent)
     showTimelineAction->setShortcut(tr("Ctrl+T"));
     connect(showTimelineAction, &QAction::toggled, m_resultsPage, &ResultsPage::setTimelineVisible);
 
+    auto *prettifySymbolsAction = ui->viewMenu->addAction(tr("Prettify Symbols"));
+    prettifySymbolsAction->setCheckable(true);
+    prettifySymbolsAction->setChecked(true);
+    prettifySymbolsAction->setShortcut(tr("Ctrl+Y"));
+    connect(prettifySymbolsAction, &QAction::toggled, m_resultsPage, &ResultsPage::setPrettifySymbols);
+
     ui->viewMenu->addSeparator();
     ui->viewMenu->addActions(m_resultsPage->filterMenu()->actions());
 

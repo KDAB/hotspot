@@ -53,6 +53,7 @@ public:
     void setFilterStack(FilterAndZoomStack *filterStack);
     void setTopDownData(const Data::TopDownResults& topDownData);
     void setBottomUpData(const Data::BottomUpResults& bottomUpData);
+    void setPrettifySymbols(bool prettify);
     void clear();
 
 protected:
@@ -78,6 +79,7 @@ private:
 
     Data::TopDownResults m_topDownData;
     Data::BottomUpResults m_bottomUpData;
+    bool m_prettifySymbols = true;
 
     FilterAndZoomStack* m_filterStack = nullptr;
     QComboBox* m_costSource;

@@ -48,6 +48,7 @@ public:
     ~ResultsFlameGraphPage();
 
     void clear();
+    void setPrettifySymbols(bool prettify);
 
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);

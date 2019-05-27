@@ -72,6 +72,7 @@ public:
 
     qint64 cost() const;
     void setCost(qint64 cost);
+    void setPrettifySymbols(bool prettify);
     Data::Symbol symbol() const;
 
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr) override;
@@ -86,6 +87,7 @@ protected:
 private:
     qint64 m_cost;
     Data::Symbol m_symbol;
+    bool m_prettifySymbols = true;
     bool m_isHovered;
     SearchMatchType m_searchMatch = NoSearch;
 };
@@ -110,6 +112,15 @@ qint64 FrameGraphicsItem::cost() const
 void FrameGraphicsItem::setCost(qint64 cost)
 {
     m_cost = cost;
+}
+
+void FrameGraphicsItem::setPrettifySymbols(bool prettify)
+{
+    for (auto& child : childItems()) {
+        static_cast<FrameGraphicsItem*>(child)->setPrettifySymbols(prettify);
+    }
+    m_prettifySymbols = prettify;
+    update();
 }
 
 Data::Symbol FrameGraphicsItem::symbol() const
@@ -159,7 +170,9 @@ void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 
     const int height = rect().height();
     const auto binary = m_symbol.binary.isEmpty() ? QObject::tr("??") : m_symbol.binary;
-    const auto symbol = m_symbol.symbol.isEmpty() ? QObject::tr("?? [%1]").arg(binary) : m_symbol.prettySymbol;
+    const auto symbol = m_symbol.symbol.isEmpty()
+        ? QObject::tr("?? [%1]").arg(binary)
+        : (m_prettifySymbols ? m_symbol.prettySymbol : m_symbol.symbol);
     painter->drawText(margin + rect().x(), rect().y(), width, height,
                       Qt::AlignVCenter | Qt::AlignLeft | Qt::TextSingleLine,
                       option->fontMetrics.elidedText(symbol, Qt::ElideRight, width));
@@ -195,7 +208,9 @@ QString FrameGraphicsItem::description() const
         }
         totalCost = item->cost();
     }
-    const auto symbol = m_symbol.symbol.isEmpty() ? QObject::tr("??") : m_symbol.prettySymbol;
+    const auto symbol = m_symbol.symbol.isEmpty()
+        ? QObject::tr("??")
+        : (m_prettifySymbols ? m_symbol.prettySymbol : m_symbol.symbol);
     if (!parentItem()) {
         return symbol;
     }
@@ -604,6 +619,14 @@ void FlameGraph::setBottomUpData(const Data::BottomUpResults& bottomUpData)
             &FlameGraph::showData);
 }
 
+void FlameGraph::setPrettifySymbols(bool prettify)
+{
+    m_prettifySymbols = prettify;
+    if (m_rootItem) {
+        m_rootItem->setPrettifySymbols(prettify);
+    }
+}
+
 void FlameGraph::clear()
 {
     emit uiResetRequested();
@@ -625,9 +648,10 @@ void FlameGraph::showData()
     auto bottomUpData = m_bottomUpData;
     auto topDownData = m_topDownData;
     bool collapseRecursion = m_collapseRecursion;
+    bool prettifySymbols = m_prettifySymbols;
     auto type = m_costSource->currentData().value<int>();
     auto threshold = m_costThreshold;
-    stream() << make_job([showBottomUpData, bottomUpData, topDownData, type, threshold, collapseRecursion, this]() {
+    stream() << make_job([showBottomUpData, bottomUpData, topDownData, type, threshold, collapseRecursion, prettifySymbols, this]() {
         FrameGraphicsItem* parsedData = nullptr;
         if (showBottomUpData) {
             parsedData = parseData(bottomUpData.costs, type, bottomUpData.root.children, threshold, collapseRecursion);
@@ -635,6 +659,7 @@ void FlameGraph::showData()
             parsedData =
                 parseData(topDownData.inclusiveCosts, type, topDownData.root.children, threshold, collapseRecursion);
         }
+        parsedData->setPrettifySymbols(prettifySymbols);
         QMetaObject::invokeMethod(this, "setData", Qt::QueuedConnection, Q_ARG(FrameGraphicsItem*, parsedData));
     });
     updateNavigationActions();
