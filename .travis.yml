@@ -57,7 +57,7 @@ script:
   - rmdir ./appdir/usr/lib/x86_64-linux-gnu/libexec/lib
   - ln -sr ./appdir/usr/lib/ ./appdir/usr/lib/x86_64-linux-gnu/libexec/lib
   - # include breeze icons
-  - cp -va /opt/qt*/share/icons/breeze ./appdir/usr/share/icons/
+  - cp -a /opt/qt*/share/icons/breeze ./appdir/usr/share/icons/
   - # Ensure we prefer the bundled libs also when calling dlopen, cf.: https://github.com/KDAB/hotspot/issues/89
   - rm ./appdir/AppRun
   - echo -e '#!/bin/bash\nd="$(dirname "$(readlink -f "${0}")")"\nLD_LIBRARY_PATH="$d/usr/lib":$LD_LIBRARY_PATH "$d/usr/bin/hotspot" $@' > ./appdir/AppRun
