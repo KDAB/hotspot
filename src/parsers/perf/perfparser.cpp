@@ -545,6 +545,7 @@ public:
         buffer.buffer().reserve(1024);
         buffer.open(QIODevice::ReadOnly);
         stream.setDevice(&buffer);
+        process.setProcessEnvironment(Util::appImageEnvironment());
         process.setProcessChannelMode(QProcess::ForwardedErrorChannel);
 
         if (qEnvironmentVariableIntValue("HOTSPOT_GENERATE_SCRIPT_OUTPUT")) {

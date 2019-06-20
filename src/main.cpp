@@ -27,11 +27,13 @@
 
 #include <QApplication>
 #include <QCommandLineParser>
+#include <QProcessEnvironment>
 #include <QFile>
 
 #include "hotspot-config.h"
 #include "mainwindow.h"
 #include "models/data.h"
+#include "util.h"
 
 #include <ThreadWeaver/ThreadWeaver>
 #include <QThread>
@@ -44,6 +46,20 @@ int main(int argc, char** argv)
     QCoreApplication::setApplicationVersion(QStringLiteral(HOTSPOT_VERSION_STRING));
 
     QApplication app(argc, argv);
+
+    // init
+    Util::appImageEnvironment();
+
+#if APPIMAGE_BUILD
+
+    // cleanup the environment when we are running from within the AppImage
+    // to allow launching system applications using Qt without them loading
+    // the bundled Qt we ship in the AppImage
+    auto LD_LIBRARY_PATH = qgetenv("LD_LIBRARY_PATH");
+    LD_LIBRARY_PATH.remove(0, LD_LIBRARY_PATH.indexOf(':') + 1);
+    qputenv("LD_LIBRARY_PATH", LD_LIBRARY_PATH);
+#endif
+
     app.setWindowIcon(QIcon(QStringLiteral(":/images/icons/512-hotspot_app_icon.png")));
     qRegisterMetaType<Data::Summary>();
     qRegisterMetaType<Data::BottomUp>();
@@ -149,15 +165,6 @@ int main(int argc, char** argv)
 
         window->show();
     }
-
-#if APPIMAGE_BUILD
-    // cleanup the environment when we are running from within the AppImage
-    // to allow launching system applications using Qt without them loading
-    // the bundled Qt we ship in the AppImage
-    auto LD_LIBRARY_PATH = qgetenv("LD_LIBRARY_PATH");
-    LD_LIBRARY_PATH.remove(0, LD_LIBRARY_PATH.indexOf(':') + 1);
-    qputenv("LD_LIBRARY_PATH", LD_LIBRARY_PATH);
-#endif
 
     return app.exec();
 }

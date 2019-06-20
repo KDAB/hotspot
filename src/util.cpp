@@ -33,6 +33,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>
+#include <QProcessEnvironment>
 
 #include <initializer_list>
 
@@ -224,4 +225,10 @@ QString Util::formatTooltip(const QString& location, const Data::LocationCost& c
                        Util::formatCostRelative(inclusiveCost, total));
     }
     return QString(QLatin1String("<qt>") + toolTip + QLatin1String("</qt>"));
+}
+
+QProcessEnvironment Util::appImageEnvironment()
+{
+    static const auto env = QProcessEnvironment::systemEnvironment();
+    return env;
 }
