@@ -45,6 +45,7 @@ int main(int argc, char** argv)
     qRegisterMetaType<Data::BottomUpResults>();
     qRegisterMetaType<Data::EventResults>();
     qRegisterMetaType<Data::Summary>();
+    qRegisterMetaType<Data::CallerCalleeResults>();
 
     int runningParsers = 0;
     for (const auto& arg : args) {
