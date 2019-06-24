@@ -25,12 +25,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <cxxabi.h>
-#include <deque>
-#include <forward_list>
-#include <memory>
-#include <unordered_map>
-#include <unordered_set>
 #include <QDebug>
 #include <QObject>
 #include <QTest>
@@ -41,14 +35,6 @@
 #include <models/eventmodel.h>
 
 #include "../testutils.h"
-
-namespace mystd {
-template <typename T>
-struct Foo
-{
-    static std::string Bar(std::vector<T>&) { return {}; }
-};
-}
 
 namespace {
 Data::BottomUpResults buildBottomUpTree(const QByteArray& stacks)
@@ -96,18 +82,87 @@ Data::BottomUpResults generateTree1()
     )");
 }
 
-template <typename T>
-QString getPretty()
+struct SymbolData
 {
-    const std::type_info& type = typeid(T);
-    int status;
-    std::unique_ptr<char, void(*)(void*)> name(
-        abi::__cxa_demangle(type.name(), nullptr, nullptr, &status), &free);
-    if (name && status == 0) {
-        return Data::Symbol(QString::fromLatin1(name.get())).prettySymbol;
-    }
-    return {};
-}
+    SymbolData(const char* p, const char* s) : prettySymbol(p), symbol(s) {}
+    const QLatin1String prettySymbol;
+    const QLatin1String symbol;
+};
+
+const SymbolData prettifySymbolData[] = {
+    {"std::string",
+     "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >"},
+    {"std::wstring",
+     "std::__cxx11::basic_string<wchar_t, std::char_traits<wchar_t>, std::allocator<wchar_t> >"},
+    {"std::basic_string<int>",
+     "std::__cxx11::basic_string<int, std::char_traits<int>, std::allocator<int> >"},
+    {"std::vector<int>",
+     "std::vector<int, std::allocator<int> >"},
+    {"std::map<int, float>",
+     "std::map<int, float, std::less<int>, std::allocator<std::pair<int const, float> > >"},
+    {"std::map<std::string, std::vector<std::map<int, std::string>>>",
+     "std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >,"
+     " std::vector<std::map<int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >,"
+     " std::less<int>, std::allocator<std::pair<int const,"
+     " std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >,"
+     " std::allocator<std::map<int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >,"
+     " std::less<int>, std::allocator<std::pair<int const, std::__cxx11::basic_string<char, std::char_traits<char>,"
+     " std::allocator<char> > > > > > >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>,"
+     " std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>,"
+     " std::allocator<char> > const, std::vector<std::map<int, std::__cxx11::basic_string<char, std::char_traits<char>,"
+     " std::allocator<char> >, std::less<int>, std::allocator<std::pair<int const,"
+     " std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >,"
+     " std::allocator<std::map<int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >,"
+     " std::less<int>, std::allocator<std::pair<int const, std::__cxx11::basic_string<char, std::char_traits<char>,"
+     " std::allocator<char> > > > > > > > > >"},
+    {"int", "int"},
+    {"TFoo", "TFoo"},
+    {"TBar<std::vector<std::string> >",
+     "TBar<std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >,"
+     " std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >"},
+    {"TYou<int, std::string >",
+     "TYou<int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >"},
+    {"mystd::TFoo", "mystd::TFoo"},
+    {"mystd::TBar<std::vector<std::string> >",
+     "mystd::TBar<std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >,"
+     " std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >"},
+    {"std::string (*)(std::vector<short>)",
+     "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >"
+     " (*)(std::vector<short, std::allocator<short> >)"},
+    {"std::pair<int, int>", "std::pair<int, int>"},
+    {"std::list<std::string>",
+     "std::__cxx11::list<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >,"
+     " std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >"},
+    {"std::set<int>", "std::set<int, std::less<int>, std::allocator<int> >"},
+    {"std::multiset<std::vector<mystd::TFoo>>",
+     "std::multiset<std::vector<mystd::TFoo, std::allocator<mystd::TFoo> >,"
+     " std::less<std::vector<mystd::TFoo, std::allocator<mystd::TFoo> > >,"
+     " std::allocator<std::vector<mystd::TFoo, std::allocator<mystd::TFoo> > > >"},
+    {"std::multimap<std::string, std::string>",
+     "std::multimap<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >,"
+     " std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >,"
+     " std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >,"
+     " std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>,"
+     " std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>,"
+     " std::allocator<char> > > > >"},
+    {"std::deque<std::vector<char>>",
+     "std::deque<std::vector<char, std::allocator<char> >, std::allocator<std::vector<char, std::allocator<char> > > >"},
+    {"std::stack<int, std::deque<int> >", "std::stack<int, std::deque<int, std::allocator<int> > >"},
+    {"std::array<int, 3ul>", "std::array<int, 3ul>"},
+    {"std::forward_list<std::list<int>>",
+     "std::forward_list<std::__cxx11::list<int, std::allocator<int> >,"
+     " std::allocator<std::__cxx11::list<int, std::allocator<int> > > >"},
+    {"std::unordered_set<int>",
+     "std::unordered_set<int, std::hash<int>, std::equal_to<int>, std::allocator<int> >"},
+    {"std::unordered_map<int, float>",
+     "std::unordered_map<int, float, std::hash<int>, std::equal_to<int>, std::allocator<std::pair<int const, float> > >"},
+    {"std::unordered_multiset<int>",
+     "std::unordered_multiset<int, std::hash<int>, std::equal_to<int>, std::allocator<int> >"},
+    {"std::unordered_multimap<int, float>",
+     "std::unordered_multimap<int, float, std::hash<int>, std::equal_to<int>,"
+     " std::allocator<std::pair<int const, float> > >"},
+};
+
 }
 
 class TestModels : public QObject
@@ -351,28 +406,11 @@ private slots:
         }
     }
 
-    void testSymbol()
+    void testPrettySymbol()
     {
-        QCOMPARE(getPretty<int>(), "int");
-        QCOMPARE(getPretty<std::string>(), "std::string");
-        QCOMPARE(getPretty<std::wstring>(), "std::wstring");
-        QCOMPARE(getPretty<std::basic_string<int>>(), "std::basic_string<int>");
-        QCOMPARE(getPretty<std::vector<int>>(), "std::vector<int>");
-        QCOMPARE((getPretty<std::map<int, float>>()), "std::map<int, float>");
-        QCOMPARE((getPretty<std::map<std::string, std::vector<std::map<int, std::string>>>>()),
-                 "std::map<std::string, std::vector<std::map<int, std::string>>>");
-        QCOMPARE(getPretty<mystd::Foo<std::set<int>>>(), "mystd::Foo<std::set<int> >");
-        QCOMPARE(getPretty<decltype(&mystd::Foo<std::map<int, std::wstring>>::Bar)>(),
-                 "std::string (*)(std::vector<std::map<int, std::wstring>>&)");
-        QCOMPARE(getPretty<std::forward_list<std::set<std::multiset<int>>>>(),
-                 "std::forward_list<std::set<std::multiset<int>>>");
-        QCOMPARE(getPretty<std::unordered_set<float>>(),
-                 "std::unordered_set<float>");
-        QCOMPARE((getPretty<std::unordered_multimap<std::string, std::unordered_map<int, int>>>()),
-                 "std::unordered_multimap<std::string, std::unordered_map<int, int>>");
-        QCOMPARE(getPretty<mystd::Foo<std::unordered_set<char>>>(),
-                 "mystd::Foo<std::unordered_set<char> >");
-        QCOMPARE(getPretty<std::deque<int>>(), "std::deque<int>");
+        for (auto& symbol : prettifySymbolData) {
+            QCOMPARE(Data::Symbol(symbol.symbol).prettySymbol, symbol.prettySymbol);
+        }
     }
 };
 
