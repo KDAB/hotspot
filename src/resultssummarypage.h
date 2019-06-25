@@ -47,6 +47,8 @@ public:
     explicit ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsSummaryPage();
 
+    void update();
+
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
 

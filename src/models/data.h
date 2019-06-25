@@ -46,9 +46,10 @@ QString prettifySymbol(const QString& symbol);
 
 struct Symbol
 {
+    static bool prettifySymbol;
+
     Symbol(const QString& symbol = {}, const QString& binary = {}, const QString& path = {})
         : symbol(symbol)
-        , prettySymbol(prettifySymbol(symbol))
         , binary(binary)
         , path(path)
     {
@@ -56,12 +57,28 @@ struct Symbol
 
     // function name
     QString symbol;
-    // prettified function name
-    QString prettySymbol;
+    // prettified function name (cached in getSymbol)
+    mutable QString cachedPrettySymbol;
     // dso / executable name
     QString binary;
     // path to dso / executable
     QString path;
+
+    QString getSymbol() const
+    {
+        if (prettifySymbol) {
+            if (cachedPrettySymbol.isNull()) {
+                cachedPrettySymbol = Data::prettifySymbol(symbol);
+            }
+            return cachedPrettySymbol;
+        }
+        return symbol;
+    }
+
+    QString getNonEmptySymbol() const
+    {
+        return Util::formatString(getSymbol());
+    }
 
     bool operator<(const Symbol& rhs) const
     {

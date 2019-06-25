@@ -51,9 +51,9 @@ void ResultsFlameGraphPage::clear()
     ui->flameGraph->clear();
 }
 
-void ResultsFlameGraphPage::setPrettifySymbols(bool prettify)
+void ResultsFlameGraphPage::update()
 {
-    ui->flameGraph->setPrettifySymbols(prettify);
+    ui->flameGraph->update();
 }
 
 ResultsFlameGraphPage::~ResultsFlameGraphPage() = default;

@@ -61,3 +61,8 @@ void ResultsTopDownPage::clear()
 {
     ui->topDownSearch->setText({});
 }
+
+void ResultsTopDownPage::update()
+{
+    // TODO
+}

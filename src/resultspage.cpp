@@ -64,7 +64,6 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     , m_timeLineDelegate(nullptr)
     , m_filterBusyIndicator(nullptr) // create after we setup the UI to keep it on top
     , m_timelineVisible(true)
-    , m_prettifySymbols(true)
 {
     {
         const auto actions = m_filterAndZoomStack->actions();
@@ -245,5 +244,10 @@ void ResultsPage::setTimelineVisible(bool visible)
 
 void ResultsPage::setPrettifySymbols(bool prettify)
 {
-    m_resultsFlameGraphPage->setPrettifySymbols(prettify);
+    Data::Symbol::prettifySymbol = prettify;
+    m_resultsSummaryPage->update();
+    m_resultsBottomUpPage->update();
+    m_resultsTopDownPage->update();
+    m_resultsFlameGraphPage->update();
+    m_resultsCallerCalleePage->update();
 }

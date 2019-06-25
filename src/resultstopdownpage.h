@@ -50,6 +50,7 @@ public:
     ~ResultsTopDownPage();
 
     void clear();
+    void update();
 
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);

@@ -176,4 +176,9 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
     });
 }
 
+void ResultsSummaryPage::update()
+{
+    static_cast<TopProxy*>(ui->topHotspotsTableView->model())->invalidate();
+}
+
 ResultsSummaryPage::~ResultsSummaryPage() = default;

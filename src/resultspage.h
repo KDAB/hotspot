@@ -87,5 +87,4 @@ private:
     TimeLineDelegate* m_timeLineDelegate;
     QWidget* m_filterBusyIndicator;
     bool m_timelineVisible;
-    bool m_prettifySymbols;
 };

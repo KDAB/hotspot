@@ -458,8 +458,9 @@ private slots:
 
     void testPrettySymbol()
     {
+        Data::Symbol::prettifySymbol = true;
         for (auto& symbol : prettifySymbolData) {
-            QCOMPARE(Data::Symbol(symbol.symbol).prettySymbol, symbol.prettySymbol);
+            QCOMPARE(Data::Symbol(symbol.symbol).getSymbol(), symbol.prettySymbol);
         }
     }
 };

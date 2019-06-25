@@ -121,7 +121,7 @@ public:
 
         if (role == FilterRole) {
             // TODO: optimize
-            return QString(item->symbol.symbol + item->symbol.binary);
+            return QString(item->symbol.getSymbol() + item->symbol.binary);
         } else if (role == SymbolRole) {
             return QVariant::fromValue(item->symbol);
         } else {

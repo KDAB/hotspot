@@ -88,7 +88,7 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
     } else if (role == SortRole) {
         switch (column) {
         case Symbol:
-            return symbol.prettySymbol;
+            return symbol.getSymbol();
         case Binary:
             return symbol.binary;
         }
@@ -112,7 +112,7 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
     } else if (role == Qt::DisplayRole) {
         switch (column) {
         case Symbol:
-            return symbol.symbol.isEmpty() ? tr("??") : symbol.prettySymbol;
+            return symbol.getNonEmptySymbol();
         case Binary:
             return symbol.binary;
         }

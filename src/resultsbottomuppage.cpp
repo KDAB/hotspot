@@ -68,3 +68,8 @@ void ResultsBottomUpPage::clear()
 {
     ui->bottomUpSearch->setText({});
 }
+
+void ResultsBottomUpPage::update()
+{
+    // TODO
+}

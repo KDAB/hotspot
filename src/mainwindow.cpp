@@ -162,7 +162,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     auto *prettifySymbolsAction = ui->viewMenu->addAction(tr("Prettify Symbols"));
     prettifySymbolsAction->setCheckable(true);
-    prettifySymbolsAction->setChecked(true);
+    prettifySymbolsAction->setChecked(Data::Symbol::prettifySymbol);
     prettifySymbolsAction->setShortcut(tr("Ctrl+Y"));
     connect(prettifySymbolsAction, &QAction::toggled, m_resultsPage, &ResultsPage::setPrettifySymbols);
 
