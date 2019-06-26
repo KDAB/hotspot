@@ -50,6 +50,7 @@ struct Symbol
 
     Symbol(const QString& symbol = {}, const QString& binary = {}, const QString& path = {})
         : symbol(symbol)
+        , prettySymbol(Data::prettifySymbol(symbol))
         , binary(binary)
         , path(path)
     {
@@ -57,8 +58,8 @@ struct Symbol
 
     // function name
     QString symbol;
-    // prettified function name (cached in getSymbol)
-    mutable QString cachedPrettySymbol;
+    // prettified function name
+    QString prettySymbol;
     // dso / executable name
     QString binary;
     // path to dso / executable
@@ -67,10 +68,7 @@ struct Symbol
     QString getSymbol() const
     {
         if (prettifySymbol) {
-            if (cachedPrettySymbol.isNull()) {
-                cachedPrettySymbol = Data::prettifySymbol(symbol);
-            }
-            return cachedPrettySymbol;
+            return prettySymbol;
         }
         return symbol;
     }
