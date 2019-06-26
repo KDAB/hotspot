@@ -28,6 +28,7 @@
 #include "mainwindow.h"
 #include "recordpage.h"
 #include "resultspage.h"
+#include "settings.h"
 #include "startpage.h"
 #include "ui_mainwindow.h"
 
@@ -162,9 +163,10 @@ MainWindow::MainWindow(QWidget* parent)
 
     auto *prettifySymbolsAction = ui->viewMenu->addAction(tr("Prettify Symbols"));
     prettifySymbolsAction->setCheckable(true);
-    prettifySymbolsAction->setChecked(Data::Symbol::prettifySymbol);
+    prettifySymbolsAction->setChecked(Settings::instance()->prettifySymbols());
     prettifySymbolsAction->setShortcut(tr("Ctrl+Y"));
-    connect(prettifySymbolsAction, &QAction::toggled, m_resultsPage, &ResultsPage::setPrettifySymbols);
+    connect(prettifySymbolsAction, &QAction::toggled,
+            Settings::instance(), &Settings::setPrettifySymbols);
 
     ui->viewMenu->addSeparator();
     ui->viewMenu->addActions(m_resultsPage->filterMenu()->actions());

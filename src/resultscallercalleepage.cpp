@@ -214,11 +214,6 @@ void ResultsCallerCalleePage::clear()
     ui->callerCalleeFilter->setText({});
 }
 
-void ResultsCallerCalleePage::update()
-{
-    // TODO
-}
-
 void ResultsCallerCalleePage::jumpToCallerCallee(const Data::Symbol& symbol)
 {
     auto callerCalleeIndex = m_callerCalleeProxy->mapFromSource(m_callerCalleeCostModel->indexForSymbol(symbol));

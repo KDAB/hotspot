@@ -54,7 +54,6 @@ public:
     void setTopDownData(const Data::TopDownResults& topDownData);
     void setBottomUpData(const Data::BottomUpResults& bottomUpData);
     void clear();
-    void update();
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;

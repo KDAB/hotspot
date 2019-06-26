@@ -30,6 +30,7 @@
 #include <QAbstractItemModel>
 
 #include "data.h"
+#include "../settings.h"
 
 class AbstractTreeModel : public QAbstractItemModel
 {
@@ -121,7 +122,10 @@ public:
 
         if (role == FilterRole) {
             // TODO: optimize
-            return QString(item->symbol.getSymbol() + item->symbol.binary);
+            QString symbol = Settings::instance()->prettifySymbols()
+                ? item->symbol.prettySymbol : item->symbol.symbol;
+            symbol.append(item->symbol.binary);
+            return symbol;
         } else if (role == SymbolRole) {
             return QVariant::fromValue(item->symbol);
         } else {

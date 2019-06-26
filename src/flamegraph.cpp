@@ -54,6 +54,7 @@
 #include <ThreadWeaver/ThreadWeaver>
 
 #include "resultsutil.h"
+#include "settings.h"
 #include "models/filterandzoomstack.h"
 
 namespace {
@@ -159,7 +160,7 @@ void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 
     const int height = rect().height();
     const auto binary = Util::formatString(m_symbol.binary);
-    const auto symbol = m_symbol.getSymbol();
+    const auto symbol = Settings::instance()->prettifySymbols() ? m_symbol.prettySymbol : m_symbol.symbol;
     const auto symbolText = symbol.isEmpty() ? QObject::tr("?? [%1]").arg(binary) : symbol;
     painter->drawText(margin + rect().x(), rect().y(), width, height,
                       Qt::AlignVCenter | Qt::AlignLeft | Qt::TextSingleLine,
@@ -196,7 +197,7 @@ QString FrameGraphicsItem::description() const
         }
         totalCost = item->cost();
     }
-    const auto symbol = m_symbol.getNonEmptySymbol();
+    const auto symbol = Util::formatSymbol(m_symbol);
     if (!parentItem()) {
         return symbol;
     }
@@ -398,6 +399,8 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     qRegisterMetaType<FrameGraphicsItem*>();
 
     m_costSource->setToolTip(i18n("Select the data source that should be visualized in the flame graph."));
+
+    connect(Settings::instance(), SIGNAL(prettifySymbolsChanged(bool)), m_scene, SLOT(update()));
 
     m_scene->setItemIndexMethod(QGraphicsScene::NoIndex);
     m_view->setScene(m_scene);
@@ -608,11 +611,6 @@ void FlameGraph::setBottomUpData(const Data::BottomUpResults& bottomUpData)
 void FlameGraph::clear()
 {
     emit uiResetRequested();
-}
-
-void FlameGraph::update()
-{
-    m_scene->update();
 }
 
 void FlameGraph::showData()

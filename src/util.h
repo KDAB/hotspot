@@ -61,6 +61,7 @@ struct HashCombine
 };
 
 QString formatString(const QString& input);
+QString formatSymbol(const Data::Symbol& symbol);
 QString formatCost(quint64 cost);
 QString formatCostRelative(quint64 selfCost, quint64 totalCost, bool addPercentSign = false);
 QString formatTimeString(quint64 nanoseconds, bool shortForm = false);

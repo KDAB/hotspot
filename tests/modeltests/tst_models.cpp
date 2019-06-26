@@ -81,7 +81,6 @@ Data::BottomUpResults generateTree1()
         C
     )");
 }
-
 }
 
 class TestModels : public QObject
@@ -487,7 +486,7 @@ private slots:
         QFETCH(QString, prettySymbol);
         QFETCH(QString, symbol);
 
-        QCOMPARE(Data::Symbol(symbol).getSymbol(), prettySymbol);
+        QCOMPARE(Data::Symbol(symbol).prettySymbol, prettySymbol);
     }
 };
 

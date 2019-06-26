@@ -51,9 +51,4 @@ void ResultsFlameGraphPage::clear()
     ui->flameGraph->clear();
 }
 
-void ResultsFlameGraphPage::update()
-{
-    ui->flameGraph->update();
-}
-
 ResultsFlameGraphPage::~ResultsFlameGraphPage() = default;

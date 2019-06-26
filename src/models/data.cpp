@@ -276,8 +276,6 @@ QString Data::prettifySymbol(const QString& name)
     return result == name ? name : result;
 }
 
-bool Data::Symbol::prettifySymbol = true;
-
 TopDownResults TopDownResults::fromBottomUp(const BottomUpResults& bottomUpData)
 {
     TopDownResults results;

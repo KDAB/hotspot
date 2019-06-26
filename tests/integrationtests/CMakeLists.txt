@@ -4,6 +4,7 @@ include_directories(../../src/parsers/perf)
 
 ecm_add_test(
     ../../src/perfrecord.cpp
+    ../../src/settings.cpp
     ../../src/util.cpp
     ../../src/models/data.cpp
     ../../src/parsers/perf/perfparser.cpp
@@ -25,6 +26,7 @@ set_target_properties(tst_perfparser
 
 add_executable(dump_perf_data
     dump_perf_data.cpp
+    ../../src/settings.cpp
     ../../src/util.cpp
     ../../src/models/data.cpp
     ../../src/parsers/perf/perfparser.cpp

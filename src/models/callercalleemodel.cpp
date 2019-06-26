@@ -33,6 +33,8 @@
 CallerCalleeModel::CallerCalleeModel(QObject* parent)
     : HashModel(parent)
 {
+    connect(Settings::instance(), &Settings::prettifySymbolsChanged,
+            this, [this]() { emit dataChanged(index(0, Symbol), index(rowCount() - 1, Symbol)); });
 }
 
 CallerCalleeModel::~CallerCalleeModel() = default;
@@ -88,7 +90,7 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
     } else if (role == SortRole) {
         switch (column) {
         case Symbol:
-            return symbol.getSymbol();
+            return Settings::instance()->prettifySymbols() ? symbol.prettySymbol : symbol.symbol;
         case Binary:
             return symbol.binary;
         }
@@ -108,11 +110,13 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
         return m_results.inclusiveCosts.totalCost(column);
     } else if (role == FilterRole) {
         // TODO: optimize this
-        return QString(symbol.symbol + symbol.binary);
+        QString result = Settings::instance()->prettifySymbols() ? symbol.prettySymbol : symbol.symbol;
+        result.append(symbol.binary);
+        return result;
     } else if (role == Qt::DisplayRole) {
         switch (column) {
         case Symbol:
-            return symbol.getNonEmptySymbol();
+            return Util::formatSymbol(symbol);
         case Binary:
             return symbol.binary;
         }

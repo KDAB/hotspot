@@ -38,6 +38,7 @@
 #include <initializer_list>
 
 #include "data.h"
+#include "settings.h"
 
 QString Util::findLibexecBinary(const QString& name)
 {
@@ -55,6 +56,12 @@ QString Util::findLibexecBinary(const QString& name)
 QString Util::formatString(const QString& input)
 {
     return input.isEmpty() ? QCoreApplication::translate("Util", "??") : input;
+}
+
+QString Util::formatSymbol(const Data::Symbol& symbol)
+{
+    return formatString(Settings::instance()->prettifySymbols()
+                        ? symbol.prettySymbol : symbol.symbol);
 }
 
 QString Util::formatCost(quint64 cost)
@@ -140,7 +147,7 @@ static QString formatTooltipImpl(int id, const Data::Symbol& symbol, const Data:
     Q_ASSERT(!selfCosts || !inclusiveCosts || (selfCosts->numTypes() == inclusiveCosts->numTypes()));
 
     QString toolTip = QCoreApplication::translate("Util", "symbol: <tt>%1</tt><br/>binary: <tt>%2</tt>")
-                          .arg(symbol.getNonEmptySymbol(), Util::formatString(symbol.binary));
+                          .arg(Util::formatSymbol(symbol), Util::formatString(symbol.binary));
 
     auto extendTooltip = [&toolTip, id](int i, const Data::Costs& costs, const QString& formatting) {
         const auto currentCost = costs.cost(i, id);
@@ -187,7 +194,7 @@ QString Util::formatTooltip(const Data::Symbol& symbol, const Data::ItemCost& it
 {
     Q_ASSERT(static_cast<quint32>(totalCosts.numTypes()) == itemCost.size());
     auto toolTip = QCoreApplication::translate("Util", "symbol: <tt>%1</tt><br/>binary: <tt>%2</tt>")
-                       .arg(symbol.getNonEmptySymbol(), Util::formatString(symbol.binary));
+                       .arg(Util::formatSymbol(symbol), Util::formatString(symbol.binary));
     for (int i = 0, c = totalCosts.numTypes(); i < c; ++i) {
         const auto cost = itemCost[i];
         const auto total = totalCosts.totalCost(i);

@@ -241,13 +241,3 @@ void ResultsPage::setTimelineVisible(bool visible)
     m_timelineVisible = visible;
     ui->timeLineArea->setVisible(visible && ui->resultsTabWidget->currentIndex() != SUMMARY_TABINDEX);
 }
-
-void ResultsPage::setPrettifySymbols(bool prettify)
-{
-    Data::Symbol::prettifySymbol = prettify;
-    m_resultsSummaryPage->update();
-    m_resultsBottomUpPage->update();
-    m_resultsTopDownPage->update();
-    m_resultsFlameGraphPage->update();
-    m_resultsCallerCalleePage->update();
-}

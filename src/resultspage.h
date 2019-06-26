@@ -66,7 +66,6 @@ public slots:
     void onNavigateToCode(const QString& url, int lineNumber, int columnNumber);
     void onJumpToCallerCallee(const Data::Symbol& symbol);
     void setTimelineVisible(bool visible);
-    void setPrettifySymbols(bool prettify);
 
 signals:
     void navigateToCode(const QString& url, int lineNumber, int columnNumber);

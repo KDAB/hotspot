@@ -32,6 +32,7 @@
 
 #include "data.h"
 #include "hashmodel.h"
+#include "../settings.h"
 
 class CallerCalleeModel : public HashModel<Data::CallerCalleeEntryMap, CallerCalleeModel>
 {
@@ -83,6 +84,13 @@ public:
     explicit SymbolCostModelImpl(QObject* parent = nullptr)
         : HashModel<Data::SymbolCostMap, ModelImpl>(parent)
     {
+        using Parent = HashModel<Data::SymbolCostMap, ModelImpl>;
+        Parent::connect(Settings::instance(), &Settings::prettifySymbolsChanged, this,
+                        [this]()
+                        {
+                            emit Parent::dataChanged(Parent::index(0, Symbol),
+                                                     Parent::index(Parent::rowCount() - 1, Symbol));
+                        });
     }
 
     virtual ~SymbolCostModelImpl() = default;
@@ -145,7 +153,7 @@ public:
         if (role == SortRole) {
             switch (column) {
             case Symbol:
-                return symbol.symbol;
+                return Settings::instance()->prettifySymbols() ? symbol.prettySymbol : symbol.symbol;
             case Binary:
                 return symbol.binary;
             }
@@ -154,11 +162,13 @@ public:
             return m_costs.totalCost(column - NUM_BASE_COLUMNS);
         } else if (role == FilterRole) {
             // TODO: optimize this
-            return QString(symbol.symbol + symbol.binary);
+            QString result = Settings::instance()->prettifySymbols() ? symbol.prettySymbol : symbol.symbol;
+            result.append(symbol.binary);
+            return result;
         } else if (role == Qt::DisplayRole) {
             switch (column) {
             case Symbol:
-                return symbol.symbol.isEmpty() ? ModelImpl::tr("??") : symbol.symbol;
+                return Util::formatSymbol(symbol);
             case Binary:
                 return symbol.binary;
             }
