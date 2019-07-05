@@ -134,16 +134,6 @@ ItemCost buildCallerCalleeResult(const BottomUp& data, const Costs& bottomUpCost
     return totalCost;
 }
 
-bool startsWith(const QStringRef& str, const QLatin1String& prefix, int* size)
-{
-    if (str.startsWith(prefix)) {
-        *size = prefix.size();
-        return true;
-    }
-
-    return false;
-}
-
 int findSameDepth(const QStringRef& str, int offset, QChar ch, bool returnNext = false)
 {
     const int size = str.size();
@@ -167,6 +157,17 @@ int findSameDepth(const QStringRef& str, int offset, QChar ch, bool returnNext =
 
 QString prettifySymbol(const QStringRef& str)
 {
+    const auto startsWith =
+        [](const QStringRef& str, std::initializer_list<QLatin1String> prefixes)
+        {
+            for (const auto& prefix : prefixes) {
+                if (str.startsWith(prefix)) {
+                    return prefix.size();
+                }
+            }
+            return -1;
+        };
+
     int pos = 0;
     do {
         pos = str.indexOf(QLatin1String("std::"), pos);
@@ -186,13 +187,21 @@ QString prettifySymbol(const QStringRef& str)
     auto symbol = str.mid(pos);
 
     int end;
-    if (startsWith(symbol, QLatin1String("__cxx11::"), &end)
-        || startsWith(symbol, QLatin1String("__1::"), &end)) {
+
+    const auto internalNamespaces = std::initializer_list<QLatin1String>{"__cxx11::", "__1::"};
+    if ((end = startsWith(symbol, internalNamespaces)) != -1) {
         // Strip libstdc++/libc++ internal namespace
         symbol = symbol.mid(end);
     }
 
-    if (startsWith(symbol, QLatin1String("basic_string<"), &end)) {
+    const auto oneParameterTemplates =
+        std::initializer_list<QLatin1String>{"vector<", "set<", "deque<", "list<", "forward_list<",
+                                             "multiset<", "unordered_set<", "unordered_multiset<"};
+    const auto twoParametersTemplates =
+        std::initializer_list<QLatin1String>{"map<", "multimap<", "unordered_map<", "unordered_multimap<"};
+
+    // Translate basic_string<(char|wchar_t|T), ...> to (string|wstring|basic_string<T>)
+    if ((end = startsWith(symbol, {QLatin1String("basic_string<")})) != -1) {
         const int comma = findSameDepth(symbol, end, QLatin1Char(','));
         if (comma != -1) {
             const auto type = symbol.mid(end, comma - end);
@@ -210,8 +219,10 @@ QString prettifySymbol(const QStringRef& str)
             end = findSameDepth(symbol, 0, QLatin1Char('>'), true);
             symbol = symbol.mid(end);
 
-            if (startsWith(symbol, QLatin1String("::basic_string("), &end)
-                || startsWith(symbol, QLatin1String("::~basic_string("), &end)) {
+            // Also translate constructor/destructor name
+            const auto constructorDestructor =
+                std::initializer_list<QLatin1String>{"::basic_string(", "::~basic_string("};
+            if ((end = startsWith(symbol, constructorDestructor)) != -1) {
                 result += QLatin1String("::");
                 if (symbol[2] == QLatin1Char('~')) {
                     result += QLatin1Char('~');
@@ -227,14 +238,8 @@ QString prettifySymbol(const QStringRef& str)
             }
         }
     }
-    else if (startsWith(symbol, QLatin1String("vector<"), &end)
-             || startsWith(symbol, QLatin1String("set<"), &end)
-             || startsWith(symbol, QLatin1String("deque<"), &end)
-             || startsWith(symbol, QLatin1String("list<"), &end)
-             || startsWith(symbol, QLatin1String("forward_list<"), &end)
-             || startsWith(symbol, QLatin1String("multiset<"), &end)
-             || startsWith(symbol, QLatin1String("unordered_set<"), &end)
-             || startsWith(symbol, QLatin1String("unordered_multiset<"), &end)) {
+    // Translates (vector|set|etc.)<T, ...> to (vector|set|etc.)<T>
+    else if ((end = startsWith(symbol, oneParameterTemplates)) != -1) {
         const int comma = findSameDepth(symbol, end, QLatin1Char(','));
         if (comma != -1) {
             result += symbol.left(end);
@@ -245,10 +250,8 @@ QString prettifySymbol(const QStringRef& str)
             symbol = symbol.mid(end);
         }
     }
-    else if (startsWith(symbol, QLatin1String("map<"), &end)
-             || startsWith(symbol, QLatin1String("multimap<"), &end)
-             || startsWith(symbol, QLatin1String("unordered_map<"), &end)
-             || startsWith(symbol, QLatin1String("unordered_multimap<"), &end)) {
+    // Translates (map|multimap|etc.)<T, U, ...> to (map|multimap|etc.)<T, U>
+    else if ((end = startsWith(symbol, twoParametersTemplates)) != -1) {
         const int comma1 = findSameDepth(symbol, end, QLatin1Char(','));
         const int comma2 = findSameDepth(symbol, comma1 + 1, QLatin1Char(','));
         if (comma1 != -1 && comma2 != -1) {
@@ -261,12 +264,12 @@ QString prettifySymbol(const QStringRef& str)
             symbol = symbol.mid(end);
         }
     }
-    else if (startsWith(symbol, QLatin1String("allocator<"), &end)) {
+    // Translates allocator<T> to allocator<...>
+    else if ((end = startsWith(symbol, {QLatin1String("allocator<")})) != -1) {
         const int gt = findSameDepth(symbol, 0, QLatin1Char('>'), true);
         if (gt != -1) {
             result += symbol.left(end);
-            result += QLatin1String("...");
-            result += QLatin1Char('>');
+            result += QLatin1String("...>");
 
             symbol = symbol.mid(gt);
         }
