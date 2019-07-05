@@ -164,6 +164,9 @@ MainWindow::MainWindow(QWidget* parent)
     auto *prettifySymbolsAction = ui->viewMenu->addAction(tr("Prettify Symbols"));
     prettifySymbolsAction->setCheckable(true);
     prettifySymbolsAction->setChecked(Settings::instance()->prettifySymbols());
+    prettifySymbolsAction->setToolTip(
+        tr("Replace fully qualified and expanded STL type names with their shorter and more commonly used equivalents. "
+           "E.g. show std::string instead of std::basic_string<char, ...>"));
     prettifySymbolsAction->setShortcut(tr("Ctrl+Y"));
     connect(prettifySymbolsAction, &QAction::toggled,
             Settings::instance(), &Settings::setPrettifySymbols);

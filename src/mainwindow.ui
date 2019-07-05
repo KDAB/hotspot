@@ -48,6 +48,9 @@
     <property name="title">
      <string>View</string>
     </property>
+    <property name="toolTipsVisible">
+     <bool>true</bool>
+    </property>
    </widget>
    <addaction name="fileMenu"/>
    <addaction name="settingsMenu"/>
