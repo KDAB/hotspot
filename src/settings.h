@@ -31,9 +31,6 @@ class Settings : public QObject
 public:
     static Settings* instance();
 
-    Q_PROPERTY(bool prettifySymbols READ prettifySymbols
-               WRITE setPrettifySymbols NOTIFY prettifySymbolsChanged)
-
     bool prettifySymbols() const { return m_prettifySymbols; }
 
 signals:
