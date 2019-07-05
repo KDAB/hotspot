@@ -88,6 +88,9 @@ public:
         Parent::connect(Settings::instance(), &Settings::prettifySymbolsChanged, this,
                         [this]()
                         {
+                            if (Parent::rowCount() == 0) {
+                                return;
+                            }
                             emit Parent::dataChanged(Parent::index(0, Symbol),
                                                      Parent::index(Parent::rowCount() - 1, Symbol));
                         });
