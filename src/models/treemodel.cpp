@@ -26,6 +26,7 @@
 */
 
 #include "treemodel.h"
+#include "../settings.h"
 #include "../util.h"
 
 AbstractTreeModel::AbstractTreeModel(QObject* parent)

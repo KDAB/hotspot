@@ -90,7 +90,7 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
     } else if (role == SortRole) {
         switch (column) {
         case Symbol:
-            return Settings::instance()->prettifySymbols() ? symbol.prettySymbol : symbol.symbol;
+            return Util::formatSymbol(symbol.prettySymbol);
         case Binary:
             return symbol.binary;
         }
@@ -110,9 +110,7 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
         return m_results.inclusiveCosts.totalCost(column);
     } else if (role == FilterRole) {
         // TODO: optimize this
-        QString result = Settings::instance()->prettifySymbols() ? symbol.prettySymbol : symbol.symbol;
-        result.append(symbol.binary);
-        return result;
+        return QString(Util::formatSymbol(symbol, false) + symbol.binary);
     } else if (role == Qt::DisplayRole) {
         switch (column) {
         case Symbol:

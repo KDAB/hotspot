@@ -160,7 +160,7 @@ void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
 
     const int height = rect().height();
     const auto binary = Util::formatString(m_symbol.binary);
-    const auto symbol = Settings::instance()->prettifySymbols() ? m_symbol.prettySymbol : m_symbol.symbol;
+    const auto symbol = Util::formatSymbol(m_symbol, false);
     const auto symbolText = symbol.isEmpty() ? QObject::tr("?? [%1]").arg(binary) : symbol;
     painter->drawText(margin + rect().x(), rect().y(), width, height,
                       Qt::AlignVCenter | Qt::AlignLeft | Qt::TextSingleLine,

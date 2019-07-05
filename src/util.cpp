@@ -53,15 +53,17 @@ QString Util::findLibexecBinary(const QString& name)
     return info.absoluteFilePath();
 }
 
-QString Util::formatString(const QString& input)
+QString Util::formatString(const QString& input, bool replaceEmptyString)
 {
-    return input.isEmpty() ? QCoreApplication::translate("Util", "??") : input;
+    return input.isEmpty() && replaceEmptyString
+        ? QCoreApplication::translate("Util", "??") : input;
 }
 
-QString Util::formatSymbol(const Data::Symbol& symbol)
+QString Util::formatSymbol(const Data::Symbol& symbol, bool replaceEmptyString)
 {
     return formatString(Settings::instance()->prettifySymbols()
-                        ? symbol.prettySymbol : symbol.symbol);
+                        ? symbol.prettySymbol : symbol.symbol,
+                        replaceEmptyString);
 }
 
 QString Util::formatCost(quint64 cost)

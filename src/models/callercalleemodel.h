@@ -153,7 +153,7 @@ public:
         if (role == SortRole) {
             switch (column) {
             case Symbol:
-                return Settings::instance()->prettifySymbols() ? symbol.prettySymbol : symbol.symbol;
+                return Util::formatSymbol(symbol);
             case Binary:
                 return symbol.binary;
             }
@@ -162,9 +162,7 @@ public:
             return m_costs.totalCost(column - NUM_BASE_COLUMNS);
         } else if (role == FilterRole) {
             // TODO: optimize this
-            QString result = Settings::instance()->prettifySymbols() ? symbol.prettySymbol : symbol.symbol;
-            result.append(symbol.binary);
-            return result;
+            return QString(Util::formatSymbol(symbol, false) + symbol.binary);
         } else if (role == Qt::DisplayRole) {
             switch (column) {
             case Symbol:
