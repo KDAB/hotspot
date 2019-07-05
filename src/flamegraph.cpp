@@ -400,7 +400,13 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
 
     m_costSource->setToolTip(i18n("Select the data source that should be visualized in the flame graph."));
 
-    connect(Settings::instance(), SIGNAL(prettifySymbolsChanged(bool)), m_scene, SLOT(update()));
+    connect(Settings::instance(), &Settings::prettifySymbolsChanged, this,
+            [this]()
+            {
+                m_scene->update(m_scene->sceneRect());
+                updateTooltip();
+                QToolTip::hideText();
+            });
 
     m_scene->setItemIndexMethod(QGraphicsScene::NoIndex);
     m_view->setScene(m_scene);
