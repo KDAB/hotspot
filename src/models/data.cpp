@@ -150,14 +150,15 @@ int findSameDepth(const QStringRef& str, int offset, QChar ch, bool returnNext =
 
     int depth = 0;
     for (; offset < size; ++offset) {
-        if (str[offset] == QLatin1Char('<')) {
+        const auto current = str[offset];
+        if (current == QLatin1Char('<') || current == QLatin1Char('(')) {
             ++depth;
         }
-        else if (str[offset] == QLatin1Char('>')) {
+        else if (current == QLatin1Char('>') || current == QLatin1Char(')')) {
             --depth;
         }
 
-        if (depth == 0 && str[offset] == ch) {
+        if (depth == 0 && current == ch) {
             return offset + (returnNext ? 1 : 0);
         }
     }
@@ -258,6 +259,16 @@ QString prettifySymbol(const QStringRef& str)
 
             end = findSameDepth(symbol, 0, QLatin1Char('>'), true);
             symbol = symbol.mid(end);
+        }
+    }
+    else if (startsWith(symbol, QLatin1String("allocator<"), &end)) {
+        const int gt = findSameDepth(symbol, 0, QLatin1Char('>'), true);
+        if (gt != -1) {
+            result += symbol.left(end);
+            result += QLatin1String("...");
+            result += QLatin1Char('>');
+
+            symbol = symbol.mid(gt);
         }
     }
 
