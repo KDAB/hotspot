@@ -405,7 +405,6 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
             {
                 m_scene->update(m_scene->sceneRect());
                 updateTooltip();
-                QToolTip::hideText();
             });
 
     m_scene->setItemIndexMethod(QGraphicsScene::NoIndex);
