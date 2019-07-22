@@ -154,17 +154,20 @@ static int findSameDepth(const QStringRef& str, int offset, QChar ch, bool retur
     return -1;
 }
 
+template<typename T>
+static int startsWith(const QStringRef& str, const std::initializer_list<T>& prefixes)
+{
+    for (const auto& prefix_ : prefixes) {
+        const auto prefix = QLatin1String(prefix_);
+        if (str.startsWith(prefix)) {
+            return prefix.size();
+        }
+    }
+    return -1;
+}
+
 QString prettifySymbol(const QStringRef& str)
 {
-    const auto startsWith = [](const QStringRef& str, std::initializer_list<QLatin1String> prefixes) {
-        for (const auto& prefix : prefixes) {
-            if (str.startsWith(prefix)) {
-                return prefix.size();
-            }
-        }
-        return -1;
-    };
-
     int pos = 0;
     do {
         pos = str.indexOf(QLatin1String("std::"), pos);
@@ -183,19 +186,17 @@ QString prettifySymbol(const QStringRef& str)
 
     int end;
 
-    const auto internalNamespaces = std::initializer_list<QLatin1String> {"__cxx11::", "__1::"};
-    if ((end = startsWith(symbol, internalNamespaces)) != -1) {
+    if ((end = startsWith(symbol, {"__cxx11::", "__1::"})) != -1) {
         // Strip libstdc++/libc++ internal namespace
         symbol = symbol.mid(end);
     }
 
-    const auto oneParameterTemplates = std::initializer_list<QLatin1String> {
-        "vector<", "set<", "deque<", "list<", "forward_list<", "multiset<", "unordered_set<", "unordered_multiset<"};
-    const auto twoParametersTemplates =
-        std::initializer_list<QLatin1String> {"map<", "multimap<", "unordered_map<", "unordered_multimap<"};
+    const auto oneParameterTemplates = {"vector<",       "set<",      "deque<",         "list<",
+                                        "forward_list<", "multiset<", "unordered_set<", "unordered_multiset<"};
+    const auto twoParametersTemplates = {"map<", "multimap<", "unordered_map<", "unordered_multimap<"};
 
     // Translate basic_string<(char|wchar_t|T), ...> to (string|wstring|basic_string<T>)
-    if ((end = startsWith(symbol, {QLatin1String("basic_string<")})) != -1) {
+    if ((end = startsWith(symbol, {"basic_string<"})) != -1) {
         const int comma = findSameDepth(symbol, end, QLatin1Char(','));
         if (comma != -1) {
             const auto type = symbol.mid(end, comma - end);
@@ -212,8 +213,7 @@ QString prettifySymbol(const QStringRef& str)
             symbol = symbol.mid(end);
 
             // Also translate constructor/destructor name
-            const auto constructorDestructor =
-                std::initializer_list<QLatin1String> {"::basic_string(", "::~basic_string("};
+            const auto constructorDestructor = {"::basic_string(", "::~basic_string("};
             if ((end = startsWith(symbol, constructorDestructor)) != -1) {
                 result += QLatin1String("::");
                 if (symbol[2] == QLatin1Char('~')) {
@@ -256,7 +256,7 @@ QString prettifySymbol(const QStringRef& str)
         }
     }
     // Translates allocator<T> to allocator<...>
-    else if ((end = startsWith(symbol, {QLatin1String("allocator<")})) != -1) {
+    else if ((end = startsWith(symbol, {"allocator<"})) != -1) {
         const int gt = findSameDepth(symbol, 0, QLatin1Char('>'), true);
         if (gt != -1) {
             result += symbol.left(end);
@@ -272,7 +272,6 @@ QString prettifySymbol(const QStringRef& str)
 
     return result;
 }
-
 }
 
 QString Data::prettifySymbol(const QString& name)
