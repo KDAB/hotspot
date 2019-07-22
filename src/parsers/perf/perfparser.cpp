@@ -639,6 +639,10 @@ public:
         }
 
         switch (static_cast<EventType>(eventType)) {
+        case EventType::Sample43: // fall-through
+        case EventType::Sample45:
+            qCWarning(LOG_PERFPARSER) << "unexpected legacy type encountered" << eventType;
+            break;
         case EventType::TracePointSample:
         case EventType::Sample: {
             Sample sample;
@@ -1130,22 +1134,25 @@ public:
         PARSE_ERROR
     };
 
-    enum class EventType {
+    enum class EventType
+    {
+        Sample43, // now obsolete
         ThreadStart,
         ThreadEnd,
         Command,
         LocationDefinition,
         SymbolDefinition,
+        AttributesDefinition,
         StringDefinition,
         LostDefinition,
         FeaturesDefinition,
         Error,
+        Sample45, // now obsolete
         Progress,
         TracePointFormat,
-        AttributesDefinition,
+        TracePointSample,
         ContextSwitchDefinition,
         Sample,
-        TracePointSample,
         InvalidType
     };
 
