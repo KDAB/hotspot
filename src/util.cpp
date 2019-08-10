@@ -116,13 +116,15 @@ QString Util::formatTimeString(quint64 nanoseconds, bool shortForm)
     quint64 minutes = (totalSeconds / 60) % 60;
     quint64 seconds = totalSeconds % 60;
 
-    auto optional = [format](quint64 fragment) -> QString {
-        return fragment > 0 ? format(fragment, 2) + QLatin1Char(':') : QString();
+    auto optional = [format](quint64 fragment, const char *unit) -> QString {
+        if (fragment > 0)
+            return QString::number(fragment) + QLatin1String(unit) + QLatin1Char(' ');
+        return QString();
     };
     if (shortForm) {
-        return optional(days) + optional(hours) + optional(minutes) + QString::number(seconds) + QLatin1Char('s');
+        return optional(days, "d") + optional(hours, "h") + optional(minutes, "min") + QString::number(seconds) + QLatin1Char('s');
     }
-    return optional(days) + optional(hours) + optional(minutes) + format(seconds, 2) + QLatin1Char('.')
+    return optional(days, "d") + optional(hours, "h") + optional(minutes, "min") + format(seconds, 2) + QLatin1Char('.')
         + format(milliseconds, 3) + QLatin1Char('s');
 }
 
