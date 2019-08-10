@@ -263,7 +263,12 @@ public:
 
     QString formatCost(int type, quint64 cost) const
     {
-        switch (m_units[type]) {
+        return formatCost(m_units[type], cost);
+    }
+
+    static QString formatCost(Unit unit, quint64 cost)
+    {
+        switch (unit) {
         case Unit::Time:
             return Util::formatTimeString(cost);
         case Unit::Unknown:

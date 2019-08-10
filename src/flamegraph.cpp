@@ -69,7 +69,7 @@ enum SearchMatchType
 class FrameGraphicsItem : public QGraphicsRectItem
 {
 public:
-    FrameGraphicsItem(const qint64 cost, const Data::Symbol& symbol, FrameGraphicsItem* parent = nullptr);
+    FrameGraphicsItem(const qint64 cost, Data::Costs::Unit unit, const Data::Symbol& symbol, FrameGraphicsItem* parent = nullptr);
 
     qint64 cost() const;
     void setCost(qint64 cost);
@@ -89,15 +89,17 @@ private:
     Data::Symbol m_symbol;
     bool m_isHovered;
     SearchMatchType m_searchMatch = NoSearch;
+    Data::Costs::Unit m_unit;
 };
 
 Q_DECLARE_METATYPE(FrameGraphicsItem*)
 
-FrameGraphicsItem::FrameGraphicsItem(const qint64 cost, const Data::Symbol& symbol, FrameGraphicsItem* parent)
+FrameGraphicsItem::FrameGraphicsItem(const qint64 cost, Data::Costs::Unit unit, const Data::Symbol& symbol, FrameGraphicsItem* parent)
     : QGraphicsRectItem(parent)
     , m_cost(cost)
     , m_symbol(symbol)
     , m_isHovered(false)
+    , m_unit(unit)
 {
     setFlag(QGraphicsItem::ItemIsSelectable);
     setAcceptHoverEvents(true);
@@ -203,7 +205,7 @@ QString FrameGraphicsItem::description() const
     }
 
     return i18nc("%1: aggregated sample costs, %2: relative number, %3: function label, %4: binary",
-                 "%1 (%2%) aggregated sample costs in %3 (%4) and below.", Util::formatCost(m_cost),
+                 "%1 (%2%) aggregated sample costs in %3 (%4) and below.", Data::Costs::formatCost(m_unit, m_cost),
                  Util::formatCostRelative(m_cost, totalCost), symbol, m_symbol.binary);
 }
 
@@ -325,7 +327,7 @@ void toGraphicsItems(const Data::Costs& costs, int type, const QVector<Tree>& da
         }
         auto item = findItemBySymbol(parent->childItems(), row.symbol);
         if (!item) {
-            item = new FrameGraphicsItem(costs.cost(type, row.id), row.symbol, parent);
+            item = new FrameGraphicsItem(costs.cost(type, row.id), costs.unit(type), row.symbol, parent);
             item->setPen(parent->pen());
             item->setBrush(brush(row.symbol, BrushType::Hot));
         } else {
@@ -341,16 +343,16 @@ template<typename Tree>
 FrameGraphicsItem* parseData(const Data::Costs& costs, int type, const QVector<Tree>& topDownData, double costThreshold,
                              bool collapseRecursion)
 {
-    double totalCost = costs.totalCost(type);
+    const auto totalCost = costs.totalCost(type);
 
     KColorScheme scheme(QPalette::Active);
     const QPen pen(scheme.foreground().color());
 
-    QString label = i18n("%1 aggregated sample costs in total", totalCost);
-    auto rootItem = new FrameGraphicsItem(totalCost, {label, {}});
+    QString label = i18n("%1 aggregated %2 cost in total", costs.formatCost(type, totalCost), costs.typeName(type));
+    auto rootItem = new FrameGraphicsItem(totalCost, costs.unit(type), {label, {}});
     rootItem->setBrush(scheme.background());
     rootItem->setPen(pen);
-    toGraphicsItems(costs, type, topDownData, rootItem, totalCost * costThreshold / 100., collapseRecursion);
+    toGraphicsItems(costs, type, topDownData, rootItem, static_cast<double>(totalCost) * costThreshold / 100., collapseRecursion);
     return rootItem;
 }
 
