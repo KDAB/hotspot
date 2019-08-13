@@ -116,7 +116,7 @@ QString Util::formatTimeString(quint64 nanoseconds, bool shortForm)
     quint64 minutes = (totalSeconds / 60) % 60;
     quint64 seconds = totalSeconds % 60;
 
-    auto optional = [format](quint64 fragment, const char *unit) -> QString {
+    auto optional = [](quint64 fragment, const char *unit) -> QString {
         if (fragment > 0)
             return QString::number(fragment) + QLatin1String(unit) + QLatin1Char(' ');
         return QString();
