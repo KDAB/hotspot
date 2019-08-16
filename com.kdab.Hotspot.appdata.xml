@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2013-2019 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com -->
+<component type="desktop">
+  <id>com.kdab.Hotspot</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-or-later</project_license>
+  <name>Hotspot</name>
+  <summary>Linux perf GUI for performance analysis</summary>
+  ​<launchable type="desktop-id">hotspot.desktop</launchable>
+
+  <description>
+    <p>
+      Hotspot is a graphical user interface for Linux's "perf" performance profiling system.
+    </p>
+    <p>
+      This project is a KDAB R&amp;D effort to create a standalone GUI for performance data.
+    </p>
+  </description>
+
+  <screenshots>
+    <screenshot type="default" width="1149" height="824">
+      <caption>Performance summary</caption>
+      <image>https://raw.githubusercontent.com/KDAB/hotspot/master/screenshots/summary.png</image>
+    </screenshot>
+      <screenshot width="1149" height="824">
+      <caption>Flamegraph</caption>
+      <image>https://raw.githubusercontent.com/KDAB/hotspot/master/screenshots/flamegraph.png</image>
+    </screenshot>
+    <screenshot width="1149" height="824">
+      <caption>Top-down view</caption>
+      <image>https://raw.githubusercontent.com/KDAB/hotspot/master/screenshots/top-down.png</image>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://github.com/KDAB/hotspot</url>
+  <url type="bugtracker">https://github.com/KDAB/hotspot/issues</url>
+
+  <releases>
+    <release version="1.2.0" date="2019-05-20"/>
+  </releases>
+
+  <content_rating type="oars-1.1" />
+  <developer_name>KDAB</developer_name>
+  <update_contact>milian.wolff@kdab.com</update_contact>
+</component>
