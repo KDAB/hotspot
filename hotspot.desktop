@@ -1,6 +1,11 @@
 [Desktop Entry]
 Type=Application
 Name=Hotspot
+GenericName=CPU Profiler
+GenericName[fr]=Profileur CPU
+Comment=Linux perf GUI for performance analysis
+Comment[fr]=Interface graphique pour perf (Linux) pour l'analyse de performances
 Exec=hotspot
 Icon=hotspot
 Categories=Development;
+Keywords=performance;perf;
