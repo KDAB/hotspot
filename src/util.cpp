@@ -149,7 +149,7 @@ static QString formatTooltipImpl(int id, const Data::Symbol& symbol, const Data:
     Q_ASSERT(!selfCosts || !inclusiveCosts || (selfCosts->numTypes() == inclusiveCosts->numTypes()));
 
     QString toolTip = QCoreApplication::translate("Util", "symbol: <tt>%1</tt><br/>binary: <tt>%2</tt>")
-                          .arg(Util::formatSymbol(symbol), Util::formatString(symbol.binary));
+                          .arg(Util::formatSymbol(symbol).toHtmlEscaped(), Util::formatString(symbol.binary));
 
     auto extendTooltip = [&toolTip, id](int i, const Data::Costs& costs, const QString& formatting) {
         const auto currentCost = costs.cost(i, id);
