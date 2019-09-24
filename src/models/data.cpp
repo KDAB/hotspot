@@ -194,6 +194,15 @@ QString prettifySymbol(const QStringRef& str)
     const auto oneParameterTemplates = {"vector<",       "set<",      "deque<",         "list<",
                                         "forward_list<", "multiset<", "unordered_set<", "unordered_multiset<"};
     const auto twoParametersTemplates = {"map<", "multimap<", "unordered_map<", "unordered_multimap<"};
+    const auto hideParametersTemplates = {
+        // Generic
+        "allocator<", "call_once<",
+        // libc++ internal
+        "__thread_proxy<",
+        // libstdc++ internal
+        "thread::_Invoker<", "_Function_handler<", "__future_base::_Task_setter<",
+        "__invoke_result<",  "__invoke<", "__invoke_impl<",
+        "unique_ptr<std::__future_base::_Result_base, "};
 
     // Translate basic_string<(char|wchar_t|T), ...> to (string|wstring|basic_string<T>)
     if ((end = startsWith(symbol, {"basic_string<"})) != -1) {
@@ -255,8 +264,8 @@ QString prettifySymbol(const QStringRef& str)
             symbol = symbol.mid(end);
         }
     }
-    // Translates allocator<T> to allocator<...>
-    else if ((end = startsWith(symbol, {"allocator<"})) != -1) {
+    // Translates (allocator|etc.)<T> to (allocator|etc.)<...>
+    else if ((end = startsWith(symbol, hideParametersTemplates)) != -1) {
         const int gt = findSameDepth(symbol, 0, QLatin1Char('>'), true);
         if (gt != -1) {
             result += symbol.left(end);

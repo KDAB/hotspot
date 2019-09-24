@@ -470,6 +470,24 @@ private slots:
                " char const (&) [1], char const (&) [1],"
                " std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&"
                "> >, bool ()>::operator()()";
+        QTest::newRow("std::call_once")
+            << "void std::call_once<...>(std::once_flag&, void (std::__future_base::_State_baseV2::*&&)(std::function<"
+               "std::unique_ptr<std::__future_base::_Result_base, ...> ()>*, bool*"
+               "), std::__future_base::_State_baseV2*&&, std::function<"
+               "std::unique_ptr<std::__future_base::_Result_base, ...> ()>*&&, bool*&&)"
+            << "void std::call_once<void (std::__future_base::_State_baseV2::*)(std::function<"
+               "std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> ()>*, bool*"
+               "), std::__future_base::_State_baseV2*, std::function<"
+               "std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> ()>*, bool*"
+               ">(std::once_flag&, void (std::__future_base::_State_baseV2::*&&)(std::function<"
+               "std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> ()>*, bool*"
+               "), std::__future_base::_State_baseV2*&&, std::function<"
+               "std::unique_ptr<std::__future_base::_Result_base, std::__future_base::_Result_base::_Deleter> ()>*&&, bool*&&)";
+        QTest::newRow("std::thread::_Invoker")
+            << "std::thread::_Invoker<...>::operator()"
+            << "std::thread::_Invoker<std::tuple<std::__future_base::_Async_state_impl<"
+               "std::thread::_Invoker<std::tuple<double (*)()> >, double>"
+               "::_Async_state_impl(std::thread::_Invoker<std::tuple<double (*)()> >&&)::{lambda()#1}> >::operator()";
     }
 
     void testPrettySymbol()
