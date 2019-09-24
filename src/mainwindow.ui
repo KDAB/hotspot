@@ -46,7 +46,7 @@
    </widget>
    <widget class="QMenu" name="viewMenu">
     <property name="title">
-     <string>View</string>
+     <string>&amp;View</string>
     </property>
     <property name="toolTipsVisible">
      <bool>true</bool>
