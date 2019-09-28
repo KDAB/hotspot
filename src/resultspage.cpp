@@ -211,6 +211,8 @@ void ResultsPage::clear()
     m_resultsTopDownPage->clear();
     m_resultsCallerCalleePage->clear();
     m_resultsFlameGraphPage->clear();
+
+    m_filterAndZoomStack->clear();
 }
 
 QMenu* ResultsPage::filterMenu() const

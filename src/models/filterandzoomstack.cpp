@@ -90,6 +90,12 @@ FilterAndZoomStack::Actions FilterAndZoomStack::actions() const
     return m_actions;
 }
 
+void FilterAndZoomStack::clear()
+{
+    m_filterStack.clear();
+    m_zoomStack.clear();
+}
+
 void FilterAndZoomStack::filterInByTime(const Data::TimeRange &time)
 {
     zoomIn(time);

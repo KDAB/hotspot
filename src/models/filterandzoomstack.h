@@ -56,6 +56,8 @@ public:
 
     Actions actions() const;
 
+    void clear();
+
 public slots:
     void filterInByTime(const Data::TimeRange &time);
     void filterInByProcess(qint32 processId);
