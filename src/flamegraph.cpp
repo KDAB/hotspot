@@ -43,6 +43,7 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QPushButton>
+#include <QScrollBar>
 #include <QStyleOption>
 #include <QToolTip>
 #include <QVBoxLayout>
@@ -714,8 +715,9 @@ void FlameGraph::selectItem(FrameGraphicsItem* item)
 
     // scale item and its parents to the maximum available width
     // also hide all siblings of the parent items
-    const auto padding = 10;
-    const auto rootWidth = m_view->viewport()->width() - padding * 2;
+    const auto padding = 8;
+    const auto rootWidth = m_view->viewport()->width() - padding * 2
+        - (m_view->verticalScrollBar()->isVisible() ? 0 : m_view->verticalScrollBar()->sizeHint().width());
     auto parent = item;
     while (parent) {
         auto rect = parent->rect();
