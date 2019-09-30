@@ -735,6 +735,10 @@ void FlameGraph::selectItem(FrameGraphicsItem* item)
     // then layout all items below the selected on
     layoutItems(item);
 
+    // Triggers a refresh of the scene's bounding rect without going via the
+    // event loop. This makes the centerOn call below work as expected in all cases.
+    m_scene->sceneRect();
+
     // and make sure it's visible
     m_view->centerOn(item);
 
