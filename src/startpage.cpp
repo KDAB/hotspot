@@ -106,8 +106,8 @@ void StartPage::changeEvent(QEvent* event)
 
 void StartPage::updateBackground()
 {
-    const auto background = palette().background().color();
-    const auto foreground = palette().foreground().color();
+    const auto background = palette().window().color();
+    const auto foreground = palette().windowText().color();
 
     if (qGray(background.rgb()) < qGray(foreground.rgb())) {
         // Dark color scheme
