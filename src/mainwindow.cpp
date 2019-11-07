@@ -305,7 +305,7 @@ void MainWindow::aboutKDAB()
 {
     AboutDialog dialog(this);
     dialog.setWindowTitle(tr("About KDAB"));
-    dialog.setTitle(trUtf8("Klarälvdalens Datakonsult AB (KDAB)"));
+    dialog.setTitle(tr("Klarälvdalens Datakonsult AB (KDAB)"));
     dialog.setText(tr("<qt><p>Hotspot is supported and maintained by KDAB</p>"
                       "<p>KDAB, the Qt experts, provide consulting and mentoring for developing "
                       "Qt applications from scratch and in porting from all popular and legacy "
