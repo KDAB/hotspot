@@ -59,7 +59,7 @@ void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, QAbstractIte
 
     filter->setProxy(proxy);
 
-    view->sortByColumn(initialSortColumn);
+    view->sortByColumn(initialSortColumn, Qt::DescendingOrder);
     view->setModel(proxy);
     stretchFirstColumn(view);
 }

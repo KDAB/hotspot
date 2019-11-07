@@ -51,7 +51,7 @@ Model* setupModelAndProxyForView(QTreeView* view)
     auto proxy = new QSortFilterProxyModel(model);
     proxy->setSourceModel(model);
     proxy->setSortRole(Model::SortRole);
-    view->sortByColumn(Model::InitialSortColumn);
+    view->sortByColumn(Model::InitialSortColumn, Qt::DescendingOrder);
     view->setModel(proxy);
     ResultsUtil::stretchFirstColumn(view);
     ResultsUtil::setupCostDelegate(model, view);
@@ -94,7 +94,7 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
         ResultsUtil::hideEmptyColumns(data.selfCosts, ui->callerCalleeTableView,
                                       CallerCalleeModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes());
         auto view = ui->callerCalleeTableView;
-        view->sortByColumn(CallerCalleeModel::InitialSortColumn);
+        view->sortByColumn(CallerCalleeModel::InitialSortColumn, view->header()->sortIndicatorOrder());
         view->setCurrentIndex(view->model()->index(0, 0, {}));
         ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->callersView, CallerModel::NUM_BASE_COLUMNS);
         ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->calleesView, CalleeModel::NUM_BASE_COLUMNS);
