@@ -172,13 +172,8 @@ hotspot is available in Fedora repositories.
 
 Head over to our [download page](https://github.com/KDAB/hotspot/releases) and download the latest [AppImage](http://appimage.org/) release and just run it.
 
-Command-line instructions:
-
-```
-wget https://github.com/KDAB/hotspot/releases/download/v1.1.0/hotspot-v1.1.0-x86_64.AppImage
-chmod +x hotspot-v1.1.0-x86_64.AppImage
-./hotspot-v1.1.0-x86_64.AppImage
-```
+Please use the latest Continuous release to get the most recent version. If it doesn't work, please report a bug
+and test the latest stable version.
 
 *Note: Your system libraries or preferences are not altered. In case you'd like to remove Hotspot again, simply delete the downloaded file. Learn more about AppImage [here](http://appimage.org/).*
 
