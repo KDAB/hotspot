@@ -206,10 +206,11 @@ private slots:
         events.cpus[1].cpuId = 1; // empty
         events.cpus[2].cpuId = 2;
         const int nonEmptyCpus = 2;
+        const int processes = 2;
 
         const quint64 endTime = 1000;
         const quint64 deltaTime = 10;
-        events.threads.resize(2);
+        events.threads.resize(4);
         auto& thread1 = events.threads[0];
         {
             thread1.pid = 1234;
@@ -223,6 +224,20 @@ private slots:
             thread2.tid = 1235;
             thread2.time = {deltaTime, endTime - deltaTime};
             thread2.name = "asdf";
+        }
+        auto& thread3 = events.threads[2];
+        {
+            thread3.pid = 5678;
+            thread3.tid = 5678;
+            thread3.time = {0, endTime};
+            thread3.name = "barfoo";
+        }
+        auto& thread4 = events.threads[3];
+        {
+            thread4.pid = 5678;
+            thread4.tid = 5679;
+            thread4.time = {endTime - deltaTime, endTime};
+            thread4.name = "blub";
         }
 
         Data::CostSummary costSummary("cycles", 0, 0, Data::Costs::Unit::Unknown);
@@ -263,11 +278,11 @@ private slots:
             const auto minTime = idx.data(EventModel::MinTimeRole).value<quint64>();
             QCOMPARE(minTime, quint64(0));
             const auto numProcesses = idx.data(EventModel::NumProcessesRole).value<uint>();
-            QCOMPARE(numProcesses, 1u);
+            QCOMPARE(numProcesses, processes);
             const auto numThreads = idx.data(EventModel::NumThreadsRole).value<uint>();
-            QCOMPARE(numThreads, 2u);
+            QCOMPARE(numThreads, events.threads.size());
             const auto numCpus = idx.data(EventModel::NumCpusRole).value<uint>();
-            QCOMPARE(numCpus, 2u);
+            QCOMPARE(numCpus, nonEmptyCpus);
             const auto maxCost = idx.data(EventModel::MaxCostRole).value<quint64>();
             QCOMPARE(maxCost, quint64(10));
             const auto totalCost = idx.data(EventModel::TotalCostsRole).value<QVector<Data::CostSummary>>();
@@ -276,13 +291,21 @@ private slots:
 
         for (int i = 0; i < 2; ++i) {
             const auto isCpuIndex = i == 0;
-            const auto parent = model.index(i, EventModel::ThreadColumn);
+            auto parent = model.index(i, EventModel::ThreadColumn);
             verifyCommonData(parent);
             QCOMPARE(parent.data(EventModel::SortRole).value<int>(), i);
 
-            const auto numRows = model.rowCount(parent);
+            auto numRows = model.rowCount(parent);
+            QCOMPARE(numRows, isCpuIndex ? nonEmptyCpus : processes);
 
-            QCOMPARE(numRows, isCpuIndex ? nonEmptyCpus : events.threads.size());
+            if (!isCpuIndex) {
+                // let's only look at the first process
+                parent = model.index(0, EventModel::ThreadColumn, parent);
+                verifyCommonData(parent);
+                QCOMPARE(parent.data().toString(), "foobar (#1234)");
+                numRows = model.rowCount(parent);
+                QCOMPARE(numRows, 2);
+            }
 
             for (int j = 0; j < numRows; ++j) {
                 const auto idx = model.index(j, EventModel::ThreadColumn, parent);

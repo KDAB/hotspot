@@ -76,13 +76,25 @@ public:
     using QAbstractItemModel::setData;
     void setData(const Data::EventResults& data);
 
+    struct Process
+    {
+        Process(qint32 pid = Data::INVALID_PID, const QVector<qint32> threads = {}, const QString &name = {})
+            : pid(pid)
+            , threads(threads)
+            , name(name)
+        {}
+        qint32 pid;
+        QVector<qint32> threads;
+        QString name;
+    };
 private:
     Data::EventResults m_data;
+    QVector<Process> m_processes;
     Data::TimeRange m_time;
     quint64 m_totalOnCpuTime = 0;
     quint64 m_totalOffCpuTime = 0;
     quint64 m_totalEvents = 0;
     quint64 m_maxCost = 0;
-    uint m_numProcesses = 0;
-    uint m_numThreads = 0;
 };
+
+Q_DECLARE_TYPEINFO(EventModel::Process, Q_MOVABLE_TYPE);

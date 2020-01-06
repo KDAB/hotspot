@@ -345,3 +345,8 @@ Data::ThreadEvents* Data::EventResults::findThread(qint32 pid, qint32 tid)
 
     return nullptr;
 }
+
+const Data::ThreadEvents* Data::EventResults::findThread(qint32 pid, qint32 tid) const
+{
+    return const_cast<Data::EventResults*>(this)->findThread(pid, tid);
+}

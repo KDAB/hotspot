@@ -32,28 +32,49 @@
 #include <QDebug>
 #include <QSet>
 
+static bool operator<(const EventModel::Process &process, qint32 pid)
+{
+    return process.pid < pid;
+}
+
 namespace {
-enum class Tag : quintptr
+enum class Tag : quint8
 {
     Invalid = 0,
     Root = 1,
     Overview = 2,
     Cpus = 3,
-    Threads = 4
+    Processes = 4,
+    Threads = 5
 };
+
+const auto DATATAG_SHIFT = sizeof(Tag) * 8;
+const auto DATATAG_UNSHIFT = (sizeof(quintptr) - sizeof(Tag)) * 8;
+
+quintptr combineDataTag(Tag tag, quintptr data)
+{
+    return data << DATATAG_SHIFT | static_cast<quintptr>(tag);
+}
+
+Tag dataTag(quintptr internalId)
+{
+    auto ret = (internalId << DATATAG_UNSHIFT) >> DATATAG_UNSHIFT;
+    if (ret > static_cast<quintptr>(Tag::Threads))
+        return Tag::Invalid;
+    return static_cast<Tag>(ret);
+}
+
 Tag dataTag(const QModelIndex& idx)
 {
-    if (!idx.isValid() || idx.internalId() == static_cast<quintptr>(Tag::Root)) {
+    if (!idx.isValid())
         return Tag::Root;
-    } else if (idx.internalId() == static_cast<quintptr>(Tag::Overview)) {
-        return Tag::Overview;
-    } else if (idx.internalId() == static_cast<quintptr>(Tag::Cpus)) {
-        return Tag::Cpus;
-    } else if (idx.internalId() == static_cast<quintptr>(Tag::Threads)) {
-        return Tag::Threads;
-    } else {
-        return Tag::Invalid;
-    }
+    else
+        return dataTag(idx.internalId());
+}
+
+quintptr tagData(quintptr internalId)
+{
+    return internalId >> DATATAG_SHIFT;
 }
 }
 
@@ -79,8 +100,10 @@ int EventModel::rowCount(const QModelIndex& parent) const
     case Tag::Cpus:
     case Tag::Threads:
         break;
+    case Tag::Processes:
+        return m_processes.value(parent.row()).threads.size();
     case Tag::Overview:
-        return (parent.row() == 0) ? m_data.cpus.size() : m_data.threads.size();
+        return (parent.row() == 0) ? m_data.cpus.size() : m_processes.size();
     case Tag::Root:
         return 2;
     };
@@ -121,9 +144,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
     } else if (role == MaxCostRole) {
         return m_maxCost;
     } else if (role == NumProcessesRole) {
-        return m_numProcesses;
+        return m_processes.size();
     } else if (role == NumThreadsRole) {
-        return m_numThreads;
+        return m_data.threads.size();
     } else if (role == NumCpusRole) {
         return static_cast<uint>(m_data.cpus.size());
     } else if (role == TotalCostsRole) {
@@ -138,7 +161,7 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         return {};
     } else if (tag == Tag::Overview) {
         if (role == Qt::DisplayRole) {
-            return index.row() == 0 ? tr("CPUs") : tr("Threads");
+            return index.row() == 0 ? tr("CPUs") : tr("Processes");
         } else if (role == Qt::ToolTipRole) {
             if (index.row() == 0) {
                 return tr("Event timelines for all CPUs. This shows you which, and how many CPUs where leveraged."
@@ -150,6 +173,51 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
             return index.row();
         }
         return {};
+    } else if (tag == Tag::Processes) {
+        const auto &process = m_processes.value(index.row());
+        if (role == Qt::DisplayRole)
+            return tr("%1 (#%2)").arg(process.name, QString::number(process.pid));
+        else if (role == SortRole)
+            return process.pid;
+
+        if (role == Qt::ToolTipRole) {
+            QString tooltip = tr("Process %1, pid = %2, num threads = %3\n")
+                                        .arg(process.name, QString::number(process.pid), QString::number(process.threads.size()));
+
+            quint64 runtime = 0;
+            quint64 maxRuntime = 0;
+            quint64 offCpuTime = 0;
+            quint64 numEvents = 0;
+            for (const auto tid : process.threads) {
+                const auto thread = m_data.findThread(process.pid, tid);
+                Q_ASSERT(thread);
+                runtime += thread->time.delta();
+                maxRuntime = std::max(thread->time.delta(), maxRuntime);
+                offCpuTime += thread->offCpuTime;
+                numEvents += thread->events.size();
+            }
+
+            const auto totalRuntime = m_time.delta();
+            tooltip += tr("Runtime: %1 (%2% of total runtime)\n")
+                            .arg(Util::formatTimeString(maxRuntime), Util::formatCostRelative(maxRuntime, totalRuntime));
+            if (m_totalOffCpuTime > 0) {
+                const auto onCpuTime = runtime - offCpuTime;
+                tooltip += tr("On-CPU time: %1 (%2% of combined thread runtime, %3% of total On-CPU time)\n")
+                                .arg(Util::formatTimeString(onCpuTime), Util::formatCostRelative(onCpuTime, runtime),
+                                    Util::formatCostRelative(onCpuTime, m_totalOnCpuTime));
+                tooltip += tr("Off-CPU time: %1 (%2% of combined thread runtime, %3% of total Off-CPU time)\n")
+                                .arg(Util::formatTimeString(offCpuTime),
+                                    Util::formatCostRelative(offCpuTime, runtime),
+                                    Util::formatCostRelative(offCpuTime, m_totalOffCpuTime));
+                tooltip += tr("CPUs utilized: %1\n").arg(Util::formatCostRelative(onCpuTime, maxRuntime * 100));
+            }
+
+            tooltip += tr("Number of Events: %1 (%2% of the total)")
+                           .arg(QString::number(numEvents), Util::formatCostRelative(numEvents, m_totalEvents));
+            return tooltip;
+        }
+
+        return {};
     }
 
     const Data::ThreadEvents* thread = nullptr;
@@ -158,7 +226,11 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
     if (tag == Tag::Cpus) {
         cpu = &m_data.cpus[index.row()];
     } else {
-        thread = &m_data.threads[index.row()];
+        Q_ASSERT(tag == Tag::Threads);
+        const auto process = m_processes.value(tagData(index.internalId()));
+        const auto tid = process.threads.value(index.row());
+        thread = m_data.findThread(process.pid, tid);
+        Q_ASSERT(thread);
     }
 
     if (role == ThreadStartRole) {
@@ -230,24 +302,28 @@ void EventModel::setData(const Data::EventResults& data)
     m_data = data;
     m_totalEvents = 0;
     m_maxCost = 0;
-    m_numProcesses = 0;
-    m_numThreads = 0;
+    m_processes.clear();
     m_totalOnCpuTime = 0;
     m_totalOffCpuTime = 0;
     if (data.threads.isEmpty()) {
         m_time = {};
     } else {
         m_time = data.threads.first().time;
-        QSet<quint32> processes;
-        QSet<quint32> threads;
         for (const auto& thread : data.threads) {
             m_time.start = std::min(thread.time.start, m_time.start);
             m_time.end = std::max(thread.time.end, m_time.end);
             m_totalOffCpuTime += thread.offCpuTime;
             m_totalOnCpuTime += thread.time.delta() - thread.offCpuTime;
             m_totalEvents += thread.events.size();
-            processes.insert(thread.pid);
-            threads.insert(thread.tid);
+            auto it = std::lower_bound(m_processes.begin(), m_processes.end(), thread.pid);
+            if (it == m_processes.end() || it->pid != thread.pid) {
+                m_processes.insert(it, {thread.pid, {thread.tid}, thread.name});
+            } else {
+                it->threads.append(thread.tid);
+                // prefer process name, if we encountered a thread first
+                if (thread.pid == thread.tid)
+                    it->name = thread.name;
+            }
 
             for (const auto& event : thread.events) {
                 if (event.type != 0) {
@@ -257,8 +333,6 @@ void EventModel::setData(const Data::EventResults& data)
                 m_maxCost = std::max(event.cost, m_maxCost);
             }
         }
-        m_numProcesses = processes.size();
-        m_numThreads = threads.size();
 
         // don't show timeline for CPU cores that did not receive any events
         auto it = std::remove_if(m_data.cpus.begin(), m_data.cpus.end(),
@@ -270,7 +344,7 @@ void EventModel::setData(const Data::EventResults& data)
 
 QModelIndex EventModel::index(int row, int column, const QModelIndex& parent) const
 {
-    if (row < 0 || column < 0 || column >= NUM_COLUMNS) {
+    if (row < 0 || row >= rowCount(parent) || column < 0 || column >= NUM_COLUMNS) {
         return {};
     }
 
@@ -280,22 +354,14 @@ QModelIndex EventModel::index(int row, int column, const QModelIndex& parent) co
     case Tag::Threads:
         break;
     case Tag::Root: // root has the 1st level children: Overview
-        if (row >= 2) {
-            return {};
-        }
         return createIndex(row, column, static_cast<quintptr>(Tag::Overview));
-    case Tag::Overview: // 2nd level children: Cpus and the Threads
-        if (parent.row() == 0) {
-            if (row >= m_data.cpus.size()) {
-                return {};
-            }
+    case Tag::Overview: // 2nd level children: Cpus and the Processes
+        if (parent.row() == 0)
             return createIndex(row, column, static_cast<quintptr>(Tag::Cpus));
-        } else {
-            if (row >= m_data.threads.size()) {
-                return {};
-            }
-            return createIndex(row, column, static_cast<quintptr>(Tag::Threads));
-        }
+        else
+            return createIndex(row, column, static_cast<quintptr>(Tag::Processes));
+    case Tag::Processes: // 3rd level children: Threads
+        return createIndex(row, column, combineDataTag(Tag::Threads, parent.row()));
     }
 
     return {};
@@ -310,8 +376,12 @@ QModelIndex EventModel::parent(const QModelIndex& child) const
         break;
     case Tag::Cpus:
         return createIndex(0, 0, static_cast<quintptr>(Tag::Overview));
-    case Tag::Threads:
+    case Tag::Processes:
         return createIndex(1, 0, static_cast<quintptr>(Tag::Overview));
+    case Tag::Threads: {
+        const auto parentRow = tagData(child.internalId());
+        return createIndex(parentRow, 0, static_cast<quintptr>(Tag::Processes));
+    }
     }
 
     return {};

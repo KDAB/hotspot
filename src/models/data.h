@@ -702,6 +702,7 @@ struct EventResults
     qint32 offCpuTimeCostId = -1;
 
     ThreadEvents* findThread(qint32 pid, qint32 tid);
+    const ThreadEvents* findThread(qint32 pid, qint32 tid) const;
 
     bool operator==(const EventResults& rhs) const
     {
