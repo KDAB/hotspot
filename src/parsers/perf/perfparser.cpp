@@ -848,6 +848,8 @@ public:
         // we encounter a ThreadStart event
         thread.time.start = applicationTime.start;
         thread.name = commands.value(thread.pid).value(thread.tid);
+        if (thread.name.isEmpty() && thread.pid != thread.tid)
+            thread.name = commands.value(thread.pid).value(thread.pid);
         eventResult.threads.push_back(thread);
         return &eventResult.threads.last();
     }
