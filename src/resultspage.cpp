@@ -55,16 +55,18 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsPage)
     , m_filterAndZoomStack(new FilterAndZoomStack(this))
+    , m_filterMenu(new QMenu(this))
+    , m_exportMenu(new QMenu(tr("Export"), this))
     , m_resultsSummaryPage(new ResultsSummaryPage(m_filterAndZoomStack, parser, this))
-    , m_resultsBottomUpPage(new ResultsBottomUpPage(m_filterAndZoomStack, parser, this))
+    , m_resultsBottomUpPage(new ResultsBottomUpPage(m_filterAndZoomStack, parser, m_exportMenu, this))
     , m_resultsTopDownPage(new ResultsTopDownPage(m_filterAndZoomStack, parser, this))
     , m_resultsFlameGraphPage(new ResultsFlameGraphPage(m_filterAndZoomStack, parser, this))
     , m_resultsCallerCalleePage(new ResultsCallerCalleePage(m_filterAndZoomStack, parser, this))
-    , m_filterMenu(new QMenu(this))
     , m_timeLineDelegate(nullptr)
     , m_filterBusyIndicator(nullptr) // create after we setup the UI to keep it on top
     , m_timelineVisible(true)
 {
+    m_exportMenu->setIcon(QIcon::fromTheme(QStringLiteral("document-export")));
     {
         const auto actions = m_filterAndZoomStack->actions();
         m_filterMenu->addAction(actions.filterOut);
@@ -211,6 +213,7 @@ void ResultsPage::clear()
     m_resultsTopDownPage->clear();
     m_resultsCallerCalleePage->clear();
     m_resultsFlameGraphPage->clear();
+    m_exportMenu->clear();
 
     m_filterAndZoomStack->clear();
 }
@@ -218,6 +221,11 @@ void ResultsPage::clear()
 QMenu* ResultsPage::filterMenu() const
 {
     return m_filterMenu;
+}
+
+QMenu* ResultsPage::exportMenu() const
+{
+    return m_exportMenu;
 }
 
 bool ResultsPage::eventFilter(QObject* watched, QEvent* event)

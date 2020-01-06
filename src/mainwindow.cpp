@@ -171,6 +171,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     ui->viewMenu->addSeparator();
     ui->viewMenu->addActions(m_resultsPage->filterMenu()->actions());
+    ui->viewMenu->addSeparator();
+    ui->viewMenu->addMenu(m_resultsPage->exportMenu());
 
     setupCodeNavigationMenu();
     setupPathSettingsMenu();

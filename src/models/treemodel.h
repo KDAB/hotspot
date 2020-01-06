@@ -189,6 +189,11 @@ public:
         QAbstractItemModel::endResetModel();
     }
 
+    Results results() const
+    {
+        return m_results;
+    }
+
 protected:
     const typename Base::TreeNode* rootItem() const final override
     {

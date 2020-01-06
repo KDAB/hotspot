@@ -30,6 +30,7 @@
 #include <QWidget>
 
 class QMenu;
+class QAction;
 
 namespace Ui {
 class ResultsPage;
@@ -58,6 +59,7 @@ public:
     void selectSummaryTab();
     void clear();
     QMenu* filterMenu() const;
+    QMenu* exportMenu() const;
 
 public slots:
     void setSysroot(const QString& path);
@@ -77,12 +79,13 @@ private:
     QScopedPointer<Ui::ResultsPage> ui;
 
     FilterAndZoomStack* m_filterAndZoomStack;
+    QMenu* m_filterMenu;
+    QMenu* m_exportMenu;
     ResultsSummaryPage* m_resultsSummaryPage;
     ResultsBottomUpPage* m_resultsBottomUpPage;
     ResultsTopDownPage* m_resultsTopDownPage;
     ResultsFlameGraphPage* m_resultsFlameGraphPage;
     ResultsCallerCalleePage* m_resultsCallerCalleePage;
-    QMenu* m_filterMenu;
     TimeLineDelegate* m_timeLineDelegate;
     QWidget* m_filterBusyIndicator;
     bool m_timelineVisible;

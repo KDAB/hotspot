@@ -29,6 +29,8 @@
 
 #include <QWidget>
 
+class QMenu;
+
 namespace Ui {
 class ResultsBottomUpPage;
 }
@@ -46,7 +48,8 @@ class ResultsBottomUpPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent = nullptr);
+    explicit ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfParser* parser,
+                                 QMenu* exportMenu, QWidget* parent = nullptr);
     ~ResultsBottomUpPage();
 
     void clear();
