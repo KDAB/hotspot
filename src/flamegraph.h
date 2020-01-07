@@ -56,6 +56,7 @@ public:
     void clear();
 
     QImage toImage() const;
+    void saveSvg(const QString &fileName) const;
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;

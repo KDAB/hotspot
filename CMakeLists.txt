@@ -42,7 +42,7 @@ set(HOTSPOT_VERSION_STRING "${hotspot_VERSION}")
 
 include(FeatureSummary)
 
-find_package(Qt5 5.7 COMPONENTS Core Widgets Network Test REQUIRED)
+find_package(Qt5 5.7 COMPONENTS Core Widgets Network Test Svg REQUIRED)
 find_package(LibElf REQUIRED)
 find_package(Elfutils REQUIRED) # TODO: make optional, use internal copy
 find_package(ECM 1.0.0 NO_MODULE REQUIRED)

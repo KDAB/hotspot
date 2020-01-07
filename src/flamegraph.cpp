@@ -48,6 +48,7 @@
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QWheelEvent>
+#include <QSvgGenerator>
 
 #include <KColorScheme>
 #include <KLocalizedString>
@@ -621,11 +622,46 @@ void FlameGraph::clear()
 
 QImage FlameGraph::toImage() const
 {
+    if (!m_rootItem)
+        return {};
+
     const auto sceneRect = m_scene->sceneRect();
     QImage image(sceneRect.size().toSize(), QImage::Format_ARGB32_Premultiplied);
     QPainter painter(&image);
     m_scene->render(&painter, {{0, 0}, sceneRect.size()}, sceneRect);
     return image;
+}
+
+void FlameGraph::saveSvg(const QString &fileName) const
+{
+    if (!m_rootItem)
+        return;
+
+    const auto sceneRect = m_scene->sceneRect();
+
+    QSvgGenerator generator;
+    generator.setSize(sceneRect.size().toSize());
+    generator.setViewBox({{0, 0}, sceneRect.size()});
+    generator.setFileName(fileName);
+    if (m_showBottomUpData)
+        generator.setTitle(tr("Bottom Up FlameGraph"));
+    else
+        generator.setTitle(tr("Top Down FlameGraph"));
+    const auto costType = m_bottomUpData.costs.typeName(m_costSource->currentData().value<int>());
+    generator.setDescription(tr("Cost type: %1, cost threshold: %2\n%3")
+                                .arg(costType, QString::number(m_costThreshold),
+                                     m_displayLabel->text()));
+
+    const auto oldPen = m_rootItem->pen();
+    const auto oldBrush = m_rootItem->brush();
+    m_rootItem->setPen(QPen(Qt::black));
+    m_rootItem->setBrush(QBrush(Qt::white));
+
+    QPainter painter(&generator);
+    m_scene->render(&painter, generator.viewBoxF(), sceneRect);
+
+    m_rootItem->setPen(oldPen);
+    m_rootItem->setBrush(oldBrush);
 }
 
 void FlameGraph::showData()

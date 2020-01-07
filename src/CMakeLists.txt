@@ -67,6 +67,7 @@ add_executable(hotspot
 
 target_link_libraries(hotspot
     Qt5::Widgets
+    Qt5::Svg
     KF5::ThreadWeaver
     KF5::I18n
     KF5::ConfigWidgets
