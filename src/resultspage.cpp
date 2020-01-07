@@ -60,7 +60,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     , m_resultsSummaryPage(new ResultsSummaryPage(m_filterAndZoomStack, parser, this))
     , m_resultsBottomUpPage(new ResultsBottomUpPage(m_filterAndZoomStack, parser, m_exportMenu, this))
     , m_resultsTopDownPage(new ResultsTopDownPage(m_filterAndZoomStack, parser, this))
-    , m_resultsFlameGraphPage(new ResultsFlameGraphPage(m_filterAndZoomStack, parser, this))
+    , m_resultsFlameGraphPage(new ResultsFlameGraphPage(m_filterAndZoomStack, parser, m_exportMenu, this))
     , m_resultsCallerCalleePage(new ResultsCallerCalleePage(m_filterAndZoomStack, parser, this))
     , m_timeLineDelegate(nullptr)
     , m_filterBusyIndicator(nullptr) // create after we setup the UI to keep it on top

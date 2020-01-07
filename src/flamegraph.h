@@ -55,6 +55,8 @@ public:
     void setBottomUpData(const Data::BottomUpResults& bottomUpData);
     void clear();
 
+    QImage toImage() const;
+
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
 

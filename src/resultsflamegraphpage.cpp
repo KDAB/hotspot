@@ -30,7 +30,28 @@
 
 #include "parsers/perf/perfparser.h"
 
-ResultsFlameGraphPage::ResultsFlameGraphPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent)
+#include <QMenu>
+#include <QAction>
+#include <QFileDialog>
+#include <QImageWriter>
+#include <QTextStream>
+#include <QMessageBox>
+
+namespace {
+QString imageFormatFilter()
+{
+    QString filter;
+    {
+        QTextStream stream(&filter);
+        for (const auto format : QImageWriter::supportedImageFormats())
+            stream << "*." << format.toLower() << ' ';
+    }
+    filter.chop(1); // remove trailing whitespace
+    return filter;
+}
+}
+
+ResultsFlameGraphPage::ResultsFlameGraphPage(FilterAndZoomStack* filterStack, PerfParser* parser, QMenu* exportMenu, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsFlameGraphPage)
 {
@@ -38,7 +59,21 @@ ResultsFlameGraphPage::ResultsFlameGraphPage(FilterAndZoomStack* filterStack, Pe
     ui->flameGraph->setFilterStack(filterStack);
 
     connect(parser, &PerfParser::bottomUpDataAvailable, this,
-            [this](const Data::BottomUpResults& data) { ui->flameGraph->setBottomUpData(data); });
+            [this, exportMenu](const Data::BottomUpResults& data) {
+                ui->flameGraph->setBottomUpData(data);
+                m_exportAction = exportMenu->addAction(QIcon::fromTheme(QStringLiteral("image-x-generic")), tr("Flamegraph"));
+                connect(m_exportAction, &QAction::triggered, this, [this]() {
+                    const auto filter = tr("Images (%1)").arg(imageFormatFilter());
+                    const auto fileName = QFileDialog::getSaveFileName(this, tr("Export Flamegraph"), {}, filter);
+                    if (fileName.isEmpty())
+                        return;
+                    QImageWriter writer(fileName);
+                    if (!writer.write(ui->flameGraph->toImage())) {
+                        QMessageBox::warning(this, tr("Export Failed"),
+                                             tr("Failed to export flamegraph: %1").arg(writer.errorString()));
+                    }
+                });
+            });
 
     connect(parser, &PerfParser::topDownDataAvailable, this,
             [this](const Data::TopDownResults& data) { ui->flameGraph->setTopDownData(data); });
@@ -49,6 +84,8 @@ ResultsFlameGraphPage::ResultsFlameGraphPage(FilterAndZoomStack* filterStack, Pe
 void ResultsFlameGraphPage::clear()
 {
     ui->flameGraph->clear();
+    delete m_exportAction;
+    m_exportAction = nullptr;
 }
 
 ResultsFlameGraphPage::~ResultsFlameGraphPage() = default;

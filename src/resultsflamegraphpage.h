@@ -29,6 +29,9 @@
 
 #include <QWidget>
 
+class QMenu;
+class QAction;
+
 namespace Ui {
 class ResultsFlameGraphPage;
 }
@@ -44,7 +47,8 @@ class ResultsFlameGraphPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsFlameGraphPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent = nullptr);
+    explicit ResultsFlameGraphPage(FilterAndZoomStack* filterStack, PerfParser* parser,
+                                   QMenu* exportMenu, QWidget* parent = nullptr);
     ~ResultsFlameGraphPage();
 
     void clear();
@@ -54,4 +58,5 @@ signals:
 
 private:
     QScopedPointer<Ui::ResultsFlameGraphPage> ui;
+    QAction* m_exportAction = nullptr;
 };

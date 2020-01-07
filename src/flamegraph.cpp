@@ -619,6 +619,15 @@ void FlameGraph::clear()
     emit uiResetRequested();
 }
 
+QImage FlameGraph::toImage() const
+{
+    const auto sceneRect = m_scene->sceneRect();
+    QImage image(sceneRect.size().toSize(), QImage::Format_ARGB32_Premultiplied);
+    QPainter painter(&image);
+    m_scene->render(&painter, {{0, 0}, sceneRect.size()}, sceneRect);
+    return image;
+}
+
 void FlameGraph::showData()
 {
     auto showBottomUpData = m_showBottomUpData;
