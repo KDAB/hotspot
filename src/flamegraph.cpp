@@ -571,6 +571,8 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
             connect(viewCallerCallee, &QAction::triggered, this, [this, item](){
                 emit jumpToCallerCallee(item->symbol());
             });
+            auto* openEditorAction = contextMenu.addAction(tr("Open in Editor"));
+            connect(openEditorAction, &QAction::triggered, this, [this, item]() { emit openEditor(item->symbol()); });
             contextMenu.addSeparator();
         }
         ResultsUtil::addFilterActions(&contextMenu, item ? item->symbol() : Data::Symbol(), m_filterStack);

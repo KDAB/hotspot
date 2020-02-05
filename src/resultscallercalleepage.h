@@ -56,6 +56,7 @@ public:
     void clear();
 
     void jumpToCallerCallee(const Data::Symbol& symbol);
+    void openEditor(const Data::Symbol& symbol);
 
 private slots:
     void onSourceMapContextMenu(const QPoint& pos);
@@ -63,6 +64,7 @@ private slots:
 
 signals:
     void navigateToCode(const QString& url, int lineNumber, int columnNumber);
+    void navigateToCodeFailed(const QString& message);
 
 private:
     struct SourceMapLocation
@@ -75,7 +77,8 @@ private:
         QString path;
         int lineNumber = -1;
     };
-    SourceMapLocation toSourceMapLocation(const QModelIndex& index);
+    SourceMapLocation toSourceMapLocation(const QModelIndex& index) const;
+    SourceMapLocation toSourceMapLocation(const QString& location, const Data::Symbol& symbol) const;
 
     QScopedPointer<Ui::ResultsCallerCalleePage> ui;
 

@@ -43,11 +43,12 @@
 
 #include <KLocalizedString>
 
-#include <QSortFilterProxyModel>
 #include <QDebug>
 #include <QEvent>
-#include <QProgressBar>
 #include <QMenu>
+#include <QProgressBar>
+#include <QSortFilterProxyModel>
+#include <QTimer>
 
 static const int SUMMARY_TABINDEX = 0;
 
@@ -79,6 +80,8 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     }
 
     ui->setupUi(this);
+
+    ui->errorWidget->hide();
 
     ui->resultsTabWidget->setFocus();
     ui->resultsTabWidget->addTab(m_resultsSummaryPage, tr("Summary"));
@@ -155,13 +158,19 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
         m_filterBusyIndicator->setVisible(false);
     });
 
-    connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode, this, &ResultsPage::onNavigateToCode);
+    connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode, this, &ResultsPage::navigateToCode);
+    connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCodeFailed, this,
+            &ResultsPage::navigateToCodeFailed);
 
     connect(m_resultsSummaryPage, &ResultsSummaryPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
+    connect(m_resultsSummaryPage, &ResultsSummaryPage::openEditor, this, &ResultsPage::onOpenEditor);
     connect(m_resultsBottomUpPage, &ResultsBottomUpPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
+    connect(m_resultsBottomUpPage, &ResultsBottomUpPage::openEditor, this, &ResultsPage::onOpenEditor);
     connect(m_resultsTopDownPage, &ResultsTopDownPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
+    connect(m_resultsTopDownPage, &ResultsTopDownPage::openEditor, this, &ResultsPage::onOpenEditor);
     connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::jumpToCallerCallee, this,
             &ResultsPage::onJumpToCallerCallee);
+    connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::openEditor, this, &ResultsPage::onOpenEditor);
 
     {
         // create a busy indicator
@@ -182,11 +191,6 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
 
 ResultsPage::~ResultsPage() = default;
 
-void ResultsPage::onNavigateToCode(const QString& url, int lineNumber, int columnNumber)
-{
-    emit navigateToCode(url, lineNumber, columnNumber);
-}
-
 void ResultsPage::setSysroot(const QString& path)
 {
     m_resultsCallerCalleePage->setSysroot(path);
@@ -201,6 +205,11 @@ void ResultsPage::onJumpToCallerCallee(const Data::Symbol& symbol)
 {
     m_resultsCallerCalleePage->jumpToCallerCallee(symbol);
     ui->resultsTabWidget->setCurrentWidget(m_resultsCallerCalleePage);
+}
+
+void ResultsPage::onOpenEditor(const Data::Symbol& symbol)
+{
+    m_resultsCallerCalleePage->openEditor(symbol);
 }
 
 void ResultsPage::selectSummaryTab()
@@ -251,4 +260,11 @@ void ResultsPage::setTimelineVisible(bool visible)
 {
     m_timelineVisible = visible;
     ui->timeLineArea->setVisible(visible && ui->resultsTabWidget->currentIndex() != SUMMARY_TABINDEX);
+}
+
+void ResultsPage::navigateToCodeFailed(const QString& message)
+{
+    ui->errorWidget->setText(message);
+    ui->errorWidget->animatedShow();
+    QTimer::singleShot(std::chrono::seconds(5), ui->errorWidget, &KMessageWidget::animatedHide);
 }

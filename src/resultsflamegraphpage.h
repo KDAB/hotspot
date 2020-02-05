@@ -55,6 +55,7 @@ public:
 
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
+    void openEditor(const Data::Symbol& symbol);
 
 private:
     QScopedPointer<Ui::ResultsFlameGraphPage> ui;

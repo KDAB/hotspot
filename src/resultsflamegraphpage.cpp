@@ -84,6 +84,7 @@ ResultsFlameGraphPage::ResultsFlameGraphPage(FilterAndZoomStack* filterStack, Pe
             [this](const Data::TopDownResults& data) { ui->flameGraph->setTopDownData(data); });
 
     connect(ui->flameGraph, &FlameGraph::jumpToCallerCallee, this, &ResultsFlameGraphPage::jumpToCallerCallee);
+    connect(ui->flameGraph, &FlameGraph::openEditor, this, &ResultsFlameGraphPage::openEditor);
 }
 
 void ResultsFlameGraphPage::clear()

@@ -56,7 +56,7 @@ void connectFilter(QLineEdit *filter, QSortFilterProxyModel *proxy)
     timer->setSingleShot(true);
 
     filter->setClearButtonEnabled(true);
-    filter->setPlaceholderText(i18n("Search"));
+    filter->setPlaceholderText(QCoreApplication::translate("Util", "Search"));
 
     proxy->setFilterKeyColumn(-1);
     proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -100,29 +100,35 @@ void addFilterActions(QMenu* menu, const Data::Symbol& symbol, FilterAndZoomStac
     menu->addAction(filterStack->actions().resetFilter);
 }
 
-void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filterStack,
-                      std::function<void(const Data::Symbol&)> callback)
+void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filterStack, CallbackActions actions,
+                      std::function<void(CallbackAction action, const Data::Symbol&)> callback)
 {
     view->setContextMenuPolicy(Qt::CustomContextMenu);
-    QObject::connect(
-        view, &QTreeView::customContextMenuRequested, view, [view, symbolRole, filterStack, callback](const QPoint& point) {
-            const auto index = view->indexAt(point);
-            const auto symbol = index.data(symbolRole).value<Data::Symbol>();
+    QObject::connect(view, &QTreeView::customContextMenuRequested, view, [=](const QPoint& point) {
+        const auto index = view->indexAt(point);
+        const auto symbol = index.data(symbolRole).value<Data::Symbol>();
 
-            QMenu contextMenu;
-            if (callback && symbol.isValid()) {
-                auto* viewCallerCallee = contextMenu.addAction(QCoreApplication::translate("Util", "View Caller/Callee"));
-                QObject::connect(viewCallerCallee, &QAction::triggered, &contextMenu, [symbol, callback](){
-                    callback(symbol);
-                });
-                contextMenu.addSeparator();
+        QMenu contextMenu;
+        if (callback && symbol.isValid() && actions) {
+            if (actions.testFlag(CallbackAction::ViewCallerCallee)) {
+                auto* viewCallerCallee =
+                    contextMenu.addAction(QCoreApplication::translate("Util", "View Caller/Callee"));
+                QObject::connect(viewCallerCallee, &QAction::triggered, &contextMenu,
+                                 [symbol, callback]() { callback(CallbackAction::ViewCallerCallee, symbol); });
             }
-            addFilterActions(&contextMenu, symbol, filterStack);
+            if (actions.testFlag(CallbackAction::OpenEditor)) {
+                auto* openEditorAction = contextMenu.addAction(QCoreApplication::translate("Util", "Open in Editor"));
+                QObject::connect(openEditorAction, &QAction::triggered, &contextMenu,
+                                 [symbol, callback]() { callback(CallbackAction::OpenEditor, symbol); });
+            }
+            contextMenu.addSeparator();
+        }
+        addFilterActions(&contextMenu, symbol, filterStack);
 
-            if (!contextMenu.actions().isEmpty()) {
-                contextMenu.exec(QCursor::pos());
-            }
-        });
+        if (!contextMenu.actions().isEmpty()) {
+            contextMenu.exec(QCursor::pos());
+        }
+    });
 }
 
 void setupCostDelegate(QAbstractItemModel* model, QTreeView* view, int sortRole, int totalCostRole, int numBaseColumns)

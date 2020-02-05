@@ -84,8 +84,7 @@ ResultsBottomUpPage::ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfPa
     auto bottomUpCostModel = new BottomUpModel(this);
     ResultsUtil::setupTreeView(ui->bottomUpTreeView, ui->bottomUpSearch, bottomUpCostModel);
     ResultsUtil::setupCostDelegate(bottomUpCostModel, ui->bottomUpTreeView);
-    ResultsUtil::setupContextMenu(ui->bottomUpTreeView, bottomUpCostModel, filterStack,
-                                  [this](const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
+    ResultsUtil::setupContextMenu(ui->bottomUpTreeView, bottomUpCostModel, filterStack, this);
 
     auto topHotspotsProxy = new TopProxy(this);
     topHotspotsProxy->setSourceModel(bottomUpCostModel);

@@ -69,6 +69,7 @@ private slots:
 
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
+    void openEditor(const Data::Symbol& symbol);
     void uiResetRequested();
 
 private:

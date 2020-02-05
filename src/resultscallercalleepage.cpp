@@ -83,7 +83,8 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
     ResultsUtil::connectFilter(ui->callerCalleeFilter, m_callerCalleeProxy);
     ui->callerCalleeTableView->setSortingEnabled(true);
     ui->callerCalleeTableView->setModel(m_callerCalleeProxy);
-    ResultsUtil::setupContextMenu(ui->callerCalleeTableView, CallerCalleeModel::SymbolRole, filterStack, {});
+    ResultsUtil::setupContextMenu(ui->callerCalleeTableView, m_callerCalleeCostModel, filterStack, this,
+                                  {ResultsUtil::CallbackAction::OpenEditor});
     ResultsUtil::stretchFirstColumn(ui->callerCalleeTableView);
     ResultsUtil::setupCostDelegate(m_callerCalleeCostModel, ui->callerCalleeTableView);
 
@@ -119,8 +120,10 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
     };
     connectCallerOrCalleeModel<CalleeModel>(ui->calleesView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
     connectCallerOrCalleeModel<CallerModel>(ui->callersView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
-    ResultsUtil::setupContextMenu(ui->calleesView, CalleeModel::SymbolRole, filterStack, {});
-    ResultsUtil::setupContextMenu(ui->callersView, CallerModel::SymbolRole, filterStack, {});
+    ResultsUtil::setupContextMenu(ui->calleesView, calleesModel, filterStack, this,
+                                  {ResultsUtil::CallbackAction::OpenEditor});
+    ResultsUtil::setupContextMenu(ui->callersView, callersModel, filterStack, this,
+                                  {ResultsUtil::CallbackAction::OpenEditor});
 
     ui->sourceMapView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->sourceMapView, &QTreeView::customContextMenuRequested, this,
@@ -137,9 +140,9 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
 
 ResultsCallerCalleePage::~ResultsCallerCalleePage() = default;
 
-ResultsCallerCalleePage::SourceMapLocation ResultsCallerCalleePage::toSourceMapLocation(const QModelIndex& index)
+ResultsCallerCalleePage::SourceMapLocation
+ResultsCallerCalleePage::toSourceMapLocation(const QString& location, const Data::Symbol& symbol) const
 {
-    const auto location = index.data(SourceMapModel::LocationRole).toString();
     const auto separator = location.lastIndexOf(QLatin1Char(':'));
     if (separator <= 0) {
         return {};
@@ -161,14 +164,21 @@ ResultsCallerCalleePage::SourceMapLocation ResultsCallerCalleePage::toSourceMapL
 
     // also try to resolve paths relative to the module output folder
     // fixes a common issue with qmake builds that use relative paths
-    const auto symbol =
-        ui->callerCalleeTableView->currentIndex().data(CallerCalleeModel::SymbolRole).value<Data::Symbol>();
     const QString modulePath = QFileInfo(symbol.path).path() + QLatin1Char('/');
 
     resolvePath(m_sysroot) || resolvePath(m_sysroot + modulePath) || resolvePath(m_appPath)
         || resolvePath(m_appPath + modulePath);
 
     return ret;
+}
+
+ResultsCallerCalleePage::SourceMapLocation ResultsCallerCalleePage::toSourceMapLocation(const QModelIndex& index) const
+{
+    Q_ASSERT(qobject_cast<const SourceMapModel*>(index.model()));
+    const auto location = index.data(SourceMapModel::LocationRole).toString();
+    const auto symbol =
+        ui->callerCalleeTableView->currentIndex().data(CallerCalleeModel::SymbolRole).value<Data::Symbol>();
+    return toSourceMapLocation(location, symbol);
 }
 
 void ResultsCallerCalleePage::onSourceMapContextMenu(const QPoint& point)
@@ -184,7 +194,7 @@ void ResultsCallerCalleePage::onSourceMapContextMenu(const QPoint& point)
     }
 
     QMenu contextMenu;
-    auto* viewCallerCallee = contextMenu.addAction(tr("Open in editor"));
+    auto* viewCallerCallee = contextMenu.addAction(tr("Open in Editor"));
     auto* action = contextMenu.exec(QCursor::pos());
     if (action == viewCallerCallee) {
         emit navigateToCode(location.path, location.lineNumber, 0);
@@ -196,6 +206,9 @@ void ResultsCallerCalleePage::onSourceMapActivated(const QModelIndex& index)
     const auto location = toSourceMapLocation(index);
     if (location) {
         emit navigateToCode(location.path, location.lineNumber, 0);
+    } else {
+        const auto locationStr = index.data(SourceMapModel::LocationRole).toString();
+        emit navigateToCodeFailed(tr("Failed to find file for location '%1'.").arg(locationStr));
     }
 }
 
@@ -218,4 +231,24 @@ void ResultsCallerCalleePage::jumpToCallerCallee(const Data::Symbol& symbol)
 {
     auto callerCalleeIndex = m_callerCalleeProxy->mapFromSource(m_callerCalleeCostModel->indexForSymbol(symbol));
     ui->callerCalleeTableView->setCurrentIndex(callerCalleeIndex);
+}
+
+void ResultsCallerCalleePage::openEditor(const Data::Symbol& symbol)
+{
+    const auto callerCalleeIndex = m_callerCalleeProxy->mapFromSource(m_callerCalleeCostModel->indexForSymbol(symbol));
+    const auto map = callerCalleeIndex.data(CallerCalleeModel::SourceMapRole).value<Data::LocationCostMap>();
+
+    auto it = std::find_if(map.keyBegin(), map.keyEnd(), [&symbol, this](const QString& locationStr) {
+        const auto location = toSourceMapLocation(locationStr, symbol);
+        if (location) {
+            emit navigateToCode(location.path, location.lineNumber, 0);
+            return true;
+        }
+        return false;
+    });
+
+    if (it == map.keyEnd()) {
+        emit navigateToCodeFailed(
+            tr("Failed to find location for symbol %1 in %2.").arg(symbol.prettySymbol, symbol.binary));
+    }
 }

@@ -43,8 +43,7 @@ ResultsTopDownPage::ResultsTopDownPage(FilterAndZoomStack* filterStack, PerfPars
     auto topDownCostModel = new TopDownModel(this);
     ResultsUtil::setupTreeView(ui->topDownTreeView, ui->topDownSearch, topDownCostModel);
     ResultsUtil::setupCostDelegate(topDownCostModel, ui->topDownTreeView);
-    ResultsUtil::setupContextMenu(ui->topDownTreeView, topDownCostModel, filterStack,
-                                  [this](const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
+    ResultsUtil::setupContextMenu(ui->topDownTreeView, topDownCostModel, filterStack, this);
 
     connect(parser, &PerfParser::topDownDataAvailable, this,
             [this, topDownCostModel](const Data::TopDownResults& data) {

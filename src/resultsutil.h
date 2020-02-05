@@ -29,6 +29,8 @@
 
 #include <functional>
 
+#include <QFlags>
+
 class QMenu;
 class QTreeView;
 class QComboBox;
@@ -68,12 +70,31 @@ void setupCostDelegate(Model* model, QTreeView* view)
 
 void addFilterActions(QMenu* menu, const Data::Symbol &symbol, FilterAndZoomStack* filterStack);
 
-void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filterStack, std::function<void(const Data::Symbol&)> callback);
-
-template<typename Model>
-void setupContextMenu(QTreeView* view, Model* /*model*/, FilterAndZoomStack* filterStack, std::function<void(const Data::Symbol&)> callback)
+enum class CallbackAction
 {
-    setupContextMenu(view, Model::SymbolRole, filterStack, callback);
+    ViewCallerCallee = 0x1,
+    OpenEditor = 0x2,
+};
+Q_DECLARE_FLAGS(CallbackActions, CallbackAction)
+
+void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filterStack, CallbackActions actions,
+                      std::function<void(CallbackAction action, const Data::Symbol&)> callback);
+
+template<typename Model, typename Context>
+void setupContextMenu(QTreeView* view, Model* /*model*/, FilterAndZoomStack* filterStack, Context* context,
+                      CallbackActions actions = {CallbackAction::ViewCallerCallee, CallbackAction::OpenEditor})
+{
+    setupContextMenu(view, Model::SymbolRole, filterStack, actions,
+                     [context](ResultsUtil::CallbackAction action, const Data::Symbol& symbol) {
+                         switch (action) {
+                         case ResultsUtil::CallbackAction::ViewCallerCallee:
+                             context->jumpToCallerCallee(symbol);
+                             break;
+                         case ResultsUtil::CallbackAction::OpenEditor:
+                             context->openEditor(symbol);
+                             break;
+                         }
+                     });
 }
 
 void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns);

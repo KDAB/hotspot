@@ -63,8 +63,7 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
     ui->topHotspotsTableView->setModel(topHotspotsProxy);
     ResultsUtil::setupCostDelegate<BottomUpModel>(bottomUpCostModel, ui->topHotspotsTableView);
     ResultsUtil::stretchFirstColumn(ui->topHotspotsTableView);
-    ResultsUtil::setupContextMenu(ui->topHotspotsTableView, bottomUpCostModel, filterStack,
-                                  [this](const Data::Symbol& symbol) { emit jumpToCallerCallee(symbol); });
+    ResultsUtil::setupContextMenu(ui->topHotspotsTableView, bottomUpCostModel, filterStack, this);
 
     connect(ui->eventSourceComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             [topHotspotsProxy, this]() {

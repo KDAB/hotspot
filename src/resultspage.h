@@ -65,9 +65,10 @@ public slots:
     void setSysroot(const QString& path);
     void setAppPath(const QString& path);
 
-    void onNavigateToCode(const QString& url, int lineNumber, int columnNumber);
     void onJumpToCallerCallee(const Data::Symbol& symbol);
+    void onOpenEditor(const Data::Symbol& symbol);
     void setTimelineVisible(bool visible);
+    void navigateToCodeFailed(const QString& message);
 
 signals:
     void navigateToCode(const QString& url, int lineNumber, int columnNumber);

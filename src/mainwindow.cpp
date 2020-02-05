@@ -481,7 +481,9 @@ void MainWindow::navigateToCode(const QString& filePath, int lineNumber, int col
         command.replace(QStringLiteral("%l"), QString::number(std::max(1, lineNumber)));
         command.replace(QStringLiteral("%c"), QString::number(std::max(1, columnNumber)));
 
-        QProcess::startDetached(command);
+        if (!QProcess::startDetached(command)) {
+            m_resultsPage->navigateToCodeFailed(tr("Failed to launch command: %1").arg(command));
+        }
     } else {
         QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
         return;
