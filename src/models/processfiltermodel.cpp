@@ -34,8 +34,10 @@
 #include <KUser>
 
 ProcessFilterModel::ProcessFilterModel(QObject* parent)
-    : KRecursiveFilterProxyModel(parent)
+    : QSortFilterProxyModel(parent)
 {
+    setRecursiveFilteringEnabled(true);
+
     m_currentProcId = QString::number(qApp->applicationPid());
     m_currentUser = KUser().loginName();
 

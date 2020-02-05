@@ -34,8 +34,6 @@
 #include <QTextStream>
 #include <QMessageBox>
 
-#include <KRecursiveFilterProxyModel>
-
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
 

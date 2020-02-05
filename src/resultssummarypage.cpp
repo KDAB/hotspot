@@ -34,7 +34,6 @@
 
 #include <KFormat>
 #include <KLocalizedString>
-#include <KRecursiveFilterProxyModel>
 
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"

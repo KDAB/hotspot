@@ -28,10 +28,10 @@
 
 #pragma once
 
-#include <KRecursiveFilterProxyModel>
+#include <QSortFilterProxyModel>
 
 // A filterable and sortable process model
-class ProcessFilterModel : public KRecursiveFilterProxyModel
+class ProcessFilterModel : public QSortFilterProxyModel
 {
     Q_OBJECT
 public:

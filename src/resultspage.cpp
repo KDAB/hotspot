@@ -42,8 +42,8 @@
 #include "models/filterandzoomstack.h"
 
 #include <KLocalizedString>
-#include <KRecursiveFilterProxyModel>
 
+#include <QSortFilterProxyModel>
 #include <QDebug>
 #include <QEvent>
 #include <QProgressBar>
@@ -93,7 +93,8 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     }
 
     auto* eventModel = new EventModel(this);
-    auto* timeLineProxy = new KRecursiveFilterProxyModel(this);
+    auto* timeLineProxy = new QSortFilterProxyModel(this);
+    timeLineProxy->setRecursiveFilteringEnabled(true);
     timeLineProxy->setSourceModel(eventModel);
     timeLineProxy->setSortRole(EventModel::SortRole);
     timeLineProxy->setFilterKeyColumn(EventModel::ThreadColumn);

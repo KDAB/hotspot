@@ -45,7 +45,6 @@
 #include <KComboBox>
 #include <KConfigGroup>
 #include <KFilterProxySearchLine>
-#include <KRecursiveFilterProxyModel>
 #include <KSharedConfig>
 #include <KShell>
 #include <KUrlCompletion>

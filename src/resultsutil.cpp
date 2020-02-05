@@ -32,10 +32,10 @@
 #include <QHeaderView>
 #include <QMenu>
 #include <QTreeView>
+#include <QSortFilterProxyModel>
 
 #include <KFilterProxySearchLine>
 #include <KLocalizedString>
-#include <KRecursiveFilterProxyModel>
 
 #include "models/costdelegate.h"
 #include "models/data.h"
@@ -52,7 +52,8 @@ void stretchFirstColumn(QTreeView* view)
 void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, QAbstractItemModel* model, int initialSortColumn,
                    int sortRole, int filterRole)
 {
-    auto proxy = new KRecursiveFilterProxyModel(view);
+    auto proxy = new QSortFilterProxyModel(view);
+    proxy->setRecursiveFilteringEnabled(true);
     proxy->setSortRole(sortRole);
     proxy->setFilterRole(filterRole);
     proxy->setSourceModel(model);
