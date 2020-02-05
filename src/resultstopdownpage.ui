@@ -27,7 +27,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="KFilterProxySearchLine" name="topDownSearch" native="true">
+    <widget class="QLineEdit" name="topDownSearch" native="true">
      <property name="toolTip">
       <string>Filter the call graph tree.</string>
      </property>
@@ -48,13 +48,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>KFilterProxySearchLine</class>
-   <extends>QWidget</extends>
-   <header>kfilterproxysearchline.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

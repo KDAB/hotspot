@@ -32,7 +32,8 @@
 class QMenu;
 class QTreeView;
 class QComboBox;
-class KFilterProxySearchLine;
+class QLineEdit;
+class QSortFilterProxyModel;
 class QAbstractItemModel;
 class KLocalizedString;
 
@@ -46,11 +47,13 @@ class FilterAndZoomStack;
 namespace ResultsUtil {
 void stretchFirstColumn(QTreeView* view);
 
-void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, QAbstractItemModel* model, int initialSortColumn,
+void connectFilter(QLineEdit *filter, QSortFilterProxyModel *proxy);
+
+void setupTreeView(QTreeView* view, QLineEdit* filter, QAbstractItemModel* model, int initialSortColumn,
                    int sortRole, int filterRole);
 
 template<typename Model>
-void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, Model* model)
+void setupTreeView(QTreeView* view, QLineEdit* filter, Model* model)
 {
     setupTreeView(view, filter, model, Model::InitialSortColumn, Model::SortRole, Model::FilterRole);
 }

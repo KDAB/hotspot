@@ -80,7 +80,7 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
     m_callerCalleeProxy = new QSortFilterProxyModel(this);
     m_callerCalleeProxy->setSourceModel(m_callerCalleeCostModel);
     m_callerCalleeProxy->setSortRole(CallerCalleeModel::SortRole);
-    ui->callerCalleeFilter->setProxy(m_callerCalleeProxy);
+    ResultsUtil::connectFilter(ui->callerCalleeFilter, m_callerCalleeProxy);
     ui->callerCalleeTableView->setSortingEnabled(true);
     ui->callerCalleeTableView->setModel(m_callerCalleeProxy);
     ResultsUtil::setupContextMenu(ui->callerCalleeTableView, CallerCalleeModel::SymbolRole, filterStack, {});

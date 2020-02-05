@@ -99,7 +99,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     timeLineProxy->setSortRole(EventModel::SortRole);
     timeLineProxy->setFilterKeyColumn(EventModel::ThreadColumn);
     timeLineProxy->setFilterRole(Qt::DisplayRole);
-    ui->timeLineSearch->setProxy(timeLineProxy);
+    ResultsUtil::connectFilter(ui->timeLineSearch, timeLineProxy);
     ui->timeLineView->setModel(timeLineProxy);
     ui->timeLineView->setSortingEnabled(true);
     ui->timeLineView->sortByColumn(EventModel::ThreadColumn, Qt::AscendingOrder);

@@ -102,7 +102,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="KFilterProxySearchLine" name="timeLineSearch">
+           <widget class="QLineEdit" name="timeLineSearch">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
               <horstretch>0</horstretch>
@@ -152,13 +152,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>KFilterProxySearchLine</class>
-   <extends>QWidget</extends>
-   <header>kfilterproxysearchline.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

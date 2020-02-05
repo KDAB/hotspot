@@ -31,6 +31,7 @@
 #include "processfiltermodel.h"
 #include "processmodel.h"
 #include "util.h"
+#include "resultsutil.h"
 
 #include <QDebug>
 #include <QKeyEvent>
@@ -44,7 +45,6 @@
 #include <KColumnResizer>
 #include <KComboBox>
 #include <KConfigGroup>
-#include <KFilterProxySearchLine>
 #include <KSharedConfig>
 #include <KShell>
 #include <KUrlCompletion>
@@ -316,7 +316,7 @@ RecordPage::RecordPage(QWidget* parent)
     connect(ui->processesTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this,
             [this]() { updateStartRecordingButtonState(ui); });
 
-    ui->processesFilterBox->setProxy(m_processProxyModel);
+    ResultsUtil::connectFilter(ui->processesFilterBox, m_processProxyModel);
 
     connect(m_watcher, &QFutureWatcher<ProcDataList>::finished, this, &RecordPage::updateProcessesFinished);
 

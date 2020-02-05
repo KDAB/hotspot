@@ -33,8 +33,9 @@
 #include <QMenu>
 #include <QTreeView>
 #include <QSortFilterProxyModel>
+#include <QTimer>
+#include <QLineEdit>
 
-#include <KFilterProxySearchLine>
 #include <KLocalizedString>
 
 #include "models/costdelegate.h"
@@ -49,7 +50,26 @@ void stretchFirstColumn(QTreeView* view)
     view->header()->setSectionResizeMode(0, QHeaderView::Stretch);
 }
 
-void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, QAbstractItemModel* model, int initialSortColumn,
+void connectFilter(QLineEdit *filter, QSortFilterProxyModel *proxy)
+{
+    auto *timer = new QTimer(filter);
+    timer->setSingleShot(true);
+
+    filter->setClearButtonEnabled(true);
+    filter->setPlaceholderText(i18n("Search"));
+
+    proxy->setFilterKeyColumn(-1);
+    proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+
+    QObject::connect(timer, &QTimer::timeout, proxy, [filter, proxy]() {
+        proxy->setFilterFixedString(filter->text());
+    });
+    QObject::connect(filter, &QLineEdit::textChanged, timer, [timer]() {
+        timer->start(300);
+    });
+}
+
+void setupTreeView(QTreeView* view, QLineEdit* filter, QAbstractItemModel* model, int initialSortColumn,
                    int sortRole, int filterRole)
 {
     auto proxy = new QSortFilterProxyModel(view);
@@ -57,8 +77,7 @@ void setupTreeView(QTreeView* view, KFilterProxySearchLine* filter, QAbstractIte
     proxy->setSortRole(sortRole);
     proxy->setFilterRole(filterRole);
     proxy->setSourceModel(model);
-
-    filter->setProxy(proxy);
+    connectFilter(filter, proxy);
 
     view->sortByColumn(initialSortColumn, Qt::DescendingOrder);
     view->setModel(proxy);

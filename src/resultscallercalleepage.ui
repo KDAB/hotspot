@@ -27,7 +27,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="KFilterProxySearchLine" name="callerCalleeFilter" native="true"/>
+    <widget class="QLineEdit" name="callerCalleeFilter" native="true"/>
    </item>
    <item>
     <widget class="QSplitter" name="splitter_2">
@@ -99,13 +99,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>KFilterProxySearchLine</class>
-   <extends>QWidget</extends>
-   <header>kfilterproxysearchline.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

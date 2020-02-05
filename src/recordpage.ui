@@ -150,7 +150,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="KFilterProxySearchLine" name="processesFilterBox" native="true">
+       <widget class="QLineEdit" name="processesFilterBox" native="true">
         <property name="toolTip">
          <string>Filter the process list by process name or process ID</string>
         </property>
@@ -571,11 +571,6 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>KFilterProxySearchLine</class>
-   <extends>QWidget</extends>
-   <header>kfilterproxysearchline.h</header>
-  </customwidget>
   <customwidget>
    <class>KMessageWidget</class>
    <extends>QFrame</extends>
