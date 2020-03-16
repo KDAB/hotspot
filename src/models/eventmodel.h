@@ -76,6 +76,8 @@ public:
     using QAbstractItemModel::setData;
     void setData(const Data::EventResults& data);
 
+    Data::TimeRange timeRange() const;
+
     struct Process
     {
         Process(qint32 pid = Data::INVALID_PID, const QVector<qint32> threads = {}, const QString &name = {})
@@ -87,6 +89,7 @@ public:
         QVector<qint32> threads;
         QString name;
     };
+
 private:
     Data::EventResults m_data;
     QVector<Process> m_processes;

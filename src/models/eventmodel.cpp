@@ -342,6 +342,11 @@ void EventModel::setData(const Data::EventResults& data)
     endResetModel();
 }
 
+Data::TimeRange EventModel::timeRange() const
+{
+    return m_time;
+}
+
 QModelIndex EventModel::index(int row, int column, const QModelIndex& parent) const
 {
     if (row < 0 || row >= rowCount(parent) || column < 0 || column >= NUM_COLUMNS) {
