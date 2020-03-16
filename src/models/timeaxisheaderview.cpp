@@ -1,14 +1,13 @@
 #include "timeaxisheaderview.h"
 
+#include <QDebug>
 #include <QPainter>
 #include <QtMath>
-#include <QDebug>
 
-#include "filterandzoomstack.h"
 #include "eventmodel.h"
+#include "filterandzoomstack.h"
 
-namespace
-{
+namespace {
 class PrefixTickLabels
 {
     // Construction
@@ -20,9 +19,9 @@ public:
      * @throws std::invalid_argument, min > max
      */
     PrefixTickLabels(double min, double max, unsigned targetNbTicks);
+
 private:
     static const int s_group_10 = 3; // Scientific notation is multiple of 3
-
 
     // Prefix
 public:
@@ -37,20 +36,20 @@ public:
      * @pre hasPrefix()
      * @param placeholder, character used to indicate place of the ticks values
      */
-    QString prefixLabel(const QString &placeholder = QLatin1String("xxx")) const;
+    QString prefixLabel(const QString& placeholder = QLatin1String("xxx")) const;
+
 private:
     int m_prefix_10 = 0;
     double m_prefixValue = 0.0;
     QString m_prefixLabel;
 
-
     // Ticks
 public:
     using TicksAndLabel = QVector<QPair<double, QString>>;
     TicksAndLabel ticksAndLabel() const;
+
 private:
     TicksAndLabel m_ticksAndLabels;
-
 
     // Utility
 public:
@@ -66,38 +65,37 @@ public:
 };
 }
 
-TimeAxisHeaderView::TimeAxisHeaderView(FilterAndZoomStack *filterAndZoomStack, Qt::Orientation orientation, QWidget *parent)
+TimeAxisHeaderView::TimeAxisHeaderView(FilterAndZoomStack* filterAndZoomStack, Qt::Orientation orientation,
+                                       QWidget* parent)
     : QHeaderView(orientation, parent)
     , m_filterAndZoomStack(filterAndZoomStack)
 {
     setMinimumHeight(37);
 
-    auto emitHeaderDataChanged = [this]() {
-        emit headerDataChanged(this->orientation(), 1, 1);
-    };
+    auto emitHeaderDataChanged = [this]() { emit headerDataChanged(this->orientation(), 1, 1); };
     connect(filterAndZoomStack, &FilterAndZoomStack::filterChanged, this, emitHeaderDataChanged);
     connect(filterAndZoomStack, &FilterAndZoomStack::zoomChanged, this, emitHeaderDataChanged);
 }
 
-void TimeAxisHeaderView::setTimeRange(const Data::TimeRange &timeRange)
+void TimeAxisHeaderView::setTimeRange(const Data::TimeRange& timeRange)
 {
     m_timeRange = timeRange;
     emit headerDataChanged(orientation(), 1, 1);
 }
 
-void TimeAxisHeaderView::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
+void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const
 {
-    if (painter == nullptr) return;
+    if (painter == nullptr)
+        return;
     painter->fillRect(rect, palette().window());
-    if (logicalIndex != EventModel::EventsColumn) return;
+    if (logicalIndex != EventModel::EventsColumn)
+        return;
 
     auto zoomTime = m_filterAndZoomStack->zoom().time;
-    if (!zoomTime.isValid())
-    {
+    if (!zoomTime.isValid()) {
         zoomTime = m_timeRange; // full
     }
-    if (!zoomTime.isValid())
-    {
+    if (!zoomTime.isValid()) {
         return; // bailing out, no valid range to show
     }
     const double oneNanoSecond = 1.0e-9;
@@ -106,7 +104,7 @@ void TimeAxisHeaderView::paintSection(QPainter *painter, const QRect &rect, int 
 
     const double resolution = (end - start) / rect.width();
     const auto xForTime = [rect, start, resolution](const double time) {
-        return rect.x() + qRound((time - start)/resolution);
+        return rect.x() + qRound((time - start) / resolution);
     };
 
     const int fontSize = painter->fontMetrics().height();
@@ -118,15 +116,13 @@ void TimeAxisHeaderView::paintSection(QPainter *painter, const QRect &rect, int 
     const QColor tickColor = palette().windowText().color();
 
     painter->setPen(prefixColor);
-    if (pfl.hasPrefix())
-    {
+    if (pfl.hasPrefix()) {
         const auto placeholder = QStringLiteral("xxx");
         const int prefixWidth = painter->fontMetrics().horizontalAdvance(pfl.prefixLabel(placeholder));
         const int prefixCenter = xForTime(pfl.prefixValue());
 
-        QRect placeHolderRect(prefixCenter - prefixWidth/2, rect.y(), prefixWidth, fontSize);
-        if (placeHolderRect.x() < rect.x())
-        {
+        QRect placeHolderRect(prefixCenter - prefixWidth / 2, rect.y(), prefixWidth, fontSize);
+        if (placeHolderRect.x() < rect.x()) {
             placeHolderRect.translate(rect.x() - placeHolderRect.x(), 0);
         }
 
@@ -138,35 +134,30 @@ void TimeAxisHeaderView::paintSection(QPainter *painter, const QRect &rect, int 
         painter->drawText(bounding, Qt::AlignBottom | Qt::AlignLeft, placeholder);
     }
 
-    for (const auto &tickAndLabel : pfl.ticksAndLabel())
-    {
+    for (const auto& tickAndLabel : pfl.ticksAndLabel()) {
         const auto x = xForTime(tickAndLabel.first);
-        if (std::abs(tickAndLabel.first - pfl.prefixValue()) < oneNanoSecond)
-        {
+        if (std::abs(tickAndLabel.first - pfl.prefixValue()) < oneNanoSecond) {
             painter->setPen(prefixColor);
             painter->drawLine(x, rect.y() + fontSize, x, rect.y() + rect.height());
-        }
-        else
-        {
+        } else {
             painter->setPen(tickColor);
-            QRect labelRect(x - endLabelWidth/2, rect.y() + fontSize, endLabelWidth, fontSize);
+            QRect labelRect(x - endLabelWidth / 2, rect.y() + fontSize, endLabelWidth, fontSize);
             painter->drawText(labelRect, Qt::AlignCenter | Qt::AlignBottom, tickAndLabel.second);
             painter->drawLine(x, labelRect.y() + fontSize, x, labelRect.y() + rect.height());
         }
     }
 }
 
-
 // Construction
 
 PrefixTickLabels::PrefixTickLabels(const double min, const double max, const unsigned targetNbTicks)
 {
     const double range = std::abs(max - min);
-    const double mid = (min + max)/2;
+    const double mid = (min + max) / 2;
 
     const auto range_10 = static_cast<int>(floor(log10(range))) - (log10(range) <= 0.0 ? 1 : 0);
 
-    const int scale_10 = s_group_10 * static_cast<int>((range_10 - (range_10 < 0 ? s_group_10 - 1 : 0 ))/ s_group_10);
+    const int scale_10 = s_group_10 * static_cast<int>((range_10 - (range_10 < 0 ? s_group_10 - 1 : 0)) / s_group_10);
     const double inv_scale = pow(10, -scale_10);
 
     m_prefix_10 = scale_10 + s_group_10;
@@ -177,17 +168,14 @@ PrefixTickLabels::PrefixTickLabels(const double min, const double max, const uns
         ceil(min / prefix_power) * prefix_power,
         floor(mid / prefix_power) * prefix_power,
         floor(max / prefix_power) * prefix_power,
-        };
+    };
     std::sort(prefixCandidates.begin(), prefixCandidates.end());
-    const auto prefixCandidate = std::find_if(prefixCandidates.begin(), prefixCandidates.end(), [min, max](const double candidate) {
-        return min <= candidate && candidate <= max;
-    });
-    if (prefixCandidate != prefixCandidates.end())
-    {
+    const auto prefixCandidate =
+        std::find_if(prefixCandidates.begin(), prefixCandidates.end(),
+                     [min, max](const double candidate) { return min <= candidate && candidate <= max; });
+    if (prefixCandidate != prefixCandidates.end()) {
         m_prefixValue = *prefixCandidate;
-    }
-    else
-    {
+    } else {
         // .. if none found, take the left most
         m_prefixValue = prefixCandidates.front();
     }
@@ -200,14 +188,14 @@ PrefixTickLabels::PrefixTickLabels(const double min, const double max, const uns
 
     const auto siPrefix = PrefixTickLabels::siPrefix(scale_10);
     m_ticksAndLabels.reserve(nbTicks);
-    for (int j = 0; j <= nbTicks; j++)
-    {
+    for (int j = 0; j <= nbTicks; j++) {
         const double tick = niceMin + j * spacing;
-        const auto tickLabel = QString(QLatin1String("%1%2")).arg((tick - m_prefixValue) * inv_scale, 0, 'f', labelFraction_10).arg(tick != 0.0 ? siPrefix : QString());
-        m_ticksAndLabels.push_back({ tick, tickLabel });
+        const auto tickLabel = QString(QLatin1String("%1%2"))
+                                   .arg((tick - m_prefixValue) * inv_scale, 0, 'f', labelFraction_10)
+                                   .arg(tick != 0.0 ? siPrefix : QString());
+        m_ticksAndLabels.push_back({tick, tickLabel});
     }
 }
-
 
 // Prefix
 
@@ -221,20 +209,17 @@ double PrefixTickLabels::prefixValue() const
     return m_prefixValue;
 }
 
-QString PrefixTickLabels::prefixLabel(const QString &placeholder) const
+QString PrefixTickLabels::prefixLabel(const QString& placeholder) const
 {
-    if (!hasPrefix())
-    {
+    if (!hasPrefix()) {
         return {};
     }
 
-    if (m_prefix_10 > 1)
-    {
-        auto prefix = QString::number(static_cast<int>(floor(m_prefixValue/pow(10, s_group_10))));
+    if (m_prefix_10 > 1) {
+        auto prefix = QString::number(static_cast<int>(floor(m_prefixValue / pow(10, s_group_10))));
         return prefix + placeholder;
     }
-    if (m_prefix_10 == 0)
-    {
+    if (m_prefix_10 == 0) {
         auto prefix = QString::number(static_cast<int>(floor(m_prefixValue)));
         return prefix + QLatin1Char('.') + placeholder;
     }
@@ -243,14 +228,12 @@ QString PrefixTickLabels::prefixLabel(const QString &placeholder) const
     return prefix + placeholder;
 }
 
-
 // Ticks
 
 PrefixTickLabels::TicksAndLabel PrefixTickLabels::ticksAndLabel() const
 {
     return m_ticksAndLabels;
 }
-
 
 // Utility
 
@@ -260,16 +243,11 @@ double PrefixTickLabels::niceNum(double value)
     const auto fraction = value * pow(10, -value_10);
 
     int niceFraction = 10;
-    if (fraction <= 1.0)
-    {
+    if (fraction <= 1.0) {
         niceFraction = 1;
-    }
-    else if (fraction <= 2.0)
-    {
+    } else if (fraction <= 2.0) {
         niceFraction = 2;
-    }
-    else if (fraction <= 5.0)
-    {
+    } else if (fraction <= 5.0) {
         niceFraction = 5;
     }
 
@@ -278,30 +256,49 @@ double PrefixTickLabels::niceNum(double value)
 
 QString PrefixTickLabels::siPrefix(int power)
 {
-    switch(power)
-    {
-    case 24: return QStringLiteral("Y"); //yotta
-    case 21: return QStringLiteral("Z"); // zetta
-    case 18: return QStringLiteral("E"); // exa
-    case 15: return QStringLiteral("P"); // peta
-    case 12: return QStringLiteral("T"); // tera
-    case 9: return QStringLiteral("G"); // giga
-    case 6: return QStringLiteral("M"); // mega
-    case 3: return QStringLiteral("k"); // kilo
-    case 2: return QStringLiteral("h"); // hecto
-    case 1: return QStringLiteral("da"); // deca
-    case 0: return {};
-    case -1: return QStringLiteral("d"); // deci
-    case -2: return QStringLiteral("c"); // centi
-    case -3: return QStringLiteral("m"); // milli
-    case -6: return QStringLiteral("µ"); // micro
-    case -9: return QStringLiteral("n"); // nano
-    case -12: return QStringLiteral("p"); // pico
-    case -15: return QStringLiteral("f"); // femto
-    case -18: return QStringLiteral("a"); // atto
-    case -21: return QStringLiteral("z"); // zepto
-    case -24: return QStringLiteral("y"); // tocto
+    switch (power) {
+    case 24:
+        return QStringLiteral("Y"); // yotta
+    case 21:
+        return QStringLiteral("Z"); // zetta
+    case 18:
+        return QStringLiteral("E"); // exa
+    case 15:
+        return QStringLiteral("P"); // peta
+    case 12:
+        return QStringLiteral("T"); // tera
+    case 9:
+        return QStringLiteral("G"); // giga
+    case 6:
+        return QStringLiteral("M"); // mega
+    case 3:
+        return QStringLiteral("k"); // kilo
+    case 2:
+        return QStringLiteral("h"); // hecto
+    case 1:
+        return QStringLiteral("da"); // deca
+    case 0:
+        return {};
+    case -1:
+        return QStringLiteral("d"); // deci
+    case -2:
+        return QStringLiteral("c"); // centi
+    case -3:
+        return QStringLiteral("m"); // milli
+    case -6:
+        return QStringLiteral("µ"); // micro
+    case -9:
+        return QStringLiteral("n"); // nano
+    case -12:
+        return QStringLiteral("p"); // pico
+    case -15:
+        return QStringLiteral("f"); // femto
+    case -18:
+        return QStringLiteral("a"); // atto
+    case -21:
+        return QStringLiteral("z"); // zepto
+    case -24:
+        return QStringLiteral("y"); // tocto
     }
     return QLatin1String("?");
 }
-
