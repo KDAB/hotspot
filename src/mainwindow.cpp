@@ -65,7 +65,7 @@ struct IdeSettings
 
 static const IdeSettings ideSettings[] = {
 #if defined(Q_OS_WIN) || defined(Q_OS_OSX)
-    {"", "", ""} // Dummy content, because we can't have empty arrays.
+    {"", "", "", ""} // Dummy content, because we can't have empty arrays.
 #else
     {"kdevelop", "%f:%l:%c", QT_TRANSLATE_NOOP("MainWindow", "KDevelop")},
     {"kate", "%f --line %l --column %c", QT_TRANSLATE_NOOP("MainWindow", "Kate")},
