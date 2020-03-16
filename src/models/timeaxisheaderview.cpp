@@ -43,9 +43,6 @@ void TimeAxisHeaderView::paintSection(QPainter *painter, const QRect &rect, int 
     const double start = zoomTime.start * oneNanoSecond;
     const double end = zoomTime.end * oneNanoSecond;
 
-    QBrush text(QColor(0,0,0));
-    painter->setBrush(text);
-
     const double resolution = (end - start) / rect.width();
     const auto xForTime = [rect, start, resolution](const double time) {
         return rect.x() + qRound((time - start)/resolution);
@@ -56,7 +53,10 @@ void TimeAxisHeaderView::paintSection(QPainter *painter, const QRect &rect, int 
     const int targetNbTicks = rect.width() / endLabelWidth;
     const PrefixTickLabels pfl(start, end, targetNbTicks);
 
-    painter->setPen(QColor(0,0,0));
+    const QColor prefixColor = palette().highlight().color();
+    const QColor tickColor = palette().windowText().color();
+
+    painter->setPen(prefixColor);
     if (pfl.hasPrefix())
     {
         const QString placeholder = QLatin1String("xxx");
@@ -71,7 +71,7 @@ void TimeAxisHeaderView::paintSection(QPainter *painter, const QRect &rect, int 
 
         QRect bounding;
         painter->drawText(placeHolderRect, Qt::AlignBottom | Qt::AlignLeft, pfl.prefixLabel({}), &bounding);
-        painter->setPen(QColor(0,0,255));
+        painter->setPen(tickColor);
         bounding.translate(bounding.width(), 0);
         bounding.setWidth(prefixWidth);
         painter->drawText(bounding, Qt::AlignBottom | Qt::AlignLeft, placeholder);
@@ -82,12 +82,12 @@ void TimeAxisHeaderView::paintSection(QPainter *painter, const QRect &rect, int 
         const auto x = xForTime(tickAndLabel.first);
         if (std::abs(tickAndLabel.first - pfl.prefixValue()) < oneNanoSecond)
         {
-            painter->setPen(QColor(0,0,0));
+            painter->setPen(prefixColor);
             painter->drawLine(x, rect.y() + fontSize, x, rect.y() + rect.height());
         }
         else
         {
-            painter->setPen(QColor(0,0,255));
+            painter->setPen(tickColor);
             QRect labelRect(x - endLabelWidth/2, rect.y() + fontSize, endLabelWidth, fontSize);
             painter->drawText(labelRect, Qt::AlignCenter | Qt::AlignBottom, tickAndLabel.second);
             painter->drawLine(x, labelRect.y() + fontSize, x, labelRect.y() + rect.height());
