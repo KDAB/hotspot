@@ -6,6 +6,7 @@
 
 #include "eventmodel.h"
 #include "filterandzoomstack.h"
+#include "../util.h"
 
 namespace {
 class PrefixTickLabels
@@ -50,18 +51,6 @@ public:
 
 private:
     TicksAndLabel m_ticksAndLabels;
-
-    // Utility
-public:
-    /** Returns a power of 10 multiple of 1, 2 or 5 for the given value
-     * @see "Nice Numbers for Graph Labels", Graphics Gems, Andrew S. Glassner, Elsevier Science, 1990
-     */
-    static double niceNum(double value);
-    /** Prefix for the given power of 10
-     * @param power
-     * @throws std::invalid_argument, if there is no SI prefix for the given power
-     */
-    static QString siPrefix(int power);
 };
 }
 
@@ -180,13 +169,13 @@ PrefixTickLabels::PrefixTickLabels(const double min, const double max, const uns
         m_prefixValue = prefixCandidates.front();
     }
 
-    const double spacing = niceNum(range / targetNbTicks);
+    const double spacing = Util::niceNum(range / targetNbTicks);
     const int labelFraction_10 = std::max(0, scale_10 - static_cast<int>(floor(log10(spacing))));
 
     const double niceMin = ceil(min / spacing) * spacing;
     const int nbTicks = static_cast<int>(floor((max - niceMin) / spacing));
 
-    const auto siPrefix = PrefixTickLabels::siPrefix(scale_10);
+    const auto siPrefix = Util::siPrefix(scale_10);
     m_ticksAndLabels.reserve(nbTicks);
     for (int j = 0; j <= nbTicks; j++) {
         const double tick = niceMin + j * spacing;
@@ -233,72 +222,4 @@ QString PrefixTickLabels::prefixLabel(const QString& placeholder) const
 PrefixTickLabels::TicksAndLabel PrefixTickLabels::ticksAndLabel() const
 {
     return m_ticksAndLabels;
-}
-
-// Utility
-
-double PrefixTickLabels::niceNum(double value)
-{
-    const auto value_10 = static_cast<int>(floor(log10(value)));
-    const auto fraction = value * pow(10, -value_10);
-
-    int niceFraction = 10;
-    if (fraction <= 1.0) {
-        niceFraction = 1;
-    } else if (fraction <= 2.0) {
-        niceFraction = 2;
-    } else if (fraction <= 5.0) {
-        niceFraction = 5;
-    }
-
-    return niceFraction * pow(10, value_10);
-}
-
-QString PrefixTickLabels::siPrefix(int power)
-{
-    switch (power) {
-    case 24:
-        return QStringLiteral("Y"); // yotta
-    case 21:
-        return QStringLiteral("Z"); // zetta
-    case 18:
-        return QStringLiteral("E"); // exa
-    case 15:
-        return QStringLiteral("P"); // peta
-    case 12:
-        return QStringLiteral("T"); // tera
-    case 9:
-        return QStringLiteral("G"); // giga
-    case 6:
-        return QStringLiteral("M"); // mega
-    case 3:
-        return QStringLiteral("k"); // kilo
-    case 2:
-        return QStringLiteral("h"); // hecto
-    case 1:
-        return QStringLiteral("da"); // deca
-    case 0:
-        return {};
-    case -1:
-        return QStringLiteral("d"); // deci
-    case -2:
-        return QStringLiteral("c"); // centi
-    case -3:
-        return QStringLiteral("m"); // milli
-    case -6:
-        return QStringLiteral("µ"); // micro
-    case -9:
-        return QStringLiteral("n"); // nano
-    case -12:
-        return QStringLiteral("p"); // pico
-    case -15:
-        return QStringLiteral("f"); // femto
-    case -18:
-        return QStringLiteral("a"); // atto
-    case -21:
-        return QStringLiteral("z"); // zepto
-    case -24:
-        return QStringLiteral("y"); // tocto
-    }
-    return QLatin1String("?");
 }

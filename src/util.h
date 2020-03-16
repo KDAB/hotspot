@@ -75,4 +75,15 @@ QString formatTooltip(const QString& location, const Data::LocationCost& cost, c
 // the process environment including the custom AppImage-specific LD_LIBRARY_PATH
 // this is initialized on the first call and cached internally afterwards
 QProcessEnvironment appImageEnvironment();
+
+/** Returns a power of 10 multiple of 1, 2 or 5 for the given value
+ * @see "Nice Numbers for Graph Labels", Graphics Gems, Andrew S. Glassner, Elsevier Science, 1990
+ */
+double niceNum(double value);
+
+/** Prefix for the given power of 10
+ * @param power
+ * @throws std::invalid_argument, if there is no SI prefix for the given power
+ */
+QString siPrefix(int power);
 }
