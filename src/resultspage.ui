@@ -29,6 +29,12 @@
       <enum>Qt::Vertical</enum>
      </property>
      <widget class="QWidget" name="resultsWidget" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
+      </property>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="KMessageWidget" name="errorWidget">
