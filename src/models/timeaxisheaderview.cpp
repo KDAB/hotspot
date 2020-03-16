@@ -12,25 +12,16 @@ TimeAxisHeaderView::TimeAxisHeaderView(FilterAndZoomStack *filterAndZoomStack, Q
 {
     setMinimumHeight(40);
 
-    connect(filterAndZoomStack, &FilterAndZoomStack::filterChanged, this, &TimeAxisHeaderView::onFilterChanged);
-    connect(filterAndZoomStack, &FilterAndZoomStack::zoomChanged, this, &TimeAxisHeaderView::onZoomChanged);
+    auto emitHeaderDataChanged = [this]() {
+        emit headerDataChanged(this->orientation(), 1, 1);
+    };
+    connect(filterAndZoomStack, &FilterAndZoomStack::filterChanged, this, emitHeaderDataChanged);
+    connect(filterAndZoomStack, &FilterAndZoomStack::zoomChanged, this, emitHeaderDataChanged);
 }
 
 void TimeAxisHeaderView::setTimeRange(const Data::TimeRange &timeRange)
 {
     m_timeRange = timeRange;
-    emit headerDataChanged(orientation(), 1, 1);
-}
-
-void TimeAxisHeaderView::onFilterChanged(const Data::FilterAction &filterAction)
-{
-    Q_UNUSED(filterAction)
-    emit headerDataChanged(orientation(), 1, 1);
-}
-
-void TimeAxisHeaderView::onZoomChanged(const Data::ZoomAction &zoomAction)
-{
-    Q_UNUSED(zoomAction)
     emit headerDataChanged(orientation(), 1, 1);
 }
 

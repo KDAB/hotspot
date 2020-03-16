@@ -20,9 +20,6 @@ private:
 
 private:
     FilterAndZoomStack* m_filterAndZoomStack = nullptr;
-public slots:
-    void onFilterChanged(const Data::FilterAction &filterAction);
-    void onZoomChanged(const Data::ZoomAction &zoomAction);
 protected:
     void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;
 };
