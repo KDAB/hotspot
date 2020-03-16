@@ -5,6 +5,7 @@
 #include <QDebug>
 
 #include "filterandzoomstack.h"
+#include "eventmodel.h"
 
 TimeAxisHeaderView::TimeAxisHeaderView(FilterAndZoomStack *filterAndZoomStack, Qt::Orientation orientation, QWidget *parent)
     : QHeaderView(orientation, parent)
@@ -28,7 +29,7 @@ void TimeAxisHeaderView::setTimeRange(const Data::TimeRange &timeRange)
 void TimeAxisHeaderView::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
 {
     if (painter == nullptr) return;
-    if (logicalIndex != 1) return; // TODO: role based?
+    if (logicalIndex != EventModel::EventsColumn) return;
 
     auto zoomTime = m_filterAndZoomStack->zoom().time;
     if (!zoomTime.isValid())
