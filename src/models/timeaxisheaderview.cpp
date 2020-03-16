@@ -54,8 +54,6 @@ void TimeAxisHeaderView::paintSection(QPainter *painter, const QRect &rect, int 
     const int fontSize = painter->fontMetrics().height();
     const int endLabelWidth = painter->fontMetrics().horizontalAdvance(QLatin1String("-xXXXm"));
     const int targetNbTicks = rect.width() / endLabelWidth;
-
-    qDebug() << __FUNCTION__ << start << end << targetNbTicks;
     const PrefixTickLabels pfl(start, end, targetNbTicks);
 
     painter->setPen(QColor(0,0,0));
