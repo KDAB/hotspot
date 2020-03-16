@@ -59,7 +59,7 @@ void TimeAxisHeaderView::paintSection(QPainter *painter, const QRect &rect, int 
     painter->setPen(prefixColor);
     if (pfl.hasPrefix())
     {
-        const QString placeholder = QLatin1String("xxx");
+        const auto placeholder = QStringLiteral("xxx");
         const int prefixWidth = painter->fontMetrics().horizontalAdvance(pfl.prefixLabel(placeholder));
         const int prefixCenter = xForTime(pfl.prefixValue());
 
