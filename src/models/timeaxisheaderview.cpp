@@ -11,7 +11,7 @@ TimeAxisHeaderView::TimeAxisHeaderView(FilterAndZoomStack *filterAndZoomStack, Q
     : QHeaderView(orientation, parent)
     , m_filterAndZoomStack(filterAndZoomStack)
 {
-    setMinimumHeight(40);
+    setMinimumHeight(37);
 
     auto emitHeaderDataChanged = [this]() {
         emit headerDataChanged(this->orientation(), 1, 1);
@@ -29,6 +29,7 @@ void TimeAxisHeaderView::setTimeRange(const Data::TimeRange &timeRange)
 void TimeAxisHeaderView::paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const
 {
     if (painter == nullptr) return;
+    painter->fillRect(rect, palette().window());
     if (logicalIndex != EventModel::EventsColumn) return;
 
     auto zoomTime = m_filterAndZoomStack->zoom().time;
