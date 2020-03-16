@@ -34,7 +34,11 @@ int main()
 {
     for (int i = 0; i < 10; ++i) {
         thread t([i]() {
+#if defined(Q_OS_OSX)
             pthread_setname_np(pthread_self(), ("threadname" + to_string(i)).c_str());
+#else
+            pthread_setname_np(("threadname" + to_string(i)).c_str());
+#endif
             this_thread::sleep_for(chrono::milliseconds(100));
         });
         t.join();
