@@ -8,6 +8,7 @@ add_library(models STATIC
     processfiltermodel.cpp
     processlist_unix.cpp
     timelinedelegate.cpp
+    timeaxisheaderview.cpp
     eventmodel.cpp
     filterandzoomstack.cpp
     ../settings.cpp
