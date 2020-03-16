@@ -47,7 +47,7 @@ private:
     // Ticks
 public:
     using TicksAndLabel = QVector<QPair<double, QString>>;
-    const TicksAndLabel &ticksAndLabel() const;
+    TicksAndLabel ticksAndLabel() const;
 private:
     TicksAndLabel m_ticksAndLabels;
 
@@ -246,7 +246,7 @@ QString PrefixTickLabels::prefixLabel(const QString &placeholder) const
 
 // Ticks
 
-const PrefixTickLabels::TicksAndLabel &PrefixTickLabels::ticksAndLabel() const
+PrefixTickLabels::TicksAndLabel PrefixTickLabels::ticksAndLabel() const
 {
     return m_ticksAndLabels;
 }
