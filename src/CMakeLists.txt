@@ -81,6 +81,7 @@ target_link_libraries(hotspot
     KF5::Solid
     KF5::WindowSystem
     models
+    PrefixTickLabels
 )
 
 set_target_properties(hotspot

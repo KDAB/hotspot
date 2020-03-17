@@ -7,6 +7,7 @@ ecm_add_test(
         Qt5::Core
         Qt5::Test
         models
+        PrefixTickLabels
     TEST_NAME
         tst_models
 )
@@ -17,6 +18,7 @@ ecm_add_test(
         Qt5::Core
         Qt5::Test
         models
+        PrefixTickLabels
     TEST_NAME
         tst_timelinedelegate
 )
