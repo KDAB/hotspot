@@ -73,7 +73,10 @@ void setupTreeView(QTreeView* view, QLineEdit* filter, QAbstractItemModel* model
                    int sortRole, int filterRole)
 {
     auto proxy = new QSortFilterProxyModel(view);
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
     proxy->setRecursiveFilteringEnabled(true);
+#endif
     proxy->setSortRole(sortRole);
     proxy->setFilterRole(filterRole);
     proxy->setSourceModel(model);

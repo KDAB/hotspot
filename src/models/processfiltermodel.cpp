@@ -36,7 +36,9 @@
 ProcessFilterModel::ProcessFilterModel(QObject* parent)
     : QSortFilterProxyModel(parent)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
     setRecursiveFilteringEnabled(true);
+#endif
 
     m_currentProcId = QString::number(qApp->applicationPid());
     m_currentUser = KUser().loginName();

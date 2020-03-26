@@ -97,7 +97,10 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
 
     auto* eventModel = new EventModel(this);
     auto* timeLineProxy = new QSortFilterProxyModel(this);
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
     timeLineProxy->setRecursiveFilteringEnabled(true);
+#endif
     timeLineProxy->setSourceModel(eventModel);
     timeLineProxy->setSortRole(EventModel::SortRole);
     timeLineProxy->setFilterKeyColumn(EventModel::ThreadColumn);
