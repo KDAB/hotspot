@@ -50,6 +50,8 @@
 #include <QSortFilterProxyModel>
 #include <QTimer>
 
+#include <chrono>
+
 static const int SUMMARY_TABINDEX = 0;
 
 ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
