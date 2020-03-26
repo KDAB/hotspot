@@ -43,6 +43,8 @@
 
 #include <KLocalizedString>
 
+#include <chrono>
+
 #include <QDebug>
 #include <QEvent>
 #include <QMenu>
@@ -50,7 +52,6 @@
 #include <QSortFilterProxyModel>
 #include <QTimer>
 
-#include <chrono>
 
 static const int SUMMARY_TABINDEX = 0;
 
