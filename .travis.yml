@@ -9,6 +9,7 @@ before_install:
     
 install: 
   - sudo apt-get -y install qt510base qt510svg qt510x11extras
+  - sudo apt-get -y install mesa-common-dev libglu1-mesa-dev
   - source /opt/qt*/bin/qt*-env.sh
   - git clone git://anongit.kde.org/extra-cmake-modules
   - cd extra-cmake-modules
