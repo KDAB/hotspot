@@ -277,11 +277,11 @@ private slots:
             QCOMPARE(maxTime, endTime);
             const auto minTime = idx.data(EventModel::MinTimeRole).value<quint64>();
             QCOMPARE(minTime, quint64(0));
-            const auto numProcesses = idx.data(EventModel::NumProcessesRole).value<uint>();
+            const auto numProcesses = idx.data(EventModel::NumProcessesRole).value<int>();
             QCOMPARE(numProcesses, processes);
-            const auto numThreads = idx.data(EventModel::NumThreadsRole).value<uint>();
+            const auto numThreads = idx.data(EventModel::NumThreadsRole).value<int>();
             QCOMPARE(numThreads, events.threads.size());
-            const auto numCpus = idx.data(EventModel::NumCpusRole).value<uint>();
+            const auto numCpus = idx.data(EventModel::NumCpusRole).value<int>();
             QCOMPARE(numCpus, nonEmptyCpus);
             const auto maxCost = idx.data(EventModel::MaxCostRole).value<quint64>();
             QCOMPARE(maxCost, quint64(10));
@@ -302,7 +302,7 @@ private slots:
                 // let's only look at the first process
                 parent = model.index(0, EventModel::ThreadColumn, parent);
                 verifyCommonData(parent);
-                QCOMPARE(parent.data().toString(), "foobar (#1234)");
+                QCOMPARE(parent.data().toString(), QString("foobar (#1234)"));
                 numRows = model.rowCount(parent);
                 QCOMPARE(numRows, 2);
             }
