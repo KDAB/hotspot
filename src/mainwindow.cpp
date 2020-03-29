@@ -123,7 +123,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(m_startPage, &StartPage::openFileButtonClicked, this, &MainWindow::onOpenFileButtonClicked);
     connect(m_startPage, &StartPage::recordButtonClicked, this, &MainWindow::onRecordButtonClicked);
-    connect(m_startPage, &StartPage::stopParseButtonClicked, this, &MainWindow::clear);
+    connect(m_startPage, &StartPage::stopParseButtonClicked, this,
+            static_cast<void (MainWindow::*)()>(&MainWindow::clear));
     connect(m_parser, &PerfParser::progress, m_startPage, &StartPage::onParseFileProgress);
     connect(this, &MainWindow::openFileError, m_startPage, &StartPage::onOpenFileError);
     connect(m_recordPage, &RecordPage::homeButtonClicked, this, &MainWindow::onHomeButtonClicked);
@@ -257,21 +258,28 @@ void MainWindow::onRecordButtonClicked()
     m_pageStack->setCurrentWidget(m_recordPage);
 }
 
-void MainWindow::clear()
+void MainWindow::clear(bool isReload)
 {
     m_parser->stop();
     setWindowTitle(tr("Hotspot"));
     m_startPage->showStartPage();
     m_pageStack->setCurrentWidget(m_startPage);
     m_recordPage->stopRecording();
-    m_resultsPage->selectSummaryTab();
+    if (!isReload) {
+        m_resultsPage->selectSummaryTab();
+    }
     m_resultsPage->clear();
     m_reloadAction->setEnabled(false);
 }
 
-void MainWindow::openFile(const QString& path)
+void MainWindow::clear()
 {
-    clear();
+    clear(false);
+}
+
+void MainWindow::openFile(const QString& path, bool isReload)
+{
+    clear(isReload);
 
     QFileInfo file(path);
     setWindowTitle(tr("%1 - Hotspot").arg(file.fileName()));
@@ -289,18 +297,23 @@ void MainWindow::openFile(const QString& path)
     m_config->sync();
 }
 
+void MainWindow::openFile(const QString& path)
+{
+    openFile(path, false);
+}
+
 void MainWindow::openFile(const QUrl& url)
 {
     if (!url.isLocalFile()) {
         emit openFileError(tr("Cannot open remote file %1.").arg(url.toString()));
         return;
     }
-    openFile(url.toLocalFile());
+    openFile(url.toLocalFile(), false);
 }
 
 void MainWindow::reload()
 {
-    openFile(m_reloadAction->data().toString());
+    openFile(m_reloadAction->data().toString(), true);
 }
 
 void MainWindow::aboutKDAB()
