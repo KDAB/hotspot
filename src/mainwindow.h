@@ -87,6 +87,8 @@ signals:
     void archChanged(const QString& arch);
 
 private:
+    void clear(bool isReload);
+    void openFile(const QString& path, bool isReload);
     void closeEvent(QCloseEvent* event) override;
     void setupCodeNavigationMenu();
     void setupPathSettingsMenu();
