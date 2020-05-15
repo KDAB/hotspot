@@ -29,17 +29,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # 
 
-if [ ! -z "$1" ]; then
-    echo "rewriting to $1"
-    # redirect output to file, to enable parsing of output even when
-    # the graphical sudo helper like kdesudo isn't forwarding the text properly
-    $0 2>&1 | tee -a $1
-    exit
-fi
-
 if [ "$(id -u)" != "0" ]; then
    echo "Error: This script must be run as root"
    exit 1
+fi
+
+if [ ! -z "$1" ]; then
+    olduser=$(stat -c '%u' "$1")
+    chown "$(whoami)" "$1"
+    echo "rewriting to $1"
+    # redirect output to file, to enable parsing of output even when
+    # the graphical sudo helper like kdesudo isn't forwarding the text properly
+    $0 2>&1 | tee -a "$1"
+    chown "$olduser" "$1"
+    exit
 fi
 
 echo "querying current privileges..."
