@@ -102,10 +102,12 @@ void updateStartRecordingButtonState(const QScopedPointer<Ui::RecordPage>& ui)
         break;
     case ProfileSystem:
         enabled = true;
+        break;
     case NUM_RECORD_TYPES:
         break;
     }
     enabled &= ui->applicationRecordErrorMessage->text().isEmpty();
+
     ui->startRecordingButton->setEnabled(enabled);
 }
 
@@ -663,6 +665,8 @@ void RecordPage::setError(const QString& message)
 
 void RecordPage::updateRecordType()
 {
+    setError({});
+
     const auto recordType = selectedRecordType(ui);
     ui->launchAppBox->setVisible(recordType == LaunchApplication);
     ui->attachAppBox->setVisible(recordType == AttachToProcess);
