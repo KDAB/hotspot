@@ -84,5 +84,5 @@ printPrivileges
 
 echo
 echo "privileges elevated!"
-read something
+read something 2> /dev/null
 echo
