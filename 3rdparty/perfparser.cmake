@@ -23,11 +23,21 @@ add_executable(hotspot-perfparser
 )
 
 target_link_libraries(hotspot-perfparser
+LINK_PRIVATE
     Qt5::Core
     Qt5::Network
     ${LIBDW_LIBRARIES}
     ${LIBELF_LIBRARIES}
 )
+
+set(RUSTC_DEMANGLE_INCLUDE_DIR "" CACHE STRING "Path to the folder containing rustc_demangle.h from https://github.com/alexcrichton/rustc-demangle")
+set(RUSTC_DEMANGLE_LIBRARY "" CACHE STRING "Path to the librustc_demangle.so library from https://github.com/alexcrichton/rustc-demangle")
+
+if (RUSTC_DEMANGLE_INCLUDE_DIR AND RUSTC_DEMANGLE_LIBRARY)
+    target_include_directories(hotspot-perfparser PRIVATE ${RUSTC_DEMANGLE_INCLUDE_DIR})
+    target_link_libraries(hotspot-perfparser LINK_PRIVATE ${RUSTC_DEMANGLE_LIBRARY})
+    target_compile_definitions(hotspot-perfparser PRIVATE HAVE_RUSTC_DEMANGLE=1)
+endif()
 
 set_target_properties(hotspot-perfparser
     PROPERTIES
