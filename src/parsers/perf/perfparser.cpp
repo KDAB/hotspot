@@ -1092,11 +1092,15 @@ public:
 
     void setFeatures(const FeaturesDefinition& features)
     {
-        // first entry in cmdline is "perf" which could contain a path
-        // we only want to show the name without the path
-        auto args = features.cmdline;
-        args.removeFirst();
-        summaryResult.command = QLatin1String("perf ") + QString::fromUtf8(args.join(' '));
+        if (features.cmdline.isEmpty()) {
+            summaryResult.command = QStringLiteral("??");
+        } else {
+            // first entry in cmdline is "perf" which could contain a path
+            // we only want to show the name without the path
+            auto args = features.cmdline;
+            args.removeFirst();
+            summaryResult.command = QLatin1String("perf ") + QString::fromUtf8(args.join(' '));
+        }
         summaryResult.hostName = QString::fromUtf8(features.hostName);
         summaryResult.linuxKernelVersion = QString::fromUtf8(features.osRelease);
         summaryResult.perfVersion = QString::fromUtf8(features.version);
