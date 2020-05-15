@@ -87,7 +87,7 @@ As of now, you will need the following dependencies to build this project:
 
 - CMake 3.1.0 or higher
 - any C++11 enabled compiler
-- Qt 5.6.0 or higher
+- Qt 5.10.0 or higher
 - libelf
 - libelfutils
 - gettext
