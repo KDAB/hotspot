@@ -90,9 +90,9 @@ void StartPage::paintEvent(QPaintEvent* /*event*/)
 {
     QPainter painter(this);
     const auto windowRect = rect();
-    auto backgroundRect = m_background.rect();
+    auto backgroundRect = QRectF(QPointF(0, 0), QSizeF(m_background.size()) / devicePixelRatioF());
     backgroundRect.moveBottomRight(windowRect.bottomRight());
-    painter.drawPixmap(backgroundRect, m_background);
+    painter.drawPixmap(backgroundRect.toRect(), m_background);
 }
 
 void StartPage::changeEvent(QEvent* event)
@@ -116,4 +116,5 @@ void StartPage::updateBackground()
         // Bright color scheme
         m_background = QPixmap(QStringLiteral(":/images/background_bright.png"));
     }
+    m_background.setDevicePixelRatio(devicePixelRatioF());
 }

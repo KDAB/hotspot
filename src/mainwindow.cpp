@@ -331,7 +331,7 @@ void MainWindow::aboutKDAB()
                       "to meet the people who write code like this."
                       "</p></qt>"));
     dialog.setLogo(QStringLiteral(":/images/kdablogo.png"));
-    dialog.setWindowIcon(QPixmap(QStringLiteral(":/images/kdablogo.png")));
+    dialog.setWindowIcon(QIcon(QStringLiteral(":/images/kdablogo.png")));
     dialog.adjustSize();
     dialog.exec();
 }

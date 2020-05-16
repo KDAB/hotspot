@@ -44,6 +44,7 @@ int main(int argc, char** argv)
     QCoreApplication::setOrganizationDomain(QStringLiteral("kdab.com"));
     QCoreApplication::setApplicationName(QStringLiteral("hotspot"));
     QCoreApplication::setApplicationVersion(QStringLiteral(HOTSPOT_VERSION_STRING));
+    QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
 
     QApplication app(argc, argv);
 
