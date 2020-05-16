@@ -47,8 +47,8 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
         return; // bailing out, no valid range to show
     }
     const double oneNanoSecond = 1.0e-9;
-    const double start = zoomTime.start * oneNanoSecond;
-    const double end = zoomTime.end * oneNanoSecond;
+    const double start = (zoomTime.start - m_timeRange.start) * oneNanoSecond;
+    const double end = (zoomTime.end - m_timeRange.start) * oneNanoSecond;
 
     const double resolution = (end - start) / rect.width();
     const auto xForTime = [rect, start, resolution](const double time) {
