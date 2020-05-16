@@ -10,9 +10,8 @@
 
 #include "../../3rdparty/PrefixTickLabels/src/PrefixTickLabels.h"
 
-TimeAxisHeaderView::TimeAxisHeaderView(FilterAndZoomStack* filterAndZoomStack, Qt::Orientation orientation,
-                                       QWidget* parent)
-    : QHeaderView(orientation, parent)
+TimeAxisHeaderView::TimeAxisHeaderView(FilterAndZoomStack* filterAndZoomStack, QWidget* parent)
+    : QHeaderView(Qt::Horizontal, parent)
     , m_filterAndZoomStack(filterAndZoomStack)
 {
     setMinimumHeight(2*fontMetrics().height() + s_tickHeight);

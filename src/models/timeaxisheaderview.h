@@ -11,8 +11,7 @@ class TimeAxisHeaderView : public QHeaderView
 {
     Q_OBJECT
 public:
-    explicit TimeAxisHeaderView(FilterAndZoomStack* filterAndZoomStack, Qt::Orientation orientation,
-                                QWidget* parent = nullptr);
+    explicit TimeAxisHeaderView(FilterAndZoomStack* filterAndZoomStack, QWidget* parent = nullptr);
     static const int s_tickHeight = 4;
 
 public:

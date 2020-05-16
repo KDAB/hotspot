@@ -116,7 +116,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     ui->timeLineEventFilterButton->setMenu(m_filterMenu);
     ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, m_timeLineDelegate);
 
-    m_timeAxisHeaderView = new TimeAxisHeaderView(m_filterAndZoomStack, Qt::Horizontal, ui->timeLineView);
+    m_timeAxisHeaderView = new TimeAxisHeaderView(m_filterAndZoomStack, ui->timeLineView);
     ui->timeLineView->setHeader(m_timeAxisHeaderView);
 
     connect(timeLineProxy, &QAbstractItemModel::rowsInserted, this, [this]() { ui->timeLineView->expandToDepth(1); });
