@@ -90,8 +90,19 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
             painter->drawLine(x, startY + fontSize, x, rect.y() + rect.height());
             painter->setPen(prefixedColor);
         } else {
-            QRect labelRect(std::max(0, x - endLabelWidth / 2), startY + fontSize, endLabelWidth, fontSize);
-            painter->drawText(labelRect, Qt::AlignCenter | Qt::AlignBottom, tickAndLabel.second);
+            Qt::Alignment hAlignment = Qt::AlignCenter;
+            QRect labelRect(x - endLabelWidth / 2, startY + fontSize, endLabelWidth, fontSize);
+            if (labelRect.x() < rect.x())
+            {
+                labelRect.translate(rect.x() - labelRect.x(), 0);
+                hAlignment = Qt::AlignLeft;
+            }
+            if (labelRect.right() > rect.right())
+            {
+                labelRect.translate(rect.right() - labelRect.right(), 0);
+                hAlignment = Qt::AlignRight;
+            }
+            painter->drawText(labelRect, hAlignment | Qt::AlignBottom, tickAndLabel.second);
             painter->drawLine(x, labelRect.y() + fontSize, x, labelRect.y() + rect.height());
         }
     }
