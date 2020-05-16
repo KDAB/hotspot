@@ -32,7 +32,10 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
 {
     if (painter == nullptr)
         return;
-    painter->fillRect(rect, palette().window());
+
+    painter->save();
+    QHeaderView::paintSection(painter, rect, logicalIndex);
+    painter->restore();
     if (logicalIndex != EventModel::EventsColumn)
         return;
 
