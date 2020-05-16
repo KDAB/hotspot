@@ -266,5 +266,5 @@ void ResultsPage::navigateToCodeFailed(const QString& message)
 {
     ui->errorWidget->setText(message);
     ui->errorWidget->animatedShow();
-    QTimer::singleShot(std::chrono::seconds(5), ui->errorWidget, &KMessageWidget::animatedHide);
+    QTimer::singleShot(5000, ui->errorWidget, &KMessageWidget::animatedHide);
 }
