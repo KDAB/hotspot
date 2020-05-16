@@ -61,10 +61,10 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
     const int targetNbTicks = rect.width() / endLabelWidth;
     const PrefixTickLabels pfl(start, end, targetNbTicks);
 
-    const QColor prefixColor = palette().highlight().color();
     const QColor tickColor = palette().windowText().color();
+    const QColor prefixedColor = palette().highlight().color().darker(133);
 
-    painter->setPen(prefixColor);
+    painter->setPen(tickColor);
     if (pfl.hasPrefix()) {
         const auto placeholder = QStringLiteral("xxx");
         const int prefixWidth = painter->fontMetrics().horizontalAdvance(pfl.prefixLabel(placeholder));
@@ -77,7 +77,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
 
         QRect bounding;
         painter->drawText(placeHolderRect, Qt::AlignBottom | Qt::AlignLeft, pfl.prefixLabel({}), &bounding);
-        painter->setPen(tickColor);
+        painter->setPen(prefixedColor);
         bounding.translate(bounding.width(), 0);
         bounding.setWidth(prefixWidth);
         painter->drawText(bounding, Qt::AlignBottom | Qt::AlignLeft, placeholder);
@@ -85,12 +85,11 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
 
     for (const auto& tickAndLabel : pfl.ticksAndLabel()) {
         const auto x = xForTime(tickAndLabel.first);
-            painter->setPen(prefixColor);
-        } else {
         if (pfl.hasPrefix() && std::abs(tickAndLabel.first - pfl.prefixValue()) < oneNanoSecond) {
             painter->setPen(tickColor);
-            QRect labelRect(x - endLabelWidth / 2, rect.y() + fontSize, endLabelWidth, fontSize);
             painter->drawLine(x, startY + fontSize, x, rect.y() + rect.height());
+            painter->setPen(prefixedColor);
+        } else {
             QRect labelRect(std::max(0, x - endLabelWidth / 2), startY + fontSize, endLabelWidth, fontSize);
             painter->drawText(labelRect, Qt::AlignCenter | Qt::AlignBottom, tickAndLabel.second);
             painter->drawLine(x, labelRect.y() + fontSize, x, labelRect.y() + rect.height());
