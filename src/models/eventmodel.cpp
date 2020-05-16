@@ -122,7 +122,7 @@ QVariant EventModel::headerData(int section, Qt::Orientation orientation, int ro
     case ThreadColumn:
         return tr("Source");
     case EventsColumn:
-        return tr("Events");
+        return tr("Events\n\n");
     case NUM_COLUMNS:
         // nothing
         break;

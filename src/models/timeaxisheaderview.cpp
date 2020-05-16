@@ -14,7 +14,7 @@ TimeAxisHeaderView::TimeAxisHeaderView(FilterAndZoomStack* filterAndZoomStack, Q
     : QHeaderView(Qt::Horizontal, parent)
     , m_filterAndZoomStack(filterAndZoomStack)
 {
-    setMinimumHeight(2*fontMetrics().height() + s_tickHeight);
+    setMinimumHeight(3*fontMetrics().height() + s_tickHeight);
     setStretchLastSection(true);
 
     auto emitHeaderDataChanged = [this]() { emit headerDataChanged(this->orientation(), 1, 1); };
