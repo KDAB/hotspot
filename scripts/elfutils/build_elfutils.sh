@@ -26,7 +26,7 @@ if [ ! -d "$BUILDDIR" ]; then
 fi
 
 cd "$BUILDDIR"
-$SRCDIR/configure --prefix "$PREFIX"
+$SRCDIR/configure --disable-debuginfod --prefix "$PREFIX"
 make -j$(nproc)
 make DESTDIR=$PWD/package install
 tar cjvf "$OUTDIR/elfutils.build.tar.bz2" -C $PWD/package "${PREFIX:1}"
