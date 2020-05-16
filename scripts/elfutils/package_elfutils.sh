@@ -2,10 +2,12 @@
 
 cd $(dirname $0)
 
-if [ ! -d /tmp/package-elfutils-artifacts ]; then
-    mkdir /tmp/package-elfutils-artifacts
+artifacts="/tmp/package-elfutils-artifacts"
+
+if [ ! -d "$artifacts" ]; then
+    mkdir "$artifacts"
 fi
 
 sudo docker build -t package_elfutils . || exit 1
-sudo docker run -v /tmp/package-elfutils-artifacts:/artifacts -it package_elfutils
-mv -v /tmp/package-elfutils-artifacts/elfutils.build.tar.bz2 .
+sudo docker run -v "$artifacts":/artifacts -it package_elfutils
+mv -v "$artifacts"/elfutils.build.tar.bz2 .
