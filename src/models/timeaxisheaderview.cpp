@@ -56,6 +56,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
     };
 
     const int fontSize = painter->fontMetrics().height();
+    const int startY = rect.height() - s_tickHeight - 2*fontSize;
     const int endLabelWidth = painter->fontMetrics().horizontalAdvance(QLatin1String("-xXXXm"));
     const int targetNbTicks = rect.width() / endLabelWidth;
     const PrefixTickLabels pfl(start, end, targetNbTicks);
@@ -69,7 +70,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
         const int prefixWidth = painter->fontMetrics().horizontalAdvance(pfl.prefixLabel(placeholder));
         const int prefixCenter = xForTime(pfl.prefixValue());
 
-        QRect placeHolderRect(prefixCenter - prefixWidth / 2, rect.y(), prefixWidth, fontSize);
+        QRect placeHolderRect(prefixCenter - prefixWidth / 2, startY, prefixWidth, fontSize);
         if (placeHolderRect.x() < rect.x()) {
             placeHolderRect.translate(rect.x() - placeHolderRect.x(), 0);
         }
@@ -86,10 +87,11 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
         const auto x = xForTime(tickAndLabel.first);
         if (std::abs(tickAndLabel.first - pfl.prefixValue()) < oneNanoSecond) {
             painter->setPen(prefixColor);
-            painter->drawLine(x, rect.y() + fontSize, x, rect.y() + rect.height());
         } else {
             painter->setPen(tickColor);
             QRect labelRect(x - endLabelWidth / 2, rect.y() + fontSize, endLabelWidth, fontSize);
+            painter->drawLine(x, startY + fontSize, x, rect.y() + rect.height());
+            QRect labelRect(std::max(0, x - endLabelWidth / 2), startY + fontSize, endLabelWidth, fontSize);
             painter->drawText(labelRect, Qt::AlignCenter | Qt::AlignBottom, tickAndLabel.second);
             painter->drawLine(x, labelRect.y() + fontSize, x, labelRect.y() + rect.height());
         }
