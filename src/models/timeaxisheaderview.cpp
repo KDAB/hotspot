@@ -85,9 +85,9 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
 
     for (const auto& tickAndLabel : pfl.ticksAndLabel()) {
         const auto x = xForTime(tickAndLabel.first);
-        if (std::abs(tickAndLabel.first - pfl.prefixValue()) < oneNanoSecond) {
             painter->setPen(prefixColor);
         } else {
+        if (pfl.hasPrefix() && std::abs(tickAndLabel.first - pfl.prefixValue()) < oneNanoSecond) {
             painter->setPen(tickColor);
             QRect labelRect(x - endLabelWidth / 2, rect.y() + fontSize, endLabelWidth, fontSize);
             painter->drawLine(x, startY + fontSize, x, rect.y() + rect.height());
