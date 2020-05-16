@@ -13,6 +13,7 @@ class TimeAxisHeaderView : public QHeaderView
 public:
     explicit TimeAxisHeaderView(FilterAndZoomStack* filterAndZoomStack, Qt::Orientation orientation,
                                 QWidget* parent = nullptr);
+    static const int s_tickHeight = 4;
 
 public:
     void setTimeRange(const Data::TimeRange& timeRange);
