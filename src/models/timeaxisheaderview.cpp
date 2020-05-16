@@ -17,7 +17,7 @@ TimeAxisHeaderView::TimeAxisHeaderView(FilterAndZoomStack* filterAndZoomStack, Q
     setMinimumHeight(3*fontMetrics().height() + s_tickHeight);
     setStretchLastSection(true);
 
-    auto emitHeaderDataChanged = [this]() { emit headerDataChanged(this->orientation(), 1, 1); };
+    auto emitHeaderDataChanged = [this]() { emit headerDataChanged(this->orientation(), EventModel::EventsColumn, EventModel::EventsColumn); };
     connect(filterAndZoomStack, &FilterAndZoomStack::filterChanged, this, emitHeaderDataChanged);
     connect(filterAndZoomStack, &FilterAndZoomStack::zoomChanged, this, emitHeaderDataChanged);
 }
