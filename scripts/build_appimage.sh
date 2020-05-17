@@ -43,15 +43,12 @@ cp ../hotspot.desktop appdir/$PREFIX/share/applications/
 unset QTDIR
 unset QT_PLUGIN_PATH
 unset LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=/opt/qt510/lib/x86_64-linux-gnu # make sure this path is known so all Qt/KF5 libs are found
+export LD_LIBRARY_PATH=$PREFIX/lib:/opt/qt510/lib/x86_64-linux-gnu # make sure these paths are known so all libs are found
 linuxdeployqt ./appdir/$PREFIX/share/applications/*.desktop -bundle-non-qt-libs
 # workaround for https://github.com/KDAB/hotspot/issues/87
 linuxdeployqt ./appdir/$PREFIX/lib/x86_64-linux-gnu/libexec/hotspot-perfparser -bundle-non-qt-libs -no-plugins
 
 unset LD_LIBRARY_PATH
-# also include the elfutils backend library ABI specific implementations
-elfutils_libs_dir=$(find $PREFIX -path "*/elfutils/libebl_x86_64.so" -print -quit | xargs dirname)
-cp -va "$elfutils_libs_dir/*.so" ./appdir/$PREFIX/lib/
 
 # Share libraries to reduce image size
 mv ./appdir/$PREFIX/lib/x86_64-linux-gnu/libexec/lib/* ./appdir/$PREFIX/lib/
