@@ -30,7 +30,9 @@ fi
 
 cd build-appimage
 
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PREFIX -DAPPIMAGE_BUILD=ON
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PREFIX -DAPPIMAGE_BUILD=ON \
+    -DRUSTC_DEMANGLE_INCLUDE_DIR=$PREFIX/include \
+    -DRUSTC_DEMANGLE_LIBRARY=$PREFIX/lib/librustc_demangle.so
 make -j$(nproc)
 make DESTDIR=appdir install
 

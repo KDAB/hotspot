@@ -45,5 +45,6 @@ ADD . /opt/hotspot
 WORKDIR /opt/hotspot
 
 RUN tar -C / -xvf scripts/elfutils/elfutils.build.tar.bz2
+RUN tar -C / -xvf scripts/rustc-demangle/rustc_demangle.build.tar.bz2
 
 CMD ./scripts/build_appimage.sh /opt /artifacts
