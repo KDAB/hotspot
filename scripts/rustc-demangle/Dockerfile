@@ -16,5 +16,5 @@ WORKDIR /opt
 ADD . /opt/
 
 RUN curl -L https://github.com/alexcrichton/rustc-demangle/archive/master.zip -o rustc_demangle.zip && unzip rustc_demangle.zip
-ENV PATH="${HOME}/.cargo/bin:${PATH}"
+ENV PATH="/root/.cargo/bin:${PATH}"
 CMD ./build_rustc_demangle.sh /opt /artifacts /opt/rustc-demangle-master
