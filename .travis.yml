@@ -6,9 +6,9 @@ dist: trusty
 before_install:
   - sudo add-apt-repository ppa:beineri/opt-qt-5.10.1-trusty -y
   - sudo apt-get update -qq
-    
-install: 
   - sudo apt-get -y install qt510base qt510svg qt510x11extras
+
+install:
   - source /opt/qt*/bin/qt*-env.sh
   - git clone git://anongit.kde.org/extra-cmake-modules
   - cd extra-cmake-modules
@@ -22,9 +22,12 @@ install:
   - wget -c "https://github.com/chigraph/precompiled-kf5-linux/releases/download/precompiled/kf5-gcc6-linux64-release.tar.xz"
   - tar xf kf5-gcc6-linux64-release.tar.xz
   - sudo cp -Rf root/kf5-release/* /opt/qt*/
-  - # Precompiled version of elfutils in newer version (0.170)
-  - wget -c "https://swanson.kdab.com/owncloud/index.php/s/RzRwIkFuTKI30t3/download" -O elfutils.tar.bz2
+  - # Precompiled version of elfutils in newer version (0.179)
+  - wget -c "https://owncloud.kdab.com/index.php/s/COLPY0LO4XhMtOx/download" -O elfutils.tar.bz2
   - sudo tar -xf elfutils.tar.bz2 -C /
+  - # Precompiled version of rustc_demangle
+  - wget -c "https://owncloud.kdab.com/index.php/s/EBj3jFT7HIqCrtL/download" -O rustc_demangle.tar.bz2
+  - sudo tar -xf rustc_demangle.tar.bz2 -C /
   - wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
   - chmod a+x linuxdeployqt*.AppImage
   - sudo mv linuxdeployqt*.AppImage /usr/bin/linuxdeployqt
@@ -39,19 +42,17 @@ script:
   - set -e # Exit immediately if anything fails
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DAPPIMAGE_BUILD=ON
+  - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DAPPIMAGE_BUILD=ON -DRUSTC_DEMANGLE_INCLUDE_DIR=/opt/include -DRUSTC_DEMANGLE_LIBRARY=/opt/lib/librustc_demangle.so
   - make -j$(nproc)
   - make DESTDIR=appdir install ; find appdir/
   - mkdir -p appdir/usr/share/applications/ # FIXME: Do in CMakeLists.txt
   - cp ../hotspot.desktop appdir/usr/share/applications/ # FIXME: Do in CMakeLists.txt
   - unset QTDIR; unset QT_PLUGIN_PATH ; unset LD_LIBRARY_PATH
-  - export LD_LIBRARY_PATH=/opt/qt510/lib/x86_64-linux-gnu # make sure this path is known so all Qt/KF5 libs are found
+  - export LD_LIBRARY_PATH=/opt/lib:/opt/qt510/lib/x86_64-linux-gnu # make sure these paths are known so all libs are found
   - linuxdeployqt ./appdir/usr/share/applications/*.desktop -bundle-non-qt-libs
   - # workaround for https://github.com/KDAB/hotspot/issues/87
   - linuxdeployqt ./appdir/usr/lib/x86_64-linux-gnu/libexec/hotspot-perfparser -bundle-non-qt-libs -no-plugins
   - unset LD_LIBRARY_PATH
-  - # also include the elfutils backend library ABI specific implementations
-  - cp -va /usr/lib/x86_64-linux-gnu/elfutils/* ./appdir/usr/lib/x86_64-linux-gnu/libexec/lib/
   - # Share libraries to reduce image size
   - mv ./appdir/usr/lib/x86_64-linux-gnu/libexec/lib/* ./appdir/usr/lib/
   - rmdir ./appdir/usr/lib/x86_64-linux-gnu/libexec/lib
