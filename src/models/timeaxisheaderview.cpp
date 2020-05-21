@@ -62,8 +62,10 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
 
     const int fontSize = painter->fontMetrics().height();
     const int startY = rect.height() - s_tickHeight - 2*fontSize;
-    const int endLabelWidth = painter->fontMetrics().horizontalAdvance(QLatin1String("-xXXXm"));
-    const int targetNbTicks = rect.width() / endLabelWidth;
+    // Width of a tick label that is prefixed, this is at most 4 digits plus an SI prefix.
+    // This includes a minus sign for ticks to the left of the prefix value
+    const int maxPrefixedLabelWidth = painter->fontMetrics().horizontalAdvance(QStringLiteral("-xXXXm"));
+    const int targetNbTicks = rect.width() / maxPrefixedLabelWidth;
     const PrefixTickLabels pfl(start, end, targetNbTicks);
 
     const QColor tickColor = palette().windowText().color();
@@ -98,7 +100,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
         } else {
             // Keep text within the header
             Qt::Alignment hAlignment = Qt::AlignCenter;
-            QRect labelRect(x - endLabelWidth / 2, startY + fontSize, endLabelWidth, fontSize);
+            QRect labelRect(x - maxPrefixedLabelWidth / 2, startY + fontSize, maxPrefixedLabelWidth, fontSize);
             if (labelRect.x() < rect.x()) {
                 labelRect.translate(rect.x() - labelRect.x(), 0);
                 hAlignment = Qt::AlignLeft;
