@@ -37,12 +37,14 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
     if (painter == nullptr)
         return;
 
+    // Draw the default header view (background, title, sort indicator)
     painter->save();
     QHeaderView::paintSection(painter, rect, logicalIndex);
     painter->restore();
     if (logicalIndex != EventModel::EventsColumn)
         return;
 
+    // Setup the tick labels
     auto zoomTime = m_filterAndZoomStack->zoom().time;
     if (!zoomTime.isValid()) {
         zoomTime = m_timeRange; // full
@@ -68,6 +70,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
     const QColor tickColor = palette().windowText().color();
     const QColor prefixedColor = palette().highlight().color().darker(133);
 
+    // Draw the long prefix tick and its label
     painter->setPen(tickColor);
     if (pfl.hasPrefix()) {
         const auto placeholder = QStringLiteral("xxx");
@@ -87,6 +90,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
         painter->drawText(bounding, Qt::AlignBottom | Qt::AlignLeft, placeholder);
     }
 
+    // Draw the regular ticks and their labels
     for (const auto& tickAndLabel : pfl.ticksAndLabel()) {
         const auto x = xForTime(tickAndLabel.first);
         if (pfl.hasPrefix() && std::abs(tickAndLabel.first - pfl.prefixValue()) < oneNanoSecond) {
@@ -94,6 +98,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
             painter->drawLine(x, startY + fontSize, x, rect.y() + rect.height());
             painter->setPen(prefixedColor);
         } else {
+            // Keep text within the header
             Qt::Alignment hAlignment = Qt::AlignCenter;
             QRect labelRect(x - endLabelWidth / 2, startY + fontSize, endLabelWidth, fontSize);
             if (labelRect.x() < rect.x())
