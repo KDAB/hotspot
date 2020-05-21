@@ -56,7 +56,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
 
     const double resolution = (end - start) / rect.width();
     const auto xForTime = [rect, start, resolution](const double time) {
-        return rect.x() + qRound((time - start) / resolution);
+        return rect.x() + static_cast<int>(std::round((time - start) / resolution));
     };
 
     const int fontSize = painter->fontMetrics().height();
