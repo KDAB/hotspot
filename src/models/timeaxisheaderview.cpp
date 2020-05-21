@@ -17,15 +17,19 @@ TimeAxisHeaderView::TimeAxisHeaderView(FilterAndZoomStack* filterAndZoomStack, Q
     setMinimumHeight(3*fontMetrics().height() + s_tickHeight);
     setStretchLastSection(true);
 
-    auto emitHeaderDataChanged = [this]() { emit headerDataChanged(this->orientation(), EventModel::EventsColumn, EventModel::EventsColumn); };
-    connect(filterAndZoomStack, &FilterAndZoomStack::filterChanged, this, emitHeaderDataChanged);
-    connect(filterAndZoomStack, &FilterAndZoomStack::zoomChanged, this, emitHeaderDataChanged);
+    connect(filterAndZoomStack, &FilterAndZoomStack::filterChanged, this, &TimeAxisHeaderView::emitHeaderDataChanged);
+    connect(filterAndZoomStack, &FilterAndZoomStack::zoomChanged, this, &TimeAxisHeaderView::emitHeaderDataChanged);
 }
 
 void TimeAxisHeaderView::setTimeRange(const Data::TimeRange& timeRange)
 {
     m_timeRange = timeRange;
-    emit headerDataChanged(orientation(), 1, 1);
+    emitHeaderDataChanged();
+}
+
+void TimeAxisHeaderView::emitHeaderDataChanged()
+{
+    emit headerDataChanged(this->orientation(), EventModel::EventsColumn, EventModel::EventsColumn);
 }
 
 void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const

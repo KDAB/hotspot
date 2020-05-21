@@ -17,6 +17,9 @@ public:
 public:
     void setTimeRange(const Data::TimeRange& timeRange);
 
+protected slots:
+    void emitHeaderDataChanged();
+
 private:
     Data::TimeRange m_timeRange;
 
