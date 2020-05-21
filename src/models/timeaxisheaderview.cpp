@@ -4,9 +4,9 @@
 #include <QPainter>
 #include <QtMath>
 
+#include "../util.h"
 #include "eventmodel.h"
 #include "filterandzoomstack.h"
-#include "../util.h"
 
 #include <PrefixTickLabels.h>
 
@@ -14,7 +14,7 @@ TimeAxisHeaderView::TimeAxisHeaderView(const FilterAndZoomStack* filterAndZoomSt
     : QHeaderView(Qt::Horizontal, parent)
     , m_filterAndZoomStack(filterAndZoomStack)
 {
-    setMinimumHeight(3*fontMetrics().height() + s_tickHeight);
+    setMinimumHeight(3 * fontMetrics().height() + s_tickHeight);
     setStretchLastSection(true);
 
     connect(filterAndZoomStack, &FilterAndZoomStack::filterChanged, this, &TimeAxisHeaderView::emitHeaderDataChanged);
@@ -61,7 +61,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
     };
 
     const int fontSize = painter->fontMetrics().height();
-    const int startY = rect.height() - s_tickHeight - 2*fontSize;
+    const int startY = rect.height() - s_tickHeight - 2 * fontSize;
     // Width of a tick label that is prefixed, this is at most 4 digits plus an SI prefix.
     // This includes a minus sign for ticks to the left of the prefix value
     const int maxPrefixedLabelWidth = painter->fontMetrics().horizontalAdvance(QStringLiteral("-xXXXm"));
