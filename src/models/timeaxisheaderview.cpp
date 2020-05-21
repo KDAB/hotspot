@@ -8,7 +8,7 @@
 #include "filterandzoomstack.h"
 #include "../util.h"
 
-#include "../../3rdparty/PrefixTickLabels/src/PrefixTickLabels.h"
+#include <PrefixTickLabels.h>
 
 TimeAxisHeaderView::TimeAxisHeaderView(FilterAndZoomStack* filterAndZoomStack, QWidget* parent)
     : QHeaderView(Qt::Horizontal, parent)

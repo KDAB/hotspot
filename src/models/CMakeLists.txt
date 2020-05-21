@@ -20,4 +20,5 @@ target_link_libraries(models
     Qt5::Widgets
     KF5::ItemModels
     KF5::ConfigWidgets
+    PrefixTickLabels
 )
