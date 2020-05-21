@@ -1,5 +1,4 @@
-#ifndef TIMEAXISHEADERVIEW_H
-#define TIMEAXISHEADERVIEW_H
+#pragma once
 
 #include <QHeaderView>
 
@@ -29,5 +28,3 @@ private:
 protected:
     void paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const override;
 };
-
-#endif // TIMEAXISHEADERVIEW_H
