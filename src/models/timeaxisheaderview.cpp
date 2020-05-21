@@ -64,7 +64,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
     const int startY = rect.height() - s_tickHeight - 2 * fontSize;
     // Width of a tick label that is prefixed, this is at most 4 digits plus an SI prefix.
     // This includes a minus sign for ticks to the left of the prefix value
-    const int maxPrefixedLabelWidth = painter->fontMetrics().horizontalAdvance(QStringLiteral("-xXXXm"));
+    const int maxPrefixedLabelWidth = painter->fontMetrics().width(QStringLiteral("-xXXXm"));
     const int targetNbTicks = rect.width() / maxPrefixedLabelWidth;
     const PrefixTickLabels pfl(start, end, targetNbTicks);
 
@@ -75,7 +75,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
     painter->setPen(tickColor);
     if (pfl.hasPrefix()) {
         const auto placeholder = QStringLiteral("xxx");
-        const int prefixWidth = painter->fontMetrics().horizontalAdvance(pfl.prefixLabel(placeholder));
+        const int prefixWidth = painter->fontMetrics().width(pfl.prefixLabel(placeholder));
         const int prefixCenter = xForTime(pfl.prefixValue());
 
         QRect placeHolderRect(prefixCenter - prefixWidth / 2, startY, prefixWidth, fontSize);
