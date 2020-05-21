@@ -69,7 +69,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
     const PrefixTickLabels pfl(start, end, targetNbTicks);
 
     const QColor tickColor = palette().windowText().color();
-    const QColor prefixedColor = palette().highlight().color().darker(133);
+    const QColor prefixedColor = palette().highlight().color();
 
     // Draw the long prefix tick and its label
     painter->setPen(tickColor);
