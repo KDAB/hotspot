@@ -10,7 +10,7 @@
 
 #include <PrefixTickLabels.h>
 
-TimeAxisHeaderView::TimeAxisHeaderView(FilterAndZoomStack* filterAndZoomStack, QWidget* parent)
+TimeAxisHeaderView::TimeAxisHeaderView(const FilterAndZoomStack* filterAndZoomStack, QWidget* parent)
     : QHeaderView(Qt::Horizontal, parent)
     , m_filterAndZoomStack(filterAndZoomStack)
 {

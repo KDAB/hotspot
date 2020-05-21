@@ -11,7 +11,7 @@ class TimeAxisHeaderView : public QHeaderView
 {
     Q_OBJECT
 public:
-    explicit TimeAxisHeaderView(FilterAndZoomStack* filterAndZoomStack, QWidget* parent = nullptr);
+    explicit TimeAxisHeaderView(const FilterAndZoomStack* filterAndZoomStack, QWidget* parent = nullptr);
     static const int s_tickHeight = 4;
 
 public:
@@ -24,7 +24,7 @@ private:
     Data::TimeRange m_timeRange;
 
 private:
-    FilterAndZoomStack* m_filterAndZoomStack = nullptr;
+    const FilterAndZoomStack* m_filterAndZoomStack = nullptr;
 
 protected:
     void paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const override;
