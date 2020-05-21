@@ -46,12 +46,11 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
 
     // Setup the tick labels
     auto zoomTime = m_filterAndZoomStack->zoom().time;
-    if (!zoomTime.isValid()) {
+    if (!zoomTime.isValid())
         zoomTime = m_timeRange; // full
-    }
-    if (!zoomTime.isValid()) {
+    if (!zoomTime.isValid())
         return; // bailing out, no valid range to show
-    }
+
     const double oneNanoSecond = 1.0e-9;
     const double start = (zoomTime.start - m_timeRange.start) * oneNanoSecond;
     const double end = (zoomTime.end - m_timeRange.start) * oneNanoSecond;
@@ -78,9 +77,8 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
         const int prefixCenter = xForTime(pfl.prefixValue());
 
         QRect placeHolderRect(prefixCenter - prefixWidth / 2, startY, prefixWidth, fontSize);
-        if (placeHolderRect.x() < rect.x()) {
+        if (placeHolderRect.x() < rect.x())
             placeHolderRect.translate(rect.x() - placeHolderRect.x(), 0);
-        }
 
         QRect bounding;
         painter->drawText(placeHolderRect, Qt::AlignBottom | Qt::AlignLeft, pfl.prefixLabel({}), &bounding);
@@ -101,13 +99,11 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
             // Keep text within the header
             Qt::Alignment hAlignment = Qt::AlignCenter;
             QRect labelRect(x - endLabelWidth / 2, startY + fontSize, endLabelWidth, fontSize);
-            if (labelRect.x() < rect.x())
-            {
+            if (labelRect.x() < rect.x()) {
                 labelRect.translate(rect.x() - labelRect.x(), 0);
                 hAlignment = Qt::AlignLeft;
             }
-            if (labelRect.right() > rect.right())
-            {
+            if (labelRect.right() > rect.right()) {
                 labelRect.translate(rect.right() - labelRect.right(), 0);
                 hAlignment = Qt::AlignRight;
             }
