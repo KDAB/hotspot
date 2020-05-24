@@ -89,7 +89,6 @@ public:
         QVector<qint32> threads;
         QString name;
     };
-
 private:
     Data::EventResults m_data;
     QVector<Process> m_processes;
