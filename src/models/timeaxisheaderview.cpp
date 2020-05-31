@@ -93,13 +93,13 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
     // This includes a minus sign for ticks to the left of the prefix value
     const int maxPrefixedLabelWidth = painter->fontMetrics().width(QStringLiteral("-xXXXms"));
     const int targetNbTicks = rect.width() / maxPrefixedLabelWidth;
-    const PrefixTickLabels pfl(start, end, targetNbTicks);
+    const PrefixTickLabels pfl(start, end, targetNbTicks, QStringLiteral("s"));
 
     const QColor tickColor = palette().windowText().color();
     const QColor prefixedColor = palette().highlight().color();
 
     // Draw the long prefix tick and its label
-    painter->setPen(tickColor);
+
     if (pfl.hasPrefix()) {
         const auto placeholder = QStringLiteral("xxx");
         const int prefixWidth = painter->fontMetrics().width(pfl.prefixLabel(placeholder));
@@ -109,12 +109,26 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
         if (placeHolderRect.x() < rect.x())
             placeHolderRect.translate(rect.x() - placeHolderRect.x(), 0);
 
+        // Leading
         QRect bounding;
-        painter->drawText(placeHolderRect, Qt::AlignBottom | Qt::AlignLeft, pfl.prefixLabel({}), &bounding);
+        painter->setPen(tickColor);
+        painter->drawText(placeHolderRect, Qt::AlignBottom | Qt::AlignLeft, pfl.prefixLabelLeading(), &bounding);
+        placeHolderRect.translate(bounding.width(), 0);
+
+        // Placeholder
         painter->setPen(prefixedColor);
-        bounding.translate(bounding.width(), 0);
-        bounding.setWidth(prefixWidth);
-        painter->drawText(bounding, Qt::AlignBottom | Qt::AlignLeft, placeholder);
+        painter->drawText(placeHolderRect, Qt::AlignBottom | Qt::AlignLeft, placeholder, &bounding);
+        placeHolderRect.translate(bounding.width(), 0);
+
+        // Trailing
+        painter->setPen(tickColor);
+        painter->drawText(placeHolderRect, Qt::AlignBottom | Qt::AlignLeft, pfl.prefixLabelTrailing(), &bounding);
+
+        painter->setPen(prefixedColor);
+    }
+    else
+    {
+        painter->setPen(tickColor);
     }
 
     // Draw the regular ticks and their labels
@@ -136,7 +150,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
                 labelRect.translate(rect.right() - labelRect.right(), 0);
                 hAlignment = Qt::AlignRight;
             }
-            painter->drawText(labelRect, hAlignment | Qt::AlignBottom, tickAndLabel.second + QStringLiteral("s"));
+            painter->drawText(labelRect, hAlignment | Qt::AlignBottom, tickAndLabel.second);
             painter->drawLine(x, labelRect.y() + fontSize, x, labelRect.y() + rect.height());
         }
     }
