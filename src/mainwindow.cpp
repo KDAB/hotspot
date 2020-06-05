@@ -48,6 +48,7 @@
 #include <KConfigGroup>
 #include <KRecentFilesAction>
 #include <KStandardAction>
+#include <KShell>
 
 #include "aboutdialog.h"
 
@@ -490,12 +491,21 @@ void MainWindow::navigateToCode(const QString& filePath, int lineNumber, int col
     }
 
     if (!command.isEmpty()) {
-        command.replace(QStringLiteral("%f"), filePath);
-        command.replace(QStringLiteral("%l"), QString::number(std::max(1, lineNumber)));
-        command.replace(QStringLiteral("%c"), QString::number(std::max(1, columnNumber)));
+        KShell::Errors errors = KShell::NoError;
+        auto args = KShell::splitArgs(command, KShell::TildeExpand | KShell::AbortOnMeta, &errors);
+        if (errors || args.isEmpty()) {
+            m_resultsPage->navigateToCodeFailed(tr("Failed to parse command: %1").arg(command));
+            return;
+        }
+        command = args.takeFirst();
+        for (auto &arg : args) {
+            arg.replace(QLatin1String("%f"), filePath);
+            arg.replace(QLatin1String("%l"), QString::number(std::max(1, lineNumber)));
+            arg.replace(QLatin1String("%c"), QString::number(std::max(1, columnNumber)));
+        }
 
-        if (!QProcess::startDetached(command)) {
-            m_resultsPage->navigateToCodeFailed(tr("Failed to launch command: %1").arg(command));
+        if (!QProcess::startDetached(command, args)) {
+            m_resultsPage->navigateToCodeFailed(tr("Failed to launch command: %1 %2").arg(command, args.join(QLatin1Char(' '))));
         }
     } else {
         QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
