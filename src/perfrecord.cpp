@@ -86,7 +86,7 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfO
         // once perf has started
         const auto sudoBinary = sudoUtil();
         if (sudoBinary.isEmpty()) {
-            emit recordingFailed(tr("No graphical sudo utility found. Please install kdesudo or kdesu."));
+            emit recordingFailed(tr("No sudo utility found. Please install pkexec, kdesudo or kdesu."));
             return;
         }
 
@@ -154,6 +154,10 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfO
                     readSlot();
                     // then delete the process
                     m_elevatePrivilegesProcess->deleteLater();
+
+                    if (!m_perfRecordProcess) {
+                        emit recordingFailed(tr("Failed to elevate privileges."));
+                    }
                 });
 
         m_elevatePrivilegesProcess->start(sudoBinary, options);
@@ -308,7 +312,7 @@ void PerfRecord::sendInput(const QByteArray& input)
 QString PerfRecord::sudoUtil()
 {
     const auto commands = {
-        QStringLiteral("kdesudo"), QStringLiteral("kdesu"),
+        QStringLiteral("pkexec"), QStringLiteral("kdesudo"), QStringLiteral("kdesu"),
         // gksudo / gksu seem to close stdin and thus the elevate script doesn't wait on read
     };
     for (const auto& cmd : commands) {

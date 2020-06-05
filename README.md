@@ -307,7 +307,7 @@ when using hotspot's record feature:
 
 To workaround this limitation, hotspot can temporarily elevate the perf privileges.
 This is achieved by applying [these steps](https://superuser.com/questions/980632/run-perf-without-root-right),
-bundled into [a script](scripts/elevate_perf_privileges.sh) that is run via `kdesudo` or `kdesu`.
+bundled into [a script](scripts/elevate_perf_privileges.sh) that is run via `pkexec`, `kdesudo` or `kdesu`.
 The resulting elevated privileges are also required for kernel tracing in general and Off-CPU profiling in particular.
 
 ## Qt Creator

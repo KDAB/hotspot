@@ -223,7 +223,7 @@
       <item row="1" column="0">
        <widget class="QLabel" name="elevatePrivilegesLabel">
         <property name="toolTip">
-         <string>When enabled, hotspot will temporarily elevate the perf privileges via kdesudo or kdesu. This allows you to access advanced perf features such as kernel tracepoints required for Off-CPU profiling.</string>
+         <string>When enabled, hotspot will temporarily elevate the perf privileges via pkexec, kdesudo or kdesu. This allows you to access advanced perf features such as kernel tracepoints required for Off-CPU profiling.</string>
         </property>
         <property name="text">
          <string>Elevate Privileges:</string>
@@ -236,7 +236,7 @@
       <item row="1" column="1">
        <widget class="QCheckBox" name="elevatePrivilegesCheckBox">
         <property name="toolTip">
-         <string>When enabled, hotspot will temporarily elevate the perf privileges via kdesudo or kdesu. This allows you to access advanced perf features such as kernel tracepoints required for Off-CPU profiling.</string>
+         <string>When enabled, hotspot will temporarily elevate the perf privileges via pkexec, kdesudo or kdesu. This allows you to access advanced perf features such as kernel tracepoints required for Off-CPU profiling.</string>
         </property>
        </widget>
       </item>
