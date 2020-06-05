@@ -8,6 +8,7 @@ add_library(models STATIC
     processfiltermodel.cpp
     processlist_unix.cpp
     timelinedelegate.cpp
+    timeaxisheaderview.cpp
     eventmodel.cpp
     filterandzoomstack.cpp
     ../settings.cpp
@@ -19,4 +20,5 @@ target_link_libraries(models
     Qt5::Widgets
     KF5::ItemModels
     KF5::ConfigWidgets
+    PrefixTickLabels
 )

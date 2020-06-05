@@ -39,6 +39,7 @@
 
 #include "models/eventmodel.h"
 #include "models/timelinedelegate.h"
+#include "models/timeaxisheaderview.h"
 #include "models/filterandzoomstack.h"
 
 #include <KLocalizedString>
@@ -115,6 +116,9 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     ui->timeLineEventFilterButton->setMenu(m_filterMenu);
     ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, m_timeLineDelegate);
 
+    m_timeAxisHeaderView = new TimeAxisHeaderView(m_filterAndZoomStack, ui->timeLineView);
+    ui->timeLineView->setHeader(m_timeAxisHeaderView);
+
     connect(timeLineProxy, &QAbstractItemModel::rowsInserted, this, [this]() { ui->timeLineView->expandToDepth(1); });
     connect(timeLineProxy, &QAbstractItemModel::modelReset, this, [this]() { ui->timeLineView->expandToDepth(1); });
 
@@ -124,6 +128,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     });
     connect(parser, &PerfParser::eventsAvailable, this, [this, eventModel](const Data::EventResults& data) {
         eventModel->setData(data);
+        m_timeAxisHeaderView->setTimeRange(eventModel->timeRange());
         if (data.offCpuTimeCostId != -1) {
             // remove the off-CPU time event source, we only want normal sched switches
             for (int i = 0, c = ui->timeLineEventSource->count(); i < c; ++i) {

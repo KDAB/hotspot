@@ -122,7 +122,7 @@ QVariant EventModel::headerData(int section, Qt::Orientation orientation, int ro
     case ThreadColumn:
         return tr("Source");
     case EventsColumn:
-        return tr("Events");
+        return tr("Events\n\n");
     case NUM_COLUMNS:
         // nothing
         break;
@@ -340,6 +340,11 @@ void EventModel::setData(const Data::EventResults& data)
         m_data.cpus.erase(it, m_data.cpus.end());
     }
     endResetModel();
+}
+
+Data::TimeRange EventModel::timeRange() const
+{
+    return m_time;
 }
 
 QModelIndex EventModel::index(int row, int column, const QModelIndex& parent) const
