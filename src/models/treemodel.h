@@ -158,7 +158,8 @@ public:
             return QVariant::fromValue(item->symbol);
         } else {
             auto ret = rowData(item, index.column(), role);
-            if (role == Qt::DisplayRole && m_simplify && index.row() > 0 && item->parent && item->parent->children.size() == 1) {
+            if (role == Qt::DisplayRole && m_simplify && index.column() == 0 && index.row() > 0 && item->parent
+                && item->parent->children.size() == 1) {
                 auto text = ret.toString();
                 text.prepend(QStringLiteral("↪"));
                 return text;
