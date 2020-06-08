@@ -33,6 +33,12 @@ LINK_PRIVATE
 set(RUSTC_DEMANGLE_INCLUDE_DIR "" CACHE STRING "Path to the folder containing rustc_demangle.h from https://github.com/alexcrichton/rustc-demangle")
 set(RUSTC_DEMANGLE_LIBRARY "" CACHE STRING "Path to the librustc_demangle.so library from https://github.com/alexcrichton/rustc-demangle")
 
+if (ZSTD_FOUND)
+    target_include_directories(hotspot-perfparser PRIVATE ${ZSTD_INCLUDE_DIR})
+    target_link_libraries(hotspot-perfparser PRIVATE ${ZSTD_LIBRARY})
+    target_compile_definitions(hotspot-perfparser PRIVATE HAVE_ZSTD=1)
+endif()
+
 if (RUSTC_DEMANGLE_INCLUDE_DIR AND RUSTC_DEMANGLE_LIBRARY)
     target_include_directories(hotspot-perfparser PRIVATE ${RUSTC_DEMANGLE_INCLUDE_DIR})
     target_link_libraries(hotspot-perfparser LINK_PRIVATE ${RUSTC_DEMANGLE_LIBRARY})
@@ -98,6 +104,12 @@ ecm_add_test(
     TEST_NAME
         tst_perfdata
 )
+
+if (ZSTD_FOUND)
+    target_include_directories(tst_perfdata PRIVATE ${ZSTD_INCLUDE_DIR})
+    target_link_libraries(tst_perfdata ${ZSTD_LIBRARY})
+    target_compile_definitions(tst_perfdata PRIVATE HAVE_ZSTD=1)
+endif()
 
 include_directories(perfparser/tests/auto/shared)
 add_executable(perf2text
