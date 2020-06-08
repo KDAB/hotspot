@@ -47,7 +47,7 @@ struct Symbol;
 class FilterAndZoomStack;
 
 namespace ResultsUtil {
-void stretchFirstColumn(QTreeView* view);
+void setupHeaderView(QTreeView* view);
 
 void connectFilter(QLineEdit *filter, QSortFilterProxyModel *proxy);
 

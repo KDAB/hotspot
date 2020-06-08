@@ -53,7 +53,7 @@ Model* setupModelAndProxyForView(QTreeView* view)
     proxy->setSortRole(Model::SortRole);
     view->sortByColumn(Model::InitialSortColumn, Qt::DescendingOrder);
     view->setModel(proxy);
-    ResultsUtil::stretchFirstColumn(view);
+    ResultsUtil::setupHeaderView(view);
     ResultsUtil::setupCostDelegate(model, view);
 
     return model;
@@ -85,7 +85,7 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
     ui->callerCalleeTableView->setModel(m_callerCalleeProxy);
     ResultsUtil::setupContextMenu(ui->callerCalleeTableView, m_callerCalleeCostModel, filterStack, this,
                                   {ResultsUtil::CallbackAction::OpenEditor});
-    ResultsUtil::stretchFirstColumn(ui->callerCalleeTableView);
+    ResultsUtil::setupHeaderView(ui->callerCalleeTableView);
     ResultsUtil::setupCostDelegate(m_callerCalleeCostModel, ui->callerCalleeTableView);
 
     connect(parser, &PerfParser::callerCalleeDataAvailable, this, [this](const Data::CallerCalleeResults& data) {

@@ -42,12 +42,13 @@
 #include "models/data.h"
 #include "models/filterandzoomstack.h"
 
+#include "costheaderview.h"
+
 namespace ResultsUtil {
 
-void stretchFirstColumn(QTreeView* view)
+void setupHeaderView(QTreeView* view)
 {
-    view->header()->setStretchLastSection(false);
-    view->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    view->setHeader(new CostHeaderView(view));
 }
 
 void connectFilter(QLineEdit *filter, QSortFilterProxyModel *proxy)
@@ -81,7 +82,7 @@ void setupTreeView(QTreeView* view, QLineEdit* filter, QAbstractItemModel* model
 
     view->sortByColumn(initialSortColumn, Qt::DescendingOrder);
     view->setModel(proxy);
-    stretchFirstColumn(view);
+    setupHeaderView(view);
 }
 
 void addFilterActions(QMenu* menu, const Data::Symbol& symbol, FilterAndZoomStack* filterStack)

@@ -62,7 +62,7 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
     ui->topHotspotsTableView->setSortingEnabled(false);
     ui->topHotspotsTableView->setModel(topHotspotsProxy);
     ResultsUtil::setupCostDelegate<BottomUpModel>(bottomUpCostModel, ui->topHotspotsTableView);
-    ResultsUtil::stretchFirstColumn(ui->topHotspotsTableView);
+    ResultsUtil::setupHeaderView(ui->topHotspotsTableView);
     ResultsUtil::setupContextMenu(ui->topHotspotsTableView, bottomUpCostModel, filterStack, this);
 
     connect(ui->eventSourceComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,

@@ -39,6 +39,7 @@ set(hotspot_SRCS
     resultsflamegraphpage.cpp
     resultscallercalleepage.cpp
     resultsutil.cpp
+    costheaderview.cpp
 
     # ui files:
     mainwindow.ui
