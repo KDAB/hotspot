@@ -56,9 +56,16 @@ CostHeaderView::CostHeaderView(QWidget* parent)
             for (int i = 0; i < numSections; ++i)
                 usedWidth += sectionSize(i);
             const auto diff = usedWidth - width();
-            const auto diffPerSection = diff / numSections;
-            const auto extraDiff = diff % numSections;
+            const auto numVisibleSections = numSections - hiddenSectionCount();
+            if (numVisibleSections == 0)
+                return;
+
+            const auto diffPerSection = diff / numVisibleSections;
+            const auto extraDiff = diff % numVisibleSections;
             for (int i = 1; i < numSections; ++i) {
+                if (isSectionHidden(i)) {
+                    continue;
+                }
                 auto newSize = sectionSize(i) - diffPerSection;
                 if (i == numSections - 1)
                     newSize -= extraDiff;
@@ -69,12 +76,29 @@ CostHeaderView::CostHeaderView(QWidget* parent)
 
     setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, &QHeaderView::customContextMenuRequested, this, [this](const QPoint &pos) {
+        if (!model())
+            return;
+        const auto numSections = model()->columnCount();
+
         QMenu menu;
-        const auto resetSizes = menu.addAction(tr("Reset Column Sizes"));
-        const auto selectedAction = menu.exec(mapToGlobal(pos));
-        if (selectedAction == resetSizes) {
+        auto resetSizes = menu.addAction(tr("Reset Column Sizes"));
+        connect(resetSizes, &QAction::triggered, this, [this]() {
             resizeColumns(true);
+        });
+
+        if (numSections > 1) {
+            auto* subMenu = menu.addMenu(tr("Visible Columns"));
+            for (int i = 1; i < numSections; ++i) {
+                auto* action = subMenu->addAction(model()->headerData(i, Qt::Horizontal).toString());
+                action->setCheckable(true);
+                action->setChecked(!isSectionHidden(i));
+                connect(action, &QAction::toggled, this, [this, i](bool visible) {
+                    setSectionHidden(i, !visible);
+                });
+            }
         }
+
+        menu.exec(mapToGlobal(pos));
     });
 }
 
@@ -101,7 +125,9 @@ void CostHeaderView::resizeColumns(bool reset)
             if (reset) {
                 resizeSection(i, defaultSize);
             }
-            availableWidth -= sectionSize(i);
+            if (!isSectionHidden(i)) {
+                availableWidth -= sectionSize(i);
+            }
         }
     }
 }
