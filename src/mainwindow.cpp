@@ -157,6 +157,16 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionAbout_KDAB, &QAction::triggered, this, &MainWindow::aboutKDAB);
     connect(ui->actionAbout_Hotspot, &QAction::triggered, this, &MainWindow::aboutHotspot);
 
+    {
+        auto config = m_config->group("Settings");
+        auto settings = Settings::instance();
+        settings->setPrettifySymbols(config.readEntry("prettifySymbols", true));
+
+        connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, [this](bool prettifySymbols) {
+            m_config->group("Settings").writeEntry("prettifySymbols", prettifySymbols);
+        });
+    }
+
     auto *showTimelineAction = ui->viewMenu->addAction(tr("Show Timeline"));
     showTimelineAction->setCheckable(true);
     showTimelineAction->setChecked(true);
