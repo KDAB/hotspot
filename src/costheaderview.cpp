@@ -50,10 +50,10 @@ CostHeaderView::CostHeaderView(QWidget* parent)
         if (index != 0) {
             // give/take space from first column
             resizeSection(0, sectionSize(0) - (newSize - oldSize));
-        } else if (auto m = model()) {
+        } else {
             // distribute space across all columns
             // use actual width as oldSize/newSize isn't reliable here
-            const auto numSections = m->columnCount();
+            const auto numSections = count();
             int usedWidth = 0;
             for (int i = 0; i < numSections; ++i)
                 usedWidth += sectionSize(i);
@@ -78,9 +78,7 @@ CostHeaderView::CostHeaderView(QWidget* parent)
 
     setContextMenuPolicy(Qt::CustomContextMenu);
     connect(this, &QHeaderView::customContextMenuRequested, this, [this](const QPoint &pos) {
-        if (!model())
-            return;
-        const auto numSections = model()->columnCount();
+        const auto numSections = count();
 
         QMenu menu;
         auto resetSizes = menu.addAction(tr("Reset Column Sizes"));
@@ -114,13 +112,10 @@ void CostHeaderView::resizeEvent(QResizeEvent* event)
 
 void CostHeaderView::resizeColumns(bool reset)
 {
-    if (!model())
-        return;
-
     QScopedValueRollback<bool> guard(m_isResizing, true);
     auto availableWidth = width();
     const auto defaultSize = defaultSectionSize();
-    for (int i = model()->columnCount() - 1; i >= 0; --i) {
+    for (int i = count() - 1; i >= 0; --i) {
         if (i == 0) {
             resizeSection(0, availableWidth);
         } else {
