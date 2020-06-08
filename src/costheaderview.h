@@ -38,7 +38,7 @@ public:
 
 private:
     void resizeEvent(QResizeEvent* event) override;
-    void resizeColumns();
+    void resizeColumns(bool reset);
 
     bool m_isResizing = false;
 };

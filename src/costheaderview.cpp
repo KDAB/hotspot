@@ -30,6 +30,7 @@
 #include <QPainter>
 #include <QEvent>
 #include <QScopedValueRollback>
+#include <QMenu>
 #include <QDebug>
 
 CostHeaderView::CostHeaderView(QWidget* parent)
@@ -37,7 +38,9 @@ CostHeaderView::CostHeaderView(QWidget* parent)
 {
     setDefaultSectionSize(150);
     setStretchLastSection(false);
-    connect(this, &QHeaderView::sectionCountChanged, this, &CostHeaderView::resizeColumns);
+    connect(this, &QHeaderView::sectionCountChanged, this, [this]() {
+        resizeColumns(false);
+    });
     connect(this, &QHeaderView::sectionResized, this, [this](int index, int oldSize, int newSize) {
         if (m_isResizing)
             return;
@@ -63,6 +66,16 @@ CostHeaderView::CostHeaderView(QWidget* parent)
             }
         }
     });
+
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, &QHeaderView::customContextMenuRequested, this, [this](const QPoint &pos) {
+        QMenu menu;
+        const auto resetSizes = menu.addAction(tr("Reset Column Sizes"));
+        const auto selectedAction = menu.exec(mapToGlobal(pos));
+        if (selectedAction == resetSizes) {
+            resizeColumns(true);
+        }
+    });
 }
 
 CostHeaderView::~CostHeaderView() = default;
@@ -70,20 +83,24 @@ CostHeaderView::~CostHeaderView() = default;
 void CostHeaderView::resizeEvent(QResizeEvent* event)
 {
     QHeaderView::resizeEvent(event);
-    resizeColumns();
+    resizeColumns(false);
 }
 
-void CostHeaderView::resizeColumns()
+void CostHeaderView::resizeColumns(bool reset)
 {
     if (!model())
         return;
 
     QScopedValueRollback<bool> guard(m_isResizing, true);
     auto availableWidth = width();
+    const auto defaultSize = defaultSectionSize();
     for (int i = model()->columnCount() - 1; i >= 0; --i) {
         if (i == 0) {
             resizeSection(0, availableWidth);
         } else {
+            if (reset) {
+                resizeSection(i, defaultSize);
+            }
             availableWidth -= sectionSize(i);
         }
     }
