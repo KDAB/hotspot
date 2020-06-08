@@ -58,12 +58,38 @@ public:
     }
     ~TreeModel() = default;
 
+    bool hasChildren(const QModelIndex& parent = {}) const final override
+    {
+        if (parent.column() >= 1)
+            return false;
+        auto item = itemFromIndex(parent);
+        if (!item)
+            return false;
+        if (m_simplify && item->children.size() == 1 && item->parent && item->parent->children.size() == 1)
+            return false;
+        return item && !item->children.isEmpty();
+    }
+
     int rowCount(const QModelIndex& parent = {}) const final override
     {
         if (parent.column() >= 1) {
             return 0;
         } else if (auto item = itemFromIndex(parent)) {
-            return item->children.size();
+            if (!m_simplify || item == rootItem() || item->children.size() != 1) {
+                return item->children.size();
+            } else if (item->parent && item->parent->children.size() == 1) {
+                // simplified
+                return 0;
+            }
+
+            // aggregate all simplified nodes
+            int numChildren = 1;
+            item = item->children.constData();
+            while (item->children.size() == 1) {
+                numChildren++;
+                item = item->children.constData();
+            }
+            return numChildren;
         } else {
             return 0;
         }
@@ -80,7 +106,7 @@ public:
 
     QModelIndex index(int row, int column, const QModelIndex& parent = {}) const final override
     {
-        if (row < 0 || column < 0 || column >= numColumns()) {
+        if (row < 0 || column < 0 || column >= numColumns() || row > rowCount(parent)) {
             return {};
         }
 
@@ -99,8 +125,14 @@ public:
         if (!childItem) {
             return {};
         }
+        auto *parent = childItem->parent;
+        if (m_simplify && parent && parent->children.size() == 1) {
+            while (parent->parent && parent->parent->children.size() == 1) {
+                parent = parent->parent;
+            }
+        }
 
-        return indexFromItem(childItem->parent, 0);
+        return indexFromItem(parent, 0);
     }
 
     QVariant headerData(int section, Qt::Orientation orientation, int role) const final override
@@ -125,10 +157,28 @@ public:
         } else if (role == SymbolRole) {
             return QVariant::fromValue(item->symbol);
         } else {
-            return rowData(item, index.column(), role);
+            auto ret = rowData(item, index.column(), role);
+            if (role == Qt::DisplayRole && m_simplify && index.row() > 0 && item->parent && item->parent->children.size() == 1) {
+                auto text = ret.toString();
+                text.prepend(QStringLiteral("↪"));
+                return text;
+            }
+            return ret;
         }
 
         return {};
+    }
+
+    bool simplify() const { return m_simplify; }
+
+    /**
+     * When simplification is enabled, long call chains get flattened until they branch the first time
+     */
+    void setSimplify(bool simplify)
+    {
+        beginResetModel();
+        m_simplify = simplify;
+        endResetModel();
     }
 
 private:
@@ -138,6 +188,17 @@ private:
             return rootItem();
         } else {
             auto parent = reinterpret_cast<const TreeNode*>(index.internalPointer());
+            if (m_simplify && parent->children.size() == 1) {
+                int row = index.row();
+                auto item = parent->children.constData();
+                while (row) {
+                    Q_ASSERT(item->children.size() == 1);
+                    item = item->children.constData();
+                    --row;
+                }
+                Q_ASSERT(!row);
+                return item;
+            }
             if (index.row() >= parent->children.size()) {
                 return nullptr;
             }
@@ -151,13 +212,24 @@ private:
             return {};
         }
 
-        const auto* parentItem = item->parent;
+        auto* parentItem = item->parent;
         if (!parentItem) {
             parentItem = rootItem();
         }
         Q_ASSERT(parentItem->children.constData() <= item);
         Q_ASSERT(parentItem->children.constData() + parentItem->children.size() > item);
-        const int row = std::distance(parentItem->children.constData(), item);
+
+        int row = 0;
+        if (m_simplify && parentItem->children.size() == 1) {
+            while (parentItem->parent && parentItem->parent->children.size() == 1)
+            {
+                ++row;
+                parentItem = parentItem->parent;
+            };
+            Q_ASSERT(parentItem->children.size() == 1);
+        } else {
+            row = std::distance(parentItem->children.constData(), item);
+        }
 
         return createIndex(row, column, const_cast<TreeNode*>(parentItem));
     }
@@ -168,6 +240,9 @@ private:
     virtual QVariant rowData(const TreeNode* item, int column, int role) const = 0;
 
     quint64 m_sampleCount = 0;
+    bool m_simplify = true;
+
+    friend class TestModels;
 };
 
 template<typename Results, typename ModelImpl>

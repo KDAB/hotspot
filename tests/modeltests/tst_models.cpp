@@ -31,10 +31,9 @@
 #include <QTextStream>
 
 #include "modeltest.h"
+#include "../testutils.h"
 
 #include <models/eventmodel.h>
-
-#include "../testutils.h"
 
 namespace {
 Data::BottomUpResults buildBottomUpTree(const QByteArray& stacks)
@@ -106,15 +105,133 @@ private slots:
 
         QCOMPARE(tree.costs.totalCost(0), qint64(9));
 
-        const QStringList expectedTree = {"C=5",  " B=1",  "  A=1",  " E=1",  "  C=1",  "   B=1",  "    A=1",
-                                          " C=1", "  B=1", "   A=1", "D=2",   " B=2",   "  A=2",   "E=2",
-                                          " C=2", "  B=1", "   A=1", "  E=1", "   C=1", "    B=1", "     A=1"};
+        const auto expectedTree = QStringList{
+            //clang-format: off
+            "C=5",
+            " B=1",
+            "  A=1",
+            " E=1",
+            "  C=1",
+            "   B=1",
+            "    A=1",
+            " C=1",
+            "  B=1",
+            "   A=1",
+            "D=2",
+            " B=2",
+            "  A=2",
+            "E=2",
+            " C=2",
+            "  B=1",
+            "   A=1",
+            "  E=1",
+            "   C=1",
+            "    B=1",
+            "     A=1"
+            //clang-format on
+        };
         QCOMPARE(printTree(tree), expectedTree);
 
         BottomUpModel model;
         ModelTest tester(&model);
 
         model.setData(tree);
+    }
+
+    void testSimplifiedModel()
+    {
+        const auto tree = buildBottomUpTree(R"(
+            4;3;2;1
+            5;3;2;1
+            9;8;7;6
+            11;10;7;6
+            12;7;6
+            13;6
+            14
+        )");
+        QCOMPARE(tree.root.children.size(), 3);
+        const auto i1 = &tree.root.children.first();
+        QCOMPARE(i1->symbol.symbol, QStringLiteral("1"));
+        QCOMPARE(i1->children.size(), 1);
+        const auto i2 = &i1->children.first();
+        QCOMPARE(i2->symbol.symbol, QStringLiteral("2"));
+        QCOMPARE(i2->children.size(), 1);
+        const auto i3 = &i2->children.first();
+        QCOMPARE(i3->symbol.symbol, QStringLiteral("3"));
+        QCOMPARE(i3->children.size(), 2);
+        const auto i4 = &i3->children.first();
+        QCOMPARE(i4->symbol.symbol, QStringLiteral("4"));
+        QCOMPARE(i4->children.size(), 0);
+        const auto i5 = &i3->children.last();
+        QCOMPARE(i5->symbol.symbol, QStringLiteral("5"));
+        QCOMPARE(i5->children.size(), 0);
+
+        BottomUpModel model;
+        model.setSimplify(true);
+        ModelTest tester(&model);
+
+        model.setData(tree);
+        QCOMPARE(model.rowCount(), 3);
+
+        const auto i1_idx = model.indexFromItem(i1, 0);
+        QVERIFY(i1_idx.isValid());
+        QCOMPARE(i1_idx, model.index(0, 0));
+        QCOMPARE(model.parent(i1_idx), {});
+        QCOMPARE(model.itemFromIndex(i1_idx), i1);
+        QCOMPARE(model.rowCount(i1_idx), 2); // simplified
+
+        const auto i2_idx = model.indexFromItem(i2, 0);
+        QVERIFY(i2_idx.isValid());
+        QCOMPARE(i2_idx, model.index(0, 0, i1_idx));
+        QCOMPARE(model.parent(i2_idx), i1_idx);
+        QCOMPARE(model.itemFromIndex(i2_idx), i2);
+        QCOMPARE(model.rowCount(i2_idx), 0); // simplified
+
+        const auto i3_idx = model.indexFromItem(i3, 0);
+        QVERIFY(i3_idx.isValid());
+        QCOMPARE(i3_idx, model.index(1, 0, i1_idx));
+        QCOMPARE(model.parent(i3_idx), i1_idx);
+        QCOMPARE(model.itemFromIndex(i3_idx), i3);
+        QCOMPARE(model.rowCount(i3_idx), 2);
+
+        const auto i4_idx = model.indexFromItem(i4, 0);
+        QVERIFY(i4_idx.isValid());
+        QCOMPARE(i4_idx, model.index(0, 0, i3_idx));
+        QCOMPARE(model.parent(i4_idx), i3_idx);
+        QCOMPARE(model.itemFromIndex(i4_idx), i4);
+        QCOMPARE(model.rowCount(i4_idx), 0);
+
+        const auto i5_idx = model.indexFromItem(i5, 0);
+        QVERIFY(i5_idx.isValid());
+        QCOMPARE(i5_idx, model.index(1, 0, i3_idx));
+        QCOMPARE(model.parent(i5_idx), i3_idx);
+        QCOMPARE(model.itemFromIndex(i5_idx), i5);
+        QCOMPARE(model.rowCount(i5_idx), 0);
+
+        const auto modelData = printModel(&model);
+        QTextStream str(stdout);
+        for (const auto &l : modelData)
+            str << l << '\n';
+
+        const auto expectedModelData = QStringList{
+            //clang-format: off
+            "1",
+            " 2",
+            " ↪3",
+            "  4",
+            "  5",
+            "6",
+            " 7",
+            "  8",
+            "   9",
+            "  10",
+            "   11",
+            "  12",
+            " 13",
+            "14",
+            //clang-format: on
+        };
+        QCOMPARE(modelData, expectedModelData);
     }
 
     void testTopDownModel()

@@ -350,7 +350,7 @@ void ModelTest::checkChildren(const QModelIndex &parent, int currentDepth)
             if (model->parent(index) != parent) {
                 qDebug() << r << c << currentDepth << model->data(index).toString()
                          << model->data(parent).toString();
-                qDebug() << index << parent << model->parent(index);
+                qDebug() << index << parent << model->parent(index) << model->data(model->parent(index)).toString();
                 // And a view that you can even use to show the model.
                 //QTreeView view;
                 //view.setModel(model);

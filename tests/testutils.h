@@ -160,3 +160,37 @@ void dumpList(const QStringList& list)
         out << line << '\n';
     }
 }
+
+void printModelImpl(const QAbstractItemModel* model, const QModelIndex& parent, const QString &indent, QStringList* ret)
+{
+    for (int i = 0, c = model->rowCount(parent); i < c; ++i) {
+        const auto index = model->index(i, 0, parent);
+        ret->append(indent + index.data().toString());
+        printModelImpl(model, index, indent + QLatin1String(" "), ret);
+    }
+}
+
+QStringList printModel(const QAbstractItemModel* model)
+{
+    QStringList ret;
+    printModelImpl(model, {}, {}, &ret);
+    return ret;
+}
+
+#define VERIFY_OR_THROW(statement)                                                                                     \
+    do {                                                                                                               \
+        if (!QTest::qVerify(static_cast<bool>(statement), #statement, "", __FILE__, __LINE__))                         \
+            throw std::logic_error("verify failed: " #statement);                                                      \
+    } while (false)
+
+#define VERIFY_OR_THROW2(statement, description)                                                                       \
+    do {                                                                                                               \
+        if (!QTest::qVerify(static_cast<bool>(statement), #statement, description, __FILE__, __LINE__))                \
+            throw std::logic_error(description);                                                                       \
+    } while (false)
+
+#define COMPARE_OR_THROW(actual, expected)                                                                             \
+    do {                                                                                                               \
+        if (!QTest::qCompare(actual, expected, #actual, #expected, __FILE__, __LINE__))                                \
+            throw std::logic_error("compare failed: " #actual #expected);                                              \
+    } while (false)
