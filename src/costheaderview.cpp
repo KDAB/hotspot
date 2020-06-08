@@ -36,6 +36,8 @@
 CostHeaderView::CostHeaderView(QWidget* parent)
     : QHeaderView(Qt::Horizontal, parent)
 {
+    setSectionsMovable(true);
+    setFirstSectionMovable(false);
     setDefaultSectionSize(150);
     setStretchLastSection(false);
     connect(this, &QHeaderView::sectionCountChanged, this, [this]() {
