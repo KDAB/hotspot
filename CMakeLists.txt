@@ -19,8 +19,11 @@ if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/perfparser/app/main.cpp" )
     endif()
 endif()
 
-list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/perfparser/cmake/)
-list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/)
+set(CMAKE_MODULE_PATH
+    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/perfparser/cmake/
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/
+    ${CMAKE_MODULE_PATH}
+)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
