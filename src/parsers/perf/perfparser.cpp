@@ -133,16 +133,20 @@ QDebug operator<<(QDebug stream, const Command& command)
 
 struct ThreadStart : Record
 {
+    quint32 ppid = 0;
 };
 
 QDataStream& operator>>(QDataStream& stream, ThreadStart& threadStart)
 {
-    return stream >> static_cast<Record&>(threadStart);
+    stream >> static_cast<Record&>(threadStart);
+    stream >> threadStart.ppid;
+    return stream;
 }
 
 QDebug operator<<(QDebug stream, const ThreadStart& threadStart)
 {
-    stream.noquote().nospace() << "ThreadStart{" << static_cast<const Record&>(threadStart) << "}";
+    stream.noquote().nospace() << "ThreadStart{" << static_cast<const Record&>(threadStart)
+                               << ", ppid = " << threadStart.ppid << "}";
     return stream;
 }
 
@@ -666,7 +670,13 @@ public:
             qCDebug(LOG_PERFPARSER) << "parsed:" << threadStart;
             addRecord(threadStart);
             // override start time explicitly
-            addThread(threadStart)->time.start = threadStart.time;
+            auto thread = addThread(threadStart);
+            thread->time.start = threadStart.time;
+            if (threadStart.ppid != threadStart.pid) {
+                const auto parentComm = commands.value(threadStart.ppid).value(threadStart.ppid);
+                commands[threadStart.pid][threadStart.pid] = parentComm;
+                thread->name = parentComm;
+            }
             break;
         }
         case EventType::ThreadEnd: {
