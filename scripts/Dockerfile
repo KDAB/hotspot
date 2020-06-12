@@ -15,6 +15,11 @@ RUN apt-get update && \
 
 WORKDIR /opt
 
+# download and build zstd
+
+RUN wget -nv -c "https://github.com/facebook/zstd/archive/v1.4.5.tar.gz" -O zstd.tar.gz && \
+    tar xf zstd.tar.gz && cd zstd-1.4.5 && make -j$(nproc) && sudo make install && cd ..
+
 # download prebuild KF5 libraries and ECM
 
 RUN wget -c "https://github.com/chigraph/precompiled-kf5-linux/releases/download/precompiled/kf5-gcc6-linux64-release.tar.xz" && \
