@@ -42,6 +42,8 @@
 
 #include "util.h"
 
+#include <hotspot-config.h>
+
 PerfRecord::PerfRecord(QObject* parent)
     : QObject(parent)
     , m_perfRecordProcess(nullptr)
@@ -373,6 +375,11 @@ bool PerfRecord::canSwitchEvents()
 bool PerfRecord::canUseAio()
 {
     return perfRecordHelp().contains("--aio");
+}
+
+bool PerfRecord::canCompress()
+{
+    return ZSTD_FOUND && perfRecordHelp().contains("--compression-level");
 }
 
 bool PerfRecord::isPerfInstalled()

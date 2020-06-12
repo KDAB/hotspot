@@ -38,4 +38,6 @@
 
 #cmakedefine01 APPIMAGE_BUILD
 
+#cmakedefine01 ZSTD_FOUND
+
 #endif // HOTSPOT_CONFIG_H

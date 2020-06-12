@@ -72,11 +72,11 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="KUrlComboRequester" name="applicationName" native="true">
+       <widget class="KUrlComboRequester" name="applicationName">
         <property name="toolTip">
          <string>Path to the application to be recorded</string>
         </property>
-        <property name="text" stdset="0">
+        <property name="text">
          <string/>
         </property>
        </widget>
@@ -118,7 +118,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="KUrlRequester" name="workingDirectory" native="true">
+       <widget class="KUrlRequester" name="workingDirectory">
         <property name="toolTip">
          <string>Directory to store the perf data file while recording</string>
         </property>
@@ -150,7 +150,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="processesFilterBox" native="true">
+       <widget class="QLineEdit" name="processesFilterBox">
         <property name="toolTip">
          <string>Filter the process list by process name or process ID</string>
         </property>
@@ -264,8 +264,8 @@
        </widget>
       </item>
       <item row="3" column="0" colspan="2">
-       <widget class="KCollapsibleGroupBox" name="perfOptionsBox2" native="true">
-        <property name="title" stdset="0">
+       <widget class="KCollapsibleGroupBox" name="perfOptionsBox2">
+        <property name="title">
          <string>Advanced</string>
         </property>
         <layout class="QFormLayout" name="formLayout_3">
@@ -286,7 +286,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="KUrlRequester" name="outputFile" native="true">
+          <widget class="KUrlRequester" name="outputFile">
            <property name="toolTip">
             <string>Path to the file location, where perf will write its output to</string>
            </property>
@@ -335,6 +335,29 @@
            </property>
            <property name="checked">
             <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="useAioLabel">
+           <property name="toolTip">
+            <string>&lt;qt&gt;Use asynchronous (Posix AIO) trace writing mode. Asynchronous mode is supported only when linking Perf tool with libc library providing implementation for Posix AIO API.&lt;/qt&gt;</string>
+           </property>
+           <property name="text">
+            <string>Use AIO:</string>
+           </property>
+           <property name="buddy">
+            <cstring>useAioCheckBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QCheckBox" name="useAioCheckBox">
+           <property name="toolTip">
+            <string>&lt;qt&gt;Use asynchronous (Posix AIO) trace writing mode. Asynchronous mode is supported only when linking Perf tool with libc library providing implementation for Posix AIO API.&lt;/qt&gt;</string>
+           </property>
+           <property name="text">
+            <string/>
            </property>
           </widget>
          </item>
@@ -431,6 +454,26 @@
           </widget>
          </item>
          <item row="5" column="0">
+          <widget class="QLabel" name="compressionLabel">
+           <property name="toolTip">
+            <string>&lt;qt&gt;Compression using zstd will drastically reduce the size of &lt;tt&gt;perf.data&lt;/tt&gt; files. It is recommended to keep this option enabled. The default uses a fast compression level which already yields very significant space savings. If desired, you can select a slower compression level to save more disk space.&lt;/qt&gt;</string>
+           </property>
+           <property name="text">
+            <string>Compression:</string>
+           </property>
+           <property name="buddy">
+            <cstring>compressionComboBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QComboBox" name="compressionComboBox">
+           <property name="toolTip">
+            <string>&lt;qt&gt;Compression using zstd will drastically reduce the size of &lt;tt&gt;perf.data&lt;/tt&gt; files. It is recommended to keep this option enabled. The default uses a fast compression level which already yields very significant space savings. If desired, you can select a slower compression level to save more disk space.&lt;/qt&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
           <widget class="QLabel" name="perfParamsLabel">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Free-form entry field for custom perf parameters. Use this field to set advanced options (cf. &lt;tt&gt;man perf record&lt;/tt&gt;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -443,36 +486,13 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="1">
+         <item row="6" column="1">
           <widget class="QComboBox" name="perfParams">
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Free-form entry field for custom perf parameters. Use this field to set advanced options (cf. &lt;tt&gt;man perf record&lt;/tt&gt;).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="editable">
             <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="useAioLabel">
-           <property name="toolTip">
-            <string>&lt;qt&gt;Use asynchronous (Posix AIO) trace writing mode. Asynchronous mode is supported only when linking Perf tool with libc library providing implementation for Posix AIO API.&lt;/qt&gt;</string>
-           </property>
-           <property name="text">
-            <string>Use AIO:</string>
-           </property>
-           <property name="buddy">
-            <cstring>useAioCheckBox</cstring>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QCheckBox" name="useAioCheckBox">
-           <property name="toolTip">
-            <string>&lt;qt&gt;Use asynchronous (Posix AIO) trace writing mode. Asynchronous mode is supported only when linking Perf tool with libc library providing implementation for Posix AIO API.&lt;/qt&gt;</string>
-           </property>
-           <property name="text">
-            <string/>
            </property>
           </widget>
          </item>
@@ -572,10 +592,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>KMessageWidget</class>
-   <extends>QFrame</extends>
-   <header>kmessagewidget.h</header>
-   <container>1</container>
+   <class>KUrlComboRequester</class>
+   <extends>KUrlRequester</extends>
+   <header>kurlrequester.h</header>
+  </customwidget>
+  <customwidget>
+   <class>KUrlRequester</class>
+   <extends>QWidget</extends>
+   <header>kurlrequester.h</header>
   </customwidget>
   <customwidget>
    <class>KCollapsibleGroupBox</class>
@@ -584,14 +608,10 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>KUrlRequester</class>
-   <extends>QWidget</extends>
-   <header>kurlrequester.h</header>
-  </customwidget>
-  <customwidget>
-   <class>KUrlComboRequester</class>
-   <extends>KUrlRequester</extends>
-   <header>kurlrequester.h</header>
+   <class>KMessageWidget</class>
+   <extends>QFrame</extends>
+   <header>kmessagewidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

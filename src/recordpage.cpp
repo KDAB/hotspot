@@ -388,6 +388,24 @@ RecordPage::RecordPage(QWidget* parent)
         ui->useAioCheckBox->hide();
         ui->useAioLabel->hide();
     }
+    if (!PerfRecord::canCompress()) {
+        ui->compressionComboBox->hide();
+        ui->compressionLabel->hide();
+    } else {
+        ui->compressionComboBox->addItem(tr("Disabled"), -1);
+        ui->compressionComboBox->addItem(tr("Enabled (Default Level)"), 0);
+            ui->compressionComboBox->addItem(tr("Level 1 (Fastest)"), 1);
+        for (int i = 2; i <= 21; ++i)
+            ui->compressionComboBox->addItem(tr("Level %1").arg(i), 0);
+        ui->compressionComboBox->addItem(tr("Level 22 (Slowest)"), 22);
+
+        ui->compressionComboBox->setCurrentIndex(1);
+        const auto defaultLevel = ui->compressionComboBox->currentData().toInt();
+        const auto level = config().readEntry(QStringLiteral("compressionLevel"), defaultLevel);
+        const auto index = ui->callGraphComboBox->findData(level);
+        if (index != -1)
+            ui->compressionComboBox->setCurrentIndex(index);
+    }
 }
 
 RecordPage::~RecordPage() = default;
@@ -448,6 +466,15 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
             perfOptions += QStringLiteral("--aio");
         }
         config().writeEntry(QStringLiteral("useAio"), useAioEnabled);
+
+        const auto compressionLevel = ui->compressionComboBox->currentData().toInt();
+        if (PerfRecord::canCompress() && compressionLevel >= 0) {
+            if (compressionLevel == 0)
+                perfOptions += QStringLiteral("-z");
+            else
+                perfOptions += QStringLiteral("--compression-level=") + QString::number(compressionLevel);
+        }
+        config().writeEntry(QStringLiteral("compressionLevel"), compressionLevel);
 
         const bool elevatePrivileges = ui->elevatePrivilegesCheckBox->isChecked();
 
