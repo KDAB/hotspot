@@ -10,7 +10,7 @@ before_install:
 
 install:
   - source /opt/qt*/bin/qt*-env.sh
-  - git clone git://anongit.kde.org/extra-cmake-modules
+  - git clone https://invent.kde.org/frameworks/extra-cmake-modules.git
   - cd extra-cmake-modules
   - mkdir build
   - cd build
