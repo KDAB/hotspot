@@ -73,6 +73,32 @@ ecm_add_test(
         tst_addresscache
 )
 
+ecm_add_test(
+    perfparser/tests/auto/perfdata/tst_perfdata.cpp
+    perfparser/tests/auto/shared/perfparsertestclient.cpp
+    perfparser/tests/auto/perfdata/perfdata.qrc
+    perfparser/app/perfaddresscache.cpp
+    perfparser/app/perfattributes.cpp
+    perfparser/app/perfdata.cpp
+    perfparser/app/perfelfmap.cpp
+    perfparser/app/perffeatures.cpp
+    perfparser/app/perffilesection.cpp
+    perfparser/app/perfheader.cpp
+    perfparser/app/perfkallsyms.cpp
+    perfparser/app/perfregisterinfo.cpp
+    perfparser/app/perfsymboltable.cpp
+    perfparser/app/perftracingdata.cpp
+    perfparser/app/perfunwind.cpp
+    LINK_LIBRARIES
+        Qt5::Core
+        Qt5::Network
+        Qt5::Test
+        ${LIBDW_LIBRARIES}
+        ${LIBELF_LIBRARIES}
+    TEST_NAME
+        tst_perfdata
+)
+
 include_directories(perfparser/tests/auto/shared)
 add_executable(perf2text
     perfparser/tests/manual/perf2text/perf2text.cpp
