@@ -10,14 +10,6 @@ before_install:
 
 install:
   - source /opt/qt*/bin/qt*-env.sh
-  - git clone https://invent.kde.org/frameworks/extra-cmake-modules.git
-  - cd extra-cmake-modules
-  - mkdir build
-  - cd build
-  - cmake .. # or run : cmake -DCMAKE_INSTALL_PREFIX=/usr .. &&
-  - make
-  - sudo make install
-  - cd ../..
   - # zstd
   - wget -nv -c "https://github.com/facebook/zstd/archive/v1.4.5.tar.gz" -O zstd.tar.gz && \
     tar xf zstd.tar.gz && cd zstd-1.4.5 && make -j$(nproc) && sudo make install && cd ..
