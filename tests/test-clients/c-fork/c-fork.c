@@ -9,8 +9,9 @@ int main()
     pid_t child = fork();
     if (child == 0) {
         double sum = 0;
-        for (int i = 0; i < 1000000; ++i) {
-            sum += atanh(cos(i) * cos(i) + sin(i * i) + erf(log(i)));
+        int i = 0;
+        for (; i < 1000000; ++i) {
+            sum += cos(cos(i) * cos(i) + cos(i * i) + cos(cos(i)));
         }
         printf("sum is: %g\n", sum);
     } else {
