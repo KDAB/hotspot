@@ -40,3 +40,18 @@ set_target_properties(dump_perf_data
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
 )
+
+include_directories(
+    ${LIBELF_INCLUDE_DIRS}
+    ${LIBDW_INCLUDE_DIR}/elfutils
+    ${LIBDWARF_INCLUDE_DIRS}
+    perfparser/app
+)
+
+add_executable(elfwalk elfwalk.cpp)
+
+target_link_libraries(elfwalk
+LINK_PRIVATE
+    ${LIBDW_LIBRARIES}
+    ${LIBELF_LIBRARIES}
+)
