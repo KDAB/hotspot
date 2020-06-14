@@ -20,6 +20,7 @@ add_executable(hotspot-perfparser
     perfparser/app/perfkallsyms.cpp
     perfparser/app/perfaddresscache.cpp
     perfparser/app/perftracingdata.cpp
+    perfparser/app/perfdwarfdiecache.cpp
 )
 
 target_link_libraries(hotspot-perfparser
@@ -95,6 +96,7 @@ ecm_add_test(
     perfparser/app/perfsymboltable.cpp
     perfparser/app/perftracingdata.cpp
     perfparser/app/perfunwind.cpp
+    perfparser/app/perfdwarfdiecache.cpp
     LINK_LIBRARIES
         Qt5::Core
         Qt5::Network
