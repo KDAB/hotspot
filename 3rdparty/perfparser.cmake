@@ -69,6 +69,7 @@ ecm_add_test(
 ecm_add_test(
     perfparser/tests/auto/addresscache/tst_addresscache.cpp
     perfparser/app/perfelfmap.cpp
+    perfparser/app/perfdwarfdiecache.cpp
     perfparser/app/perfaddresscache.cpp
     LINK_LIBRARIES
         Qt5::Core
