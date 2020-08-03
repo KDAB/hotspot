@@ -814,6 +814,14 @@ public:
         }
 
         eventResult.totalCosts = summaryResult.costs;
+
+        for (auto i = numMissingSymbolsByModule.begin(); i != numMissingSymbolsByModule.end(); ++i) {
+            const auto& moduleName = strings.value(i.key());
+            const auto numMissing = i.value();
+            const auto numSymbols = numTotalSymbolsByModule.value(i.key());
+            summaryResult.errors << PerfParser::tr("Module \"%1\" is missing %2 of %3 debug symbols.")
+                .arg(moduleName).arg(numMissing).arg(numSymbols);
+        }
     }
 
     qint32 addCostType(const QString& label, Data::Costs::Unit unit)
@@ -909,10 +917,10 @@ public:
         const auto binaryString = strings.value(symbol.symbol.binary.id);
         const auto pathString = strings.value(symbol.symbol.path.id);
         bottomUpResult.symbols[symbol.id] = {symbolString, binaryString, pathString};
-        if (symbolString.isEmpty() && !binaryString.isEmpty()
-            && !reportedMissingDebugInfoModules.contains(symbol.symbol.binary.id)) {
-            reportedMissingDebugInfoModules.insert(symbol.symbol.binary.id);
-            summaryResult.errors << PerfParser::tr("Module \"%1\" is missing (some) debug symbols.").arg(binaryString);
+
+        ++numTotalSymbolsByModule[symbol.symbol.binary.id];
+        if (symbolString.isEmpty() && !binaryString.isEmpty()) {
+            ++numMissingSymbolsByModule[symbol.symbol.binary.id];
         }
     }
 
@@ -1182,7 +1190,8 @@ public:
     Data::EventResults eventResult;
     QHash<qint32, QHash<qint32, QString>> commands;
     QScopedPointer<QTextStream> perfScriptOutput;
-    QSet<qint32> reportedMissingDebugInfoModules;
+    QHash<qint32, qint32> numTotalSymbolsByModule;
+    QHash<qint32, qint32> numMissingSymbolsByModule;
     QSet<QString> encounteredErrors;
     QHash<QVector<qint32>, qint32> stacks;
     std::atomic<bool> stopRequested;
