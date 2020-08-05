@@ -533,6 +533,11 @@ void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& loca
         recursionGuard->insert(symbol);
     }
 }
+
+struct SymbolCount {
+    qint32 total = 0;
+    qint32 missing = 0;
+};
 }
 
 Q_DECLARE_TYPEINFO(AttributesDefinition, Q_MOVABLE_TYPE);
@@ -814,6 +819,16 @@ public:
         }
 
         eventResult.totalCosts = summaryResult.costs;
+
+        // Add error messages for all modules with missing debug symbols
+        for (auto i = numSymbolsByModule.begin(); i != numSymbolsByModule.end(); ++i) {
+            const auto& numSymbols = i.value();
+            if (!numSymbols.missing) continue;
+
+            const auto& moduleName = strings.value(i.key());
+            summaryResult.errors << PerfParser::tr("Module \"%1\" is missing %2 of %3 debug symbols.")
+                .arg(moduleName).arg(numSymbols.missing).arg(numSymbols.total);
+        }
     }
 
     qint32 addCostType(const QString& label, Data::Costs::Unit unit)
@@ -909,10 +924,12 @@ public:
         const auto binaryString = strings.value(symbol.symbol.binary.id);
         const auto pathString = strings.value(symbol.symbol.path.id);
         bottomUpResult.symbols[symbol.id] = {symbolString, binaryString, pathString};
-        if (symbolString.isEmpty() && !binaryString.isEmpty()
-            && !reportedMissingDebugInfoModules.contains(symbol.symbol.binary.id)) {
-            reportedMissingDebugInfoModules.insert(symbol.symbol.binary.id);
-            summaryResult.errors << PerfParser::tr("Module \"%1\" is missing (some) debug symbols.").arg(binaryString);
+
+        // Count total and missing symbols per module for error report
+        auto &numSymbols = numSymbolsByModule[symbol.symbol.binary.id];
+        ++numSymbols.total;
+        if (symbolString.isEmpty() && !binaryString.isEmpty()) {
+            ++numSymbols.missing;
         }
     }
 
@@ -1182,7 +1199,7 @@ public:
     Data::EventResults eventResult;
     QHash<qint32, QHash<qint32, QString>> commands;
     QScopedPointer<QTextStream> perfScriptOutput;
-    QSet<qint32> reportedMissingDebugInfoModules;
+    QHash<qint32, SymbolCount> numSymbolsByModule;
     QSet<QString> encounteredErrors;
     QHash<QVector<qint32>, qint32> stacks;
     std::atomic<bool> stopRequested;
