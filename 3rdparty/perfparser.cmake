@@ -31,14 +31,14 @@ LINK_PRIVATE
     ${LIBELF_LIBRARIES}
 )
 
-set(RUSTC_DEMANGLE_INCLUDE_DIR "" CACHE STRING "Path to the folder containing rustc_demangle.h from https://github.com/alexcrichton/rustc-demangle")
-set(RUSTC_DEMANGLE_LIBRARY "" CACHE STRING "Path to the librustc_demangle.so library from https://github.com/alexcrichton/rustc-demangle")
-
 if (ZSTD_FOUND)
     target_include_directories(hotspot-perfparser PRIVATE ${ZSTD_INCLUDE_DIR})
     target_link_libraries(hotspot-perfparser PRIVATE ${ZSTD_LIBRARY})
     target_compile_definitions(hotspot-perfparser PRIVATE HAVE_ZSTD=1)
 endif()
+
+set(RUSTC_DEMANGLE_INCLUDE_DIR "" CACHE STRING "Path to the folder containing rustc_demangle.h from https://github.com/alexcrichton/rustc-demangle")
+set(RUSTC_DEMANGLE_LIBRARY "" CACHE STRING "Path to the librustc_demangle.so library from https://github.com/alexcrichton/rustc-demangle")
 
 if (RUSTC_DEMANGLE_INCLUDE_DIR AND RUSTC_DEMANGLE_LIBRARY)
     target_include_directories(hotspot-perfparser PRIVATE ${RUSTC_DEMANGLE_INCLUDE_DIR})
