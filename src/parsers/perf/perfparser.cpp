@@ -1332,7 +1332,7 @@ PerfParser::~PerfParser() = default;
 
 void PerfParser::startParseFile(const QString& path, const QString& sysroot, const QString& kallsyms,
                                 const QString& debugPaths, const QString& extraLibPaths, const QString& appPath,
-                                const QString& arch, const QString& disasmApproach)
+                                const QString& arch, const QString& disasmApproach, const QString& verbose)
 {
     Q_ASSERT(!m_isParsing);
 
@@ -1377,6 +1377,9 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
     }
     if (!arch.isEmpty()) {
         parserArgs += {QStringLiteral("--arch"), arch};
+    }
+    if (!verbose.isEmpty()) {
+        parserArgs += {QStringLiteral("--verbose"), verbose};
     }
 
     // reset the data to ensure filtering will pick up the new data
@@ -1586,8 +1589,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                     }
 
                     QSet<Data::Symbol> recursionGuard;
-                    auto frameCallback = [&callerCallee, &recursionGuard, &event,
-                                          numCosts](const Data::Symbol& symbol, const Data::Location& location) {
+                    auto frameCallback = [&callerCallee, &recursionGuard, &event, numCosts](const Data::Symbol& symbol, const Data::Location& location) {
                         addCallerCalleeEvent(symbol, location, event.type, event.cost, &recursionGuard, &callerCallee,
                                              numCosts);
                     };

@@ -121,6 +121,15 @@ int main(int argc, char** argv)
                             QLatin1String("disasmApproach"));
     parser.addOption(disasmApproach);
 
+    QCommandLineOption verbose(QLatin1String("verbose"),
+                               QCoreApplication::translate("main",
+                                                           "Set the value to 'warning'- to display warnings on the console."
+                                                           " Set the value to 'debug' - to display debugging information on the console."
+                                                           " Set the value to 'all' - to display warnings and debugging information on the console."
+                                                           " By default, all warnings and debugging information are suppressed."),
+                               QLatin1String("verbose"));
+    parser.addOption(verbose);
+
     parser.addPositionalArgument(
         QStringLiteral("files"),
         QCoreApplication::translate("main", "Optional input files to open on startup, i.e. perf.data files."),
@@ -151,6 +160,9 @@ int main(int argc, char** argv)
         }
         if (parser.isSet(disasmApproach)) {
             window->setDisasmApproach(parser.value(disasmApproach));
+        }
+        if (parser.isSet(verbose)) {
+             window->setVerbose(parser.value(verbose));
         }
     };
 
