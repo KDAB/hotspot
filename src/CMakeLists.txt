@@ -41,6 +41,8 @@ set(hotspot_SRCS
     resultsdisassemblypage.cpp
     resultsutil.cpp
     costheaderview.cpp
+    settingsdialog.cpp
+    qwebstyleedit.cpp
 
     # ui files:
     mainwindow.ui
@@ -54,6 +56,7 @@ set(hotspot_SRCS
     resultsflamegraphpage.ui
     resultscallercalleepage.ui
     resultsdisassemblypage.ui
+    settingsdialog.ui
 
     # resources:
     resources.qrc

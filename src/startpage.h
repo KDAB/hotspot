@@ -54,11 +54,13 @@ protected:
 public slots:
     void onOpenFileError(const QString& errorMessage);
     void onParseFileProgress(float percent);
+    void on_pathsAndArchSettingsButton_clicked();
 
 signals:
     void openFileButtonClicked();
     void recordButtonClicked();
     void stopParseButtonClicked();
+    void pathsAndArchSettingsButtonClicked();
 
 private:
     void updateBackground();

@@ -41,7 +41,6 @@ StartPage::StartPage(QWidget* parent)
     connect(ui->openFileButton, &QAbstractButton::clicked, this, &StartPage::openFileButtonClicked);
     connect(ui->recordDataButton, &QAbstractButton::clicked, this, &StartPage::recordButtonClicked);
     connect(ui->stopParseButton, &QAbstractButton::clicked, this, &StartPage::stopParseButtonClicked);
-
     ui->openFileButton->setFocus();
 
     updateBackground();
@@ -117,4 +116,8 @@ void StartPage::updateBackground()
         m_background = QPixmap(QStringLiteral(":/images/background_bright.png"));
     }
     m_background.setDevicePixelRatio(devicePixelRatioF());
+}
+
+void StartPage::on_pathsAndArchSettingsButton_clicked() {
+    emit pathsAndArchSettingsButtonClicked();
 }

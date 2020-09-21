@@ -23,7 +23,7 @@
      <x>0</x>
      <y>0</y>
      <width>1123</width>
-     <height>29</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="helpMenu">
@@ -33,6 +33,7 @@
     <addaction name="actionAbout_Hotspot"/>
     <addaction name="actionAbout_KDAB"/>
     <addaction name="actionAbout_Qt"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="fileMenu">
     <property name="title">
@@ -43,6 +44,7 @@
     <property name="title">
      <string>Setti&amp;ngs</string>
     </property>
+    <addaction name="actionPathsAndArchSettingsWindow"/>
    </widget>
    <widget class="QMenu" name="viewMenu">
     <property name="title">
@@ -82,6 +84,11 @@
    </property>
    <property name="text">
     <string>About &amp;Qt</string>
+   </property>
+  </action>
+  <action name="actionPathsAndArchSettingsWindow">
+   <property name="text">
+    <string>Paths and Architecture Settings</string>
    </property>
   </action>
  </widget>

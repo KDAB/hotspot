@@ -53,6 +53,13 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
+    QString getSysroot() const;
+    QString getApplicationPath() const;
+    QString getKallsyms() const;
+    QString getDebugPaths() const;
+    QString getExtraLibPaths() const;
+    QString getAppPath() const;
+    QString getArch() const;
 
 public slots:
     void setSysroot(const QString& path);
@@ -69,10 +76,12 @@ public slots:
     void reload();
 
     void onOpenFileButtonClicked();
+    void onPathsAndArchSettingsButtonClicked();
     void onRecordButtonClicked();
     void onHomeButtonClicked();
 
     void aboutKDAB();
+    void openSettingsDialog();
     void aboutHotspot();
 
     void setCodeNavigationIDE(QAction* action);

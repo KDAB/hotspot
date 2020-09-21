@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SettingsDialog</class>
+ <widget class="QDialog" name="SettingsDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>607</width>
+    <height>360</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>607</width>
+    <height>360</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>607</width>
+    <height>360</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>true</bool>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <widget class="QWebStyleEdit" name="lineEditSysroot">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>46</y>
+     <width>271</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QWebStyleEdit" name="lineEditApplicationPath">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>86</y>
+     <width>271</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QWebStyleEdit" name="lineEditExtraLibraryPaths">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>126</y>
+     <width>271</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QWebStyleEdit" name="lineEditDebugPaths">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>166</y>
+     <width>271</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QWebStyleEdit" name="lineEditKallsyms">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>206</y>
+     <width>271</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label1">
+   <property name="geometry">
+    <rect>
+     <x>13</x>
+     <y>47</y>
+     <width>161</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Sysroot:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label2">
+   <property name="geometry">
+    <rect>
+     <x>13</x>
+     <y>87</y>
+     <width>161</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Application Path:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label3">
+   <property name="geometry">
+    <rect>
+     <x>13</x>
+     <y>126</y>
+     <width>161</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Extra Library Paths:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label4">
+   <property name="geometry">
+    <rect>
+     <x>13</x>
+     <y>167</y>
+     <width>161</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Debug Paths:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label5">
+   <property name="geometry">
+    <rect>
+     <x>13</x>
+     <y>207</y>
+     <width>161</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Kallsyms:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label6">
+   <property name="geometry">
+    <rect>
+     <x>13</x>
+     <y>247</y>
+     <width>161</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Architecture:</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnSysroot">
+   <property name="geometry">
+    <rect>
+     <x>458</x>
+     <y>46</y>
+     <width>80</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Browse</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnApplicationPath">
+   <property name="geometry">
+    <rect>
+     <x>458</x>
+     <y>86</y>
+     <width>80</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Browse</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnExtraLibraryPaths">
+   <property name="geometry">
+    <rect>
+     <x>458</x>
+     <y>126</y>
+     <width>80</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Browse</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnDebugPaths">
+   <property name="geometry">
+    <rect>
+     <x>457</x>
+     <y>165</y>
+     <width>80</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Browse</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnKallsyms">
+   <property name="geometry">
+    <rect>
+     <x>458</x>
+     <y>206</y>
+     <width>80</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Browse</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="comboBoxArchitecture">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>246</y>
+     <width>271</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>auto-detect</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>x64</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>ARMv7 (32 bit)</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>ARMv8 (64 bit)</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QDialogButtonBox" name="buttonBox">
+   <property name="geometry">
+    <rect>
+     <x>372</x>
+     <y>325</y>
+     <width>166</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="standardButtons">
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   </property>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QWebStyleEdit</class>
+   <extends>QLineEdit</extends>
+   <header>qwebstyleedit.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
