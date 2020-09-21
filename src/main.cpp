@@ -62,6 +62,7 @@ int main(int argc, char** argv)
 #endif
 
     app.setWindowIcon(QIcon(QStringLiteral(":/images/icons/512-hotspot_app_icon.png")));
+    qRegisterMetaType<Data::DisassemblyResult>();
     qRegisterMetaType<Data::Summary>();
     qRegisterMetaType<Data::BottomUp>();
     qRegisterMetaType<Data::TopDown>();
@@ -115,6 +116,11 @@ int main(int argc, char** argv)
                             QLatin1String("path"));
     parser.addOption(arch);
 
+    QCommandLineOption disasmApproach(QLatin1String("disasm-approach"),
+                            QCoreApplication::translate("main", "Objdump way to generate Disassembly - by symbol or by addresses."),
+                            QLatin1String("disasmApproach"));
+    parser.addOption(disasmApproach);
+
     parser.addPositionalArgument(
         QStringLiteral("files"),
         QCoreApplication::translate("main", "Optional input files to open on startup, i.e. perf.data files."),
@@ -142,6 +148,9 @@ int main(int argc, char** argv)
         }
         if (parser.isSet(arch)) {
             window->setArch(parser.value(arch));
+        }
+        if (parser.isSet(disasmApproach)) {
+            window->setDisasmApproach(parser.value(disasmApproach));
         }
     };
 

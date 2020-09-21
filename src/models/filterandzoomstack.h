@@ -52,6 +52,7 @@ public:
         QAction* resetFilterAndZoom = nullptr;
         QAction* filterInBySymbol = nullptr;
         QAction* filterOutBySymbol = nullptr;
+        QAction* disassembly = nullptr;
     };
 
     Actions actions() const;

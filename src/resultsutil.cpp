@@ -87,18 +87,19 @@ void setupTreeView(QTreeView* view, QLineEdit* filter, QAbstractItemModel* model
 
 void addFilterActions(QMenu* menu, const Data::Symbol& symbol, FilterAndZoomStack* filterStack)
 {
+    auto filterActions = filterStack->actions();
+    menu->addAction(filterActions.disassembly);
+    filterActions.disassembly->setData(QVariant::fromValue(symbol));
+    menu->addSeparator();
     if (symbol.isValid()) {
-        auto filterActions = filterStack->actions();
         filterActions.filterInBySymbol->setData(QVariant::fromValue(symbol));
-        filterActions.filterOutBySymbol->setData(filterActions.filterInBySymbol->data());
-
+        filterActions.filterOutBySymbol->setData(filterActions.filterInBySymbol->data());                       
         menu->addAction(filterActions.filterInBySymbol);
         menu->addAction(filterActions.filterOutBySymbol);
         menu->addSeparator();
     }
-
-    menu->addAction(filterStack->actions().filterOut);
-    menu->addAction(filterStack->actions().resetFilter);
+    menu->addAction(filterActions.filterOut);
+    menu->addAction(filterActions.resetFilter);
 }
 
 void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filterStack, CallbackActions actions,

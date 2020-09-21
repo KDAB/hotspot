@@ -31,6 +31,7 @@
 #include "parsers/perf/perfparser.h"
 
 #include "resultsbottomuppage.h"
+#include "resultsdisassemblypage.h"
 #include "resultscallercalleepage.h"
 #include "resultsflamegraphpage.h"
 #include "resultssummarypage.h"
@@ -64,6 +65,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     , m_resultsTopDownPage(new ResultsTopDownPage(m_filterAndZoomStack, parser, this))
     , m_resultsFlameGraphPage(new ResultsFlameGraphPage(m_filterAndZoomStack, parser, m_exportMenu, this))
     , m_resultsCallerCalleePage(new ResultsCallerCalleePage(m_filterAndZoomStack, parser, this))
+    , m_resultsDisassemblyPage(new ResultsDisassemblyPage(m_filterAndZoomStack, parser, this))
     , m_timeLineDelegate(nullptr)
     , m_filterBusyIndicator(nullptr) // create after we setup the UI to keep it on top
     , m_timelineVisible(true)
@@ -71,6 +73,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     m_exportMenu->setIcon(QIcon::fromTheme(QStringLiteral("document-export")));
     {
         const auto actions = m_filterAndZoomStack->actions();
+        m_filterMenu->addAction(actions.disassembly);
         m_filterMenu->addAction(actions.filterOut);
         m_filterMenu->addAction(actions.resetFilter);
         m_filterMenu->addSeparator();
@@ -90,6 +93,11 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     ui->resultsTabWidget->addTab(m_resultsTopDownPage, tr("Top Down"));
     ui->resultsTabWidget->addTab(m_resultsFlameGraphPage, tr("Flame Graph"));
     ui->resultsTabWidget->addTab(m_resultsCallerCalleePage, tr("Caller / Callee"));
+    ui->resultsTabWidget->addTab(m_resultsDisassemblyPage, tr("Disassembly"));
+
+    int tabsCount = ui->resultsTabWidget->count();
+    ui->resultsTabWidget->removeTab(tabsCount - 1);
+    
     ui->resultsTabWidget->setCurrentWidget(m_resultsSummaryPage);
 
     for (int i = 0, c = ui->resultsTabWidget->count(); i < c; ++i) {
@@ -126,6 +134,11 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
         ResultsUtil::fillEventSourceComboBox(ui->timeLineEventSource, data.costs,
                                              ki18n("Show timeline for %1 events."));
     });
+
+    connect(parser, &PerfParser::disassemblyDataAvailable, this, [this](const Data::DisassemblyResult& data) {
+        this->setData(data);
+    });
+
     connect(parser, &PerfParser::eventsAvailable, this, [this, eventModel](const Data::EventResults& data) {
         eventModel->setData(data);
         m_timeAxisHeaderView->setTimeRange(eventModel->timeRange());
@@ -166,6 +179,14 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode, this, &ResultsPage::navigateToCode);
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCodeFailed, this,
             &ResultsPage::navigateToCodeFailed);
+
+    connect(m_filterAndZoomStack->actions().disassembly, &QAction::triggered,
+            this,
+            [this]() {
+                QVariant data = m_filterAndZoomStack->actions().disassembly->data();
+                setData(data.value<Data::Symbol>());
+                onJumpToDisassembly();
+            });
 
     connect(m_resultsSummaryPage, &ResultsSummaryPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
     connect(m_resultsSummaryPage, &ResultsSummaryPage::openEditor, this, &ResultsPage::onOpenEditor);
@@ -210,6 +231,23 @@ void ResultsPage::onJumpToCallerCallee(const Data::Symbol& symbol)
 {
     m_resultsCallerCalleePage->jumpToCallerCallee(symbol);
     ui->resultsTabWidget->setCurrentWidget(m_resultsCallerCalleePage);
+}
+
+void ResultsPage::setData(const Data::Symbol& data)
+{
+    m_resultsDisassemblyPage->setData(data);
+}
+
+void ResultsPage::setData(const Data::DisassemblyResult& data)
+{
+    m_resultsDisassemblyPage->setData(data);
+}
+
+void ResultsPage::onJumpToDisassembly()
+{
+    ui->resultsTabWidget->addTab(m_resultsDisassemblyPage, tr("Disassembly"));
+    ui->resultsTabWidget->setCurrentWidget(m_resultsDisassemblyPage);
+    m_resultsDisassemblyPage->showDisassembly();
 }
 
 void ResultsPage::onOpenEditor(const Data::Symbol& symbol)

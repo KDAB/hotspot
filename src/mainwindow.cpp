@@ -45,6 +45,9 @@
 #include <QStandardPaths>
 #include <QWidgetAction>
 
+#include <QPushButton>
+#include <QWidget>
+
 #include <KConfigGroup>
 #include <KRecentFilesAction>
 #include <KStandardAction>
@@ -182,7 +185,11 @@ MainWindow::MainWindow(QWidget* parent)
     connect(prettifySymbolsAction, &QAction::toggled, Settings::instance(), &Settings::setPrettifySymbols);
 
     ui->viewMenu->addSeparator();
-    ui->viewMenu->addActions(m_resultsPage->filterMenu()->actions());
+
+    QList<QAction *> actions = m_resultsPage->filterMenu()->actions();
+    // Disassembly menu items should not be presented here
+    actions.removeFirst();
+    ui->viewMenu->addActions(actions);
     ui->viewMenu->addSeparator();
     ui->viewMenu->addMenu(m_resultsPage->exportMenu());
 
@@ -244,6 +251,11 @@ void MainWindow::setArch(const QString& arch)
     emit archChanged(m_arch);
 }
 
+void MainWindow::setDisasmApproach(const QString& disasmApproach)
+{
+    m_disasmApproach = disasmApproach;
+}
+
 void MainWindow::onOpenFileButtonClicked()
 {
     const auto fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(),
@@ -299,7 +311,7 @@ void MainWindow::openFile(const QString& path, bool isReload)
     m_pageStack->setCurrentWidget(m_startPage);
 
     // TODO: support input files of different types via plugins
-    m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths, m_extraLibPaths, m_appPath, m_arch);
+    m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths, m_extraLibPaths, m_appPath, m_arch, m_disasmApproach);
     m_reloadAction->setEnabled(true);
     m_reloadAction->setData(path);
 

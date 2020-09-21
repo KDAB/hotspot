@@ -61,6 +61,7 @@ public slots:
     void setExtraLibPaths(const QString& paths);
     void setAppPath(const QString& path);
     void setArch(const QString& arch);
+    void setDisasmApproach(const QString& disasmApproach);
 
     void clear();
     void openFile(const QString& path);
@@ -107,6 +108,8 @@ private:
     QString m_extraLibPaths;
     QString m_appPath;
     QString m_arch;
+    // Disassembly approach code: 'symbol' - by function symbol, 'address' or default - by addresses range
+    QString m_disasmApproach;
     KRecentFilesAction* m_recentFilesAction = nullptr;
     QAction* m_reloadAction = nullptr;
 };

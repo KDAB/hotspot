@@ -38,6 +38,7 @@ set(hotspot_SRCS
     resultsbottomuppage.cpp
     resultsflamegraphpage.cpp
     resultscallercalleepage.cpp
+    resultsdisassemblypage.cpp
     resultsutil.cpp
     costheaderview.cpp
 
@@ -52,6 +53,7 @@ set(hotspot_SRCS
     resultsbottomuppage.ui
     resultsflamegraphpage.ui
     resultscallercalleepage.ui
+    resultsdisassemblypage.ui
 
     # resources:
     resources.qrc

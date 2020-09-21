@@ -46,26 +46,35 @@ QString prettifySymbol(const QString& symbol);
 
 struct Symbol
 {
-    Symbol(const QString& symbol = {}, const QString& binary = {}, const QString& path = {})
+    Symbol(const QString& symbol = {}, const QString& mangled = {}, const quint64& relAddr = 0, const quint64& size = 0, const QString& binary = {}, const QString& path = {})
         : symbol(symbol)
-        , prettySymbol(Data::prettifySymbol(symbol))
+        , mangled(mangled)
+        , relAddr(relAddr)
+        , size(size)
         , binary(binary)
         , path(path)
+        , prettySymbol(Data::prettifySymbol(symbol))
     {
     }
 
     // function name
     QString symbol;
-    // prettified function name
-    QString prettySymbol;
+    // mangled function name
+    QString mangled;
+    // relative address
+    quint64 relAddr;
+    // size of frame
+    quint64 size;
     // dso / executable name
     QString binary;
     // path to dso / executable
     QString path;
+    // prettified function name
+    QString prettySymbol;
 
     bool operator<(const Symbol& rhs) const
     {
-        return std::tie(symbol, binary, path) < std::tie(rhs.symbol, rhs.binary, rhs.path);
+        return std::tie(symbol, mangled, binary, path) < std::tie(rhs.symbol, rhs.mangled,  rhs.binary, rhs.path);
     }
 
     bool isValid() const
@@ -74,11 +83,48 @@ struct Symbol
     }
 };
 
+struct DisassemblyResult {
+    // Architecture
+    QString arch;
+    // Application path
+    QString appPath;
+    // Extra libs path
+    QString extraLibPaths;
+    // perf.data path
+    QString perfDataPath;
+    // Disassembly approach code: 'symbol' - by function symbol, 'address' or default - by addresses range
+    QString disasmApproach;
+
+    void copy(const DisassemblyResult &orig) {
+        this->perfDataPath = orig.perfDataPath;
+        this->appPath = orig.appPath;
+        this->extraLibPaths = orig.extraLibPaths;
+        if (!orig.arch.isEmpty()) {
+            this->arch = orig.arch;
+        }
+        if (!orig.disasmApproach.isEmpty()) {
+            this->disasmApproach = orig.disasmApproach;
+        }
+    }
+
+    void setData(QString perfDataPath, QString appPath, QString extraLibPaths, QString arch, QString disasmApproach) {
+        this->perfDataPath = perfDataPath;
+        this->appPath = appPath;
+        this->extraLibPaths = extraLibPaths;
+        if (!arch.isEmpty()) {
+            this->arch = arch;
+        }
+        if (!disasmApproach.isEmpty()) {
+            this->disasmApproach = disasmApproach;
+        }
+    }
+};
+
 QDebug operator<<(QDebug stream, const Symbol& symbol);
 
 inline bool operator==(const Symbol& lhs, const Symbol& rhs)
 {
-    return std::tie(lhs.symbol, lhs.binary, lhs.path) == std::tie(rhs.symbol, rhs.binary, rhs.path);
+    return std::tie(lhs.symbol, lhs.mangled, lhs.binary, lhs.path) == std::tie(rhs.symbol, rhs.mangled, rhs.binary, rhs.path);
 }
 
 inline bool operator!=(const Symbol& lhs, const Symbol& rhs)
@@ -90,6 +136,7 @@ inline uint qHash(const Symbol& symbol, uint seed = 0)
 {
     Util::HashCombine hash;
     seed = hash(seed, symbol.symbol);
+    seed = hash(seed, symbol.mangled);
     seed = hash(seed, symbol.binary);
     seed = hash(seed, symbol.path);
     return seed;
@@ -746,6 +793,9 @@ struct ZoomAction
 
 Q_DECLARE_METATYPE(Data::Symbol)
 Q_DECLARE_TYPEINFO(Data::Symbol, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::DisassemblyResult)
+Q_DECLARE_TYPEINFO(Data::DisassemblyResult, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::Location)
 Q_DECLARE_TYPEINFO(Data::Location, Q_MOVABLE_TYPE);
