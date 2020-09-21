@@ -314,6 +314,7 @@ QDebug Data::operator<<(QDebug stream, const Location& location)
 {
     stream.noquote().nospace() << "Location{"
                                << "address=" << location.address << ", "
+                               << "relAddr=" << location.relAddr << ", "
                                << "location=" << location.location << "}";
     return stream.resetFormat().space();
 }
