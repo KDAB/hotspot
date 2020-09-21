@@ -28,9 +28,6 @@
 ResultsDisassemblyPage::ResultsDisassemblyPage(FilterAndZoomStack *filterStack, PerfParser *parser, QWidget *parent)
         : QWidget(parent), ui(new Ui::ResultsDisassemblyPage) {
     ui->setupUi(this);
-    ui->splitter->setStretchFactor(0, 1);
-    ui->splitter->setStretchFactor(1, 1);
-    ui->splitter->setStretchFactor(2, 8);
 }
 
 ResultsDisassemblyPage::~ResultsDisassemblyPage() = default;
@@ -45,6 +42,22 @@ void ResultsDisassemblyPage::clear() {
     if (rowCount > 0) {
         ui->asmView->model()->removeRows(0, rowCount, QModelIndex());
     }
+}
+
+/**
+ *  Set model to asmView and resize it's columns
+ * @param model
+ * @param numTypes
+ */
+void ResultsDisassemblyPage::setAsmViewModel(QStandardItemModel *model, int numTypes) {
+    ui->asmView->setModel(model);
+    ui->asmView->header()->setStretchLastSection(false);
+    ui->asmView->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    for (int event = 0; event < numTypes; event++) {
+        ui->asmView->setColumnWidth(event + 1, 100);
+        ui->asmView->header()->setSectionResizeMode(event + 1, QHeaderView::Interactive);
+    }
+    emit model->dataChanged(QModelIndex(), QModelIndex());
 }
 
 /**
@@ -125,6 +138,9 @@ void ResultsDisassemblyPage::showDisassembly(QString processName) {
 
         QStringList headerList;
         headerList.append(QLatin1String("Assembly"));
+        for (int i = 0; i < m_disasmResult.selfCosts.numTypes(); i++) {
+            headerList.append(m_disasmResult.selfCosts.typeName(i));
+        }
         model->setHorizontalHeaderLabels(headerList);
 
         QTextStream stream(&m_tmpFile);
@@ -132,12 +148,41 @@ void ResultsDisassemblyPage::showDisassembly(QString processName) {
             QString asmLine = stream.readLine();
             if (asmLine.isEmpty() || asmLine.startsWith(QLatin1String("Disassembly"))) continue;
 
+            QStringList asmTokens = asmLine.split(QLatin1Char(':'));
+            QString addrLine = asmTokens.value(0);
+            QString costLine = QString();
+
             QStandardItem *asmItem = new QStandardItem();
             asmItem->setText(asmLine);
             model->setItem(row, 0, asmItem);
+
+            // Calculate event times and add them in red to corresponding columns of the current disassembly row
+            for (int event = 0; event < m_disasmResult.selfCosts.numTypes(); event++) {
+                float totalCost = 0;
+                auto &entry = m_disasmResult.entry(m_curSymbol);
+                QHash<Data::Location, Data::LocationCost>::iterator i = entry.relSourceMap.begin();
+                while (i != entry.relSourceMap.end()) {
+                    Data::Location location = i.key();
+                    Data::LocationCost locationCost = i.value();
+                    float cost = locationCost.selfCost[event];
+                    if (QString::number(location.relAddr, 16) == addrLine.trimmed()) {
+                        costLine = QString::number(cost);
+                    }
+                    totalCost += cost;
+                    i++;
+                }
+
+                float costInstruction = costLine.toFloat();
+                costLine = costInstruction ? QString::number(costInstruction * 100 / totalCost, 'f', 2) +
+                                             QLatin1String("%") : QString();
+
+                QStandardItem *costItem = new QStandardItem(costLine);
+                costItem->setForeground(Qt::red);
+                model->setItem(row, event + 1, costItem);
+            }
             row++;
         }
-        ui->asmView->setModel(model);
+        setAsmViewModel(model, m_disasmResult.selfCosts.numTypes());
     }
 }
 
@@ -181,6 +226,7 @@ void ResultsDisassemblyPage::setData(const Data::DisassemblyResult &data) {
     m_extraLibPaths = data.extraLibPaths;
     m_arch = data.arch.trimmed().toLower();
     m_disasmApproach = data.disasmApproach;
+    m_disasmResult = data;
 
     m_objdump = m_arch.startsWith(QLatin1String("arm")) ? QLatin1String("arm-linux-gnueabi-objdump") : QLatin1String(
             "objdump");

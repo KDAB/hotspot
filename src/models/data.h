@@ -83,42 +83,7 @@ struct Symbol
     }
 };
 
-struct DisassemblyResult {
-    // Architecture
-    QString arch;
-    // Application path
-    QString appPath;
-    // Extra libs path
-    QString extraLibPaths;
-    // perf.data path
-    QString perfDataPath;
-    // Disassembly approach code: 'symbol' - by function symbol, 'address' or default - by addresses range
-    QString disasmApproach;
 
-    void copy(const DisassemblyResult &orig) {
-        this->perfDataPath = orig.perfDataPath;
-        this->appPath = orig.appPath;
-        this->extraLibPaths = orig.extraLibPaths;
-        if (!orig.arch.isEmpty()) {
-            this->arch = orig.arch;
-        }
-        if (!orig.disasmApproach.isEmpty()) {
-            this->disasmApproach = orig.disasmApproach;
-        }
-    }
-
-    void setData(QString perfDataPath, QString appPath, QString extraLibPaths, QString arch, QString disasmApproach) {
-        this->perfDataPath = perfDataPath;
-        this->appPath = appPath;
-        this->extraLibPaths = extraLibPaths;
-        if (!arch.isEmpty()) {
-            this->arch = arch;
-        }
-        if (!disasmApproach.isEmpty()) {
-            this->disasmApproach = disasmApproach;
-        }
-    }
-};
 
 QDebug operator<<(QDebug stream, const Symbol& symbol);
 
@@ -455,6 +420,19 @@ struct BottomUpResults
         return parent;
     }
 
+    // add event to disassembler instruction
+    // callback return type is ignored, all frames will be iterated over
+    template<typename FrameCallback>
+    const BottomUp* addDisasmEvent(int type, quint64 cost, const QVector<qint32>& frames, FrameCallback frameCallback)
+    {
+        auto parent = &root;
+        foreachFrame(frames, [this, type, cost, &parent, frameCallback](const Data::Symbol &symbol, const Data::Location &location) {
+            frameCallback(symbol, location);
+            return true;
+        });
+        return parent;
+    }
+
 private:
     quint32 maxBottomUpId = 0;
 
@@ -580,6 +558,80 @@ struct CallerCalleeResults
 };
 
 void callerCalleesFromBottomUpData(const BottomUpResults& data, CallerCalleeResults* results);
+
+using RelLocationCostMap = QHash<Location, LocationCost>;
+
+// Map location related to disassembly instruction with events costs
+struct DisassemblyEntry {
+    quint32 id = 0;
+
+    // Insert location into map if it is not found or return it if it is.
+    LocationCost &source(const Location location, int numTypes) {
+        auto it = relSourceMap.find(location);
+        if (it == relSourceMap.end()) {
+            it = relSourceMap.insert(location, {numTypes});
+        } else if (it->inclusiveCost.size() < static_cast<size_t>(numTypes)) {
+            it->inclusiveCost.resize(numTypes);
+            it->selfCost.resize(numTypes);
+        }
+        return *it;
+    }
+
+    RelLocationCostMap relSourceMap;
+};
+
+using DisassemblyEntryMap = QHash<Symbol, DisassemblyEntry>;
+
+struct DisassemblyResult {
+    // Architecture
+    QString arch;
+    // Application path
+    QString appPath;
+    // Extra lib paths
+    QString extraLibPaths;
+    // perf.data path
+    QString perfDataPath;
+    // Disassembly approach code: 'symbol' - by function symbol, 'address' or default - by addresses range
+    QString disasmApproach;
+
+    void copy(const DisassemblyResult &orig) {
+        this->perfDataPath = orig.perfDataPath;
+        this->appPath = orig.appPath;
+        this->extraLibPaths = orig.extraLibPaths;
+        if (!orig.arch.isEmpty()) {
+            this->arch = orig.arch;
+        }
+        if (!orig.disasmApproach.isEmpty()) {
+            this->disasmApproach = orig.disasmApproach;
+        }
+    }
+
+    void setData(QString perfDataPath, QString appPath, QString extraLibPaths, QString arch, QString disasmApproach) {
+        this->perfDataPath = perfDataPath;
+        this->appPath = appPath;
+        this->extraLibPaths = extraLibPaths;
+        if (!arch.isEmpty()) {
+            this->arch = arch;
+        }
+        if (!disasmApproach.isEmpty()) {
+            this->disasmApproach = disasmApproach;
+        }
+    }
+
+    DisassemblyEntryMap entries;
+    Costs selfCosts;
+    Costs inclusiveCosts;
+
+    // Return entry connecting symbol with set of locations inside it
+    DisassemblyEntry &entry(const Symbol &symbol) {
+        auto it = entries.find(symbol);
+        if (it == entries.end()) {
+            it = entries.insert(symbol, {});
+            it->id = entries.size() - 1;
+        }
+        return *it;
+    }
+};
 
 const constexpr auto INVALID_CPU_ID = std::numeric_limits<quint32>::max();
 const constexpr int INVALID_TID = -1;
