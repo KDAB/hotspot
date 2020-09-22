@@ -265,6 +265,11 @@ void MainWindow::setVerbose(const QString& verbose)
     m_verbose = verbose;
 }
 
+void MainWindow::setMaxStack(const QString& maxStack)
+{
+    m_maxStack = maxStack;
+}
+
 QString MainWindow::getSysroot() const {
     return m_sysroot;
 }
@@ -349,7 +354,8 @@ void MainWindow::openFile(const QString& path, bool isReload)
     m_pageStack->setCurrentWidget(m_startPage);
 
     // TODO: support input files of different types via plugins
-    m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths, m_extraLibPaths, m_appPath, m_arch, m_disasmApproach, m_verbose);
+    m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths, m_extraLibPaths, m_appPath, m_arch,
+                             m_disasmApproach, m_verbose, m_maxStack);
     m_reloadAction->setEnabled(true);
     m_reloadAction->setData(path);
 

@@ -70,6 +70,7 @@ public slots:
     void setArch(const QString& arch);
     void setDisasmApproach(const QString& disasmApproach);
     void setVerbose(const QString& verbose);
+    void setMaxStack(const QString& maxStack);
 
     void clear();
     void openFile(const QString& path);
@@ -123,6 +124,8 @@ private:
     // 'warning' - display warnings on the console, 'debug' - display debug information, 'all' - display both,
     // anything else - suppress warnings and debug information, except fatal and critical messages
     QString m_verbose;
+    // Maximum callchain and branchStack size
+    QString m_maxStack;
     KRecentFilesAction* m_recentFilesAction = nullptr;
     QAction* m_reloadAction = nullptr;
 };

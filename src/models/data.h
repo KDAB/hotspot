@@ -593,6 +593,8 @@ struct DisassemblyResult {
     QString perfDataPath;
     // Disassembly approach code: 'symbol' - by function symbol, 'address' or default - by addresses range
     QString disasmApproach;
+    // Unwinding method;
+    QString unwindMethod;
 
     void copy(const DisassemblyResult &orig) {
         this->perfDataPath = orig.perfDataPath;
@@ -603,6 +605,9 @@ struct DisassemblyResult {
         }
         if (!orig.disasmApproach.isEmpty()) {
             this->disasmApproach = orig.disasmApproach;
+        }
+        if (!orig.unwindMethod.isEmpty()) {
+            this->unwindMethod = orig.unwindMethod;
         }
     }
 
