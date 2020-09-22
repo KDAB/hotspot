@@ -180,6 +180,15 @@ MainWindow::MainWindow(QWidget* parent)
     setupCodeNavigationMenu();
     setupPathSettingsMenu();
 
+    connect(m_resultsPage->getFullUnwind(), &QAction::triggered, this, [this]() {
+        auto currentTab = m_resultsPage->getCurrentTab();
+        auto maxStack = m_maxStack;
+        setMaxStack(QString());
+        reload();
+        setMaxStack(maxStack);
+        m_resultsPage->selectTab(currentTab);
+    });
+
     clear();
 
     auto config = m_config->group("Window");
@@ -377,6 +386,8 @@ void MainWindow::openFile(const QString& path, bool isReload)
     m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths, m_extraLibPaths, m_appPath, m_targetRoot,
                              m_arch, m_disasmApproach, m_verbose, m_maxStack, m_branchTraverse);
     m_reloadAction->setEnabled(true);
+    m_maxStack.isEmpty() ? m_resultsPage->getFullUnwind()->setEnabled(false)
+                         : m_resultsPage->getFullUnwind()->setEnabled(true);
     m_reloadAction->setData(path);
 
     m_recentFilesAction->addUrl(QUrl::fromLocalFile(file.absoluteFilePath()));

@@ -304,11 +304,13 @@ struct Sample : Record
     QVector<qint32> disasmFrames;
     quint8 guessedFrames = 0;
     QVector<SampleCost> costs;
+    bool isIncompleteCallchain = false;
 };
 
 QDataStream& operator>>(QDataStream& stream, Sample& sample)
 {
-    return stream >> static_cast<Record&>(sample) >> sample.frames >> sample.disasmFrames >> sample.guessedFrames >> sample.costs;
+    return stream >> static_cast<Record&>(sample) >> sample.frames >> sample.disasmFrames >> sample.guessedFrames >> sample.costs
+                  >> sample.isIncompleteCallchain;
 }
 
 QDebug operator<<(QDebug stream, const Sample& sample)
@@ -1090,7 +1092,7 @@ public:
                                 bottomUpResult.costs.numTypes());
         };
 
-        bottomUpResult.addEvent(type, sampleCost.cost, sample.frames, frameCallback);
+        bottomUpResult.addEvent(type, sampleCost.cost, sample.frames, sample.isIncompleteCallchain, frameCallback);
 
         if (hasStackBranch) {
             bottomUpResult.addDisasmEvent(type, sampleCost.cost, disasmFrames, disasmFrameCallback);
@@ -1176,7 +1178,7 @@ public:
                     addCallerCalleeEvent(symbol, location, eventResult.offCpuTimeCostId, switchTime, &recursionGuard,
                                          &callerCalleeResult, bottomUpResult.costs.numTypes());
                 };
-                bottomUpResult.addEvent(eventResult.offCpuTimeCostId, switchTime, frames, frameCallback);
+                bottomUpResult.addEvent(eventResult.offCpuTimeCostId, switchTime, frames, false, frameCallback);
             }
 
             Data::Event event;
@@ -1527,6 +1529,8 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
             bottomUp.costs.clearTotalCost();
             const int numCosts = m_bottomUpResults.costs.numTypes();
 
+            bottomUp.incompleteCallchains.initializeFrom(m_bottomUpResults.incompleteCallchains);
+
             // rebuild per-CPU data, i.e. wipe all the events and then re-add them
             for (auto& cpu : events.cpus) {
                 cpu.events.clear();
@@ -1607,7 +1611,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                                              numCosts);
                     };
 
-                    bottomUp.addEvent(event.type, event.cost, events.stacks.at(event.stackId), frameCallback);
+                    bottomUp.addEvent(event.type, event.cost, events.stacks.at(event.stackId), false, frameCallback);
                 }
             }
 

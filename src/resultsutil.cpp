@@ -132,6 +132,10 @@ void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filte
             }
             contextMenu.addSeparator();
         }
+        if(view->objectName() == QString::fromUtf8("bottomUpTreeView")) {
+            contextMenu.addAction(filterStack->actions().fullUnwind);
+            contextMenu.addSeparator();
+        }
         addFilterActions(&contextMenu, symbol, filterStack);
 
         if (!contextMenu.actions().isEmpty()) {

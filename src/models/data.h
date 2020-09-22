@@ -312,6 +312,43 @@ private:
     QVector<Unit> m_units;
 };
 
+
+class IncompleteCallchains
+{
+public:
+    qint64 isIncomplete(quint32 id) const
+    {
+        if (static_cast<quint32>(m_incompleteFlags.size()) > id) {
+            return m_incompleteFlags[id];
+        } else {
+            return false;
+        }
+    }
+
+    void markAsIncomplete(quint32 id)
+    {
+        ensureSpaceAvailable(id);
+        m_incompleteFlags[id] = true;
+    }
+
+    void initializeFrom(const IncompleteCallchains& rhs)
+    {
+        m_incompleteFlags = rhs.m_incompleteFlags;
+    }
+
+private:
+    void ensureSpaceAvailable(quint32 id)
+    {
+        while (static_cast<quint32>(m_incompleteFlags.size()) <= id) {
+            // don't use resize, we don't want to influence the internal auto-sizing
+            m_incompleteFlags.push_back(false);
+        }
+    }
+
+    QVector<bool> m_incompleteFlags;
+};
+
+
 template<typename T>
 struct Tree
 {
@@ -393,6 +430,7 @@ struct BottomUpResults
     Costs costs;
     QVector<Data::Symbol> symbols;
     QVector<Data::FrameLocation> locations;
+    IncompleteCallchains incompleteCallchains;
 
     // callback should return true to continue iteration or false otherwise
     template<typename FrameCallback>
@@ -407,13 +445,18 @@ struct BottomUpResults
 
     // callback return type is ignored, all frames will be iterated over
     template<typename FrameCallback>
-    const BottomUp* addEvent(int type, quint64 cost, const QVector<qint32>& frames, FrameCallback frameCallback)
+    const BottomUp* addEvent(int type, quint64 cost, const QVector<qint32>& frames, bool isIncompleteCallchain, FrameCallback frameCallback)
     {
         costs.addTotalCost(type, cost);
         auto parent = &root;
-        foreachFrame(frames, [this, type, cost, &parent, frameCallback](const Data::Symbol &symbol, const Data::Location &location) {
+        foreachFrame(frames, [this, type, cost, &parent, isIncompleteCallchain, frameCallback](const Data::Symbol &symbol, const Data::Location &location) {
             parent = parent->entryForSymbol(symbol, &maxBottomUpId);
             costs.add(type, parent->id, cost);
+
+            if (isIncompleteCallchain) {
+                incompleteCallchains.markAsIncomplete(parent->id);
+            }
+
             frameCallback(symbol, location);
             return true;
         });

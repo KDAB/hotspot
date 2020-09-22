@@ -33,6 +33,7 @@ add_executable(dump_perf_data
 )
 target_link_libraries(dump_perf_data
     Qt5::Core
+    Qt5::Gui
     Qt5::Test
     KF5::ThreadWeaver
 )

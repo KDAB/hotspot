@@ -36,6 +36,8 @@ FilterAndZoomStack::FilterAndZoomStack(QObject* parent)
 {
     m_actions.disassembly = new QAction(QIcon::fromTheme(QStringLiteral("view-filter")), tr("Disassembly"), this);
 
+    m_actions.fullUnwind = new QAction(QIcon::fromTheme(QStringLiteral("view-filter")), tr("Callchains full unwind"), this);
+
     m_actions.filterOut = new QAction(QIcon::fromTheme(QStringLiteral("kt-remove-filters")), tr("Filter Out"), this);
     connect(m_actions.filterOut, &QAction::triggered, this, &FilterAndZoomStack::filterOut);
     m_actions.filterOut->setToolTip(tr("Undo the last filter and show more data in the views."));

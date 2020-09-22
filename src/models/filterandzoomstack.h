@@ -53,6 +53,7 @@ public:
         QAction* filterInBySymbol = nullptr;
         QAction* filterOutBySymbol = nullptr;
         QAction* disassembly = nullptr;
+        QAction* fullUnwind = nullptr;
     };
 
     Actions actions() const;

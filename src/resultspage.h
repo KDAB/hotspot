@@ -63,6 +63,7 @@ public:
     void clear();
     QMenu* filterMenu() const;
     QMenu* exportMenu() const;
+    void selectTab(QWidget* tab);
 
 public slots:
     void setSysroot(const QString& path);
@@ -82,6 +83,8 @@ public slots:
     void filterDisassemblyAddress(bool filtered);
     // Method to change assembly syntax
     void switchOnIntelSyntax(bool intelSyntax);
+    QAction* getFullUnwind();
+    QWidget* getCurrentTab() const;
 
 signals:
     void navigateToCode(const QString& url, int lineNumber, int columnNumber);

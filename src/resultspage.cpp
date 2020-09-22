@@ -339,6 +339,21 @@ void ResultsPage::setTimelineVisible(bool visible)
     ui->timeLineArea->setVisible(visible && ui->resultsTabWidget->currentIndex() != SUMMARY_TABINDEX);
 }
 
+QAction* ResultsPage::getFullUnwind()
+{
+    return m_filterAndZoomStack->actions().fullUnwind;
+}
+
+QWidget* ResultsPage::getCurrentTab() const
+{
+    return ui->resultsTabWidget->currentWidget();
+}
+
+void ResultsPage::selectTab(QWidget* tab)
+{
+    ui->resultsTabWidget->setCurrentWidget(tab);
+}
+
 void ResultsPage::navigateToCodeFailed(const QString& message)
 {
     ui->errorWidget->setText(message);

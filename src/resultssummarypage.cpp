@@ -54,7 +54,7 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
     ui->lostMessage->setVisible(false);
     ui->parserErrorsBox->setVisible(false);
 
-    auto bottomUpCostModel = new BottomUpModel(this);
+    auto bottomUpCostModel = new BottomUpModel(false, this);
 
     auto topHotspotsProxy = new TopProxy(this);
     topHotspotsProxy->setSourceModel(bottomUpCostModel);

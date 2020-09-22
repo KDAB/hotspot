@@ -29,6 +29,9 @@
 #include "../settings.h"
 #include "../util.h"
 
+#include <QColor>
+#include <QBrush>
+
 AbstractTreeModel::AbstractTreeModel(QObject* parent)
     : QAbstractItemModel(parent)
 {
@@ -36,8 +39,9 @@ AbstractTreeModel::AbstractTreeModel(QObject* parent)
 
 AbstractTreeModel::~AbstractTreeModel() = default;
 
-BottomUpModel::BottomUpModel(QObject* parent)
-    : CostTreeModel(parent)
+BottomUpModel::BottomUpModel(bool visualizeIncompleteCallchains,
+                             QObject* parent)
+    : CostTreeModel(parent), visualizeIncompleteCallchains(visualizeIncompleteCallchains)
 {
     connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, [this]() {
         if (rowCount() == 0) {
@@ -78,6 +82,12 @@ QVariant BottomUpModel::headerColumnData(int column, int role) const
 
 QVariant BottomUpModel::rowData(const Data::BottomUp* row, int column, int role) const
 {
+    if (visualizeIncompleteCallchains && role == Qt::BackgroundRole
+            && column == Symbol && m_results.incompleteCallchains.isIncomplete(row->id)) {
+        QColor color = QColor(255, 240, 165);
+        return QBrush(color);
+    }
+
     if (role == Qt::DisplayRole || role == SortRole) {
         switch (column) {
         case Symbol:

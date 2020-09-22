@@ -283,7 +283,8 @@ class BottomUpModel : public CostTreeModel<Data::BottomUpResults, BottomUpModel>
 {
     Q_OBJECT
 public:
-    explicit BottomUpModel(QObject* parent = nullptr);
+    explicit BottomUpModel(bool visualizeIncompleteCallchains = true,
+                           QObject* parent = nullptr);
     ~BottomUpModel();
     enum Columns
     {
@@ -299,6 +300,9 @@ public:
     QVariant headerColumnData(int column, int role) const final override;
     QVariant rowData(const Data::BottomUp* row, int column, int role) const final override;
     int numColumns() const final override;
+
+private:
+    bool visualizeIncompleteCallchains;
 };
 
 class TopDownModel : public CostTreeModel<Data::TopDownResults, TopDownModel>

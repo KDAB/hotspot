@@ -20,6 +20,7 @@ add_library(models STATIC
 target_link_libraries(models
     Qt5::Core
     Qt5::Widgets
+    Qt5::Gui
     KF5::ItemModels
     KF5::ConfigWidgets
     PrefixTickLabels
