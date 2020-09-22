@@ -38,6 +38,7 @@
 #include <QFileDialog>
 #include <QStackedWidget>
 #include <QVBoxLayout>
+#include <QMessageBox>
 
 #include <QDesktopServices>
 #include <QInputDialog>
@@ -181,12 +182,23 @@ MainWindow::MainWindow(QWidget* parent)
     setupPathSettingsMenu();
 
     connect(m_resultsPage->getFullUnwind(), &QAction::triggered, this, [this]() {
-        auto currentTab = m_resultsPage->getCurrentTab();
-        auto maxStack = m_maxStack;
-        setMaxStack(QString());
-        reload();
-        setMaxStack(maxStack);
-        m_resultsPage->selectTab(currentTab);
+        int button = QMessageBox::warning(nullptr,
+                                     QStringLiteral("Callchains full unwind"),
+                                     QStringLiteral("Are you sure? This may take a long time."),
+                                     QStringLiteral("Yes"),
+                                     QStringLiteral("No"),
+                                     QString(),
+                                     0,
+                                     1
+                                    );
+        if(!button) {
+            auto currentTab = m_resultsPage->getCurrentTab();
+            auto maxStack = m_maxStack;
+            setMaxStack(QString::number(INT_MAX));
+            reload();
+            setMaxStack(maxStack);
+            m_resultsPage->selectTab(currentTab);
+        }
     });
 
     clear();
@@ -316,6 +328,10 @@ QString MainWindow::getArch() const {
     return m_arch;
 }
 
+QString MainWindow::getMaxStack() const {
+    return m_maxStack;
+}
+
 void MainWindow::onOpenFileButtonClicked()
 {
     const auto fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(),
@@ -386,7 +402,7 @@ void MainWindow::openFile(const QString& path, bool isReload)
     m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths, m_extraLibPaths, m_appPath, m_targetRoot,
                              m_arch, m_disasmApproach, m_verbose, m_maxStack, m_branchTraverse);
     m_reloadAction->setEnabled(true);
-    m_maxStack.isEmpty() ? m_resultsPage->getFullUnwind()->setEnabled(false)
+    (m_maxStack == QString::number(INT_MAX)) ? m_resultsPage->getFullUnwind()->setEnabled(false)
                          : m_resultsPage->getFullUnwind()->setEnabled(true);
     m_reloadAction->setData(path);
 

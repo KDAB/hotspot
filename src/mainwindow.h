@@ -63,6 +63,7 @@ public:
     QString getDebugPaths() const;
     QString getExtraLibPaths() const;
     QString getArch() const;
+    QString getMaxStack() const;
 
 public slots:
     void setSysroot(const QString& path);
