@@ -76,6 +76,12 @@ public slots:
     void setData(const Data::Symbol& data);
     void setData(const Data::DisassemblyResult& data);
 
+    // Methods to filter Disassembly output
+    void filterDisassemblyBytes(bool filtered);
+    void filterDisassemblyAddress(bool filtered);
+    // Method to change assembly syntax
+    void switchOnIntelSyntax(bool intelSyntax);
+
 signals:
     void navigateToCode(const QString& url, int lineNumber, int columnNumber);
 

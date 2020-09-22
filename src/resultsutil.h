@@ -70,6 +70,9 @@ void setupCostDelegate(Model* model, QTreeView* view)
 
 void addFilterActions(QMenu* menu, const Data::Symbol &symbol, FilterAndZoomStack* filterStack);
 
+void setupDisassemblyContextMenu(QTreeView* view);
+void copySelectedDisassembly(QTreeView *view);
+
 enum class CallbackAction
 {
     ViewCallerCallee = 0x1,

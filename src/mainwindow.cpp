@@ -174,28 +174,8 @@ MainWindow::MainWindow(QWidget* parent)
         });
     }
 
-    auto *showTimelineAction = ui->viewMenu->addAction(tr("Show Timeline"));
-    showTimelineAction->setCheckable(true);
-    showTimelineAction->setChecked(true);
-    showTimelineAction->setShortcut(tr("Ctrl+T"));
-    connect(showTimelineAction, &QAction::toggled, m_resultsPage, &ResultsPage::setTimelineVisible);
-
-    auto* prettifySymbolsAction = ui->viewMenu->addAction(tr("Prettify Symbols"));
-    prettifySymbolsAction->setCheckable(true);
-    prettifySymbolsAction->setChecked(Settings::instance()->prettifySymbols());
-    prettifySymbolsAction->setToolTip(
-        tr("Replace fully qualified and expanded STL type names with their shorter and more commonly used equivalents. "
-           "E.g. show std::string instead of std::basic_string<char, ...>"));
-    connect(prettifySymbolsAction, &QAction::toggled, Settings::instance(), &Settings::setPrettifySymbols);
-
-    ui->viewMenu->addSeparator();
-
-    QList<QAction *> actions = m_resultsPage->filterMenu()->actions();
-    // Disassembly menu items should not be presented here
-    actions.removeFirst();
-    ui->viewMenu->addActions(actions);
-    ui->viewMenu->addSeparator();
-    ui->viewMenu->addMenu(m_resultsPage->exportMenu());
+    setupFilterDisassemblyMenu();
+    setupViewMenu();
 
     setupCodeNavigationMenu();
     setupPathSettingsMenu();
@@ -473,11 +453,59 @@ void MainWindow::setupPathSettingsMenu()
     m_startPage->setPathSettingsMenu(menu);
 }
 
-void MainWindow::setupCodeNavigationMenu()
-{
+void MainWindow::setupFilterDisassemblyMenu() {
+    QMenu *filterDisassemblyMenu = new QMenu(tr("Filter Disassembly View"));
+
+    auto *showFilteredDisassemblyBytesAction = filterDisassemblyMenu->addAction(tr("Hide/Show instruction bytes"));
+    showFilteredDisassemblyBytesAction->setCheckable(true);
+    showFilteredDisassemblyBytesAction->setChecked(true);
+    showFilteredDisassemblyBytesAction->setShortcut(tr("Ctrl+B"));
+    connect(showFilteredDisassemblyBytesAction, &QAction::toggled, m_resultsPage, &ResultsPage::filterDisassemblyBytes);
+
+    auto *showFilteredDisassemblyAddressAction = filterDisassemblyMenu->addAction(tr("Hide/Show instruction address"));
+    showFilteredDisassemblyAddressAction->setCheckable(true);
+    showFilteredDisassemblyAddressAction->setChecked(false);
+    showFilteredDisassemblyAddressAction->setShortcut(tr("Ctrl+J"));
+    connect(showFilteredDisassemblyAddressAction, &QAction::toggled, m_resultsPage,
+            &ResultsPage::filterDisassemblyAddress);
+    ui->viewMenu->addMenu(filterDisassemblyMenu);
+}
+
+void MainWindow::setupViewMenu() {
+    auto *switchDisassemblySyntaxAction = ui->viewMenu->addAction(tr("Assembly in Intel Syntax"));
+    switchDisassemblySyntaxAction->setCheckable(true);
+    switchDisassemblySyntaxAction->setChecked(false);
+    switchDisassemblySyntaxAction->setShortcut(tr("Ctrl+I"));
+    connect(switchDisassemblySyntaxAction, &QAction::toggled, m_resultsPage, &ResultsPage::switchOnIntelSyntax);
+
+    auto *showTimelineAction = ui->viewMenu->addAction(tr("Show Timeline"));
+    showTimelineAction->setCheckable(true);
+    showTimelineAction->setChecked(true);
+    showTimelineAction->setShortcut(tr("Ctrl+T"));
+    connect(showTimelineAction, &QAction::toggled, m_resultsPage, &ResultsPage::setTimelineVisible);
+
+    auto *prettifySymbolsAction = ui->viewMenu->addAction(tr("Prettify Symbols"));
+    prettifySymbolsAction->setCheckable(true);
+    prettifySymbolsAction->setChecked(Settings::instance()->prettifySymbols());
+    prettifySymbolsAction->setToolTip(
+            tr("Replace fully qualified and expanded STL type names with their shorter and more commonly used equivalents. "
+               "E.g. show std::string instead of std::basic_string<char, ...>"));
+    connect(prettifySymbolsAction, &QAction::toggled, Settings::instance(), &Settings::setPrettifySymbols);
+
+    ui->viewMenu->addSeparator();
+
+    QList<QAction *> actions = m_resultsPage->filterMenu()->actions();
+    // Disassembly menu item should not be presented here
+    actions.removeFirst();
+    ui->viewMenu->addActions(actions);
+    ui->viewMenu->addSeparator();
+    ui->viewMenu->addMenu(m_resultsPage->exportMenu());
+}
+
+void MainWindow::setupCodeNavigationMenu() {
     // Code Navigation
-    QAction* configAction =
-        new QAction(QIcon::fromTheme(QStringLiteral("applications-development")), tr("Code Navigation"), this);
+    QAction *configAction =
+            new QAction(QIcon::fromTheme(QStringLiteral("applications-development")), tr("Code Navigation"), this);
     auto menu = new QMenu(this);
     auto group = new QActionGroup(this);
     group->setExclusive(true);

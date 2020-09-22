@@ -41,6 +41,13 @@
 #include "models/costdelegate.h"
 #include "models/data.h"
 #include "models/filterandzoomstack.h"
+#include <QApplication>
+#include <QClipboard>
+#include <QShortcut>
+#include <QThread>
+#include <QFileDialog>
+#include <QDir>
+#include <QTextStream>
 
 #include "costheaderview.h"
 
@@ -130,6 +137,98 @@ void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filte
         if (!contextMenu.actions().isEmpty()) {
             contextMenu.exec(QCursor::pos());
         }
+    });
+}
+
+/**
+ *  Copy selected part of Disassembly view through context menu or shortcut Ctrl+C
+ * @param view
+ */
+void copySelectedDisassembly(QTreeView *view) {
+    QString copiedOutput;
+    QModelIndexList selectedIndexes = view->selectionModel()->selectedIndexes();
+
+    QString colSeparator = QLatin1String(" | ");
+    QString endLine = QLatin1String("\n");
+    for (int i = 0; i < selectedIndexes.count(); ++i) {
+        QModelIndex current = selectedIndexes[i];
+        QString currentText = current.data(Qt::DisplayRole).toString();
+        if (i + 1 < selectedIndexes.count()) {
+            QModelIndex next = selectedIndexes[i + 1];
+            QString separator = (next.row() != current.row()) ? endLine : colSeparator;
+            currentText.append(separator);
+        }
+        copiedOutput.append(currentText);
+    }
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(copiedOutput, QClipboard::Clipboard);
+
+    if (clipboard->supportsSelection()) {
+        clipboard->setText(copiedOutput, QClipboard::Selection);
+    }
+    QThread::msleep(1);
+}
+
+/**
+ *  Export to CSV file of selected part of Disassembly view
+ * @param view
+ */
+void exportToCSVDisassembly(QTreeView *view) {
+    const auto directoryName = QFileDialog::getExistingDirectory(view, QLatin1String("Open Directory"),
+                                                                 QDir::currentPath(),
+                                                                 QFileDialog::ShowDirsOnly |
+                                                                 QFileDialog::DontResolveSymlinks);
+    if (directoryName.isEmpty()) {
+        return;
+    }
+
+    QFile file(directoryName + QDir::separator() + QLatin1String("result.csv"));
+    if (file.open(QFile::WriteOnly)) {
+        QString comma = QLatin1String(",");
+        QString endLine = QLatin1String("\n");
+        QString quote = QLatin1String("\"");
+        QTextStream stream(&file);
+        QModelIndexList selectedIndexes = view->selectionModel()->selectedIndexes();
+        for (int i = 0; i < selectedIndexes.count(); ++i) {
+            QModelIndex current = selectedIndexes[i];
+            QString currentText = quote + current.data(Qt::DisplayRole).toString() + quote;
+            if (i + 1 < selectedIndexes.count()) {
+                QModelIndex next = selectedIndexes[i + 1];
+                QString separator = (next.row() != current.row()) ? endLine : comma;
+                currentText.append(separator);
+            }
+            stream << currentText;
+        }
+        file.close();
+    }
+}
+
+/**
+ *  Setup context menu and connect signals with slots for selected part of Disassembly view copying
+ * @param view
+ */
+void setupDisassemblyContextMenu(QTreeView *view) {
+    view->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    auto shortcut = new QShortcut(QKeySequence(QLatin1String("Ctrl+C")), view);
+    QObject::connect(shortcut, &QShortcut::activated, [view]() {
+        ResultsUtil::copySelectedDisassembly(view);
+    });
+
+    QObject::connect(view, &QTreeView::customContextMenuRequested, view, [view](const QPoint &point) {
+        QMenu contextMenu;
+        auto *copyAction = contextMenu.addAction(QLatin1String("Copy"));
+        auto *exportToCSVAction = contextMenu.addAction(QLatin1String("Export to CSV..."));
+
+        const auto index = view->indexAt(point);
+        QObject::connect(copyAction, &QAction::triggered, &contextMenu, [view]() {
+            copySelectedDisassembly(view);
+        });
+        QObject::connect(exportToCSVAction, &QAction::triggered, &contextMenu, [view]() {
+            exportToCSVDisassembly(view);
+        });
+
+        contextMenu.exec(QCursor::pos());
     });
 }
 
