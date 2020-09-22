@@ -43,7 +43,8 @@ public:
 
     void startParseFile(const QString& path, const QString& sysroot, const QString& kallsyms, const QString& debugPaths,
                         const QString& extraLibPaths, const QString& appPath, const QString& arch,
-                        const QString& disasmApproach, const QString& verbose, const QString& maxStack);
+                        const QString& disasmApproach, const QString& verbose, const QString& maxStack,
+                        const QString& branchTraverse);
 
     void filterResults(const Data::FilterAction& filter);
 

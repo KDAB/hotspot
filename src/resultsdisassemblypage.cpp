@@ -160,28 +160,31 @@ void ResultsDisassemblyPage::showDisassembly(QString processName) {
             model->setItem(row, 0, asmItem);
 
             // Calculate event times and add them in red to corresponding columns of the current disassembly row
-            for (int event = 0; event < m_disasmResult.selfCosts.numTypes(); event++) {
-                float totalCost = 0;
-                auto &entry = m_disasmResult.entry(m_curSymbol);
-                QHash<Data::Location, Data::LocationCost>::iterator i = entry.relSourceMap.begin();
-                while (i != entry.relSourceMap.end()) {
-                    Data::Location location = i.key();
-                    Data::LocationCost locationCost = i.value();
-                    float cost = locationCost.selfCost[event];
-                    if (QString::number(location.relAddr, 16) == addrLine.trimmed()) {
-                        costLine = QString::number(cost);
+            if (!m_disasmResult.branchTraverse ||
+                !m_disasmResult.unwindMethod.startsWith(QLatin1String("lbr"))) {
+                for (int event = 0; event < m_disasmResult.selfCosts.numTypes(); event++) {
+                    float totalCost = 0;
+                    auto &entry = m_disasmResult.entry(m_curSymbol);
+                    QHash<Data::Location, Data::LocationCost>::iterator i = entry.relSourceMap.begin();
+                    while (i != entry.relSourceMap.end()) {
+                        Data::Location location = i.key();
+                        Data::LocationCost locationCost = i.value();
+                        float cost = locationCost.selfCost[event];
+                        if (QString::number(location.relAddr, 16) == addrLine.trimmed()) {
+                            costLine = QString::number(cost);
+                        }
+                        totalCost += cost;
+                        i++;
                     }
-                    totalCost += cost;
-                    i++;
+
+                    float costInstruction = costLine.toFloat();
+                    costLine = costInstruction ? QString::number(costInstruction * 100 / totalCost, 'f', 2) +
+                                                 QLatin1String("%") : QString();
+
+                    QStandardItem *costItem = new QStandardItem(costLine);
+                    costItem->setForeground(Qt::red);
+                    model->setItem(row, event + 1, costItem);
                 }
-
-                float costInstruction = costLine.toFloat();
-                costLine = costInstruction ? QString::number(costInstruction * 100 / totalCost, 'f', 2) +
-                                             QLatin1String("%") : QString();
-
-                QStandardItem *costItem = new QStandardItem(costLine);
-                costItem->setForeground(Qt::red);
-                model->setItem(row, event + 1, costItem);
             }
             row++;
         }

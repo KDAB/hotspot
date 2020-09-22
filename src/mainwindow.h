@@ -71,6 +71,7 @@ public slots:
     void setDisasmApproach(const QString& disasmApproach);
     void setVerbose(const QString& verbose);
     void setMaxStack(const QString& maxStack);
+    void setBranchTraverse(const QString& branchTraverse);
 
     void clear();
     void openFile(const QString& path);
@@ -126,6 +127,8 @@ private:
     QString m_verbose;
     // Maximum callchain and branchStack size
     QString m_maxStack;
+    // Short branchStack resolveCallchain traverse. Concerns lbr.
+    QString m_branchTraverse;
     KRecentFilesAction* m_recentFilesAction = nullptr;
     QAction* m_reloadAction = nullptr;
 };

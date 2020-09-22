@@ -135,6 +135,11 @@ int main(int argc, char** argv)
                                 QLatin1String("max-stack"));
     parser.addOption(maxStack);
 
+    QCommandLineOption branchTraverse(QLatin1String("branch-traverse"),
+                                      QCoreApplication::translate("main",
+                                                                  "Short branchStack resolveCallchain traverse. Concerns lbr."));
+    parser.addOption(branchTraverse);
+
     parser.addPositionalArgument(
         QStringLiteral("files"),
         QCoreApplication::translate("main", "Optional input files to open on startup, i.e. perf.data files."),
@@ -171,6 +176,9 @@ int main(int argc, char** argv)
         }
         if (parser.isSet(maxStack)) {
             window->setMaxStack(parser.value(maxStack));
+        }
+        if (parser.isSet(branchTraverse)) {
+            window->setBranchTraverse(branchTraverse.names().at(0));
         }
     };
 

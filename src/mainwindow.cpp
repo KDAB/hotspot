@@ -270,6 +270,11 @@ void MainWindow::setMaxStack(const QString& maxStack)
     m_maxStack = maxStack;
 }
 
+void MainWindow::setBranchTraverse(const QString& branchTraverse)
+{
+    m_branchTraverse = branchTraverse;
+}
+
 QString MainWindow::getSysroot() const {
     return m_sysroot;
 }
@@ -355,7 +360,7 @@ void MainWindow::openFile(const QString& path, bool isReload)
 
     // TODO: support input files of different types via plugins
     m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths, m_extraLibPaths, m_appPath, m_arch,
-                             m_disasmApproach, m_verbose, m_maxStack);
+                             m_disasmApproach, m_verbose, m_maxStack, m_branchTraverse);
     m_reloadAction->setEnabled(true);
     m_reloadAction->setData(path);
 

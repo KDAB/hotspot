@@ -595,11 +595,14 @@ struct DisassemblyResult {
     QString disasmApproach;
     // Unwinding method;
     QString unwindMethod;
+    // Short branchStack resolveCallchain traverse. Concerns lbr.
+    bool branchTraverse;
 
     void copy(const DisassemblyResult &orig) {
         this->perfDataPath = orig.perfDataPath;
         this->appPath = orig.appPath;
         this->extraLibPaths = orig.extraLibPaths;
+        this->branchTraverse = orig.branchTraverse;
         if (!orig.arch.isEmpty()) {
             this->arch = orig.arch;
         }
@@ -611,10 +614,11 @@ struct DisassemblyResult {
         }
     }
 
-    void setData(QString perfDataPath, QString appPath, QString extraLibPaths, QString arch, QString disasmApproach) {
+    void setData(QString perfDataPath, QString appPath, QString extraLibPaths, QString arch, QString disasmApproach, bool branchTraverse) {
         this->perfDataPath = perfDataPath;
         this->appPath = appPath;
         this->extraLibPaths = extraLibPaths;
+        this->branchTraverse = branchTraverse;
         if (!arch.isEmpty()) {
             this->arch = arch;
         }
