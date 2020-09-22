@@ -59,6 +59,14 @@ The main feature of hotspot is visualizing a `perf.data` file graphically.
 
 ![hotspot top-down page](screenshots/top-down.png?raw=true "hotspot top-down page")
 
+### Disassembly / Annotate
+
+![hotspot disassembler page](screenshots/disassembler.png?raw=true "hotspot disassembler page")
+
+### Cross-profiling settings
+
+![hotspot cross-profiling-settings page](screenshots/cross-profiling-settings.png?raw=true "hotspot cross-profiling-settings page")
+
 ### Time Line
 
 The time line allows filtering the results by time, process or thread. The data views will update accordingly.
@@ -113,6 +121,11 @@ apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev \
     libkf5solid-dev libkf5windowsystem-dev libelf-dev libdw-dev cmake \
     extra-cmake-modules gettext libqt5svg5-dev
 ```
+# Objdumps version should be >= 2.32 
+apt install binutils
+apt-get install libc6-armel-cross libc6-dev-armel-cross binutils-arm-linux-gnueabi libncurses5-dev
+apt-get install binutils-aarch64-linux-gnu
+
 
 ### On Fedora
 ```
