@@ -5,6 +5,7 @@ add_library(models STATIC
     callercalleemodel.cpp
     disassemblymodel.cpp
     costdelegate.cpp
+    highlighter.cpp
     searchdelegate.cpp
     processmodel.cpp
     processfiltermodel.cpp

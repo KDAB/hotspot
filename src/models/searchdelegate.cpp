@@ -28,28 +28,27 @@ void SearchDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option
         return;
 
     if (index.column() == 0) {
-        if (!m_searchText.isEmpty() && !selectedIndexes.contains(index)) {
+        if (!selectedIndexes.contains(index)) {
             QString text = index.model()->data(index, Qt::DisplayRole).toString();
-
             QTextDocument *document = new QTextDocument(text);
-            QTextCharFormat selection;
 
-            int position = 0;
-            QTextCursor cursor;
-            do {
-                cursor = document->find(m_searchText, position);
-                cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
-                cursor.selectionStart();
-                cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
-                cursor.selectionEnd();
-                position = cursor.position();
-                selection.setForeground(Qt::white);
-                selection.setBackground(option.palette.highlight());
-                cursor.setCharFormat(selection);
-            } while (!cursor.isNull());
+            if (option.state & QStyle::State_Selected) {
+                painter->setPen(Qt::white);
+                painter->fillRect(option.rect, option.palette.highlight());
+                QStyledItemDelegate::paint(painter, option, index);
+                return;
+            }
+            Highlighter *highlighter = new Highlighter(document);
+            highlighter->setSearchText(m_searchText);
+            highlighter->setArch(m_arch);
+            highlighter->setDiagnosticStyle(m_diagnosticStyle);
+            highlighter->setHighlightColor(option.palette.highlight());
+
+            highlighter->rehighlight();
 
             painter->save();
             document->setDefaultFont(painter->font());
+            painter->setClipRect(option.rect.x(), option.rect.y(), option.rect.width(), option.rect.height());
 
             int offset_y = (option.rect.height() - document->size().height()) / 2;
             painter->translate(option.rect.x(), option.rect.y() + offset_y);
