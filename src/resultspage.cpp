@@ -236,6 +236,7 @@ void ResultsPage::onJumpToCallerCallee(const Data::Symbol& symbol)
 void ResultsPage::setData(const Data::Symbol& data)
 {
     m_resultsDisassemblyPage->setData(data);
+    m_resultsDisassemblyPage->resetCallStack();
 }
 
 void ResultsPage::setData(const Data::DisassemblyResult& data)

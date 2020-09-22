@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QTemporaryFile>
 #include <QStandardItemModel>
+#include <QStack>
 #include "data.h"
 
 class QMenu;
@@ -38,9 +39,19 @@ public:
     void setAppPath(const QString& path);
     void setData(const Data::Symbol& data);
     void setData(const Data::DisassemblyResult& data);
+    void resetCallStack();
+
+signals:
+    void doubleClicked(QModelIndex);
+public slots:
+    void jumpToAsmCallee(QModelIndex);
 
 private:
     QScopedPointer<Ui::ResultsDisassemblyPage> ui;
+    // Asm view model
+    QStandardItemModel *model;
+    // Call stack
+    QStack<Data::Symbol> m_callStack;
     // Perf.data path
     QString m_perfDataPath;
     // Current chosen function symbol

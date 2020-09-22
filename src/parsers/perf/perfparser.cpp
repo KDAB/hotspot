@@ -580,6 +580,9 @@ struct SymbolCount {
                              QSet<Data::Symbol> *recursionGuard, Data::DisassemblyResult *disassemblyResult,
                              int numCosts)
     {
+        if (symbol.size > 0 && location.relAddr > symbol.relAddr + symbol.size) {
+            return;
+        }
         auto recursionIt = recursionGuard->find(symbol);
         if (recursionIt == recursionGuard->end()) {
             auto &entry = disassemblyResult->entry(symbol);
@@ -591,7 +594,6 @@ struct SymbolCount {
             recursionGuard->insert(symbol);
         }
     }
-
 }
 
 Q_DECLARE_TYPEINFO(AttributesDefinition, Q_MOVABLE_TYPE);
