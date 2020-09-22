@@ -11,7 +11,11 @@ class QWebStyleEdit : public QLineEdit
 
     QString m_text;
     QString m_grText;
-    QColor textBGColor, grTextBGColor, textFGColor, grTextFGColor;
+    const QColor textBGColor = palette().color(QPalette::Base);
+    const QColor grTextBGColor = palette().color(QPalette::Base);
+    const QColor textFGColor = palette().color(QPalette::Text);
+    const QColor grTextFGColor = palette().color(QPalette::Midlight);
+
     bool modified;
 
     void setBackgroundColor(QColor);
@@ -28,12 +32,10 @@ public:
 
     void grTextFGColorsetText(const QString&);
     void setColors();
+    void setTextEnabled();
+    void setTextDisabled();
 protected:
-    // void focusInEvent(QFocusEvent*) override;
-    // void focusOutEvent(QFocusEvent*) override;
     void keyPressEvent(QKeyEvent*) override;
-// protected slots:
-//    void slot1();
 };
 
 #endif // QWEBSTYLEEDIT_H

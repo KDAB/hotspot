@@ -119,6 +119,17 @@ void ResultsDisassemblyPage::zoomFont(QWheelEvent *event) {
 }
 
 /**
+ *  Remove created during Hotspot's work tmp files
+ */
+void ResultsDisassemblyPage::clearTmpFiles() {
+    for (int i = 0; i < m_tmpAppList.size(); i++) {
+        QString tmpFileName = m_tmpAppList.at(i);
+        if (QFile::exists(tmpFileName))
+            QFile(tmpFileName).remove();
+    }
+}
+
+/**
  *  Hide instruction bytes when an argument is true
  * @param filtered
  */
@@ -403,6 +414,19 @@ void ResultsDisassemblyPage::setData(const Data::Symbol &symbol) {
             }
         }
     }
+    if (!m_curSymbol.path.isEmpty() && !QFile::exists(m_curSymbol.path)) {
+        if (m_targetRoot.isEmpty()) m_targetRoot = QLatin1String("/tmp");
+
+        QString linkPath = m_targetRoot + m_curSymbol.path;
+        if (!QFile::exists(linkPath)) {
+            QDir dir(QDir::root());
+            QFileInfo linkPathInfo = QFileInfo(linkPath);
+            dir.mkpath(linkPathInfo.absolutePath());
+            QFile::copy(m_curAppPath, linkPath);
+
+            m_tmpAppList.push_back(linkPath);
+        }
+    }
 }
 
 /**
@@ -411,6 +435,7 @@ void ResultsDisassemblyPage::setData(const Data::Symbol &symbol) {
 void ResultsDisassemblyPage::setData(const Data::DisassemblyResult &data) {
     m_perfDataPath = data.perfDataPath;
     m_appPath = data.appPath;
+    m_targetRoot = data.targetRoot;
     m_extraLibPaths = data.extraLibPaths;
     m_arch = data.arch.trimmed().toLower();
     m_disasmApproach = data.disasmApproach;

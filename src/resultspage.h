@@ -75,6 +75,7 @@ public slots:
     void onJumpToDisassembly();
     void setData(const Data::Symbol& data);
     void setData(const Data::DisassemblyResult& data);
+    void clearTmpFiles();
 
     // Methods to filter Disassembly output
     void filterDisassemblyBytes(bool filtered);

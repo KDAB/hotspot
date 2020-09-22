@@ -111,6 +111,12 @@ int main(int argc, char** argv)
         QLatin1String("path"));
     parser.addOption(appPath);
 
+    QCommandLineOption targetRoot(
+        QLatin1String("targetRoot"),
+        QCoreApplication::translate("main", "Path to copy of target file system structure."),
+        QLatin1String("path"));
+    parser.addOption(targetRoot);
+
     QCommandLineOption arch(QLatin1String("arch"),
                             QCoreApplication::translate("main", "Architecture to use for unwinding."),
                             QLatin1String("path"));
@@ -164,6 +170,9 @@ int main(int argc, char** argv)
         }
         if (parser.isSet(appPath)) {
             window->setAppPath(parser.value(appPath));
+        }
+        if (parser.isSet(targetRoot)) {
+            window->setTargetRoot(parser.value(targetRoot));
         }
         if (parser.isSet(arch)) {
             window->setArch(parser.value(arch));

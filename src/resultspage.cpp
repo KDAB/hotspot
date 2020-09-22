@@ -290,6 +290,14 @@ void ResultsPage::filterDisassemblyAddress(bool filtered) {
 }
 
 /**
+ *  Remove created during Hotspot's work tmp files
+ */
+void ResultsPage::clearTmpFiles()
+{
+    m_resultsDisassemblyPage->clearTmpFiles();
+}
+
+/**
  *  Switch to Intel Syntax of assembly
  * @param intelSyntax
  */
