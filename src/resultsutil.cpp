@@ -208,32 +208,23 @@ void exportToCSVDisassembly(QTreeView *view) {
 }
 
 /**
- *  Setup context menu and connect signals with slots for selected part of Disassembly view copying
+ *  Zoom In / Out for Disassembly view
  * @param view
+ * @param origFontSize
+ * @param delta
  */
-void setupDisassemblyContextMenu(QTreeView *view) {
-    view->setContextMenuPolicy(Qt::CustomContextMenu);
+void zoomFont(QTreeView *view, int origFontSize, int delta) {
+    QFont curFont = view->font();
 
-    auto shortcut = new QShortcut(QKeySequence(QLatin1String("Ctrl+C")), view);
-    QObject::connect(shortcut, &QShortcut::activated, [view]() {
-        ResultsUtil::copySelectedDisassembly(view);
-    });
+    int newFontSize = curFont.pointSize() + delta;
+    if (newFontSize < 0)
+        return;
 
-    QObject::connect(view, &QTreeView::customContextMenuRequested, view, [view](const QPoint &point) {
-        QMenu contextMenu;
-        auto *copyAction = contextMenu.addAction(QLatin1String("Copy"));
-        auto *exportToCSVAction = contextMenu.addAction(QLatin1String("Export to CSV..."));
+    curFont.setPointSize(newFontSize);
+    view->setFont(curFont);
 
-        const auto index = view->indexAt(point);
-        QObject::connect(copyAction, &QAction::triggered, &contextMenu, [view]() {
-            copySelectedDisassembly(view);
-        });
-        QObject::connect(exportToCSVAction, &QAction::triggered, &contextMenu, [view]() {
-            exportToCSVDisassembly(view);
-        });
-
-        contextMenu.exec(QCursor::pos());
-    });
+    int fontSize = (newFontSize / (double) origFontSize) * 100;
+    view->setToolTip(QLatin1String("Zoom: ") + QString::number(fontSize) + QLatin1String("%"));
 }
 
 void setupCostDelegate(QAbstractItemModel* model, QTreeView* view, int sortRole, int totalCostRole, int numBaseColumns)

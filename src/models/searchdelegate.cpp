@@ -28,36 +28,33 @@ void SearchDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option
         return;
 
     if (index.column() == 0) {
-        if (!selectedIndexes.contains(index)) {
-            QString text = index.model()->data(index, Qt::DisplayRole).toString();
-            QTextDocument *document = new QTextDocument(text);
+        QString text = index.model()->data(index, Qt::DisplayRole).toString();
+        QTextDocument *document = new QTextDocument(text);
 
-            if (option.state & QStyle::State_Selected) {
-                painter->setPen(Qt::white);
-                painter->fillRect(option.rect, option.palette.highlight());
-                QStyledItemDelegate::paint(painter, option, index);
-                return;
-            }
-            Highlighter *highlighter = new Highlighter(document);
-            highlighter->setSearchText(m_searchText);
-            highlighter->setArch(m_arch);
-            highlighter->setDiagnosticStyle(m_diagnosticStyle);
-            highlighter->setHighlightColor(option.palette.highlight());
-
-            highlighter->rehighlight();
-
-            painter->save();
-            document->setDefaultFont(painter->font());
-            painter->setClipRect(option.rect.x(), option.rect.y(), option.rect.width(), option.rect.height());
-
-            int offset_y = (option.rect.height() - document->size().height()) / 2;
-            painter->translate(option.rect.x(), option.rect.y() + offset_y);
-            document->drawContents(painter);
-            painter->restore();
-            delete document;
-        } else {
+        if (option.state & QStyle::State_Selected) {
+            painter->setPen(Qt::white);
+            painter->fillRect(option.rect, option.palette.highlight());
             QStyledItemDelegate::paint(painter, option, index);
+            return;
         }
+        Highlighter *highlighter = new Highlighter(document);
+        highlighter->setSearchText(m_searchText);
+        highlighter->setArch(m_arch);
+        highlighter->setCallee(m_callees.contains(index.row()));
+        highlighter->setDiagnosticStyle(m_diagnosticStyle);
+        highlighter->setHighlightColor(option.palette.highlight());
+
+        highlighter->rehighlight();
+
+        painter->save();
+        document->setDefaultFont(painter->font());
+        painter->setClipRect(option.rect.x(), option.rect.y(), option.rect.width(), option.rect.height());
+
+        int offset_y = (option.rect.height() - document->size().height()) / 2;
+        painter->translate(option.rect.x(), option.rect.y() + offset_y);
+        document->drawContents(painter);
+        painter->restore();
+        delete document;
     } else {
         costDelegate->paint(painter, option, index);
     }

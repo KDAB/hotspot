@@ -31,59 +31,31 @@
 #include <QTextEdit>
 #include <QShortcut>
 
-ResultsDisassemblyPage::ResultsDisassemblyPage(FilterAndZoomStack *filterStack, PerfParser *parser, QWidget *parent)
+ResultsDisassemblyPage::ResultsDisassemblyPage(FilterAndZoomStack *filterStack, QWidget *parent)
         : QWidget(parent), ui(new Ui::ResultsDisassemblyPage), m_noShowRawInsn(true), m_noShowAddress(false), m_intelSyntaxDisassembly(false) {
     ui->setupUi(this);
 
     ui->searchTextEdit->setPlaceholderText(QLatin1String("Search"));
     ui->asmView->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
-    ResultsUtil::setupDisassemblyContextMenu(ui->asmView);
-    connect(ui->asmView, &QAbstractItemView::doubleClicked, this, &ResultsDisassemblyPage::jumpToAsmCallee);
     m_origFontSize = this->font().pointSize();
+    setupDisassemblyContextMenu(ui->asmView, m_origFontSize);
+    connect(ui->asmView, &QAbstractItemView::doubleClicked, this, &ResultsDisassemblyPage::jumpToAsmCallee);
     m_filterAndZoomStack = filterStack;
 
     m_searchDelegate = new SearchDelegate(ui->asmView);
     ui->asmView->setItemDelegate(m_searchDelegate);
 
     connect(ui->searchTextEdit, &QTextEdit::textChanged, this, &ResultsDisassemblyPage::searchTextAndHighlight);
-
-    connect(ui->asmView, &QAbstractItemView::clicked, this, &ResultsDisassemblyPage::onItemClicked);
-
-    auto shortcut = new QShortcut(QKeySequence(QLatin1String("Ctrl+A")), ui->asmView);
-    QObject::connect(shortcut, &QShortcut::activated, [this]() {
-        this->selectAll();
-    });
+    connect(ui->backButton, &QToolButton::clicked, this, &ResultsDisassemblyPage::backButtonClicked);
+    model = new DisassemblyModel();
 }
 
 ResultsDisassemblyPage::~ResultsDisassemblyPage() = default;
 
 /**
- *  Select all handler
- */
-void ResultsDisassemblyPage::selectAll()
-{
-    ui->asmView->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
-    ui->asmView->selectAll();
-    m_searchDelegate->setSelectedIndexes(ui->asmView->selectionModel()->selectedIndexes());
-    emit model->dataChanged(QModelIndex(), QModelIndex());
-}
-
-/**
- *  Select one item handler
- * @param index
- */
-void ResultsDisassemblyPage::onItemClicked(const QModelIndex &index)
-{
-    ui->asmView->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
-    m_searchDelegate->setSelectedIndexes(ui->asmView->selectionModel()->selectedIndexes());
-    emit model->dataChanged(QModelIndex(), QModelIndex());
-}
-
-/**
  *  Search text (taken from text editor Search) in Disassembly output and highlight found.
  */
 void ResultsDisassemblyPage::searchTextAndHighlight() {
-    ui->asmView->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
     ui->asmView->setAllColumnsShowFocus(true);
 
     QString text = ui->searchTextEdit->toPlainText();
@@ -106,16 +78,17 @@ void ResultsDisassemblyPage::wheelEvent(QWheelEvent *event) {
  * @param event
  */
 void ResultsDisassemblyPage::zoomFont(QWheelEvent *event) {
-    QFont curFont = this->font();
-    curFont.setPointSize(curFont.pointSize() + event->delta() / 100);
+    QFont curFont = ui->asmView->font();
 
-    int fontSize = (curFont.pointSize() / (double) m_origFontSize) * 100;
-    this->setFont(curFont);
-    this->setToolTip(QLatin1String("Zoom: ") + QString::number(fontSize) + QLatin1String("%"));
+    int newFontSize = curFont.pointSize() + event->delta() / 100;
+    if (newFontSize <= 0)
+        return;
 
-    QFont textEditFont = curFont;
-    textEditFont.setPointSize(m_origFontSize);
-    ui->searchTextEdit->setFont(textEditFont);
+    curFont.setPointSize(newFontSize);
+
+    int fontSize = (newFontSize / (double) m_origFontSize) * 100;
+    ui->asmView->setFont(curFont);
+    ui->asmView->setToolTip(QLatin1String("Zoom: ") + QString::number(fontSize) + QLatin1String("%"));
 }
 
 /**
@@ -134,8 +107,10 @@ void ResultsDisassemblyPage::clearTmpFiles() {
  * @param filtered
  */
 void ResultsDisassemblyPage::filterDisassemblyBytes(bool filtered) {
+    int row = selectedRow();
     setNoShowRawInsn(filtered);
     resetDisassembly();
+    selectRow(row);
 }
 
 /**
@@ -143,17 +118,59 @@ void ResultsDisassemblyPage::filterDisassemblyBytes(bool filtered) {
  * @param filtered
  */
 void ResultsDisassemblyPage::filterDisassemblyAddress(bool filtered) {
+    int row = selectedRow();
     setNoShowAddress(filtered);
     resetDisassembly();
+    selectRow(row);
 }
 
 /**
- *
+ *  Set opcodes for call and return instructions considering selected syntax
+ * @param intelSyntax
+ */
+void ResultsDisassemblyPage::setOpcodes(bool intelSyntax) {
+    opCodeCall = m_arch.startsWith(QLatin1String("arm")) ? QLatin1String("bl") :
+                 (intelSyntax ? QLatin1String("call") : QLatin1String("callq"));
+    opCodeReturn = m_arch.startsWith(QLatin1String("arm")) ? QLatin1String("ret") :
+                   (intelSyntax ? QLatin1String("ret") : QLatin1String("retq"));
+}
+
+/**
+ *  Return selected row
+ * @return
+ */
+int ResultsDisassemblyPage::selectedRow() {
+    return (model->rowCount() > 0) ? ui->asmView->currentIndex().row() : 0;
+}
+
+/**
+ *  Select row
+ * @param row
+ */
+void ResultsDisassemblyPage::selectRow(int row) {
+    ui->asmView->setCurrentIndex(model->index(row, 0));
+}
+
+/**
+ *  Block Back button
+ * @return
+ */
+void ResultsDisassemblyPage::blockBackButton() {
+    if (m_callStack.isEmpty() && m_addressStack.isEmpty()) {
+        ui->backButton->setEnabled(false);
+    }
+}
+
+/**
+ *  Switch to Intel syntax and back
  * @param intelSyntax
  */
 void ResultsDisassemblyPage::switchOnIntelSyntax(bool intelSyntax) {
+    int row = selectedRow();
     setIntelSyntaxDisassembly(intelSyntax);
+    setOpcodes(intelSyntax);
     resetDisassembly();
+    selectRow(row);
 }
 
 /**
@@ -169,14 +186,30 @@ void ResultsDisassemblyPage::clear() {
 }
 
 /**
+ *  Resize event
+ * @param event
+ */
+void ResultsDisassemblyPage::resizeEvent(QResizeEvent *event) {
+    event->accept();
+    int columnsCount = ui->asmView->header()->count();
+    if (columnsCount > 0) {
+        ui->asmView->setColumnWidth(0, this->width() - 100 * (columnsCount - 1));
+        for (int i = 0; i < columnsCount - 1; i++) {
+            ui->asmView->setColumnWidth(i + 1, 100);
+        }
+    }
+}
+
+/**
  *  Set model to asmView and resize it's columns
  * @param model
  * @param numTypes
  */
 void ResultsDisassemblyPage::setAsmViewModel(QStandardItemModel *model, int numTypes) {
     ui->asmView->setModel(model);
-    ui->asmView->header()->setStretchLastSection(false);
-    ui->asmView->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui->asmView->header()->setStretchLastSection(true);
+    ui->asmView->header()->setSectionResizeMode(0, QHeaderView::Interactive);
+    ui->asmView->setColumnWidth(0, this->width() - 100 * numTypes);
     for (int event = 0; event < numTypes; event++) {
         ui->asmView->setColumnWidth(event + 1, 100);
         ui->asmView->header()->setSectionResizeMode(event + 1, QHeaderView::Interactive);
@@ -192,6 +225,10 @@ void ResultsDisassemblyPage::showDisassembly() {
         showDisassemblyBySymbol();
     } else {
         showDisassemblyByAddressRange();
+    }
+    if (!m_calleesProcessed) {
+        m_searchDelegate->setCallees(m_callees);
+        m_calleesProcessed = true;
     }
 }
 
@@ -240,7 +277,7 @@ void ResultsDisassemblyPage::showDisassemblyByAddressRange() {
  *  Compute installed objdump version. If it is less than required 2.32 then Disassembly item is disabled.
  * @return
  */
-void ResultsDisassemblyPage::getObjdumpVersion(QByteArray &processOutput) {
+void ResultsDisassemblyPage::getObjdumpVersion() {
     QProcess versionProcess;
     QString processVersionName = m_objdump + QLatin1String(" -v");
     versionProcess.start(processVersionName);
@@ -253,8 +290,6 @@ void ResultsDisassemblyPage::getObjdumpVersion(QByteArray &processOutput) {
         m_objdumpVersion = rx.capturedTexts().at(0);
         if (m_objdumpVersion.toFloat() < 2.32) {
             m_filterAndZoomStack->actions().disassembly->setEnabled(false);
-            processOutput = QByteArray("Version of objdump should be >= 2.32. You use objdump with version ") +
-                            m_objdumpVersion.toUtf8();
         }
     }    
 }
@@ -295,8 +330,12 @@ QByteArray ResultsDisassemblyPage::processDisassemblyGenRun(QString processName)
             processOutput = QByteArray("Empty output of command ");
             processOutput += processName.toUtf8();
 
-            if (m_objdumpVersion.isEmpty()) {
-                getObjdumpVersion(processOutput);
+            if (m_objdumpVersion.isEmpty())
+                getObjdumpVersion();
+
+            if (!m_objdumpVersion.isEmpty() && m_objdumpVersion.toFloat() < 2.32) {
+                processOutput = QByteArray("Version of objdump should be >= 2.32. You use objdump with version ") +
+                                m_objdumpVersion.toUtf8();
             }
             m_searchDelegate->setDiagnosticStyle(true);
         }
@@ -324,7 +363,7 @@ void ResultsDisassemblyPage::showDisassembly(QString processName) {
 
     if (m_tmpFile.open()) {
         int row = 0;
-        model = new DisassemblyModel();
+        model->clear();
 
         QStringList headerList;
         headerList.append(QLatin1String("Assembly"));
@@ -352,6 +391,12 @@ void ResultsDisassemblyPage::showDisassembly(QString processName) {
             QStandardItem *asmItem = new QStandardItem();
             asmItem->setText(asmLine);
             model->setItem(row, 0, asmItem);
+
+            if (!m_calleesProcessed) {
+                Data::Symbol calleeSymbol = getCalleeSymbol(asmLine);
+                if (calleeSymbol.isValid())
+                    m_callees.insert(row, calleeSymbol);
+            }
 
             // Calculate event times and add them in red to corresponding columns of the current disassembly row
             if (!m_disasmResult.branchTraverse ||
@@ -430,6 +475,8 @@ void ResultsDisassemblyPage::setData(const Data::Symbol &symbol) {
         }
     }
     m_searchDelegate->setDiagnosticStyle(false);
+    m_callees.clear();
+    m_calleesProcessed = false;
 }
 
 /**
@@ -451,22 +498,90 @@ void ResultsDisassemblyPage::setData(const Data::DisassemblyResult &data) {
         m_objdump = QLatin1String("aarch64-linux-gnu-objdump");
     }
     m_searchDelegate->setArch(m_arch);
+    setOpcodes(m_intelSyntaxDisassembly);
 }
 
 /**
- * Clear call stack when another symbol was selected
+ *  Clear call stack, address stack and scroll to top when another symbol was selected
  */
 void ResultsDisassemblyPage::resetCallStack() {
     m_callStack.clear();
+    m_addressStack.clear();
+    ui->backButton->setEnabled(false);
+    if (model->rowCount() > 0) {
+        ui->asmView->setCurrentIndex(model->index(0, 0));
+    }
 }
 
 /**
  *  Auxilary method to extract relative address of selected 'call' instruction and it's name
  */
-void calcFunction(QString asmLineCall, QString *offset, QString *symName) {
-    QStringList sym = asmLineCall.trimmed().split(QLatin1Char('<'));
+void calcFunction(QStringList sym, QString *offset, QString *symName) {
     *offset = sym[0].trimmed();
     *symName = sym[1].replace(QLatin1Char('>'), QLatin1String(""));
+}
+
+/**
+ *  Find Data::Symbol corresponded to symbol from Assembly call instruction
+ * @param asmLine
+ * @return
+ */
+Data::Symbol ResultsDisassemblyPage::getCalleeSymbol(QString asmLine) {
+    if (asmLine.contains(opCodeCall)) {
+        QString offset, symName;
+        QString asmLineSimple = asmLine.simplified();
+
+        QString asmLineCall = asmLineSimple.section(opCodeCall, 1);
+        QStringList sym = asmLineCall.trimmed().split(QLatin1Char('<'));
+        if (sym.size() >= 2) {
+            calcFunction(sym, &offset, &symName);
+
+            QHash<Data::Symbol, Data::DisassemblyEntry>::iterator i = m_disasmResult.entries.begin();
+            while (i != m_disasmResult.entries.end()) {
+                QString relAddr = QString::number(i.key().relAddr, 16);
+                if (!i.key().mangled.isEmpty() &&
+                    (symName.contains(i.key().mangled) || symName.contains(i.key().symbol) ||
+                     i.key().mangled.contains(symName) || i.key().symbol.contains(symName)) &&
+                    ((relAddr == offset) ||
+                     (i.key().size == 0 && i.key().relAddr == 0))) {
+                    return i.key();
+                }
+                i++;
+            }
+        }
+    }
+    return {};
+}
+
+/**
+ *  Navigate to instruction by selected address inside Disassembly output
+ * @param index
+ * @param asmLine
+ */
+void ResultsDisassemblyPage::navigateToAddressInstruction(QModelIndex index, QString asmLine) {
+    QModelIndex selectedIndex = index;
+    bool isScrollTo = false;
+    QString addrRegExp = QLatin1String("[a-z0-9]+\\s*<");
+    QRegularExpression addrMatcher = QRegularExpression(addrRegExp);
+    QString address = QString();
+    QRegularExpressionMatchIterator matchIterator = addrMatcher.globalMatch(asmLine);
+    while (matchIterator.hasNext()) {
+        QRegularExpressionMatch match = matchIterator.next();
+        address = asmLine.mid(match.capturedStart(), match.capturedLength() - 1);
+        for (int i = 0; i < model->rowCount(); i++) {
+            QStandardItem *asmItem = model->item(i, 0);
+            if (asmItem->text().trimmed().startsWith(address.trimmed())) {
+                selectedIndex = model->index(i, 0);
+                isScrollTo = true;
+                m_addressStack.push(index.row());
+                ui->backButton->setEnabled(true);
+                break;
+            }
+        }
+    }    
+    ui->asmView->setCurrentIndex(selectedIndex);
+    if (isScrollTo)
+        ui->asmView->scrollTo(selectedIndex);
 }
 
 /**
@@ -475,38 +590,68 @@ void calcFunction(QString asmLineCall, QString *offset, QString *symName) {
  *  And we go back by double click on 'return'
  */
 void ResultsDisassemblyPage::jumpToAsmCallee(QModelIndex index) {
-    QStandardItem *asmItem = model->takeItem(index.row(), 0);
-    QString opCodeCall = m_arch.startsWith(QLatin1String("arm")) ? QLatin1String("bl") : QLatin1String("callq");
-    QString opCodeReturn = m_arch.startsWith(QLatin1String("arm")) ? QLatin1String("ret") : QLatin1String("retq");
+    QStandardItem *asmItem = model->item(index.row(), 0);
     QString asmLine = asmItem->text();
-    if (asmLine.contains(opCodeCall)) {
-        QString offset, symName;
-        QString asmLineSimple = asmLine.simplified();
+    if (m_callees.contains(index.row())) {
+        QMap<Data::Symbol, int> callee;
+        callee.insert(m_curSymbol, index.row());
+        m_callStack.push(callee);
+        setData(m_callees.value(index.row()));
+        resetDisassembly();
 
-        calcFunction(asmLineSimple.section(opCodeCall, 1), &offset, &symName);
+        m_addressStack.clear();
+        ui->asmView->scrollTo(model->index(0, 0));
+        ui->backButton->setEnabled(true);
+    } else if (asmLine.contains(opCodeReturn) && !m_callStack.isEmpty()) {
+        returnToCaller();
+    } else {
+        QList<QStandardItem *> rowItems = model->takeRow(index.row());
+        model->insertRow(index.row(), rowItems);
 
-        QHash<Data::Symbol, Data::DisassemblyEntry>::iterator i = m_disasmResult.entries.begin();
-        while (i != m_disasmResult.entries.end()) {
-            QString relAddr = QString::number(i.key().relAddr, 16);
-            if (!i.key().mangled.isEmpty() &&
-                (symName.contains(i.key().mangled) || symName.contains(i.key().symbol) ||
-                 i.key().mangled.contains(symName) || i.key().symbol.contains(symName)) &&
-                ((relAddr == offset) ||
-                 (i.key().size == 0 && i.key().relAddr == 0)))
-            {
-                m_callStack.push(m_curSymbol);
-                setData(i.key());
-                break;
-            }
-            i++;
-        }
+        navigateToAddressInstruction(index, asmLine);
     }
-    if (asmLine.contains(opCodeReturn)) {
-        if (!m_callStack.isEmpty()) {
-            setData(m_callStack.pop());
-        }
+}
+
+/**
+ *  Return to Jump from
+ */
+void ResultsDisassemblyPage::returnToJump() {
+    if (!m_addressStack.isEmpty()) {
+        int jumpRow = m_addressStack.pop();
+        QModelIndex jumpIndex = model->index(jumpRow, 0);
+        ui->asmView->setCurrentIndex(jumpIndex);
+        ui->asmView->scrollTo(jumpIndex);
     }
-    resetDisassembly();
+    blockBackButton();
+}
+
+/**
+ *  Return to Caller from Callee Disassembly
+ */
+void ResultsDisassemblyPage::returnToCaller() {
+    if (!m_callStack.isEmpty()) {
+        QMap<Data::Symbol, int> caller = m_callStack.pop();
+        Data::Symbol callerSymbol = caller.keys().at(0);
+        int callerIndex = caller.value(callerSymbol);
+        setData(callerSymbol);
+        resetDisassembly();
+        ui->asmView->setCurrentIndex(model->index(callerIndex, 0));
+        ui->asmView->scrollTo(model->index(callerIndex, 0));    
+
+        m_addressStack.clear();
+    }
+    blockBackButton();
+}
+
+/**
+ *  Back button click slot to Return to Jump or Return to Caller
+ */
+void ResultsDisassemblyPage::backButtonClicked() {
+    if (!m_addressStack.isEmpty()) {
+        returnToJump();
+    } else if (!m_callStack.isEmpty()) {
+        returnToCaller();
+    }
 }
 
 /**
@@ -538,4 +683,46 @@ void ResultsDisassemblyPage::setNoShowAddress(bool noShowAddress) {
  */
 void ResultsDisassemblyPage::setIntelSyntaxDisassembly(bool intelSyntax) {
     m_intelSyntaxDisassembly = intelSyntax;
+}
+
+/**
+ *  Setup context menu and connect signals with slots for selected part of Disassembly view copying
+ * @param view
+ */
+void ResultsDisassemblyPage::setupDisassemblyContextMenu(QTreeView *view, int origFontSize) {
+    view->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    auto shortcut = new QShortcut(QKeySequence(QLatin1String("Ctrl+C")), view);
+    QObject::connect(shortcut, &QShortcut::activated, [view]() {
+        ResultsUtil::copySelectedDisassembly(view);
+    });
+
+    QObject::connect(view, &QTreeView::customContextMenuRequested, view, [view, origFontSize, this]() {
+        QMenu contextMenu;
+        auto *copyAction = contextMenu.addAction(QLatin1String("Copy"));
+        auto *exportToCSVAction = contextMenu.addAction(QLatin1String("Export to CSV..."));
+        auto *zoomInAction = contextMenu.addAction(QLatin1String("Zoom In"));
+        auto *zoomOutAction = contextMenu.addAction(QLatin1String("Zoom Out"));
+
+        QObject::connect(copyAction, &QAction::triggered, &contextMenu, [view]() {
+            ResultsUtil::copySelectedDisassembly(view);
+        });
+        QObject::connect(exportToCSVAction, &QAction::triggered, &contextMenu, [view]() {
+            ResultsUtil::exportToCSVDisassembly(view);
+        });
+        QObject::connect(zoomInAction, &QAction::triggered, &contextMenu, [view, origFontSize]() {
+            ResultsUtil::zoomFont(view, origFontSize, 4);
+        });
+        QObject::connect(zoomOutAction, &QAction::triggered, &contextMenu, [view, origFontSize]() {
+            ResultsUtil::zoomFont(view, origFontSize, -4);
+        });
+
+        if (!m_callStack.isEmpty()) {
+            auto *returnToCallerAction = contextMenu.addAction(QLatin1String("Return to Caller"));
+            QObject::connect(returnToCallerAction, &QAction::triggered, &contextMenu, [this]() {
+                this->returnToCaller();
+            });
+        }
+        contextMenu.exec(QCursor::pos());
+    });
 }

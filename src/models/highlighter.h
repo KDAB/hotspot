@@ -14,7 +14,7 @@ class Highlighter : public QSyntaxHighlighter {
 Q_OBJECT
 
 public:
-    Highlighter(QTextDocument *parent = 0);
+    Highlighter(QTextDocument *parent = nullptr);
 
     void setArch(QString arch) {
         m_arch = arch;
@@ -48,6 +48,14 @@ public:
         return m_diagnosticStyle;
     }
 
+    bool getCallee() {
+        return m_callee;
+    }
+
+    void setCallee(bool callee) {
+        m_callee = callee;
+    }
+
 protected:
     void highlightBlock(const QString &text) override;
 
@@ -73,6 +81,7 @@ private:
     QString m_searchText;
     QBrush m_highlightColor;
     bool m_diagnosticStyle;
+    bool m_callee;
 };
 
 #endif
