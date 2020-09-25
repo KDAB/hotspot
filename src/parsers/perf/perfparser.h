@@ -33,6 +33,8 @@
 
 #include <models/data.h>
 
+class QUrl;
+
 // TODO: create a parser interface
 class PerfParser : public QObject
 {
@@ -48,6 +50,8 @@ public:
 
     void stop();
 
+    void exportResults(const QUrl& url);
+
 signals:
     void parsingStarted();
     void summaryDataAvailable(const Data::Summary& data);
@@ -60,8 +64,12 @@ signals:
     void progress(float progress);
     void stopRequested();
 
+    void exportFailed(const QString& errorMessage);
+    void exportFinished(const QUrl& url);
+
 private:
     // only set once after the initial startParseFile finished
+    QStringList m_parserArgs;
     Data::BottomUpResults m_bottomUpResults;
     Data::CallerCalleeResults m_callerCalleeResults;
     Data::EventResults m_events;

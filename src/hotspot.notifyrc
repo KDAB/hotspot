@@ -1,0 +1,11 @@
+[Global]
+IconName=hotspot
+Name=Hotspot
+Comment=Linux perf GUI for performance analysis
+DesktopEntry=com.kdab.Hotspot
+
+[Event/fileSaved]
+Name=File Saved
+Comment=The processed data has been saved
+Action=Popup
+Urgency=Low

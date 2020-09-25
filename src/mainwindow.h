@@ -66,6 +66,7 @@ public slots:
     void openFile(const QString& path);
     void openFile(const QUrl& url);
     void reload();
+    void saveAs();
 
     void onOpenFileButtonClicked();
     void onRecordButtonClicked();
@@ -109,4 +110,5 @@ private:
     QString m_arch;
     KRecentFilesAction* m_recentFilesAction = nullptr;
     QAction* m_reloadAction = nullptr;
+    QAction* m_exportAction = nullptr;
 };

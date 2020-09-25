@@ -81,6 +81,7 @@ target_link_libraries(hotspot
     KF5::KIONTLM
     KF5::Solid
     KF5::WindowSystem
+    KF5::Notifications
     models
     PrefixTickLabels
 )
@@ -91,3 +92,4 @@ set_target_properties(hotspot
 )
 
 install(TARGETS hotspot RUNTIME DESTINATION ${KDE_INSTALL_BINDIR})
+install(FILES hotspot.notifyrc DESTINATION ${KDE_INSTALL_KNOTIFY5RCDIR})

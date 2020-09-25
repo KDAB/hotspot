@@ -65,6 +65,7 @@ if(Qt5_FOUND AND ECM_FOUND)
         KIO
         Solid
         WindowSystem
+        Notifications
         REQUIRED
     )
 endif()

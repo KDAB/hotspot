@@ -34,6 +34,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QProcessEnvironment>
+#include <QStandardPaths>
 
 #include <initializer_list>
 
@@ -51,6 +52,17 @@ QString Util::findLibexecBinary(const QString& name)
         return {};
     }
     return info.absoluteFilePath();
+}
+
+QString Util::perfParserBinaryPath()
+{
+    auto parserBinary = QString::fromLocal8Bit(qgetenv("HOTSPOT_PERFPARSER"));
+    if (parserBinary.isEmpty()) {
+        parserBinary = Util::findLibexecBinary(QStringLiteral("hotspot-perfparser"));
+    } else {
+        parserBinary = QStandardPaths::findExecutable(parserBinary);
+    }
+    return parserBinary;
 }
 
 QString Util::formatString(const QString& input, bool replaceEmptyString)

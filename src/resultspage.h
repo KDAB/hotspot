@@ -69,7 +69,7 @@ public slots:
     void onJumpToCallerCallee(const Data::Symbol& symbol);
     void onOpenEditor(const Data::Symbol& symbol);
     void setTimelineVisible(bool visible);
-    void navigateToCodeFailed(const QString& message);
+    void showError(const QString& message);
 
 signals:
     void navigateToCode(const QString& url, int lineNumber, int columnNumber);

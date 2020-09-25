@@ -46,9 +46,10 @@
 #include <QWidgetAction>
 
 #include <KConfigGroup>
+#include <KNotification>
 #include <KRecentFilesAction>
-#include <KStandardAction>
 #include <KShell>
+#include <KStandardAction>
 
 #include "aboutdialog.h"
 
@@ -132,7 +133,19 @@ MainWindow::MainWindow(QWidget* parent)
     connect(m_recordPage, &RecordPage::openFile, this,
             static_cast<void (MainWindow::*)(const QString&)>(&MainWindow::openFile));
 
-    connect(m_parser, &PerfParser::parsingFinished, this, [this]() { m_pageStack->setCurrentWidget(m_resultsPage); });
+    connect(m_parser, &PerfParser::parsingFinished, this, [this]() {
+        m_reloadAction->setEnabled(true);
+        m_exportAction->setEnabled(true);
+        m_pageStack->setCurrentWidget(m_resultsPage);
+    });
+    connect(m_parser, &PerfParser::exportFinished, this, [this](const QUrl& url) {
+        m_exportAction->setEnabled(true);
+
+        auto* notification = new KNotification(QStringLiteral("fileSaved"), this);
+        notification->setUrls({url});
+        notification->setText(tr("Processed data saved"));
+        notification->sendEvent();
+    });
     connect(m_parser, &PerfParser::parsingFailed, this,
             [this](const QString& errorMessage) { emit openFileError(errorMessage); });
 
@@ -151,6 +164,8 @@ MainWindow::MainWindow(QWidget* parent)
     m_reloadAction = KStandardAction::redisplay(this, SLOT(reload()), this);
     m_reloadAction->setText(tr("Reload"));
     ui->fileMenu->addAction(m_reloadAction);
+    m_exportAction = KStandardAction::saveAs(this, SLOT(saveAs()), this);
+    ui->fileMenu->addAction(m_exportAction);
     ui->fileMenu->addAction(KStandardAction::close(this, SLOT(clear()), this));
     ui->fileMenu->addAction(KStandardAction::quit(this, SLOT(close()), this));
     connect(ui->actionAbout_Qt, &QAction::triggered, qApp, &QApplication::aboutQt);
@@ -281,6 +296,7 @@ void MainWindow::clear(bool isReload)
     }
     m_resultsPage->clear();
     m_reloadAction->setEnabled(false);
+    m_exportAction->setEnabled(false);
 }
 
 void MainWindow::clear()
@@ -300,8 +316,8 @@ void MainWindow::openFile(const QString& path, bool isReload)
 
     // TODO: support input files of different types via plugins
     m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths, m_extraLibPaths, m_appPath, m_arch);
-    m_reloadAction->setEnabled(true);
     m_reloadAction->setData(path);
+    m_exportAction->setData(QUrl::fromLocalFile(file.absoluteFilePath() + QLatin1String(".perfparser")));
 
     m_recentFilesAction->addUrl(QUrl::fromLocalFile(file.absoluteFilePath()));
     m_recentFilesAction->saveEntries(m_config->group("RecentFiles"));
@@ -325,6 +341,16 @@ void MainWindow::openFile(const QUrl& url)
 void MainWindow::reload()
 {
     openFile(m_reloadAction->data().toString(), true);
+}
+
+void MainWindow::saveAs()
+{
+    const auto url = QFileDialog::getSaveFileUrl(this, tr("Save Processed Data"), m_exportAction->data().toUrl(),
+                                                 tr("PerfParser (*.perfparser)"));
+    if (!url.isValid())
+        return;
+    m_exportAction->setEnabled(false);
+    m_parser->exportResults(url);
 }
 
 void MainWindow::aboutKDAB()
@@ -504,7 +530,7 @@ void MainWindow::navigateToCode(const QString& filePath, int lineNumber, int col
         KShell::Errors errors = KShell::NoError;
         auto args = KShell::splitArgs(command, KShell::TildeExpand | KShell::AbortOnMeta, &errors);
         if (errors || args.isEmpty()) {
-            m_resultsPage->navigateToCodeFailed(tr("Failed to parse command: %1").arg(command));
+            m_resultsPage->showError(tr("Failed to parse command: %1").arg(command));
             return;
         }
         command = args.takeFirst();
@@ -515,7 +541,7 @@ void MainWindow::navigateToCode(const QString& filePath, int lineNumber, int col
         }
 
         if (!QProcess::startDetached(command, args)) {
-            m_resultsPage->navigateToCodeFailed(tr("Failed to launch command: %1 %2").arg(command, args.join(QLatin1Char(' '))));
+            m_resultsPage->showError(tr("Failed to launch command: %1 %2").arg(command, args.join(QLatin1Char(' '))));
         }
     } else {
         QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));

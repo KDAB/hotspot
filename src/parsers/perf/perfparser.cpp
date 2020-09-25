@@ -34,10 +34,16 @@
 #include <QFileInfo>
 #include <QLoggingCategory>
 #include <QProcess>
+#include <QTemporaryFile>
+#include <QTimer>
+#include <QUrl>
 #include <QtEndian>
+
+#include <KIO/FileCopyJob>
 
 #include <ThreadWeaver/ThreadWeaver>
 
+#include <hotspot-config.h>
 #include <util.h>
 
 #include <functional>
@@ -1293,10 +1299,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
         return;
     }
 
-    auto parserBinary = QString::fromLocal8Bit(qgetenv("HOTSPOT_PERFPARSER"));
-    if (parserBinary.isEmpty()) {
-        parserBinary = Util::findLibexecBinary(QStringLiteral("hotspot-perfparser"));
-    }
+    auto parserBinary = Util::perfParserBinaryPath();
     if (parserBinary.isEmpty()) {
         emit parsingFailed(tr("Failed to find hotspot-perfparser binary."));
         return;
@@ -1323,6 +1326,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
     }
 
     // reset the data to ensure filtering will pick up the new data
+    m_parserArgs = parserArgs;
     m_bottomUpResults = {};
     m_callerCalleeResults = {};
     m_events = {};
@@ -1576,6 +1580,58 @@ void PerfParser::stop()
 {
     m_stopRequested = true;
     emit stopRequested();
+}
+
+void PerfParser::exportResults(const QUrl& url)
+{
+    Q_ASSERT(!m_parserArgs.isEmpty());
+
+    using namespace ThreadWeaver;
+    stream() << make_job([this, url]() {
+        QProcess perfParser;
+        QSharedPointer<QTemporaryFile> tmpFile;
+
+        const auto writeDirectly = url.isLocalFile();
+
+        if (writeDirectly) {
+            perfParser.setStandardOutputFile(url.toLocalFile());
+        } else {
+            tmpFile = QSharedPointer<QTemporaryFile>::create();
+            if (!tmpFile->open()) {
+                emit exportFailed(
+                    tr("File export failed: Failed to create temporary file %1.").arg(tmpFile->errorString()));
+                return;
+            }
+            tmpFile->close();
+            perfParser.setStandardOutputFile(tmpFile->fileName());
+        }
+
+        perfParser.setStandardErrorFile(QProcess::nullDevice());
+        perfParser.start(Util::perfParserBinaryPath(), m_parserArgs);
+        if (!perfParser.waitForFinished(-1)) {
+            emit exportFailed(tr("File export failed: %1").arg(perfParser.errorString()));
+            return;
+        }
+
+        if (writeDirectly) {
+            emit exportFinished(url);
+            return;
+        }
+
+        // KIO has to be run from the main thread again
+        QTimer::singleShot(0, this, [this, url, tmpFile]() {
+            auto* job = KIO::file_move(QUrl::fromLocalFile(tmpFile->fileName()), url, -1, KIO::Overwrite);
+            connect(job, &KIO::FileCopyJob::result, this, [this, url, job, tmpFile]() {
+                if (job->error())
+                    emit exportFailed(tr("File export failed: %1").arg(job->errorString()));
+                else
+                    emit exportFinished(url);
+                // we need to keep the file alive until the copy job has finished
+                Q_UNUSED(tmpFile);
+            });
+            job->start();
+        });
+    });
 }
 
 #include "perfparser.moc"

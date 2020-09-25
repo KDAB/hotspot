@@ -174,10 +174,10 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
             ui->lostMessage->hide();
         }
     });
+    connect(parser, &PerfParser::exportFailed, this, &ResultsPage::showError);
 
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode, this, &ResultsPage::navigateToCode);
-    connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCodeFailed, this,
-            &ResultsPage::navigateToCodeFailed);
+    connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCodeFailed, this, &ResultsPage::showError);
 
     connect(m_resultsSummaryPage, &ResultsSummaryPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
     connect(m_resultsSummaryPage, &ResultsSummaryPage::openEditor, this, &ResultsPage::onOpenEditor);
@@ -279,7 +279,7 @@ void ResultsPage::setTimelineVisible(bool visible)
     ui->timeLineArea->setVisible(visible && ui->resultsTabWidget->currentIndex() != SUMMARY_TABINDEX);
 }
 
-void ResultsPage::navigateToCodeFailed(const QString& message)
+void ResultsPage::showError(const QString& message)
 {
     ui->errorWidget->setText(message);
     ui->errorWidget->animatedShow();

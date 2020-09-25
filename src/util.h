@@ -48,6 +48,11 @@ namespace Util {
  */
 QString findLibexecBinary(const QString& name);
 
+/**
+ * Find the perfparser binary and return its path.
+ */
+QString perfParserBinaryPath();
+
 // HashCombine was taken from Qt's file qhashfunctions.h
 struct HashCombine
 {
