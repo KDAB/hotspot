@@ -205,3 +205,9 @@ int TopDownModel::numColumns() const
 {
     return NUM_BASE_COLUMNS + m_results.selfCosts.numTypes() + m_results.inclusiveCosts.numTypes();
 }
+
+int TopDownModel::selfCostColumn(int cost) const
+{
+    Q_ASSERT(cost >= 0 && cost < m_results.selfCosts.numTypes());
+    return NUM_BASE_COLUMNS + m_results.inclusiveCosts.numTypes() + cost;
+}

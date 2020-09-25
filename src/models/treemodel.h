@@ -322,4 +322,5 @@ public:
     QVariant headerColumnData(int column, int role) const final override;
     QVariant rowData(const Data::TopDown* row, int column, int role) const final override;
     int numColumns() const final override;
+    int selfCostColumn(int cost) const;
 };

@@ -51,6 +51,19 @@ ResultsTopDownPage::ResultsTopDownPage(FilterAndZoomStack* filterStack, PerfPars
                 ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->topDownTreeView, TopDownModel::NUM_BASE_COLUMNS);
                 ResultsUtil::hideEmptyColumns(data.selfCosts, ui->topDownTreeView,
                                               TopDownModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes());
+
+                // hide self cost columns for sched:sched_switch and off-CPU
+                // quasi all rows will have a cost of 0%, and only the leaves will show
+                // a non-zero value that is equal to the inclusive cost then
+                const auto costs = data.inclusiveCosts.numTypes();
+                const auto schedSwitchName = QLatin1String("sched:sched_switch");
+                const auto offCpuName = PerfParser::tr("off-CPU Time");
+                for (int i = 0; i < costs; ++i) {
+                    const auto typeName = data.inclusiveCosts.typeName(i);
+                    if (typeName == schedSwitchName || typeName == offCpuName) {
+                        ui->topDownTreeView->hideColumn(topDownCostModel->selfCostColumn(i));
+                    }
+                }
             });
 }
 
