@@ -671,6 +671,7 @@ struct Summary
     quint32 processCount = 0;
     QString command;
     quint64 lostChunks = 0;
+    quint64 lostEvents = 0;
     QString hostName;
     QString linuxKernelVersion;
     QString perfVersion;

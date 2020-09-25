@@ -1118,6 +1118,7 @@ public:
     void addLost(const LostDefinition& lost)
     {
         ++summaryResult.lostChunks;
+        summaryResult.lostEvents += lost.lost;
 
         auto* thread = eventResult.findThread(lost.pid, lost.tid);
         if (!thread) {

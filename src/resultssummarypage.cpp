@@ -131,7 +131,9 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
                     stream << formatSummaryText(indent + tr("<b>WARNING</b>"), tr("Sampling frequency below 100Hz"));
                 }
             }
-            stream << formatSummaryText(tr("Lost Chunks"), QString::number(data.lostChunks)) << "</table></qt>";
+            stream << formatSummaryText(tr("Lost Events"), QString::number(data.lostEvents));
+            stream << formatSummaryText(tr("Lost Chunks"), QString::number(data.lostChunks));
+            stream << "</table></qt>";
         }
         ui->summaryLabel->setText(summaryText);
 
@@ -158,8 +160,10 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
         ui->systemInfoLabel->setText(systemInfoText);
 
         if (data.lostChunks > 0) {
-            ui->lostMessage->setText(i18np("Lost one chunk - Check IO/CPU overload!",
-                                           "Lost %1 chunks - Check IO/CPU overload!", data.lostChunks));
+            //: %1: Lost 1 event(s). %2: Lost 1 chunk(s).
+            ui->lostMessage->setText(tr("%1 %2 - Check IO/CPU overload!")
+                .arg(i18np("Lost 1 event.", "Lost %1 events.", data.lostEvents),
+                     i18np("Lost 1 chunk.", "Lost %1 chunks.", data.lostChunks)));
             ui->lostMessage->setVisible(true);
         } else {
             ui->lostMessage->setVisible(false);
