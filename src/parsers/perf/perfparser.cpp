@@ -332,16 +332,19 @@ QDebug operator<<(QDebug stream, const StringDefinition& stringDefinition)
 
 struct LostDefinition : Record
 {
+    quint64 lost;
 };
 
 QDataStream& operator>>(QDataStream& stream, LostDefinition& lostDefinition)
 {
-    return stream >> static_cast<Record&>(lostDefinition);
+    return stream >> static_cast<Record&>(lostDefinition) >> lostDefinition.lost;
 }
 
 QDebug operator<<(QDebug stream, const LostDefinition& lostDefinition)
 {
-    stream.noquote().nospace() << "LostDefinition{" << static_cast<const Record&>(lostDefinition) << "}";
+    stream.noquote().nospace() << "LostDefinition{"
+                               << static_cast<const Record&>(lostDefinition)
+                               << "lost=" << lostDefinition.lost << "}";
     return stream;
 }
 
@@ -1112,9 +1115,28 @@ public:
         thread->state = contextSwitch.switchOut ? Data::ThreadEvents::OffCpu : Data::ThreadEvents::OnCpu;
     }
 
-    void addLost(const LostDefinition& /*lost*/)
+    void addLost(const LostDefinition& lost)
     {
         ++summaryResult.lostChunks;
+
+        auto* thread = eventResult.findThread(lost.pid, lost.tid);
+        if (!thread) {
+            return;
+        }
+
+        if (eventResult.lostEventCostId == -1) {
+            eventResult.lostEventCostId = addCostType(PerfParser::tr("Lost Event"), Data::Costs::Unit::Unknown);
+        }
+
+        Data::Event event;
+        event.time = lost.time;
+        event.cost = lost.lost;
+        event.type = eventResult.lostEventCostId;
+        event.cpuId = lost.cpu;
+        thread->events.push_back(event);
+        // the lost event never has a valid cpu set, add to all CPUs
+        for (auto &cpu : eventResult.cpus)
+            cpu.events.push_back(event);
     }
 
     void setFeatures(const FeaturesDefinition& features)
@@ -1494,7 +1516,11 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                 // add event data to cpus, bottom up and caller callee sets
                 for (const auto& event : thread.events) {
                     // only add non-time events to the cpu line, context switches shouldn't show up there
-                    if (event.type != events.offCpuTimeCostId) {
+                    if (event.type == events.lostEventCostId) {
+                        // the lost event never has a valid cpu set, add to all CPUs
+                        for (auto &cpu : events.cpus)
+                            cpu.events.push_back(event);
+                    } else if (event.type != events.offCpuTimeCostId) {
                         events.cpus[event.cpuId].events.push_back(event);
                     }
 

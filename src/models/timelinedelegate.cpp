@@ -121,7 +121,9 @@ TimeLineDelegate::~TimeLineDelegate() = default;
 void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const auto data = dataFromIndex(index, option.rect, m_filterAndZoomStack->zoom());
-    const auto offCpuCostId = index.data(EventModel::EventResultsRole).value<Data::EventResults>().offCpuTimeCostId;
+    const auto results = index.data(EventModel::EventResultsRole).value<Data::EventResults>();
+    const auto offCpuCostId = results.offCpuTimeCostId;
+    const auto lostEventCostId = results.lostEventCostId;
     const bool is_alternate = option.features & QStyleOptionViewItem::Alternate;
     const auto& palette = option.palette;
 
@@ -156,12 +158,10 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         painter->drawRect(threadTimeRect.adjusted(-1, -1, 0, 0));
 
         // visualize all events
-        QPen pen(scheme.foreground(KColorScheme::NeutralText), 1);
-        painter->setPen(pen);
         painter->setBrush({});
-        auto offCpuColor = scheme.background(KColorScheme::NegativeBackground).color();
 
         if (offCpuCostId != -1) {
+            const auto offCpuColor = scheme.background(KColorScheme::NegativeBackground).color();
             for (const auto& event : data.events) {
                 if (event.type != offCpuCostId) {
                     continue;
@@ -173,6 +173,10 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
             }
         }
 
+        QPen eventPen(scheme.foreground(KColorScheme::NeutralText), 1);
+        painter->setPen(eventPen);
+        QPen lostEventPen(scheme.foreground(KColorScheme::NegativeText), 1);
+
         int last_x = -1;
         // TODO: accumulate cost for events that fall to the same pixel somehow
         // but how to then sync the y scale across different delegates?
@@ -182,7 +186,8 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         // from a graph in count mode (perf record -F vs. perf record -c)
         // see also: https://www.spinics.net/lists/linux-perf-users/msg03486.html
         for (const auto& event : data.events) {
-            if (event.type != m_eventType) {
+            const auto isLostEvent = event.type == lostEventCostId;
+            if (event.type != m_eventType && !isLostEvent) {
                 continue;
             }
 
@@ -192,8 +197,15 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
             }
 
             // only draw a line when it changes anything visually
-            if (x != last_x) {
+            // but always force drawing of lost events
+            if (x != last_x || isLostEvent) {
+                if (isLostEvent)
+                    painter->setPen(lostEventPen);
+
                 painter->drawLine(x, 0, x, data.h);
+
+                if (isLostEvent)
+                    painter->setPen(eventPen);
             }
 
             last_x = x;
@@ -227,12 +239,15 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, con
         const auto mappedX = localX - option.rect.x() - data.padding;
         const auto time = data.mapXToTime(mappedX);
         const auto start = findEvent(data.events.constBegin(), data.events.constEnd(), time);
+        const auto results =  index.data(EventModel::EventResultsRole).value<Data::EventResults>();
         // find the maximum sample cost in the range spanned by one pixel
         struct FoundSamples
         {
             uint numSamples = 0;
+            uint numLost = 0;
             quint64 maxCost = 0;
             quint64 totalCost = 0;
+            quint64 totalLost = 0;
             int type = -1;
         };
         auto findSamples = [&](int costType, bool contains) -> FoundSamples {
@@ -247,7 +262,8 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, con
                 }
             }
             while (it != data.events.constEnd()) {
-                if (it->type != costType) {
+                const auto isLost = it->type == results.lostEventCostId;
+                if (it->type != costType && !isLost) {
                     ++it;
                     continue;
                 }
@@ -261,23 +277,32 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, con
                     continue;
                 }
                 Q_ASSERT(contains || mappedX == timeX);
-                ++ret.numSamples;
-                ret.maxCost = std::max(ret.maxCost, it->cost);
-                ret.totalCost += it->cost;
+                if (isLost) {
+                    ++ret.numLost;
+                    ret.totalLost += it->cost;
+                } else {
+                    ++ret.numSamples;
+                    ret.maxCost = std::max(ret.maxCost, it->cost);
+                    ret.totalCost += it->cost;
+                }
                 ++it;
             }
             return ret;
         };
         auto found = findSamples(m_eventType, false);
-        const auto offCpuCostId = index.data(EventModel::EventResultsRole).value<Data::EventResults>().offCpuTimeCostId;
-        if (offCpuCostId != -1 && !found.numSamples) {
+        if (results.offCpuTimeCostId != -1 && !found.numSamples && !found.numLost) {
             // check whether we are hovering an off-CPU area
-            found = findSamples(offCpuCostId, true);
+            found = findSamples(results.offCpuTimeCostId, true);
         }
 
         const auto formattedTime = Util::formatTimeString(time - data.time.start);
         const auto totalCosts = index.data(EventModel::TotalCostsRole).value<QVector<Data::CostSummary>>();
-        if (found.numSamples > 0 && found.type == offCpuCostId) {
+        if (found.numLost > 0) {
+            QToolTip::showText(event->globalPos(),
+                               tr("time: %1\nlost chunks: %2\nlost events: %3")
+                                   .arg(formattedTime, QString::number(found.numLost),
+                                        QString::number(found.totalLost)));
+        } else if (found.numSamples > 0 && found.type == results.offCpuTimeCostId) {
             QToolTip::showText(event->globalPos(),
                                tr("time: %1\nsched switches: %2\ntotal off-CPU time: %3\nlongest sched switch: %4")
                                    .arg(formattedTime, QString::number(found.numSamples),

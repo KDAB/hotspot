@@ -700,6 +700,7 @@ struct EventResults
     QVector<QVector<qint32>> stacks;
     QVector<CostSummary> totalCosts;
     qint32 offCpuTimeCostId = -1;
+    qint32 lostEventCostId = -1;
 
     ThreadEvents* findThread(qint32 pid, qint32 tid);
     const ThreadEvents* findThread(qint32 pid, qint32 tid) const;
