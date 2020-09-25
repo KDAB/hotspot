@@ -29,22 +29,12 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>-176</y>
-        <width>284</width>
-        <height>699</height>
+        <y>0</y>
+        <width>283</width>
+        <height>691</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_11">
-       <item>
-        <widget class="KMessageWidget" name="lostMessage">
-         <property name="toolTip">
-          <string>Too much data was generated during the profile and some events got lost. Try to reduce the event load or increase the memory caches.</string>
-         </property>
-         <property name="text">
-          <string notr="true">Lost messages</string>
-         </property>
-        </widget>
-       </item>
        <item>
         <widget class="QGroupBox" name="parserErrorsBox">
          <property name="toolTip">
@@ -222,14 +212,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>KMessageWidget</class>
-   <extends>QFrame</extends>
-   <header>kmessagewidget.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

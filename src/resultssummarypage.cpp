@@ -51,7 +51,6 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
 {
     ui->setupUi(this);
 
-    ui->lostMessage->setVisible(false);
     ui->parserErrorsBox->setVisible(false);
 
     auto bottomUpCostModel = new BottomUpModel(this);
@@ -158,16 +157,6 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
         }
         ui->systemInfoGroupBox->setVisible(!systemInfoText.isEmpty());
         ui->systemInfoLabel->setText(systemInfoText);
-
-        if (data.lostChunks > 0) {
-            //: %1: Lost 1 event(s). %2: Lost 1 chunk(s).
-            ui->lostMessage->setText(tr("%1 %2 - Check IO/CPU overload!")
-                .arg(i18np("Lost 1 event.", "Lost %1 events.", data.lostEvents),
-                     i18np("Lost 1 chunk.", "Lost %1 chunks.", data.lostChunks)));
-            ui->lostMessage->setVisible(true);
-        } else {
-            ui->lostMessage->setVisible(false);
-        }
 
         if (data.errors.isEmpty()) {
             ui->parserErrorsBox->setVisible(false);

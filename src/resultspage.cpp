@@ -83,6 +83,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     ui->setupUi(this);
 
     ui->errorWidget->hide();
+    ui->lostMessage->hide();
 
     ui->resultsTabWidget->setFocus();
     ui->resultsTabWidget->addTab(m_resultsSummaryPage, tr("Summary"));
@@ -161,6 +162,17 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
         // re-enable when we finished filtering
         ui->timeLineArea->setEnabled(true);
         m_filterBusyIndicator->setVisible(false);
+    });
+    connect(parser, &PerfParser::summaryDataAvailable, this, [this](const Data::Summary& data) {
+        if (data.lostChunks > 0) {
+            //: %1: Lost 1 event(s). %2: Lost 1 chunk(s).
+            ui->lostMessage->setText(tr("%1 %2 - Check IO/CPU overload!")
+                .arg(i18np("Lost 1 event.", "Lost %1 events.", data.lostEvents),
+                     i18np("Lost 1 chunk.", "Lost %1 chunks.", data.lostChunks)));
+            ui->lostMessage->show();
+        } else {
+            ui->lostMessage->hide();
+        }
     });
 
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode, this, &ResultsPage::navigateToCode);

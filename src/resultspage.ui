@@ -47,6 +47,9 @@
         </widget>
        </item>
        <item>
+        <widget class="KMessageWidget" name="lostMessage"/>
+       </item>
+       <item>
         <widget class="QTabWidget" name="resultsTabWidget">
          <property name="currentIndex">
           <number>-1</number>
