@@ -563,12 +563,20 @@ public:
         buffer.buffer().reserve(1024);
         buffer.open(QIODevice::ReadOnly);
         stream.setDevice(&buffer);
-        process.setProcessEnvironment(Util::appImageEnvironment());
-        process.setProcessChannelMode(QProcess::ForwardedErrorChannel);
 
         if (qEnvironmentVariableIntValue("HOTSPOT_GENERATE_SCRIPT_OUTPUT")) {
             perfScriptOutput.reset(new QTextStream(stdout));
         }
+    }
+
+    void setInput(QIODevice* input)
+    {
+        this->input = input;
+        connect(input, &QProcess::readyRead, this, [this] {
+            while (tryParse()) {
+                // just call tryParse until it fails
+            }
+        });
     }
 
     bool tryParse()
@@ -576,13 +584,13 @@ public:
         if (stopRequested) {
             return false;
         }
-        const auto bytesAvailable = process.bytesAvailable();
+        const auto bytesAvailable = input->bytesAvailable();
         switch (state) {
         case HEADER: {
             const auto magic = QByteArrayLiteral("QPERFSTREAM");
             // + 1 to include the trailing \0
             if (bytesAvailable >= magic.size() + 1) {
-                process.read(buffer.buffer().data(), magic.size() + 1);
+                input->read(buffer.buffer().data(), magic.size() + 1);
                 if (buffer.buffer().data() != magic) {
                     state = PARSE_ERROR;
                     qCWarning(LOG_PERFPARSER) << "Failed to read header magic";
@@ -597,7 +605,7 @@ public:
         case DATA_STREAM_VERSION: {
             qint32 dataStreamVersion = 0;
             if (bytesAvailable >= static_cast<qint64>(sizeof(dataStreamVersion))) {
-                process.read(buffer.buffer().data(), sizeof(dataStreamVersion));
+                input->read(buffer.buffer().data(), sizeof(dataStreamVersion));
                 dataStreamVersion = qFromLittleEndian(*reinterpret_cast<qint32*>(buffer.buffer().data()));
                 stream.setVersion(dataStreamVersion);
                 qCDebug(LOG_PERFPARSER) << "data stream version is:" << dataStreamVersion;
@@ -608,7 +616,7 @@ public:
         }
         case EVENT_HEADER:
             if (bytesAvailable >= static_cast<qint64>(sizeof(eventSize))) {
-                process.read(buffer.buffer().data(), sizeof(eventSize));
+                input->read(buffer.buffer().data(), sizeof(eventSize));
                 eventSize = qFromLittleEndian(*reinterpret_cast<quint32*>(buffer.buffer().data()));
                 qCDebug(LOG_PERFPARSER) << "next event size is:" << eventSize;
                 state = EVENT;
@@ -618,7 +626,7 @@ public:
         case EVENT:
             if (bytesAvailable >= static_cast<qint64>(eventSize)) {
                 buffer.buffer().resize(eventSize);
-                process.read(buffer.buffer().data(), eventSize);
+                input->read(buffer.buffer().data(), eventSize);
                 if (!parseEvent()) {
                     state = PARSE_ERROR;
                     return false;
@@ -1217,7 +1225,7 @@ public:
     QDataStream stream;
     QVector<AttributesDefinition> attributes;
     QVector<QString> strings;
-    QProcess process;
+    QIODevice* input = nullptr;
     Data::Summary summaryResult;
     Data::TimeRange applicationTime;
     QSet<quint32> uniqueThreads;
@@ -1241,7 +1249,6 @@ public slots:
     void stop()
     {
         stopRequested = true;
-        process.kill();
     }
 
 signals:
@@ -1333,19 +1340,47 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
 
     emit parsingStarted();
     using namespace ThreadWeaver;
-    stream() << make_job([parserBinary, parserArgs, this]() {
+    stream() << make_job([path, parserBinary, parserArgs, this]() {
         PerfParserPrivate d;
         connect(&d, &PerfParserPrivate::progress, this, &PerfParser::progress);
         connect(this, &PerfParser::stopRequested, &d, &PerfParserPrivate::stop);
 
-        connect(&d.process, &QProcess::readyRead, &d.process, [&d] {
-            while (d.tryParse()) {
-                // just call tryParse until it fails
-            }
-        });
+        auto finalize = [&d, this]() {
+            d.finalize();
+            emit bottomUpDataAvailable(d.bottomUpResult);
+            emit topDownDataAvailable(d.topDownResult);
+            emit summaryDataAvailable(d.summaryResult);
+            emit callerCalleeDataAvailable(d.callerCalleeResult);
+            emit eventsAvailable(d.eventResult);
+            emit parsingFinished();
+        };
 
-        connect(&d.process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), &d.process,
-                [&d, this](int exitCode, QProcess::ExitStatus exitStatus) {
+        if (path.endsWith(QLatin1String(".perfparser"))) {
+            QFile file(path);
+            if (!file.open(QIODevice::ReadOnly)) {
+                emit parsingFailed(tr("Failed to open file %1: %2").arg(path, file.errorString()));
+                return;
+            }
+            d.setInput(&file);
+            while (!file.atEnd() && !d.stopRequested) {
+                if (!d.tryParse()) {
+                    emit parsingFailed(tr("Failed to parse file"));
+                    return;
+                }
+            }
+            finalize();
+            return;
+        }
+
+        QProcess process;
+        process.setProcessEnvironment(Util::appImageEnvironment());
+        process.setProcessChannelMode(QProcess::ForwardedErrorChannel);
+        connect(this, &PerfParser::stopRequested, &process, &QProcess::kill);
+
+        d.setInput(&process);
+
+        connect(&process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), &process,
+                [finalize, this](int exitCode, QProcess::ExitStatus exitStatus) {
                     if (m_stopRequested) {
                         emit parsingFailed(tr("Parsing stopped."));
                         return;
@@ -1365,13 +1400,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
                     };
                     switch (exitCode) {
                     case NoError:
-                        d.finalize();
-                        emit bottomUpDataAvailable(d.bottomUpResult);
-                        emit topDownDataAvailable(d.topDownResult);
-                        emit summaryDataAvailable(d.summaryResult);
-                        emit callerCalleeDataAvailable(d.callerCalleeResult);
-                        emit eventsAvailable(d.eventResult);
-                        emit parsingFinished();
+                        finalize();
                         break;
                     case TcpSocketError:
                         emit parsingFailed(
@@ -1400,25 +1429,25 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
                     }
                 });
 
-        connect(&d.process, &QProcess::errorOccurred, &d.process, [&d, this](QProcess::ProcessError error) {
+        connect(&process, &QProcess::errorOccurred, &process, [&d, &process, this](QProcess::ProcessError error) {
             if (m_stopRequested) {
                 emit parsingFailed(tr("Parsing stopped."));
                 return;
             }
 
-            qCWarning(LOG_PERFPARSER) << error << d.process.errorString();
+            qCWarning(LOG_PERFPARSER) << error << process.errorString();
 
-            emit parsingFailed(d.process.errorString());
+            emit parsingFailed(process.errorString());
         });
 
-        d.process.start(parserBinary, parserArgs);
-        if (!d.process.waitForStarted()) {
+        process.start(parserBinary, parserArgs);
+        if (!process.waitForStarted()) {
             emit parsingFailed(tr("Failed to start the hotspot-perfparser process"));
             return;
         }
 
         QEventLoop loop;
-        connect(&d.process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), &loop,
+        connect(&process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), &loop,
                 &QEventLoop::quit);
         loop.exec();
     });
