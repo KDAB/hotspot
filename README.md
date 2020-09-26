@@ -31,6 +31,7 @@ performance data formats under this umbrella.
   * [ArchLinux](#archlinux)
   * [For any Linux distro: AppImage](#for-any-linux-distro-appimage)
 - [Using](#using)
+  * [Off-CPU Profiling](#off-cpu-profiling)
   * [Embedded Systems](#embedded-systems)
   * [Import Export](#import-export)
 - [Known Issues](#known-issues)
@@ -54,6 +55,8 @@ The main feature of hotspot is visualizing a `perf.data` file graphically.
 ![hotspot summary page](screenshots/summary.png?raw=true "hotspot summary page")
 
 ![hotspot FlameGraph page](screenshots/flamegraph.png?raw=true "hotspot FlameGraph page")
+
+![hotspot off-CPU analysis](screenshots/off-cpu.png?raw=true "hotspot off-CPU analysis")
 
 ![hotspot caller-callee page](screenshots/caller-callee.png?raw=true "hotspot caller-callee page")
 
@@ -199,6 +202,52 @@ Alternatively, you can specify the path to the data file on the console:
 hotspot /path/to/perf.data
 ```
 
+### Off-CPU Profiling
+
+Hotspot supports a very powerful way of doing wait-time analysis, or off-CPU profiling.
+This analysis is based on kernel tracepoints in the linux scheduler. By recording that
+data, we can find the time delta during which a thread was not running on the CPU, but
+instead was off-CPU. There can be multiple reasons for that, all of which can be found
+using this technique:
+
+- synchronous I/O, e.g. via `read()` or `write()`
+- page faults, e.g. when accessing `mmap()`'ed file data
+- calls to `nanosleep()` or `yield()`
+- lock contention via `futex()` etc.
+- preemption
+- and probably many more
+
+By leveraging kernel trace points in the scheduler, the overhead is pretty manageable
+and we only pay a price, when the process is actually getting switched out. Most notably
+we do not pay a price when e.g. a mutex lock operation can be handled directly in
+user-space.
+
+To do off-CPU analysis with hotspot, you need to record the data with a very specific
+command:
+
+```
+$ perf record \
+    -e cycles \                             # on-CPU profiling
+    -e sched:sched_switch --switch-events \ # off-CPU profiling
+    --sample-cpu \                          # track on which core code is executed
+    -m 8M \                                 # reduce chance of event loss
+    --aio -z \                              # reduce disk-I/O overhead and data size
+    --call-graph dwarf \                    # we definitely want backtraces
+    <your application>
+```
+
+Alternatively, you can use the off-CPU check box in hotspot's integrated record page.
+
+During the analysis, you can then switch between the "cycles" cost view for on-CPU data
+to the "off-CPU time" cost view for wait-time analysis. Often, you will want to change
+between both, e.g. to find places in your code which may require further parallelization
+(see also [Amdahl's law](https://en.wikipedia.org/wiki/Amdahl%27s_law)).
+
+The "sched:sched_switch" cost will also be shown to you. But in my opinion that is less
+useful, as it only indicates the number of scheduler switches. The length of the time
+inbetween is often way more interesting to me - and that's what is shown to you in the
+"off-CPU time" metric.
+
 ### Embedded Systems
 
 If you are recording on an embedded system, you will want to analyze the data on your
@@ -302,7 +351,6 @@ Compared to `perf report`, hotspot misses a lot of features. Some of these are p
 in the future. Others may potentially never get implemented. But be aware that the following features
 are _not_ available in hotspot currently:
 
-- tracepoints: we only analyze and show samples. This means that it is currently impossible to do off-CPU profiling with hotspot.
 - annotate: the caller/callee view shows cost attributed to individual source lines. But a proper annotation view like `perf annotate`, esp. on the instruction level, is currently missing.
 - the columns in the tables are currently hardcoded, while potentially a user may want to change this to show e.g. cost per-process or thread and so forth
 - many of the more advanced features, such as `--itrace`, `--mem-mode`, `--branch-stack` and `--branch-history`, are unsupported
