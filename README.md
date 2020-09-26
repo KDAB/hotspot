@@ -32,10 +32,12 @@ performance data formats under this umbrella.
   * [For any Linux distro: AppImage](#for-any-linux-distro-appimage)
 - [Using](#using)
   * [Embedded Systems](#embedded-systems)
+  * [Import Export](#import-export)
 - [Known Issues](#known-issues)
   * [Broken Backtraces](#broken-backtraces)
   * [Missing Features](#missing-features)
   * [Recording with perf without super user rights](#recording-with-perf-without-super-user-rights)
+  * [Export File Format](#export-file-format)
 - [Qt Creator](#qt-creator)
 - [License](#license)
 
@@ -245,6 +247,22 @@ host$ hotspot --sysroot /path/to/sysroot --kallsyms kallsyms --appPath /path/to/
               perf.data
 ```
 
+### Import Export
+
+The `perf.data` file format is not self-contained. To analyze it, you need access
+to the executables and libraries of the profiled process, together with debug symbols.
+This makes it unwieldy to share such files across machines, e.g. to get the help from
+a colleague to investigate a performance issue, or for bug reporting purposes.
+
+Hotspot allows you to export the analyzed data, which is then fully self-contained.
+This feature is accessible via the "File > Save As" menu action. The data is then
+saved in a self-contained `*.perfparser` file. To import the data into hotspot again,
+just open that file directly in place of the original `perf.data` file.
+
+**Note:** The file format is _not_ yet stable. Meaning data exported by one version
+of hotspot can only be read back in by the same version. This problem will be
+resolved in the future, as time permits.
+
 ## Known Issues
 
 If anything breaks in the above and the output is less usable than `perf report`, please [report an issue on GitHub](https://github.com/KDAB/hotspot/issues).
@@ -310,6 +328,14 @@ To workaround this limitation, hotspot can temporarily elevate the perf privileg
 This is achieved by applying [these steps](https://superuser.com/questions/980632/run-perf-without-root-right),
 bundled into [a script](scripts/elevate_perf_privileges.sh) that is run via `pkexec`, `kdesudo` or `kdesu`.
 The resulting elevated privileges are also required for kernel tracing in general and Off-CPU profiling in particular.
+
+### Export File Format
+
+The current data export is limited to a format that can only be read back by hotspot of the same
+version. This makes interop with other visualization tools quasi impossible. This is known and
+will get improved in the future. Most notably support for export to web viewers such as
+[perfetto](https://perfetto.dev/) or the [Mozilla profiler](https://profiler.firefox.com/) is
+planned but not yet implemented. Patches welcome!
 
 ## Qt Creator
 
