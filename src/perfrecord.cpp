@@ -345,6 +345,9 @@ static QByteArray perfRecordHelp()
 {
     static const QByteArray recordHelp = []() {
         QProcess testProcess;
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+        env.insert(QStringLiteral("LANG"), QStringLiteral("C"));
+        testProcess.setProcessEnvironment(env);
         testProcess.start(QStringLiteral("perf"), {QStringLiteral("record"), QStringLiteral("--help")});
         testProcess.waitForFinished(1000);
         return testProcess.readAllStandardOutput();
