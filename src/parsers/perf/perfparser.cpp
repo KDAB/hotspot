@@ -1535,7 +1535,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                                 return true;
                             } else if (excludeByCpu && filter.excludeCpuIds.contains(event.cpuId)) {
                                 return true;
-                            } else if (filterByStack && !filterStacks[event.stackId]) {
+                            } else if (filterByStack && event.stackId != -1 && !filterStacks[event.stackId]) {
                                 return true;
                             }
                             return false;
@@ -1565,7 +1565,9 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                                              numCosts);
                     };
 
-                    bottomUp.addEvent(event.type, event.cost, events.stacks.at(event.stackId), frameCallback);
+                    if (event.stackId != -1) {
+                        bottomUp.addEvent(event.type, event.cost, events.stacks.at(event.stackId), frameCallback);
+                    }
                 }
             }
 
