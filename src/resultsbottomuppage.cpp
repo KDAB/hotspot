@@ -39,7 +39,6 @@
 
 #include "models/costdelegate.h"
 #include "models/hashmodel.h"
-#include "models/topproxy.h"
 #include "models/treemodel.h"
 
 namespace {
@@ -85,9 +84,6 @@ ResultsBottomUpPage::ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfPa
     ResultsUtil::setupTreeView(ui->bottomUpTreeView, ui->bottomUpSearch, bottomUpCostModel);
     ResultsUtil::setupCostDelegate(bottomUpCostModel, ui->bottomUpTreeView);
     ResultsUtil::setupContextMenu(ui->bottomUpTreeView, bottomUpCostModel, filterStack, this);
-
-    auto topHotspotsProxy = new TopProxy(this);
-    topHotspotsProxy->setSourceModel(bottomUpCostModel);
 
     connect(parser, &PerfParser::bottomUpDataAvailable, this,
             [this, bottomUpCostModel, exportMenu](const Data::BottomUpResults& data) {
