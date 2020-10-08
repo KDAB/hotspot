@@ -705,8 +705,13 @@ void FlameGraph::setTooltipItem(const FrameGraphicsItem* item)
     } else {
         m_view->setCursor(Qt::PointingHandCursor);
     }
+
     m_tooltipItem = item;
     updateTooltip();
+
+    if (item) {
+        emit selectSymbol(item->symbol());
+    }
 }
 
 void FlameGraph::updateTooltip()

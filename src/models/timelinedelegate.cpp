@@ -173,8 +173,8 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
             }
         }
 
+        QPen selectedPen(scheme.foreground(KColorScheme::ActiveText), 1);
         QPen eventPen(scheme.foreground(KColorScheme::NeutralText), 1);
-        painter->setPen(eventPen);
         QPen lostEventPen(scheme.foreground(KColorScheme::NegativeText), 1);
 
         int last_x = -1;
@@ -201,11 +201,12 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
             if (x != last_x || isLostEvent) {
                 if (isLostEvent)
                     painter->setPen(lostEventPen);
+                else if (m_selectedStacks.contains(event.stackId))
+                    painter->setPen(selectedPen);
+                else
+                    painter->setPen(eventPen);
 
                 painter->drawLine(x, 0, x, data.h);
-
-                if (isLostEvent)
-                    painter->setPen(eventPen);
             }
 
             last_x = x;
@@ -503,6 +504,12 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
 void TimeLineDelegate::setEventType(int type)
 {
     m_eventType = type;
+    updateView();
+}
+
+void TimeLineDelegate::setSelectedStacks(const QVector<qint32>& selectedStacks)
+{
+    m_selectedStacks = selectedStacks;
     updateView();
 }
 

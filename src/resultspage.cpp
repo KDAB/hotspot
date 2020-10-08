@@ -43,15 +43,31 @@
 #include "models/filterandzoomstack.h"
 
 #include <KLocalizedString>
+#include <ThreadWeaver/ThreadWeaver>
 
 #include <QDebug>
 #include <QEvent>
 #include <QMenu>
+#include <QPointer>
 #include <QProgressBar>
 #include <QSortFilterProxyModel>
 #include <QTimer>
 
 static const int SUMMARY_TABINDEX = 0;
+
+namespace {
+template<typename Context, typename Job>
+void scheduleJob(Context* context, std::atomic<uint>& currentJobId, Job&& job)
+{
+    using namespace ThreadWeaver;
+    const auto jobId = ++currentJobId;
+    QPointer<Context> smartContext(context);
+    stream() << make_job([job, jobId, &currentJobId, smartContext]() {
+        auto jobCancelled = [&]() { return !smartContext || jobId != currentJobId; };
+        job(smartContext, jobCancelled);
+    });
+}
+}
 
 ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
@@ -120,6 +136,38 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     m_timeAxisHeaderView = new TimeAxisHeaderView(m_filterAndZoomStack, ui->timeLineView);
     ui->timeLineView->setHeader(m_timeAxisHeaderView);
 
+    auto selectSymbol = [this, parser](const Data::Symbol& symbol) {
+        const auto& stacks = parser->eventResults().stacks;
+        const auto& bottomUpResults = parser->bottomUpResults();
+
+        scheduleJob(
+            m_timeLineDelegate, m_currentSelectStackJobId,
+            [stacks, bottomUpResults, symbol](auto timeLineDelegate, auto jobCancelled) {
+                const auto numStacks = stacks.size();
+                QVector<qint32> selectedStacks;
+                selectedStacks.reserve(numStacks);
+                for (int i = 0; i < numStacks; ++i) {
+                    if (jobCancelled())
+                        return;
+                    bool symbolFound = false;
+                    bottomUpResults.foreachFrame(stacks[i], [&](const Data::Symbol& frame, const Data::Location&) {
+                        if (jobCancelled())
+                            return false;
+                        symbolFound = (frame == symbol);
+                        // break once we find the symbol we are looking for
+                        return !symbolFound;
+                    });
+                    if (symbolFound)
+                        selectedStacks.append(i);
+                }
+
+                QMetaObject::invokeMethod(
+                    timeLineDelegate.data(),
+                    [timeLineDelegate, selectedStacks]() { timeLineDelegate->setSelectedStacks(selectedStacks); },
+                    Qt::QueuedConnection);
+            });
+    };
+
     connect(timeLineProxy, &QAbstractItemModel::rowsInserted, this, [this]() { ui->timeLineView->expandToDepth(1); });
     connect(timeLineProxy, &QAbstractItemModel::modelReset, this, [this]() { ui->timeLineView->expandToDepth(1); });
 
@@ -178,16 +226,21 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
 
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode, this, &ResultsPage::navigateToCode);
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCodeFailed, this, &ResultsPage::showError);
+    connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::selectSymbol, this, selectSymbol);
 
     connect(m_resultsSummaryPage, &ResultsSummaryPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
     connect(m_resultsSummaryPage, &ResultsSummaryPage::openEditor, this, &ResultsPage::onOpenEditor);
+    connect(m_resultsSummaryPage, &ResultsSummaryPage::selectSymbol, this, selectSymbol);
     connect(m_resultsBottomUpPage, &ResultsBottomUpPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
     connect(m_resultsBottomUpPage, &ResultsBottomUpPage::openEditor, this, &ResultsPage::onOpenEditor);
+    connect(m_resultsBottomUpPage, &ResultsBottomUpPage::selectSymbol, this, selectSymbol);
     connect(m_resultsTopDownPage, &ResultsTopDownPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
     connect(m_resultsTopDownPage, &ResultsTopDownPage::openEditor, this, &ResultsPage::onOpenEditor);
+    connect(m_resultsTopDownPage, &ResultsTopDownPage::selectSymbol, this, selectSymbol);
     connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::jumpToCallerCallee, this,
             &ResultsPage::onJumpToCallerCallee);
     connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::openEditor, this, &ResultsPage::onOpenEditor);
+    connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::selectSymbol, this, selectSymbol);
 
     {
         // create a busy indicator

@@ -29,6 +29,8 @@
 
 #include <QWidget>
 
+#include <atomic>
+
 class QMenu;
 class QAction;
 
@@ -92,4 +94,5 @@ private:
     TimeAxisHeaderView* m_timeAxisHeaderView;
     QWidget* m_filterBusyIndicator;
     bool m_timelineVisible;
+    std::atomic<uint> m_currentSelectStackJobId;
 };

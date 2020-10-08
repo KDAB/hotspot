@@ -54,6 +54,7 @@ public:
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
     void openEditor(const Data::Symbol& symbol);
+    void selectSymbol(const Data::Symbol& symbol);
 
 private:
     QScopedPointer<Ui::ResultsTopDownPage> ui;

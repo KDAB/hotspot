@@ -65,6 +65,7 @@ private slots:
 signals:
     void navigateToCode(const QString& url, int lineNumber, int columnNumber);
     void navigateToCodeFailed(const QString& message);
+    void selectSymbol(const Data::Symbol& symbol);
 
 private:
     struct SourceMapLocation

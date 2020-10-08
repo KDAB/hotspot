@@ -130,6 +130,13 @@ void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filte
             contextMenu.exec(QCursor::pos());
         }
     });
+
+    if (actions.testFlag(ResultsUtil::CallbackAction::SelectSymbol)) {
+        QObject::connect(view->selectionModel(), &QItemSelectionModel::currentRowChanged, view, [=](const QModelIndex &current) {
+            const auto symbol = current.data(symbolRole).value<Data::Symbol>();
+            callback(CallbackAction::SelectSymbol, symbol);
+        });
+    }
 }
 
 void setupCostDelegate(QAbstractItemModel* model, QTreeView* view, int sortRole, int totalCostRole, int numBaseColumns)
