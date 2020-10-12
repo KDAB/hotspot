@@ -35,8 +35,13 @@ if [ -e "$PREFIX/lib/librustc_demangle.so" ]; then
     echo "RUSTC ENABLED"
     rustc_args="-DRUSTC_DEMANGLE_INCLUDE_DIR=$PREFIX/include -DRUSTC_DEMANGLE_LIBRARY=$PREFIX/lib/librustc_demangle.so"
 fi
+d_args=""
+if [ -e "$PREFIX/lib/libddemangle.so" ]; then
+    echo "D ENABLED"
+    d_args="-DD_DEMANGLE_LIBRARY=$PREFIX/lib/libddemangle.so"
+fi
 
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PREFIX -DAPPIMAGE_BUILD=ON $rustc_args
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PREFIX -DAPPIMAGE_BUILD=ON $rustc_args $d_args
 make -j$(nproc)
 make DESTDIR=appdir install
 
