@@ -402,7 +402,7 @@ RecordPage::RecordPage(QWidget* parent)
         ui->compressionComboBox->setCurrentIndex(1);
         const auto defaultLevel = ui->compressionComboBox->currentData().toInt();
         const auto level = config().readEntry(QStringLiteral("compressionLevel"), defaultLevel);
-        const auto index = ui->callGraphComboBox->findData(level);
+        const auto index = ui->compressionComboBox->findData(level);
         if (index != -1)
             ui->compressionComboBox->setCurrentIndex(index);
     }
