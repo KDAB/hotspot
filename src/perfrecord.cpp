@@ -341,18 +341,35 @@ bool PerfRecord::canTrace(const QString& path)
     return paranoid.open(QIODevice::ReadOnly) && paranoid.readAll().trimmed() == "-1";
 }
 
+static QByteArray perfOutput(const QStringList& arguments)
+{
+    QProcess process;
+
+    auto reportError = [&]() {
+        qWarning() << "Failed to run perf" << process.arguments() << process.error() << process.errorString() << process.readAllStandardError();
+    };
+
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert(QStringLiteral("LANG"), QStringLiteral("C"));
+    process.setProcessEnvironment(env);
+
+    QObject::connect(&process, &QProcess::errorOccurred, &process, reportError);
+    process.start(QStringLiteral("perf"), arguments);
+    if (!process.waitForFinished(1000) || process.exitCode() != 0)
+        reportError();
+    return process.readAllStandardOutput();
+}
+
 static QByteArray perfRecordHelp()
 {
-    static const QByteArray recordHelp = []() {
-        QProcess testProcess;
-        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-        env.insert(QStringLiteral("LANG"), QStringLiteral("C"));
-        testProcess.setProcessEnvironment(env);
-        testProcess.start(QStringLiteral("perf"), {QStringLiteral("record"), QStringLiteral("--help")});
-        testProcess.waitForFinished(1000);
-        return testProcess.readAllStandardOutput();
-    }();
+    static const QByteArray recordHelp = perfOutput({QStringLiteral("record"), QStringLiteral("--help")});
     return recordHelp;
+}
+
+static QByteArray perfBuildOptions()
+{
+    static const QByteArray buildOptions = perfOutput({QStringLiteral("version"), QStringLiteral("--build-options")});
+    return buildOptions;
 }
 
 bool PerfRecord::canProfileOffCpu()
@@ -377,12 +394,12 @@ bool PerfRecord::canSwitchEvents()
 
 bool PerfRecord::canUseAio()
 {
-    return perfRecordHelp().contains("--aio");
+    return perfBuildOptions().contains("aio: [ on  ]");
 }
 
 bool PerfRecord::canCompress()
 {
-    return ZSTD_FOUND && perfRecordHelp().contains("--compression-level");
+    return ZSTD_FOUND && perfBuildOptions().contains("zstd: [ on  ]");
 }
 
 bool PerfRecord::isPerfInstalled()
