@@ -14,5 +14,5 @@ FROM package_elfutils_intermediate
 WORKDIR /opt
 ADD . /opt/
 
-RUN curl -o /tmp/elfutils.tar.bz2 https://sourceware.org/elfutils/ftp/0.180/elfutils-0.180.tar.bz2 && tar -xvf /tmp/elfutils.tar.bz2
-CMD ./build_elfutils.sh /opt /artifacts /opt/elfutils-0.180
+RUN curl -o /tmp/elfutils.tar.bz2 https://sourceware.org/elfutils/ftp/0.181/elfutils-0.181.tar.bz2 && tar -xvf /tmp/elfutils.tar.bz2
+CMD ./build_elfutils.sh /opt /artifacts /opt/elfutils-0.181
