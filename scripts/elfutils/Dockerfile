@@ -6,7 +6,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get -y upgrade && \
-    apt-get install -y software-properties-common build-essential curl \
+    apt-get install -y software-properties-common build-essential curl libcurl4-gnutls-dev \
         autotools-dev autoconf libtool liblzma-dev libz-dev gettext libdwarf-dev
 
 FROM package_elfutils_intermediate
