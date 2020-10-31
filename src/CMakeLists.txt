@@ -82,6 +82,7 @@ target_link_libraries(hotspot
     KF5::Solid
     KF5::WindowSystem
     KF5::Notifications
+    KF5::IconThemes
     models
     PrefixTickLabels
 )

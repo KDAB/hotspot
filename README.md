@@ -115,7 +115,7 @@ add-apt-repository ppa:kubuntu-ppa/backports
 apt-get update
 apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev \
     libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libkf5kio-dev \
-    libkf5solid-dev libkf5windowsystem-dev libkf5notifications-dev libelf-dev \
+    libkf5solid-dev libkf5windowsystem-dev libkf5notifications-dev libkf5iconthemes-dev libelf-dev \
     libdw-dev cmake extra-cmake-modules gettext libqt5svg5-dev
 ```
 
@@ -130,8 +130,8 @@ dnf install cmake gcc glibc-static gcc-c++ libstdc++-static qt5 qt5-devel \
 ### Arch Linux
 ```
 pacman -Syu
-pacman -S cmake gcc extra-cmake-modules threadweaver ki18n kconfigwidgets \
-    kitemviews kitemmodels kwindowsystem kio solid libelf gettext qt5-base
+pacman -S cmake gcc extra-cmake-modules threadweaver ki18n kconfigwidgets knotifications \
+    kiconthemes kitemviews kitemmodels kwindowsystem kio solid libelf gettext qt5-base
 ```
 
 ### OpenSUSE

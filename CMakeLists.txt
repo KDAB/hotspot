@@ -67,6 +67,7 @@ if(Qt5_FOUND AND ECM_FOUND)
         Solid
         WindowSystem
         Notifications
+        IconThemes
         REQUIRED
     )
 endif()
