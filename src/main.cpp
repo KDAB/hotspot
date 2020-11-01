@@ -29,6 +29,7 @@
 #include <QCommandLineParser>
 #include <QProcessEnvironment>
 #include <QFile>
+#include <QDebug>
 
 #include "hotspot-config.h"
 #include "mainwindow.h"
@@ -37,6 +38,38 @@
 
 #include <ThreadWeaver/ThreadWeaver>
 #include <QThread>
+
+#if APPIMAGE_BUILD
+#include <QResource>
+#include <KIconTheme>
+
+// FIXME: patch KIconTheme so that this isn't needed here
+void Q_DECL_UNUSED initRCCIconTheme()
+{
+    const QString iconThemeRcc = qApp->applicationDirPath() + QStringLiteral("/../share/icons/breeze/breeze-icons.rcc");
+    if (!QFile::exists(iconThemeRcc)) {
+        qWarning() << "cannot find icons rcc:" << iconThemeRcc;
+        return;
+    }
+
+    const QString iconThemeName = QStringLiteral("kf5_rcc_theme");
+    const QString iconSubdir = QStringLiteral("/icons/") + iconThemeName;
+    if (!QResource::registerResource(iconThemeRcc, iconSubdir)) {
+        qWarning() << "Invalid rcc file" << iconThemeRcc;
+    }
+
+    if (!QFile::exists(QLatin1Char(':') + iconSubdir + QStringLiteral("/index.theme"))) {
+        qWarning() << "No index.theme found in" << iconThemeRcc;
+        QResource::unregisterResource(iconThemeRcc, iconSubdir);
+    }
+
+    // Tell Qt about the theme
+    // Note that since qtbase commit a8621a3f8, this means the QPA (i.e. KIconLoader) will NOT be used.
+    QIcon::setThemeName(iconThemeName); // Qt looks under :/icons automatically
+    // Tell KIconTheme about the theme, in case KIconLoader is used directly
+    KIconTheme::forceThemeForTests(iconThemeName);
+}
+#endif
 
 int main(int argc, char** argv)
 {
@@ -59,6 +92,8 @@ int main(int argc, char** argv)
     auto LD_LIBRARY_PATH = qgetenv("LD_LIBRARY_PATH");
     LD_LIBRARY_PATH.remove(0, LD_LIBRARY_PATH.indexOf(':') + 1);
     qputenv("LD_LIBRARY_PATH", LD_LIBRARY_PATH);
+
+    initRCCIconTheme();
 #endif
 
     app.setWindowIcon(QIcon(QStringLiteral(":/images/icons/512-hotspot_app_icon.png")));
@@ -70,11 +105,6 @@ int main(int argc, char** argv)
     qRegisterMetaType<Data::TopDownResults>();
     qRegisterMetaType<Data::CallerCalleeResults>();
     qRegisterMetaType<Data::EventResults>();
-
-#if APPIMAGE_BUILD
-    QIcon::setThemeSearchPaths({app.applicationDirPath() + QLatin1String("/../share/icons/")});
-    QIcon::setThemeName(QStringLiteral("breeze"));
-#endif
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("Linux perf GUI for performance analysis."));
