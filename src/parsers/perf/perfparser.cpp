@@ -174,6 +174,7 @@ QDebug operator<<(QDebug stream, const ThreadEnd& threadEnd)
 struct Location
 {
     quint64 address = 0;
+    quint64 relAddr = 0;
     StringId file;
     quint32 pid = 0;
     qint32 line = 0;
@@ -183,7 +184,7 @@ struct Location
 
 QDataStream& operator>>(QDataStream& stream, Location& location)
 {
-    return stream >> location.address >> location.file >> location.pid >> location.line >> location.column
+    return stream >> location.address >> location.relAddr >> location.file >> location.pid >> location.line >> location.column
         >> location.parentLocationId;
 }
 
@@ -191,6 +192,7 @@ QDebug operator<<(QDebug stream, const Location& location)
 {
     stream.noquote().nospace() << "Location{"
                                << "address=0x" << hex << location.address << dec << ", "
+                               << "relAddr=" << location.relAddr << ", "
                                << "file=" << location.file << ", "
                                << "pid=" << location.pid << ", "
                                << "line=" << location.line << ", "
@@ -932,7 +934,7 @@ public:
             }
         }
         bottomUpResult.locations.push_back(
-            {location.location.parentLocationId, {location.location.address, locationString}});
+            {location.location.parentLocationId, {location.location.address, location.location.relAddr, locationString}});
         bottomUpResult.symbols.push_back({});
     }
 
