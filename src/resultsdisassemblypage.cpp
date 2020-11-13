@@ -202,6 +202,11 @@ void ResultsDisassemblyPage::setData(const Data::DisassemblyResult &data)
     //TODO: add the ability to configure the arch <-> objdump mapping somehow in the settings
     const auto isArm = m_arch.startsWith(QLatin1String("arm"));
     m_objdump = isArm ? QStringLiteral("arm-linux-gnueabi-objdump") : QStringLiteral("objdump");
+
+    if (m_arch.startsWith(QStringLiteral("armv8")) || m_arch.startsWith(QStringLiteral("aarch64"))) {
+        m_arch = QStringLiteral("armv8");
+        m_objdump = QStringLiteral("aarch64-linux-gnu-objdump");
+    }
 }
 
 void ResultsDisassemblyPage::setCostsMap(const Data::CallerCalleeResults& callerCalleeResults)

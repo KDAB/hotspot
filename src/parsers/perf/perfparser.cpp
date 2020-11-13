@@ -1196,6 +1196,7 @@ public:
         summaryResult.totalMemoryInKiB = features.totalMem;
 
         eventResult.cpus.resize(features.nrCpusAvailable);
+        disassemblyResult.arch = QString::fromUtf8(features.arch);
     }
 
     void addError(const Error& error)
