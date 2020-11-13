@@ -227,12 +227,14 @@ struct Symbol
     quint64 size = 0;
     StringId binary;
     StringId path;
+    StringId actualPath;
     bool isKernel = false;
 };
 
 QDataStream& operator>>(QDataStream& stream, Symbol& symbol)
 {
-    return stream >> symbol.name >> symbol.relAddr >> symbol.size >> symbol.binary >> symbol.path >> symbol.isKernel;
+    return stream >> symbol.name >> symbol.relAddr >> symbol.size >> symbol.binary >> symbol.path >> symbol.actualPath
+        >> symbol.isKernel;
 }
 
 QDebug operator<<(QDebug stream, const Symbol& symbol)
@@ -243,6 +245,7 @@ QDebug operator<<(QDebug stream, const Symbol& symbol)
                                << "size=" << symbol.size << ", "
                                << "binary=" << symbol.binary << ", "
                                << "path=" << symbol.path << ", "
+                               << "actualPath=" << symbol.actualPath << ", "
                                << "isKernel=" << symbol.isKernel << "}";
     return stream;
 }
@@ -951,7 +954,8 @@ public:
         const auto size = symbol.symbol.size;
         const auto binaryString = strings.value(symbol.symbol.binary.id);
         const auto pathString = strings.value(symbol.symbol.path.id);
-        bottomUpResult.symbols[symbol.id] = {symbolString, relAddr, size, binaryString, pathString};
+        const auto actualPathString = strings.value(symbol.symbol.actualPath.id);
+        bottomUpResult.symbols[symbol.id] = {symbolString, relAddr, size, binaryString, pathString, actualPathString};
 
         // Count total and missing symbols per module for error report
         auto &numSymbols = numSymbolsByModule[symbol.symbol.binary.id];

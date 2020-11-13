@@ -106,9 +106,9 @@ void ResultsDisassemblyPage::showDisassembly()
     // Call objdump with arguments: addresses range and binary file
     QString processName = m_objdump;
     QStringList arguments;
-    arguments << QStringLiteral("-d") << QStringLiteral("--start-address") << QStringLiteral("0x%1").arg(m_curSymbol.relAddr, 0, 16) <<
-            QStringLiteral("--stop-address") << QStringLiteral("0x%1").arg(m_curSymbol.relAddr + m_curSymbol.size, 0, 16) <<
-            m_curSymbol.path;
+    arguments << QStringLiteral("-d") << QStringLiteral("--start-address")
+              << QStringLiteral("0x%1").arg(m_curSymbol.relAddr, 0, 16) << QStringLiteral("--stop-address")
+              << QStringLiteral("0x%1").arg(m_curSymbol.relAddr + m_curSymbol.size, 0, 16) << m_curSymbol.actualPath;
 
     showDisassembly(processName, arguments);
 }

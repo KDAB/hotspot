@@ -46,13 +46,15 @@ QString prettifySymbol(const QString& symbol);
 
 struct Symbol
 {
-    Symbol(const QString& symbol = {}, const quint64& relAddr = 0, const quint64& size = 0, const QString& binary = {}, const QString& path = {})
+    Symbol(const QString& symbol = {}, const quint64& relAddr = 0, const quint64& size = 0, const QString& binary = {},
+           const QString& path = {}, const QString& actualPath = {})
         : symbol(symbol)
         , prettySymbol(Data::prettifySymbol(symbol))
         , relAddr(relAddr)
         , size(size)
         , binary(binary)
         , path(path)
+        , actualPath(actualPath)
     {
     }
 
@@ -68,6 +70,8 @@ struct Symbol
     QString binary;
     // path to dso / executable
     QString path;
+    // actual file path
+    QString actualPath;
 
     bool operator<(const Symbol& rhs) const
     {
