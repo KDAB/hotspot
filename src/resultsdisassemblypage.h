@@ -52,11 +52,20 @@ class CostDelegate;
 
 struct DisassemblyOutput
 {
-    QByteArray output;
     QString errorMessage;
     explicit operator bool() const { return errorMessage.isEmpty(); }
     static DisassemblyOutput fromProcess(const QString &processName, const QStringList &arguments);
+
+    struct DisassemblyLine
+    {
+        quint64 addr = 0;
+        QString disassembly;
+    };
+    QVector<DisassemblyLine> disassemblyLines;
 };
+Q_DECLARE_TYPEINFO(DisassemblyOutput::DisassemblyLine, Q_MOVABLE_TYPE);
+
+static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(QByteArray output, int numTypes);
 
 class ResultsDisassemblyPage : public QWidget
 {
