@@ -54,6 +54,8 @@
 
 #include <QStandardItemModel>
 #include <QStringRef>
+#include <KMessageBox>
+#include <QStandardPaths>
 
 namespace {
     enum CustomRoles {
@@ -100,7 +102,6 @@ void ResultsDisassemblyPage::showDisassembly()
     // Show empty tab when selected symbol is not valid
     if (m_curSymbol.symbol.isEmpty()) {
         clear();
-        return;
     }
 
     // Call objdump with arguments: addresses range and binary file
@@ -113,77 +114,108 @@ void ResultsDisassemblyPage::showDisassembly()
     showDisassembly(processName, arguments);
 }
 
+static DisassemblyOutput fromProcess(const QString& processName, const QStringList& arguments, const QString& arch, const Data::Symbol &curSymbol)
+{
+    DisassemblyOutput disassemblyOutput;
+    if (curSymbol.symbol.isEmpty()) {
+        disassemblyOutput.errorMessage = QApplication::tr("Empty symbol ?? is selected");
+        return disassemblyOutput;
+    }
+
+    const auto processPath = QStandardPaths::findExecutable(processName);
+    if (processPath.isEmpty()) {
+        disassemblyOutput.errorMessage = QApplication::tr("Cannot find objdump process %1, please install the missing binutils package for arch %2").arg(processName, arch);
+        return disassemblyOutput;
+    }
+
+    QProcess asmProcess;
+    QObject::connect(&asmProcess, &QProcess::readyRead, [&asmProcess, &disassemblyOutput] () {
+        disassemblyOutput.output += asmProcess.readAllStandardOutput();
+        disassemblyOutput.errorMessage += QString::fromStdString(asmProcess.readAllStandardError().toStdString());
+    });
+
+    asmProcess.start(processName, arguments);
+
+    if (!asmProcess.waitForStarted()) {
+        disassemblyOutput.errorMessage += QApplication::tr("Process was not started.");
+        return disassemblyOutput;
+    }
+
+    if (!asmProcess.waitForFinished()) {
+        disassemblyOutput.errorMessage += QApplication::tr("Process was not finished. Stopped by timeout");
+        return disassemblyOutput;
+    }
+
+    if (disassemblyOutput.output.isEmpty()) {
+        disassemblyOutput.errorMessage += QApplication::tr("Empty output of command ").arg(processName);
+    }
+
+    return disassemblyOutput;
+}
+
 void ResultsDisassemblyPage::showDisassembly(const QString& processName, const QStringList& arguments)
 {
-    //TODO objdump running and parse need to be extracted into a standalone class, covered by unit tests and made async
-    QTemporaryFile m_tmpFile;
-    QProcess asmProcess;
+    DisassemblyOutput disassemblyOutput = fromProcess(processName, arguments, m_arch, m_curSymbol);
 
-    if (m_tmpFile.open()) {
-        asmProcess.start(processName, arguments);
-
-        if (!asmProcess.waitForStarted() || !asmProcess.waitForFinished()) {
-            return;
-        }
-        QTextStream stream(&m_tmpFile);
-        stream << asmProcess.readAllStandardOutput();
-        m_tmpFile.close();
+    //TODO: that this dialog should be replaced by a passive KMessageWidget instead
+    if (!disassemblyOutput) {
+        KMessageBox::detailedSorry(this, tr("Failed to disassemble function"), disassemblyOutput.errorMessage);
+        emit jumpToCallerCallee(m_curSymbol);
+        return;
     }
 
-    if (m_tmpFile.open()) {
-        int row = 0;
-        m_model->clear();
+    int row = 0;
+    m_model->clear();
 
-        QStringList headerList;
-        headerList.append({tr("Assembly")});
-        for (int i = 0; i < m_callerCalleeResults.selfCosts.numTypes(); i++) {
-            headerList.append(m_callerCalleeResults.selfCosts.typeName(i));
-        }
-        m_model->setHorizontalHeaderLabels(headerList);
-
-        int numTypes = m_callerCalleeResults.selfCosts.numTypes();
-        QTextStream stream(&m_tmpFile);
-        while (!stream.atEnd()) {
-            QString asmLine = stream.readLine();
-            if (asmLine.isEmpty() || asmLine.startsWith(QLatin1String("Disassembly"))) continue;
-
-            const auto asmTokens = asmLine.splitRef(QLatin1Char(':'));
-            const auto addrLine = asmTokens[0].trimmed();
-
-            bool ok = false;
-            const auto addr = addrLine.toULongLong(&ok, 16);
-            if (!ok) {
-                qWarning() << "unhandled asm line format:" << addrLine;
-                continue;
-            }
-
-            QStandardItem *asmItem = new QStandardItem();
-            asmItem->setText(asmLine);
-            m_model->setItem(row, 0, asmItem);
-
-            // Calculate event times and add them in red to corresponding columns of the current disassembly row
-            float costLine = 0;
-            auto &entry = m_callerCalleeResults.entry(m_curSymbol);
-
-            auto it = entry.offsetMap.find(addr);
-            if (it != entry.offsetMap.end()) {
-                const auto& locationCost = it.value();
-                for (int event = 0; event < numTypes; event++) {
-                    costLine = locationCost.selfCost[event];
-                    const auto totalCost = m_callerCalleeResults.selfCosts.totalCost(event);
-                    QString costInstruction = Util::formatCostRelative(costLine, totalCost, true);
-
-                    //FIXME QStandardItem stuff should be reimplemented properly
-                    QStandardItem *costItem = new QStandardItem(costInstruction);
-                    costItem->setData(costLine, CostRole);
-                    costItem->setData(totalCost, TotalCostRole);
-                    m_model->setItem(row, event + 1, costItem);
-                }
-            }
-            row++;
-        }
-        setupAsmViewModel(numTypes);
+    QStringList headerList;
+    headerList.append({tr("Assembly")});
+    for (int i = 0; i < m_callerCalleeResults.selfCosts.numTypes(); i++) {
+        headerList.append(m_callerCalleeResults.selfCosts.typeName(i));
     }
+    m_model->setHorizontalHeaderLabels(headerList);
+
+    int numTypes = m_callerCalleeResults.selfCosts.numTypes();
+    QByteArrayList asmLineList = disassemblyOutput.output.split('\n');
+    for (int line = 0; line < asmLineList.size(); line++) {
+        QString asmLine = QString::fromStdString(asmLineList.at(line).toStdString());
+        if (asmLine.isEmpty() || asmLine.startsWith(QLatin1String("Disassembly"))) continue;
+
+        const auto asmTokens = asmLine.splitRef(QLatin1Char(':'));
+        const auto addrLine = asmTokens[0].trimmed();
+
+        bool ok = false;
+        const auto addr = addrLine.toULongLong(&ok, 16);
+        if (!ok) {
+            qWarning() << "unhandled asm line format:" << addrLine;
+            continue;
+        }
+
+        QStandardItem *asmItem = new QStandardItem();
+        asmItem->setText(asmLine);
+        m_model->setItem(row, 0, asmItem);
+
+        // Calculate event times and add them in red to corresponding columns of the current disassembly row
+        float costLine = 0;
+        auto &entry = m_callerCalleeResults.entry(m_curSymbol);
+
+        auto it = entry.offsetMap.find(addr);
+        if (it != entry.offsetMap.end()) {
+            const auto &locationCost = it.value();
+            for (int event = 0; event < numTypes; event++) {
+                costLine = locationCost.selfCost[event];
+                const auto totalCost = m_callerCalleeResults.selfCosts.totalCost(event);
+                QString costInstruction = Util::formatCostRelative(costLine, totalCost, true);
+
+                //FIXME QStandardItem stuff should be reimplemented properly
+                QStandardItem *costItem = new QStandardItem(costInstruction);
+                costItem->setData(costLine, CostRole);
+                costItem->setData(totalCost, TotalCostRole);
+                m_model->setItem(row, event + 1, costItem);
+            }
+        }
+        row++;
+    }
+    setupAsmViewModel(numTypes);
 }
 
 void ResultsDisassemblyPage::setSymbol(const Data::Symbol &symbol)

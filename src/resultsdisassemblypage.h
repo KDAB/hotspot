@@ -50,6 +50,14 @@ class QStandardItemModel;
 class QTemporaryFile;
 class CostDelegate;
 
+struct DisassemblyOutput
+{
+    QByteArray output;
+    QString errorMessage;
+    explicit operator bool() const { return errorMessage.isEmpty(); }
+    static DisassemblyOutput fromProcess(const QString &processName, const QStringList &arguments);
+};
+
 class ResultsDisassemblyPage : public QWidget
 {
     Q_OBJECT

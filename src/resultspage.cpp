@@ -253,6 +253,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::selectSymbol, this, selectSymbol);
     connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::jumpToDisassembly, this,
             &ResultsPage::onJumpToDisassembly);
+    connect(m_resultsDisassemblyPage, &ResultsDisassemblyPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
 
     {
         // create a busy indicator
