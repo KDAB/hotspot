@@ -68,6 +68,7 @@ public:
 public slots:
     void setSysroot(const QString& path);
     void setAppPath(const QString& path);
+    void setObjdump(const QString& objdump);
 
     void onJumpToCallerCallee(const Data::Symbol& symbol);
     void onOpenEditor(const Data::Symbol& symbol);
