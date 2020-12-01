@@ -259,6 +259,12 @@ void MainWindow::setArch(const QString& arch)
     emit archChanged(m_arch);
 }
 
+void MainWindow::setObjdump(const QString& objdump)
+{
+    m_objdump = objdump;
+    emit objdumpChanged(m_objdump);
+}
+
 void MainWindow::onOpenFileButtonClicked()
 {
     const auto fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(),
@@ -427,6 +433,9 @@ void MainWindow::setupPathSettingsMenu()
                   tr("auto-detect"), tr("Path to the kernel symbol mapping."));
     addPathAction(tr("Architecture:"), &MainWindow::setArch, &MainWindow::archChanged,
                   tr("auto-detect"), tr("System architecture, e.g. x86_64, arm, aarch64 etc."));
+    addPathAction(tr("Objdump:"), &MainWindow::setObjdump, &MainWindow::objdumpChanged,
+                  tr("auto-detect"), tr("Path to the objdump."));
+    connect(this, &MainWindow::objdumpChanged, m_resultsPage, &ResultsPage::setObjdump);
     m_startPage->setPathSettingsMenu(menu);
 }
 

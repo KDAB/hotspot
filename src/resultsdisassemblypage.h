@@ -84,6 +84,7 @@ public:
     void setSymbol(const Data::Symbol& data);
     void setData(const Data::DisassemblyResult& data);
     void setCostsMap(const Data::CallerCalleeResults& callerCalleeResults);
+    void setObjdump(const QString& objdump);
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
 private:
@@ -102,6 +103,8 @@ private:
     QString m_arch;
     // Objdump binary name
     QString m_objdump;
+    // Objdump path from settings
+    QString m_objdumpPath;
     // Map of symbols
     Data::DisassemblyResult m_disasmResult;
     // Map of symbols and its locations with costs
