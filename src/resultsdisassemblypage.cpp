@@ -114,8 +114,9 @@ void ResultsDisassemblyPage::showDisassembly()
     showDisassembly(processName, arguments);
 }
 
-static DisassemblyOutput fromProcess(const QString& processName, const QStringList& arguments, const QString& arch, const Data::Symbol &curSymbol)
+static DisassemblyOutput fromProcess(const QString& processName, const QStringList& arguments, const QString& arch, const Data::Symbol &curSymbol, const int numTypes)
 {
+    QByteArray output;
     DisassemblyOutput disassemblyOutput;
     if (curSymbol.symbol.isEmpty()) {
         disassemblyOutput.errorMessage = QApplication::tr("Empty symbol ?? is selected");
@@ -129,8 +130,8 @@ static DisassemblyOutput fromProcess(const QString& processName, const QStringLi
     }
 
     QProcess asmProcess;
-    QObject::connect(&asmProcess, &QProcess::readyRead, [&asmProcess, &disassemblyOutput] () {
-        disassemblyOutput.output += asmProcess.readAllStandardOutput();
+    QObject::connect(&asmProcess, &QProcess::readyRead, [&asmProcess, &disassemblyOutput, &output] () {
+        output += asmProcess.readAllStandardOutput();
         disassemblyOutput.errorMessage += QString::fromStdString(asmProcess.readAllStandardError().toStdString());
     });
 
@@ -146,16 +147,18 @@ static DisassemblyOutput fromProcess(const QString& processName, const QStringLi
         return disassemblyOutput;
     }
 
-    if (disassemblyOutput.output.isEmpty()) {
+    if (output.isEmpty()) {
         disassemblyOutput.errorMessage += QApplication::tr("Empty output of command ").arg(processName);
     }
 
+    disassemblyOutput.disassemblyLines = objdumpParse(output, numTypes);
     return disassemblyOutput;
 }
 
 void ResultsDisassemblyPage::showDisassembly(const QString& processName, const QStringList& arguments)
 {
-    DisassemblyOutput disassemblyOutput = fromProcess(processName, arguments, m_arch, m_curSymbol);
+    int numTypes = m_callerCalleeResults.selfCosts.numTypes();
+    DisassemblyOutput disassemblyOutput = fromProcess(processName, arguments, m_arch, m_curSymbol, numTypes);
 
     //TODO: that this dialog should be replaced by a passive KMessageWidget instead
     if (!disassemblyOutput) {
@@ -174,21 +177,11 @@ void ResultsDisassemblyPage::showDisassembly(const QString& processName, const Q
     }
     m_model->setHorizontalHeaderLabels(headerList);
 
-    int numTypes = m_callerCalleeResults.selfCosts.numTypes();
-    QByteArrayList asmLineList = disassemblyOutput.output.split('\n');
-    for (int line = 0; line < asmLineList.size(); line++) {
-        QString asmLine = QString::fromStdString(asmLineList.at(line).toStdString());
-        if (asmLine.isEmpty() || asmLine.startsWith(QLatin1String("Disassembly"))) continue;
-
-        const auto asmTokens = asmLine.splitRef(QLatin1Char(':'));
-        const auto addrLine = asmTokens[0].trimmed();
-
-        bool ok = false;
-        const auto addr = addrLine.toULongLong(&ok, 16);
-        if (!ok) {
-            qWarning() << "unhandled asm line format:" << addrLine;
-            continue;
-        }
+    auto &entry = m_callerCalleeResults.entry(m_curSymbol);
+    for (int row = 0; row < disassemblyOutput.disassemblyLines.size(); row++) {
+        DisassemblyOutput::DisassemblyLine disassemblyLine = disassemblyOutput.disassemblyLines.at(row);
+        QString asmLine = disassemblyLine.disassembly;
+        const auto addr = disassemblyLine.addr;
 
         QStandardItem *asmItem = new QStandardItem();
         asmItem->setText(asmLine);
@@ -213,7 +206,6 @@ void ResultsDisassemblyPage::showDisassembly(const QString& processName, const Q
                 m_model->setItem(row, event + 1, costItem);
             }
         }
-        row++;
     }
     setupAsmViewModel(numTypes);
 }
@@ -244,4 +236,30 @@ void ResultsDisassemblyPage::setData(const Data::DisassemblyResult &data)
 void ResultsDisassemblyPage::setCostsMap(const Data::CallerCalleeResults& callerCalleeResults)
 {
     m_callerCalleeResults = callerCalleeResults;
+}
+
+static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(QByteArray output, int numTypes)
+{
+    QVector<DisassemblyOutput::DisassemblyLine> disassemblyLines;
+    QByteArrayList asmLineList = output.split('\n');
+    for (int line = 0; line < asmLineList.size(); line++) {
+        DisassemblyOutput::DisassemblyLine disassemblyLine;
+        QString asmLine = QString::fromStdString(asmLineList.at(line).toStdString());
+        if (asmLine.isEmpty() || asmLine.startsWith(QLatin1String("Disassembly"))) continue;
+
+        const auto asmTokens = asmLine.splitRef(QLatin1Char(':'));
+        const auto addrLine = asmTokens.value(0).trimmed();
+
+        bool ok = false;
+        const auto addr = addrLine.toULongLong(&ok, 16);
+        if (!ok) {
+            qWarning() << "unhandled asm line format:" << addrLine;
+            continue;
+        }
+
+        disassemblyLine.addr = addr;
+        disassemblyLine.disassembly = asmLine;
+        disassemblyLines.push_back(disassemblyLine);
+    }
+    return disassemblyLines;
 }
