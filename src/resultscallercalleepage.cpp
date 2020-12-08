@@ -84,7 +84,7 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
     ui->callerCalleeTableView->setSortingEnabled(true);
     ui->callerCalleeTableView->setModel(m_callerCalleeProxy);
     ResultsUtil::setupContextMenu(ui->callerCalleeTableView, m_callerCalleeCostModel, filterStack, this,
-                                  {ResultsUtil::CallbackAction::OpenEditor, ResultsUtil::CallbackAction::SelectSymbol});
+                                  {ResultsUtil::CallbackAction::OpenEditor, ResultsUtil::CallbackAction::SelectSymbol, ResultsUtil::CallbackAction::ViewDisassembly});
     ResultsUtil::setupHeaderView(ui->callerCalleeTableView);
     ResultsUtil::setupCostDelegate(m_callerCalleeCostModel, ui->callerCalleeTableView);
 
@@ -121,9 +121,9 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
     connectCallerOrCalleeModel<CalleeModel>(ui->calleesView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
     connectCallerOrCalleeModel<CallerModel>(ui->callersView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
     ResultsUtil::setupContextMenu(ui->calleesView, calleesModel, filterStack, this,
-                                  {ResultsUtil::CallbackAction::OpenEditor, ResultsUtil::CallbackAction::SelectSymbol});
+                                  {ResultsUtil::CallbackAction::OpenEditor, ResultsUtil::CallbackAction::SelectSymbol, ResultsUtil::CallbackAction::ViewDisassembly});
     ResultsUtil::setupContextMenu(ui->callersView, callersModel, filterStack, this,
-                                  {ResultsUtil::CallbackAction::OpenEditor, ResultsUtil::CallbackAction::SelectSymbol});
+                                  {ResultsUtil::CallbackAction::OpenEditor, ResultsUtil::CallbackAction::SelectSymbol, ResultsUtil::CallbackAction::ViewDisassembly});
 
     ui->sourceMapView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->sourceMapView, &QTreeView::customContextMenuRequested, this,
