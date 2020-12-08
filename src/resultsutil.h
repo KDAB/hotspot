@@ -75,6 +75,7 @@ enum class CallbackAction
     ViewCallerCallee = 0x1,
     OpenEditor = 0x2,
     SelectSymbol = 0x4,
+    ViewDisassembly = 0x8
 };
 Q_DECLARE_FLAGS(CallbackActions, CallbackAction)
 
@@ -83,7 +84,7 @@ void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filte
 
 template<typename Model, typename Context>
 void setupContextMenu(QTreeView* view, Model* /*model*/, FilterAndZoomStack* filterStack, Context* context,
-                      CallbackActions actions = {CallbackAction::ViewCallerCallee, CallbackAction::OpenEditor, CallbackAction::SelectSymbol})
+                      CallbackActions actions = {CallbackAction::ViewCallerCallee, CallbackAction::OpenEditor, CallbackAction::SelectSymbol, CallbackAction::ViewDisassembly})
 {
     setupContextMenu(view, Model::SymbolRole, filterStack, actions,
                      [context](ResultsUtil::CallbackAction action, const Data::Symbol& symbol) {
@@ -96,6 +97,9 @@ void setupContextMenu(QTreeView* view, Model* /*model*/, FilterAndZoomStack* fil
                              break;
                          case ResultsUtil::CallbackAction::SelectSymbol:
                              context->selectSymbol(symbol);
+                             break;
+                         case ResultsUtil::CallbackAction::ViewDisassembly:
+                             context->jumpToDisassembly(symbol);
                              break;
                          }
                      });

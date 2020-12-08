@@ -574,6 +574,10 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
             auto* openEditorAction = contextMenu.addAction(tr("Open in Editor"));
             connect(openEditorAction, &QAction::triggered, this, [this, item]() { emit openEditor(item->symbol()); });
             contextMenu.addSeparator();
+            auto* viewDisassembly = contextMenu.addAction(tr("Disassembly"));
+            connect(viewDisassembly, &QAction::triggered, this, [this, item](){
+                emit jumpToDisassembly(item->symbol());
+            });
         }
         ResultsUtil::addFilterActions(&contextMenu, item ? item->symbol() : Data::Symbol(), m_filterStack);
         contextMenu.addSeparator();

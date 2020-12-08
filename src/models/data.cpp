@@ -303,6 +303,8 @@ QDebug Data::operator<<(QDebug stream, const Symbol& symbol)
 {
     stream.noquote().nospace() << "Symbol{"
                                << "symbol=" << symbol.symbol << ", "
+                               << "relAddr=" << symbol.relAddr << ", "
+                               << "size=" << symbol.size << ", "
                                << "binary=" << symbol.binary << "}";
     return stream.resetFormat().space();
 }

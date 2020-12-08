@@ -53,6 +53,7 @@ find_package(Elfutils REQUIRED)
 find_package(ECM 1.0.0 NO_MODULE REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Zstd)
+find_package(objdump)
 
 if(Qt5_FOUND AND ECM_FOUND)
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})

@@ -122,6 +122,12 @@ void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filte
                 QObject::connect(openEditorAction, &QAction::triggered, &contextMenu,
                                  [symbol, callback]() { callback(CallbackAction::OpenEditor, symbol); });
             }
+            if (actions.testFlag(CallbackAction::ViewDisassembly)) {
+                auto* viewDisassembly =
+                    contextMenu.addAction(QCoreApplication::translate("Util", "Disassembly"));
+                QObject::connect(viewDisassembly, &QAction::triggered, &contextMenu,
+                                 [symbol, callback]() { callback(CallbackAction::ViewDisassembly, symbol); });
+            }
             contextMenu.addSeparator();
         }
         addFilterActions(&contextMenu, symbol, filterStack);

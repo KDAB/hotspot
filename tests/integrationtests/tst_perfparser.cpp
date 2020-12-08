@@ -122,7 +122,7 @@ private slots:
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
         // top-down data is too vague here, don't check it
-        testPerfData(Data::Symbol{"hypot", "libm"}, {}, tempFile.fileName());
+        testPerfData(Data::Symbol{"hypot", 0, 0, "libm"}, {}, tempFile.fileName());
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
 
@@ -141,7 +141,7 @@ private slots:
         tempFile.open();
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-        testPerfData(Data::Symbol{"hypot", "libm"}, Data::Symbol{"start", "cpp-inlining"}, tempFile.fileName());
+        testPerfData(Data::Symbol{"hypot", 0, 0, "libm"}, Data::Symbol{"start", 0, 0, "cpp-inlining"}, tempFile.fileName());
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
 
@@ -159,7 +159,7 @@ private slots:
         tempFile.open();
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-        testPerfData(Data::Symbol{"hypot", "libm"}, Data::Symbol{"hypot", "libm"}, tempFile.fileName());
+        testPerfData(Data::Symbol{"hypot", 0, 0, "libm"}, Data::Symbol{"hypot", 0, 0, "libm"}, tempFile.fileName());
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
     }
@@ -175,7 +175,7 @@ private slots:
         tempFile.open();
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-        testPerfData(Data::Symbol{"hypot", "libm"}, Data::Symbol{"start", "cpp-inlining"}, tempFile.fileName());
+        testPerfData(Data::Symbol{"hypot", 0, 0, "libm"}, Data::Symbol{"start", 0, 0, "cpp-inlining"}, tempFile.fileName());
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
 
@@ -220,7 +220,7 @@ private slots:
         tempFile.open();
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-        testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"fibonacci", "cpp-recursion"},
+        testPerfData(Data::Symbol{"fibonacci", 0, 0, "cpp-recursion"}, Data::Symbol{"fibonacci", 0, 0, "cpp-recursion"},
                      tempFile.fileName());
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
@@ -236,7 +236,7 @@ private slots:
         tempFile.open();
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-        testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"start", "cpp-recursion"},
+        testPerfData(Data::Symbol{"fibonacci", 0, 0, "cpp-recursion"}, Data::Symbol{"start", 0, 0, "cpp-recursion"},
                      tempFile.fileName());
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
@@ -260,7 +260,7 @@ private slots:
         tempFile.open();
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-        testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"fibonacci", "cpp-recursion"},
+        testPerfData(Data::Symbol{"fibonacci", 0, 0, "cpp-recursion"}, Data::Symbol{"fibonacci", 0, 0, "cpp-recursion"},
                      tempFile.fileName());
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
@@ -276,7 +276,7 @@ private slots:
         tempFile.open();
 
         perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-        testPerfData(Data::Symbol{"fibonacci", "cpp-recursion"}, Data::Symbol{"start", "cpp-recursion"},
+        testPerfData(Data::Symbol{"fibonacci", 0, 0, "cpp-recursion"}, Data::Symbol{"start", 0, 0, "cpp-recursion"},
                      tempFile.fileName());
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
@@ -329,7 +329,7 @@ private slots:
         tempFile.open();
 
         perfRecord(perfOptions, exePath, {}, tempFile.fileName());
-        testPerfData(Data::Symbol{"hypot", "libm"}, Data::Symbol{"start", "cpp-sleep"}, tempFile.fileName(), false);
+        testPerfData(Data::Symbol{"hypot", 0, 0, "libm"}, Data::Symbol{"start", 0, 0, "cpp-sleep"}, tempFile.fileName(), false);
 
         QVERIFY(m_summaryData.offCpuTime > 1E9); // it should sleep at least 1s in total
         QVERIFY(m_summaryData.onCpuTime > 0); // there's some CPU time, but not sure how much
@@ -391,7 +391,7 @@ private slots:
         tempFile.open();
 
         perfRecord(perfOptions, exePath, {}, tempFile.fileName());
-        testPerfData(Data::Symbol{"hypot", "libm"}, Data::Symbol{"start", "cpp-sleep"}, tempFile.fileName(), false);
+        testPerfData(Data::Symbol{"hypot", 0, 0, "libm"}, Data::Symbol{"start", 0, 0, "cpp-sleep"}, tempFile.fileName(), false);
 
         QCOMPARE(m_bottomUpData.costs.numTypes(), 3);
         QCOMPARE(m_bottomUpData.costs.typeName(0), QStringLiteral("cycles"));
