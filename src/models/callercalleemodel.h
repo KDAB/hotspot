@@ -213,20 +213,20 @@ public:
 };
 
 template<typename ModelImpl>
-class LocationCostModelImpl : public HashModel<Data::LocationCostMap, ModelImpl>
+class LocationCostModelImpl : public HashModel<Data::SourceLocationCostMap, ModelImpl>
 {
 public:
     explicit LocationCostModelImpl(QObject* parent = nullptr)
-        : HashModel<Data::LocationCostMap, ModelImpl>(parent)
+        : HashModel<Data::SourceLocationCostMap, ModelImpl>(parent)
     {
     }
 
     virtual ~LocationCostModelImpl() = default;
 
-    void setResults(const Data::LocationCostMap& map, const Data::Costs& totalCosts)
+    void setResults(const Data::SourceLocationCostMap& map, const Data::Costs& totalCosts)
     {
         m_totalCosts = totalCosts;
-        HashModel<Data::LocationCostMap, ModelImpl>::setRows(map);
+        HashModel<Data::SourceLocationCostMap, ModelImpl>::setRows(map);
     }
 
     enum Columns

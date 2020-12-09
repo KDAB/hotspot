@@ -488,7 +488,8 @@ struct LocationCost
     ItemCost inclusiveCost;
 };
 
-using LocationCostMap = QHash<QString, LocationCost>;
+using SourceLocationCostMap = QHash<QString, LocationCost>;
+using OffsetLocationCostMap = QHash<quint64, LocationCost>;
 
 struct CallerCalleeEntry
 {
@@ -499,6 +500,18 @@ struct CallerCalleeEntry
         auto it = sourceMap.find(location);
         if (it == sourceMap.end()) {
             it = sourceMap.insert(location, {numTypes});
+        } else if (it->inclusiveCost.size() < static_cast<size_t>(numTypes)) {
+            it->inclusiveCost.resize(numTypes);
+            it->selfCost.resize(numTypes);
+        }
+        return *it;
+    }
+
+    LocationCost& offset(quint64 location, int numTypes)
+    {
+        auto it = offsetMap.find(location);
+        if (it == offsetMap.end()) {
+            it = offsetMap.insert(location, {numTypes});
         } else if (it->inclusiveCost.size() < static_cast<size_t>(numTypes)) {
             it->inclusiveCost.resize(numTypes);
             it->selfCost.resize(numTypes);
@@ -529,7 +542,9 @@ struct CallerCalleeEntry
     // callees, i.e. symbols being called from this symbol
     CalleeMap callees;
     // source map for this symbol, i.e. locations mapped to associated costs
-    LocationCostMap sourceMap;
+    SourceLocationCostMap sourceMap;
+    // per-IP map for this symbol for disassembly
+    OffsetLocationCostMap offsetMap;
 };
 
 using CallerCalleeEntryMap = QHash<Symbol, CallerCalleeEntry>;
@@ -785,7 +800,8 @@ Q_DECLARE_TYPEINFO(Data::BottomUp, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::ItemCost)
 Q_DECLARE_METATYPE(Data::CallerMap)
-Q_DECLARE_METATYPE(Data::LocationCostMap)
+Q_DECLARE_METATYPE(Data::SourceLocationCostMap)
+Q_DECLARE_METATYPE(Data::OffsetLocationCostMap)
 Q_DECLARE_METATYPE(Data::Costs)
 
 Q_DECLARE_METATYPE(Data::TopDown)

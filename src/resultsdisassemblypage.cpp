@@ -53,16 +53,22 @@
 #include "data.h"
 
 #include <QStandardItemModel>
+#include <QStringRef>
+
+namespace {
+    enum CustomRoles {
+        CostRole = Qt::UserRole,
+        TotalCostRole = Qt::UserRole + 1,
+    };
+}
 
 ResultsDisassemblyPage::ResultsDisassemblyPage(FilterAndZoomStack *filterStack, PerfParser *parser, QWidget *parent)
         : QWidget(parent)
         , ui(new Ui::ResultsDisassemblyPage)
         , m_model(new QStandardItemModel(this))
+        , m_costDelegate(new CostDelegate(CostRole, TotalCostRole, this))
 {
     ui->setupUi(this);
-    ui->splitter->setStretchFactor(0, 1);
-    ui->splitter->setStretchFactor(1, 1);
-    ui->splitter->setStretchFactor(2, 8);
     ui->asmView->setModel(m_model);
     ui->asmView->hide();
 }
@@ -75,6 +81,18 @@ void ResultsDisassemblyPage::clear()
     if (rowCount > 0) {
         m_model->removeRows(0, rowCount, QModelIndex());
     }
+}
+
+void ResultsDisassemblyPage::setupAsmViewModel(int numTypes)
+{
+    ui->asmView->header()->setStretchLastSection(false);
+    ui->asmView->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    for (int event = 0; event < numTypes; event++) {
+        ui->asmView->setColumnWidth(event + 1, 100);
+        ui->asmView->header()->setSectionResizeMode(event + 1, QHeaderView::Interactive);
+        ui->asmView->setItemDelegateForColumn(event + 1, m_costDelegate);
+    }
+    ui->asmView->show();
 }
 
 void ResultsDisassemblyPage::showDisassembly()
@@ -116,25 +134,61 @@ void ResultsDisassemblyPage::showDisassembly(const QString& processName, const Q
         int row = 0;
         m_model->clear();
 
-        m_model->setHorizontalHeaderLabels({tr("Assembly")});
+        QStringList headerList;
+        headerList.append({tr("Assembly")});
+        for (int i = 0; i < m_callerCalleeResults.selfCosts.numTypes(); i++) {
+            headerList.append(m_callerCalleeResults.selfCosts.typeName(i));
+        }
+        m_model->setHorizontalHeaderLabels(headerList);
 
+        int numTypes = m_callerCalleeResults.selfCosts.numTypes();
         QTextStream stream(&m_tmpFile);
         while (!stream.atEnd()) {
             QString asmLine = stream.readLine();
             if (asmLine.isEmpty() || asmLine.startsWith(QLatin1String("Disassembly"))) continue;
 
+            const auto asmTokens = asmLine.splitRef(QLatin1Char(':'));
+            const auto addrLine = asmTokens[0].trimmed();
+
+            bool ok = false;
+            const auto addr = addrLine.toULongLong(&ok, 16);
+            if (!ok) {
+                qWarning() << "unhandled asm line format:" << addrLine;
+                continue;
+            }
+
             QStandardItem *asmItem = new QStandardItem();
             asmItem->setText(asmLine);
             m_model->setItem(row, 0, asmItem);
+
+            // Calculate event times and add them in red to corresponding columns of the current disassembly row
+            float costLine = 0;
+            auto &entry = m_callerCalleeResults.entry(m_curSymbol);
+
+            auto it = entry.offsetMap.find(addr);
+            if (it != entry.offsetMap.end()) {
+                const auto& locationCost = it.value();
+                for (int event = 0; event < numTypes; event++) {
+                    costLine = locationCost.selfCost[event];
+                    const auto totalCost = m_callerCalleeResults.selfCosts.totalCost(event);
+                    QString costInstruction = Util::formatCostRelative(costLine, totalCost, true);
+
+                    //FIXME QStandardItem stuff should be reimplemented properly
+                    QStandardItem *costItem = new QStandardItem(costInstruction);
+                    costItem->setData(costLine, CostRole);
+                    costItem->setData(totalCost, TotalCostRole);
+                    m_model->setItem(row, event + 1, costItem);
+                }
+            }
             row++;
         }
-        ui->asmView->show();
+        setupAsmViewModel(numTypes);
     }
 }
 
 void ResultsDisassemblyPage::setSymbol(const Data::Symbol &symbol)
 {
-    m_curSymbol = symbol;    
+    m_curSymbol = symbol;
 }
 
 void ResultsDisassemblyPage::setData(const Data::DisassemblyResult &data)
@@ -143,8 +197,14 @@ void ResultsDisassemblyPage::setData(const Data::DisassemblyResult &data)
     m_appPath = data.appPath;
     m_extraLibPaths = data.extraLibPaths;
     m_arch = data.arch.trimmed().toLower();
+    m_disasmResult = data;
 
     //TODO: add the ability to configure the arch <-> objdump mapping somehow in the settings
     const auto isArm = m_arch.startsWith(QLatin1String("arm"));
     m_objdump = isArm ? QStringLiteral("arm-linux-gnueabi-objdump") : QStringLiteral("objdump");
+}
+
+void ResultsDisassemblyPage::setCostsMap(const Data::CallerCalleeResults& callerCalleeResults)
+{
+    m_callerCalleeResults = callerCalleeResults;
 }

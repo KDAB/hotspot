@@ -29,6 +29,7 @@
 
 #include <QWidget>
 #include "data.h"
+#include "models/costdelegate.h"
 
 class QMenu;
 
@@ -47,6 +48,7 @@ class PerfParser;
 class FilterAndZoomStack;
 class QStandardItemModel;
 class QTemporaryFile;
+class CostDelegate;
 
 class ResultsDisassemblyPage : public QWidget
 {
@@ -57,13 +59,16 @@ public:
     ~ResultsDisassemblyPage();
 
     void clear();
+    void setupAsmViewModel(int numTypes);
     void showDisassembly();
     // Output Disassembly that is the result of call process running 'processName' command on tab Disassembly
     void showDisassembly(const QString& processName, const QStringList& arguments);
     void setAppPath(const QString& path);
     void setSymbol(const Data::Symbol& data);
     void setData(const Data::DisassemblyResult& data);
-
+    void setCostsMap(const Data::CallerCalleeResults& callerCalleeResults);
+signals:
+    void jumpToCallerCallee(const Data::Symbol& symbol);
 private:
     QScopedPointer<Ui::ResultsDisassemblyPage> ui;
     // Model
@@ -80,4 +85,10 @@ private:
     QString m_arch;
     // Objdump binary name
     QString m_objdump;
+    // Map of symbols
+    Data::DisassemblyResult m_disasmResult;
+    // Map of symbols and its locations with costs
+    Data::CallerCalleeResults m_callerCalleeResults;
+    // Cost delegate
+    CostDelegate *m_costDelegate;
 };

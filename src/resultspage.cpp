@@ -179,6 +179,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     });
 
     connect(parser, &PerfParser::disassemblyDataAvailable, m_resultsDisassemblyPage, &ResultsDisassemblyPage::setData);
+    connect(parser, &PerfParser::callerCalleeDataAvailable, m_resultsDisassemblyPage, &ResultsDisassemblyPage::setCostsMap);
 
     connect(parser, &PerfParser::eventsAvailable, this, [this, eventModel](const Data::EventResults& data) {
         eventModel->setData(data);
