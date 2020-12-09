@@ -112,7 +112,7 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
         calleesModel->setResults(callees, costs);
         const auto callers = index.data(CallerCalleeModel::CallersRole).value<Data::CallerMap>();
         callersModel->setResults(callers, costs);
-        const auto sourceMap = index.data(CallerCalleeModel::SourceMapRole).value<Data::LocationCostMap>();
+        const auto sourceMap = index.data(CallerCalleeModel::SourceMapRole).value<Data::SourceLocationCostMap>();
         sourceMapModel->setResults(sourceMap, costs);
         if (index.model() == m_callerCalleeCostModel) {
             ui->callerCalleeTableView->setCurrentIndex(m_callerCalleeProxy->mapFromSource(index));
@@ -236,7 +236,7 @@ void ResultsCallerCalleePage::jumpToCallerCallee(const Data::Symbol& symbol)
 void ResultsCallerCalleePage::openEditor(const Data::Symbol& symbol)
 {
     const auto callerCalleeIndex = m_callerCalleeProxy->mapFromSource(m_callerCalleeCostModel->indexForSymbol(symbol));
-    const auto map = callerCalleeIndex.data(CallerCalleeModel::SourceMapRole).value<Data::LocationCostMap>();
+    const auto map = callerCalleeIndex.data(CallerCalleeModel::SourceMapRole).value<Data::SourceLocationCostMap>();
 
     auto it = std::find_if(map.keyBegin(), map.keyEnd(), [&symbol, this](const QString& locationStr) {
         const auto location = toSourceMapLocation(locationStr, symbol);

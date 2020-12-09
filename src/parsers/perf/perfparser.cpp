@@ -538,11 +538,14 @@ void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& loca
     auto recursionIt = recursionGuard->find(symbol);
     if (recursionIt == recursionGuard->end()) {
         auto& entry = callerCalleeResult->entry(symbol);
-        auto& locationCost = entry.source(location.location, numCosts);
+        auto& sourceCost = entry.source(location.location, numCosts);
+        auto& locationCost = entry.offset(location.relAddr, numCosts);
 
+        sourceCost.inclusiveCost[type] += cost;
         locationCost.inclusiveCost[type] += cost;
         if (recursionGuard->isEmpty()) {
             // increment self cost for leaf
+            sourceCost.selfCost[type] += cost;
             locationCost.selfCost[type] += cost;
         }
         recursionGuard->insert(symbol);
@@ -1238,6 +1241,7 @@ public:
     Data::TimeRange applicationTime;
     QSet<quint32> uniqueThreads;
     QSet<quint32> uniqueProcess;
+    Data::DisassemblyResult disassemblyResult;
     Data::BottomUpResults bottomUpResult;
     Data::TopDownResults topDownResult;
     Data::CallerCalleeResults callerCalleeResult;
@@ -1351,6 +1355,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
     using namespace ThreadWeaver;
     stream() << make_job([path, parserBinary, parserArgs, this]() {
         PerfParserPrivate d;
+        d.disassemblyResult = m_disassemblyResult;
         connect(&d, &PerfParserPrivate::progress, this, &PerfParser::progress);
         connect(this, &PerfParser::stopRequested, &d, &PerfParserPrivate::stop);
 
@@ -1359,7 +1364,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
             emit bottomUpDataAvailable(d.bottomUpResult);
             emit topDownDataAvailable(d.topDownResult);
             emit summaryDataAvailable(d.summaryResult);
-            emit disassemblyDataAvailable(m_disassemblyResult);
+            emit disassemblyDataAvailable(d.disassemblyResult);
             emit callerCalleeDataAvailable(d.callerCalleeResult);
             emit eventsAvailable(d.eventResult);
             emit parsingFinished();
@@ -1473,6 +1478,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         Data::BottomUpResults bottomUp;
         Data::EventResults events = m_events;
         Data::CallerCalleeResults callerCallee;
+        Data::DisassemblyResult disassembly = m_disassemblyResult;
         const bool filterByTime = filter.time.isValid();
         const bool filterByCpu = filter.cpuId != std::numeric_limits<quint32>::max();
         const bool excludeByCpu = !filter.excludeCpuIds.isEmpty();
