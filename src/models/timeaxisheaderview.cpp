@@ -125,9 +125,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
         painter->drawText(placeHolderRect, Qt::AlignBottom | Qt::AlignLeft, pfl.prefixLabelTrailing(), &bounding);
 
         painter->setPen(prefixedColor);
-    }
-    else
-    {
+    } else {
         painter->setPen(tickColor);
     }
 

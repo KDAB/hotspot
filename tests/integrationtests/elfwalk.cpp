@@ -25,10 +25,10 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <libdwfl.h>
-#include <libdw.h>
-#include <dwarf.h>
 #include <cstdio>
+#include <dwarf.h>
+#include <libdw.h>
+#include <libdwfl.h>
 
 #include <vector>
 
@@ -40,8 +40,10 @@ struct DieRanges
     struct Range
     {
         Range(Dwarf_Addr low, Dwarf_Addr high)
-            : low(low), high(high)
-        {}
+            : low(low)
+            , high(high)
+        {
+        }
         Dwarf_Addr low = 0;
         Dwarf_Addr high = 0;
     };
@@ -50,10 +52,9 @@ struct DieRanges
 };
 
 // see libdw_visit_scopes.c
-bool may_have_scopes(Dwarf_Die *die)
+bool may_have_scopes(Dwarf_Die* die)
 {
-    switch (dwarf_tag(die))
-    {
+    switch (dwarf_tag(die)) {
     /* DIEs with addresses we can try to match.  */
     case DW_TAG_compile_unit:
     case DW_TAG_module:
@@ -79,7 +80,7 @@ bool may_have_scopes(Dwarf_Die *die)
     return false;
 }
 
-void walk_die(Dwarf_Die *die, DieRanges *parent, int depth)
+void walk_die(Dwarf_Die* die, DieRanges* parent, int depth)
 {
     if (!may_have_scopes(die))
         return;
@@ -118,7 +119,7 @@ void walk_die(Dwarf_Die *die, DieRanges *parent, int depth)
     }
 }
 
-DieRanges walk_cudie(Dwarf_Die *cudie)
+DieRanges walk_cudie(Dwarf_Die* cudie)
 {
     DieRanges ranges;
     ranges.die = *cudie;
@@ -126,10 +127,10 @@ DieRanges walk_cudie(Dwarf_Die *cudie)
     return ranges;
 }
 
-void walk_cudies(Dwfl_Module *mod)
+void walk_cudies(Dwfl_Module* mod)
 {
     std::vector<DieRanges> ranges;
-    Dwarf_Die *cudie = nullptr;
+    Dwarf_Die* cudie = nullptr;
     Dwarf_Addr bias = 0;
     while ((cudie = dwfl_module_nextcu(mod, cudie, &bias))) {
         ranges.emplace_back(walk_cudie(cudie));
@@ -152,10 +153,10 @@ int main(int argc, char** argv)
         &dwfl_offline_section_address,
         nullptr,
     };
-    auto *dwfl = dwfl_begin(&callbacks);
+    auto* dwfl = dwfl_begin(&callbacks);
 
     dwfl_report_begin(dwfl);
-    auto *mod = dwfl_report_elf(dwfl, file, file, -1, 0, false);
+    auto* mod = dwfl_report_elf(dwfl, file, file, -1, 0, false);
     if (mod)
         walk_cudies(mod);
     else

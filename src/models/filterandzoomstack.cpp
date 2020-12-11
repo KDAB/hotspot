@@ -28,8 +28,8 @@
 #include "filterandzoomstack.h"
 
 #include <QAction>
-#include <QMenu>
 #include <QIcon>
+#include <QMenu>
 
 FilterAndZoomStack::FilterAndZoomStack(QObject* parent)
     : QObject(parent)
@@ -50,19 +50,23 @@ FilterAndZoomStack::FilterAndZoomStack(QObject* parent)
     connect(m_actions.resetZoom, &QAction::triggered, this, &FilterAndZoomStack::resetZoom);
     m_actions.resetZoom->setToolTip(tr("Reset the zoom level to show the full range in the time line."));
 
-    m_actions.resetFilterAndZoom = new QAction(QIcon::fromTheme(QStringLiteral("edit-clear")), tr("Reset Zoom And Filter"), this);
+    m_actions.resetFilterAndZoom =
+        new QAction(QIcon::fromTheme(QStringLiteral("edit-clear")), tr("Reset Zoom And Filter"), this);
     connect(m_actions.resetFilterAndZoom, &QAction::triggered, this, &FilterAndZoomStack::resetFilterAndZoom);
-    m_actions.resetFilterAndZoom->setToolTip(tr("Reset both, filters and zoom level to show the full data in both, views and timeline."));
+    m_actions.resetFilterAndZoom->setToolTip(
+        tr("Reset both, filters and zoom level to show the full data in both, views and timeline."));
 
-    m_actions.filterInBySymbol = new QAction(QIcon::fromTheme(QStringLiteral("view-filter")), tr("Filter In By Symbol"), this);
-    connect(m_actions.filterInBySymbol, &QAction::triggered, this, [this](){
+    m_actions.filterInBySymbol =
+        new QAction(QIcon::fromTheme(QStringLiteral("view-filter")), tr("Filter In By Symbol"), this);
+    connect(m_actions.filterInBySymbol, &QAction::triggered, this, [this]() {
         const auto data = m_actions.filterInBySymbol->data();
         Q_ASSERT(data.canConvert<Data::Symbol>());
         filterInBySymbol(data.value<Data::Symbol>());
     });
 
-    m_actions.filterOutBySymbol = new QAction(QIcon::fromTheme(QStringLiteral("view-filter")), tr("Filter Out By Symbol"), this);
-    connect(m_actions.filterOutBySymbol, &QAction::triggered, this, [this](){
+    m_actions.filterOutBySymbol =
+        new QAction(QIcon::fromTheme(QStringLiteral("view-filter")), tr("Filter Out By Symbol"), this);
+    connect(m_actions.filterOutBySymbol, &QAction::triggered, this, [this]() {
         const auto data = m_actions.filterInBySymbol->data();
         Q_ASSERT(data.canConvert<Data::Symbol>());
         filterOutBySymbol(data.value<Data::Symbol>());
@@ -77,12 +81,12 @@ FilterAndZoomStack::~FilterAndZoomStack() = default;
 
 Data::FilterAction FilterAndZoomStack::filter() const
 {
-    return m_filterStack.isEmpty() ? Data::FilterAction{} : m_filterStack.last();
+    return m_filterStack.isEmpty() ? Data::FilterAction {} : m_filterStack.last();
 }
 
 Data::ZoomAction FilterAndZoomStack::zoom() const
 {
-    return m_zoomStack.isEmpty() ? Data::ZoomAction{} : m_zoomStack.last();
+    return m_zoomStack.isEmpty() ? Data::ZoomAction {} : m_zoomStack.last();
 }
 
 FilterAndZoomStack::Actions FilterAndZoomStack::actions() const
@@ -96,7 +100,7 @@ void FilterAndZoomStack::clear()
     m_zoomStack.clear();
 }
 
-void FilterAndZoomStack::filterInByTime(const Data::TimeRange &time)
+void FilterAndZoomStack::filterInByTime(const Data::TimeRange& time)
 {
     zoomIn(time);
 
@@ -147,14 +151,14 @@ void FilterAndZoomStack::filterOutByCpu(quint32 cpuId)
     applyFilter(filter);
 }
 
-void FilterAndZoomStack::filterInBySymbol(const Data::Symbol &symbol)
+void FilterAndZoomStack::filterInBySymbol(const Data::Symbol& symbol)
 {
     Data::FilterAction filter;
     filter.includeSymbols.insert(symbol);
     applyFilter(filter);
 }
 
-void FilterAndZoomStack::filterOutBySymbol(const Data::Symbol &symbol)
+void FilterAndZoomStack::filterOutBySymbol(const Data::Symbol& symbol)
 {
     Data::FilterAction filter;
     filter.excludeSymbols.insert(symbol);
@@ -201,7 +205,7 @@ void FilterAndZoomStack::filterOut()
     emit filterChanged(filter());
 }
 
-void FilterAndZoomStack::zoomIn(const Data::TimeRange &time)
+void FilterAndZoomStack::zoomIn(const Data::TimeRange& time)
 {
     m_zoomStack.append({time.normalized()});
     emit zoomChanged(m_zoomStack.constLast());

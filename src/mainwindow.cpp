@@ -182,7 +182,7 @@ MainWindow::MainWindow(QWidget* parent)
         });
     }
 
-    auto *showTimelineAction = ui->viewMenu->addAction(tr("Show Timeline"));
+    auto* showTimelineAction = ui->viewMenu->addAction(tr("Show Timeline"));
     showTimelineAction->setCheckable(true);
     showTimelineAction->setChecked(true);
     showTimelineAction->setShortcut(tr("Ctrl+T"));
@@ -405,8 +405,8 @@ void MainWindow::setupPathSettingsMenu()
 {
     auto menu = new QMenu(this);
     auto addPathAction = [this, menu](const QString& label, void (MainWindow::*setPath)(const QString&),
-                                      void (MainWindow::*pathChanged)(const QString&),
-                                      const QString& placeHolder, const QString& tooltip) {
+                                      void (MainWindow::*pathChanged)(const QString&), const QString& placeHolder,
+                                      const QString& tooltip) {
         auto action = new QWidgetAction(menu);
         auto container = new QWidget;
         auto layout = new QHBoxLayout;
@@ -421,20 +421,20 @@ void MainWindow::setupPathSettingsMenu()
         action->setDefaultWidget(container);
         menu->addAction(action);
     };
-    addPathAction(tr("Sysroot:"), &MainWindow::setSysroot, &MainWindow::sysrootChanged,
-                  tr("local machine"), tr("Path to the sysroot. Leave empty to use the local machine."));
-    addPathAction(tr("Application Path:"), &MainWindow::setAppPath, &MainWindow::appPathChanged,
-                  tr("auto-detect"), tr("Path to the application binary and library."));
+    addPathAction(tr("Sysroot:"), &MainWindow::setSysroot, &MainWindow::sysrootChanged, tr("local machine"),
+                  tr("Path to the sysroot. Leave empty to use the local machine."));
+    addPathAction(tr("Application Path:"), &MainWindow::setAppPath, &MainWindow::appPathChanged, tr("auto-detect"),
+                  tr("Path to the application binary and library."));
     addPathAction(tr("Extra Library Paths:"), &MainWindow::setExtraLibPaths, &MainWindow::extraLibPathsChanged,
                   tr("empty"), tr("List of colon-separated paths that contain additional libraries."));
-    addPathAction(tr("Debug Paths:"), &MainWindow::setDebugPaths, &MainWindow::debugPathsChanged,
-                  tr("auto-detect"), tr("List of colon-separated paths that contain debug information."));
-    addPathAction(tr("Kallsyms:"), &MainWindow::setKallsyms, &MainWindow::kallsymsChanged,
-                  tr("auto-detect"), tr("Path to the kernel symbol mapping."));
-    addPathAction(tr("Architecture:"), &MainWindow::setArch, &MainWindow::archChanged,
-                  tr("auto-detect"), tr("System architecture, e.g. x86_64, arm, aarch64 etc."));
-    addPathAction(tr("Objdump:"), &MainWindow::setObjdump, &MainWindow::objdumpChanged,
-                  tr("auto-detect"), tr("Path to the objdump."));
+    addPathAction(tr("Debug Paths:"), &MainWindow::setDebugPaths, &MainWindow::debugPathsChanged, tr("auto-detect"),
+                  tr("List of colon-separated paths that contain debug information."));
+    addPathAction(tr("Kallsyms:"), &MainWindow::setKallsyms, &MainWindow::kallsymsChanged, tr("auto-detect"),
+                  tr("Path to the kernel symbol mapping."));
+    addPathAction(tr("Architecture:"), &MainWindow::setArch, &MainWindow::archChanged, tr("auto-detect"),
+                  tr("System architecture, e.g. x86_64, arm, aarch64 etc."));
+    addPathAction(tr("Objdump:"), &MainWindow::setObjdump, &MainWindow::objdumpChanged, tr("auto-detect"),
+                  tr("Path to the objdump."));
     connect(this, &MainWindow::objdumpChanged, m_resultsPage, &ResultsPage::setObjdump);
     m_startPage->setPathSettingsMenu(menu);
 }
@@ -543,7 +543,7 @@ void MainWindow::navigateToCode(const QString& filePath, int lineNumber, int col
             return;
         }
         command = args.takeFirst();
-        for (auto &arg : args) {
+        for (auto& arg : args) {
             arg.replace(QLatin1String("%f"), filePath);
             arg.replace(QLatin1String("%l"), QString::number(std::max(1, lineNumber)));
             arg.replace(QLatin1String("%c"), QString::number(std::max(1, columnNumber)));

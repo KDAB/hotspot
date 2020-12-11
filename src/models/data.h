@@ -29,10 +29,10 @@
 
 #include <QHash>
 #include <QMetaType>
+#include <QSet>
 #include <QString>
 #include <QTypeInfo>
 #include <QVector>
-#include <QSet>
 
 #include "../util.h"
 
@@ -421,12 +421,14 @@ struct BottomUpResults
     {
         costs.addTotalCost(type, cost);
         auto parent = &root;
-        foreachFrame(frames, [this, type, cost, &parent, frameCallback](const Data::Symbol &symbol, const Data::Location &location) {
-            parent = parent->entryForSymbol(symbol, &maxBottomUpId);
-            costs.add(type, parent->id, cost);
-            frameCallback(symbol, location);
-            return true;
-        });
+        foreachFrame(
+            frames,
+            [this, type, cost, &parent, frameCallback](const Data::Symbol& symbol, const Data::Location& location) {
+                parent = parent->entryForSymbol(symbol, &maxBottomUpId);
+                costs.add(type, parent->id, cost);
+                frameCallback(symbol, location);
+                return true;
+            });
         return parent;
     }
 
@@ -768,11 +770,9 @@ struct FilterAction
 
     bool isValid() const
     {
-        return time.isValid() || processId != INVALID_PID
-            || threadId != INVALID_PID || cpuId != INVALID_CPU_ID
-            || !excludeProcessIds.isEmpty() || !excludeThreadIds.isEmpty()
-            || !excludeCpuIds.isEmpty() || !includeSymbols.isEmpty()
-            || !excludeSymbols.isEmpty();
+        return time.isValid() || processId != INVALID_PID || threadId != INVALID_PID || cpuId != INVALID_CPU_ID
+            || !excludeProcessIds.isEmpty() || !excludeThreadIds.isEmpty() || !excludeCpuIds.isEmpty()
+            || !includeSymbols.isEmpty() || !excludeSymbols.isEmpty();
     }
 };
 

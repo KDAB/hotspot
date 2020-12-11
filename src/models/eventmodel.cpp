@@ -32,7 +32,7 @@
 #include <QDebug>
 #include <QSet>
 
-static bool operator<(const EventModel::Process &process, qint32 pid)
+static bool operator<(const EventModel::Process& process, qint32 pid)
 {
     return process.pid < pid;
 }
@@ -174,15 +174,16 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         }
         return {};
     } else if (tag == Tag::Processes) {
-        const auto &process = m_processes.value(index.row());
+        const auto& process = m_processes.value(index.row());
         if (role == Qt::DisplayRole)
             return tr("%1 (#%2)").arg(process.name, QString::number(process.pid));
         else if (role == SortRole)
             return process.pid;
 
         if (role == Qt::ToolTipRole) {
-            QString tooltip = tr("Process %1, pid = %2, num threads = %3\n")
-                                        .arg(process.name, QString::number(process.pid), QString::number(process.threads.size()));
+            QString tooltip =
+                tr("Process %1, pid = %2, num threads = %3\n")
+                    .arg(process.name, QString::number(process.pid), QString::number(process.threads.size()));
 
             quint64 runtime = 0;
             quint64 maxRuntime = 0;
@@ -199,15 +200,14 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
 
             const auto totalRuntime = m_time.delta();
             tooltip += tr("Runtime: %1 (%2% of total runtime)\n")
-                            .arg(Util::formatTimeString(maxRuntime), Util::formatCostRelative(maxRuntime, totalRuntime));
+                           .arg(Util::formatTimeString(maxRuntime), Util::formatCostRelative(maxRuntime, totalRuntime));
             if (m_totalOffCpuTime > 0) {
                 const auto onCpuTime = runtime - offCpuTime;
                 tooltip += tr("On-CPU time: %1 (%2% of combined thread runtime, %3% of total On-CPU time)\n")
-                                .arg(Util::formatTimeString(onCpuTime), Util::formatCostRelative(onCpuTime, runtime),
+                               .arg(Util::formatTimeString(onCpuTime), Util::formatCostRelative(onCpuTime, runtime),
                                     Util::formatCostRelative(onCpuTime, m_totalOnCpuTime));
                 tooltip += tr("Off-CPU time: %1 (%2% of combined thread runtime, %3% of total Off-CPU time)\n")
-                                .arg(Util::formatTimeString(offCpuTime),
-                                    Util::formatCostRelative(offCpuTime, runtime),
+                               .arg(Util::formatTimeString(offCpuTime), Util::formatCostRelative(offCpuTime, runtime),
                                     Util::formatCostRelative(offCpuTime, m_totalOffCpuTime));
                 tooltip += tr("CPUs utilized: %1\n").arg(Util::formatCostRelative(onCpuTime, maxRuntime * 100));
             }

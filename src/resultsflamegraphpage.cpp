@@ -30,12 +30,12 @@
 
 #include "parsers/perf/perfparser.h"
 
-#include <QMenu>
 #include <QAction>
 #include <QFileDialog>
 #include <QImageWriter>
-#include <QTextStream>
+#include <QMenu>
 #include <QMessageBox>
+#include <QTextStream>
 
 namespace {
 QString imageFormatFilter()
@@ -51,34 +51,35 @@ QString imageFormatFilter()
 }
 }
 
-ResultsFlameGraphPage::ResultsFlameGraphPage(FilterAndZoomStack* filterStack, PerfParser* parser, QMenu* exportMenu, QWidget* parent)
+ResultsFlameGraphPage::ResultsFlameGraphPage(FilterAndZoomStack* filterStack, PerfParser* parser, QMenu* exportMenu,
+                                             QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsFlameGraphPage)
 {
     ui->setupUi(this);
     ui->flameGraph->setFilterStack(filterStack);
 
-    connect(parser, &PerfParser::bottomUpDataAvailable, this,
-            [this, exportMenu](const Data::BottomUpResults& data) {
-                ui->flameGraph->setBottomUpData(data);
-                m_exportAction = exportMenu->addAction(QIcon::fromTheme(QStringLiteral("image-x-generic")), tr("Flamegraph"));
-                connect(m_exportAction, &QAction::triggered, this, [this]() {
-                    const auto filter = tr("Images (%1);;SVG (*.svg)").arg(imageFormatFilter());
-                    QString selectedFilter;
-                    const auto fileName = QFileDialog::getSaveFileName(this, tr("Export Flamegraph"), {}, filter, &selectedFilter);
-                    if (fileName.isEmpty())
-                        return;
-                    if (selectedFilter.contains(QStringLiteral("svg"))) {
-                        ui->flameGraph->saveSvg(fileName);
-                    } else {
-                        QImageWriter writer(fileName);
-                        if (!writer.write(ui->flameGraph->toImage())) {
-                            QMessageBox::warning(this, tr("Export Failed"),
-                                                tr("Failed to export flamegraph: %1").arg(writer.errorString()));
-                        }
-                    }
-                });
-            });
+    connect(parser, &PerfParser::bottomUpDataAvailable, this, [this, exportMenu](const Data::BottomUpResults& data) {
+        ui->flameGraph->setBottomUpData(data);
+        m_exportAction = exportMenu->addAction(QIcon::fromTheme(QStringLiteral("image-x-generic")), tr("Flamegraph"));
+        connect(m_exportAction, &QAction::triggered, this, [this]() {
+            const auto filter = tr("Images (%1);;SVG (*.svg)").arg(imageFormatFilter());
+            QString selectedFilter;
+            const auto fileName =
+                QFileDialog::getSaveFileName(this, tr("Export Flamegraph"), {}, filter, &selectedFilter);
+            if (fileName.isEmpty())
+                return;
+            if (selectedFilter.contains(QStringLiteral("svg"))) {
+                ui->flameGraph->saveSvg(fileName);
+            } else {
+                QImageWriter writer(fileName);
+                if (!writer.write(ui->flameGraph->toImage())) {
+                    QMessageBox::warning(this, tr("Export Failed"),
+                                         tr("Failed to export flamegraph: %1").arg(writer.errorString()));
+                }
+            }
+        });
+    });
 
     connect(parser, &PerfParser::topDownDataAvailable, this,
             [this](const Data::TopDownResults& data) { ui->flameGraph->setTopDownData(data); });

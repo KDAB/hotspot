@@ -125,7 +125,7 @@ public:
         if (!childItem) {
             return {};
         }
-        auto *parent = childItem->parent;
+        auto* parent = childItem->parent;
         if (m_simplify && parent && parent->children.size() == 1) {
             while (parent->parent && parent->parent->children.size() == 1) {
                 parent = parent->parent;
@@ -170,7 +170,10 @@ public:
         return {};
     }
 
-    bool simplify() const { return m_simplify; }
+    bool simplify() const
+    {
+        return m_simplify;
+    }
 
     /**
      * When simplification is enabled, long call chains get flattened until they branch the first time
@@ -222,8 +225,7 @@ private:
 
         int row = 0;
         if (m_simplify && parentItem->children.size() == 1) {
-            while (parentItem->parent && parentItem->parent->children.size() == 1)
-            {
+            while (parentItem->parent && parentItem->parent->children.size() == 1) {
                 ++row;
                 parentItem = parentItem->parent;
             };

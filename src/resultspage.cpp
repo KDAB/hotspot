@@ -31,17 +31,17 @@
 #include "parsers/perf/perfparser.h"
 
 #include "resultsbottomuppage.h"
-#include "resultsdisassemblypage.h"
 #include "resultscallercalleepage.h"
+#include "resultsdisassemblypage.h"
 #include "resultsflamegraphpage.h"
 #include "resultssummarypage.h"
 #include "resultstopdownpage.h"
 #include "resultsutil.h"
 
 #include "models/eventmodel.h"
-#include "models/timelinedelegate.h"
-#include "models/timeaxisheaderview.h"
 #include "models/filterandzoomstack.h"
+#include "models/timeaxisheaderview.h"
+#include "models/timelinedelegate.h"
 
 #include <KLocalizedString>
 #include <ThreadWeaver/ThreadWeaver>
@@ -179,7 +179,8 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     });
 
     connect(parser, &PerfParser::disassemblyDataAvailable, m_resultsDisassemblyPage, &ResultsDisassemblyPage::setData);
-    connect(parser, &PerfParser::callerCalleeDataAvailable, m_resultsDisassemblyPage, &ResultsDisassemblyPage::setCostsMap);
+    connect(parser, &PerfParser::callerCalleeDataAvailable, m_resultsDisassemblyPage,
+            &ResultsDisassemblyPage::setCostsMap);
 
     connect(parser, &PerfParser::eventsAvailable, this, [this, eventModel](const Data::EventResults& data) {
         eventModel->setData(data);
@@ -221,8 +222,8 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
         if (data.lostChunks > 0) {
             //: %1: Lost 1 event(s). %2: Lost 1 chunk(s).
             ui->lostMessage->setText(tr("%1 %2 - Check IO/CPU overload!")
-                .arg(i18np("Lost 1 event.", "Lost %1 events.", data.lostEvents),
-                     i18np("Lost 1 chunk.", "Lost %1 chunks.", data.lostChunks)));
+                                         .arg(i18np("Lost 1 event.", "Lost %1 events.", data.lostEvents),
+                                              i18np("Lost 1 chunk.", "Lost %1 chunks.", data.lostChunks)));
             ui->lostMessage->show();
         } else {
             ui->lostMessage->hide();
@@ -234,7 +235,8 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCodeFailed, this, &ResultsPage::showError);
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::selectSymbol, this, selectSymbol);
 
-    connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::jumpToDisassembly, this, &ResultsPage::onJumpToDisassembly);
+    connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::jumpToDisassembly, this,
+            &ResultsPage::onJumpToDisassembly);
     connect(m_resultsSummaryPage, &ResultsSummaryPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
     connect(m_resultsSummaryPage, &ResultsSummaryPage::openEditor, this, &ResultsPage::onOpenEditor);
     connect(m_resultsSummaryPage, &ResultsSummaryPage::selectSymbol, this, selectSymbol);
@@ -253,7 +255,8 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::selectSymbol, this, selectSymbol);
     connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::jumpToDisassembly, this,
             &ResultsPage::onJumpToDisassembly);
-    connect(m_resultsDisassemblyPage, &ResultsDisassemblyPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
+    connect(m_resultsDisassemblyPage, &ResultsDisassemblyPage::jumpToCallerCallee, this,
+            &ResultsPage::onJumpToCallerCallee);
 
     {
         // create a busy indicator

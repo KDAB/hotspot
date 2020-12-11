@@ -49,10 +49,10 @@ class FilterAndZoomStack;
 namespace ResultsUtil {
 void setupHeaderView(QTreeView* view);
 
-void connectFilter(QLineEdit *filter, QSortFilterProxyModel *proxy);
+void connectFilter(QLineEdit* filter, QSortFilterProxyModel* proxy);
 
-void setupTreeView(QTreeView* view, QLineEdit* filter, QAbstractItemModel* model, int initialSortColumn,
-                   int sortRole, int filterRole);
+void setupTreeView(QTreeView* view, QLineEdit* filter, QAbstractItemModel* model, int initialSortColumn, int sortRole,
+                   int filterRole);
 
 template<typename Model>
 void setupTreeView(QTreeView* view, QLineEdit* filter, Model* model)
@@ -68,7 +68,7 @@ void setupCostDelegate(Model* model, QTreeView* view)
     setupCostDelegate(model, view, Model::SortRole, Model::TotalCostRole, Model::NUM_BASE_COLUMNS);
 }
 
-void addFilterActions(QMenu* menu, const Data::Symbol &symbol, FilterAndZoomStack* filterStack);
+void addFilterActions(QMenu* menu, const Data::Symbol& symbol, FilterAndZoomStack* filterStack);
 
 enum class CallbackAction
 {
@@ -84,7 +84,8 @@ void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filte
 
 template<typename Model, typename Context>
 void setupContextMenu(QTreeView* view, Model* /*model*/, FilterAndZoomStack* filterStack, Context* context,
-                      CallbackActions actions = {CallbackAction::ViewCallerCallee, CallbackAction::OpenEditor, CallbackAction::SelectSymbol, CallbackAction::ViewDisassembly})
+                      CallbackActions actions = {CallbackAction::ViewCallerCallee, CallbackAction::OpenEditor,
+                                                 CallbackAction::SelectSymbol, CallbackAction::ViewDisassembly})
 {
     setupContextMenu(view, Model::SymbolRole, filterStack, actions,
                      [context](ResultsUtil::CallbackAction action, const Data::Symbol& symbol) {

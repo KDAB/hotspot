@@ -30,8 +30,8 @@
 
 #include "processfiltermodel.h"
 #include "processmodel.h"
-#include "util.h"
 #include "resultsutil.h"
+#include "util.h"
 
 #include <QDebug>
 #include <QKeyEvent>
@@ -394,7 +394,7 @@ RecordPage::RecordPage(QWidget* parent)
     } else {
         ui->compressionComboBox->addItem(tr("Disabled"), -1);
         ui->compressionComboBox->addItem(tr("Enabled (Default Level)"), 0);
-            ui->compressionComboBox->addItem(tr("Level 1 (Fastest)"), 1);
+        ui->compressionComboBox->addItem(tr("Level 1 (Fastest)"), 1);
         for (int i = 2; i <= 21; ++i)
             ui->compressionComboBox->addItem(tr("Level %1").arg(i), 0);
         ui->compressionComboBox->addItem(tr("Level 22 (Slowest)"), 22);

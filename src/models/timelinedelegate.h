@@ -51,7 +51,7 @@ struct TimeLineData
 
     int mapCostToY(quint64 cost) const;
 
-    void zoom(const Data::TimeRange &time);
+    void zoom(const Data::TimeRange& time);
 
     static const constexpr int padding = 2;
     Data::Events events;
@@ -78,7 +78,7 @@ public:
                    const QModelIndex& index) override;
 
     void setEventType(int type);
-    void setSelectedStacks(const QVector<qint32> &selectedStacks);
+    void setSelectedStacks(const QVector<qint32>& selectedStacks);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;

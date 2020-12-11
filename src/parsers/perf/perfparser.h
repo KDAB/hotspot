@@ -52,9 +52,18 @@ public:
 
     void exportResults(const QUrl& url);
 
-    Data::BottomUpResults bottomUpResults() const { return m_bottomUpResults; }
-    Data::CallerCalleeResults callerCalleeResults() const { return m_callerCalleeResults; }
-    Data::EventResults eventResults() const { return m_events; }
+    Data::BottomUpResults bottomUpResults() const
+    {
+        return m_bottomUpResults;
+    }
+    Data::CallerCalleeResults callerCalleeResults() const
+    {
+        return m_callerCalleeResults;
+    }
+    Data::EventResults eventResults() const
+    {
+        return m_events;
+    }
 
 signals:
     void parsingStarted();

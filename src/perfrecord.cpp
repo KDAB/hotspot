@@ -346,7 +346,8 @@ static QByteArray perfOutput(const QStringList& arguments)
     QProcess process;
 
     auto reportError = [&]() {
-        qWarning() << "Failed to run perf" << process.arguments() << process.error() << process.errorString() << process.readAllStandardError();
+        qWarning() << "Failed to run perf" << process.arguments() << process.error() << process.errorString()
+                   << process.readAllStandardError();
     };
 
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();

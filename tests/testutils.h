@@ -161,7 +161,7 @@ void dumpList(const QStringList& list)
     }
 }
 
-void printModelImpl(const QAbstractItemModel* model, const QModelIndex& parent, const QString &indent, QStringList* ret)
+void printModelImpl(const QAbstractItemModel* model, const QModelIndex& parent, const QString& indent, QStringList* ret)
 {
     for (int i = 0, c = model->rowCount(parent); i < c; ++i) {
         const auto index = model->index(i, 0, parent);

@@ -30,11 +30,11 @@
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QHeaderView>
+#include <QLineEdit>
 #include <QMenu>
-#include <QTreeView>
 #include <QSortFilterProxyModel>
 #include <QTimer>
-#include <QLineEdit>
+#include <QTreeView>
 
 #include <KLocalizedString>
 
@@ -51,9 +51,9 @@ void setupHeaderView(QTreeView* view)
     view->setHeader(new CostHeaderView(view));
 }
 
-void connectFilter(QLineEdit *filter, QSortFilterProxyModel *proxy)
+void connectFilter(QLineEdit* filter, QSortFilterProxyModel* proxy)
 {
-    auto *timer = new QTimer(filter);
+    auto* timer = new QTimer(filter);
     timer->setSingleShot(true);
 
     filter->setClearButtonEnabled(true);
@@ -62,16 +62,13 @@ void connectFilter(QLineEdit *filter, QSortFilterProxyModel *proxy)
     proxy->setFilterKeyColumn(-1);
     proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
-    QObject::connect(timer, &QTimer::timeout, proxy, [filter, proxy]() {
-        proxy->setFilterFixedString(filter->text());
-    });
-    QObject::connect(filter, &QLineEdit::textChanged, timer, [timer]() {
-        timer->start(300);
-    });
+    QObject::connect(timer, &QTimer::timeout, proxy,
+                     [filter, proxy]() { proxy->setFilterFixedString(filter->text()); });
+    QObject::connect(filter, &QLineEdit::textChanged, timer, [timer]() { timer->start(300); });
 }
 
-void setupTreeView(QTreeView* view, QLineEdit* filter, QAbstractItemModel* model, int initialSortColumn,
-                   int sortRole, int filterRole)
+void setupTreeView(QTreeView* view, QLineEdit* filter, QAbstractItemModel* model, int initialSortColumn, int sortRole,
+                   int filterRole)
 {
     auto proxy = new QSortFilterProxyModel(view);
     proxy->setRecursiveFilteringEnabled(true);
@@ -123,8 +120,7 @@ void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filte
                                  [symbol, callback]() { callback(CallbackAction::OpenEditor, symbol); });
             }
             if (actions.testFlag(CallbackAction::ViewDisassembly)) {
-                auto* viewDisassembly =
-                    contextMenu.addAction(QCoreApplication::translate("Util", "Disassembly"));
+                auto* viewDisassembly = contextMenu.addAction(QCoreApplication::translate("Util", "Disassembly"));
                 QObject::connect(viewDisassembly, &QAction::triggered, &contextMenu,
                                  [symbol, callback]() { callback(CallbackAction::ViewDisassembly, symbol); });
             }
@@ -138,10 +134,11 @@ void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filte
     });
 
     if (actions.testFlag(ResultsUtil::CallbackAction::SelectSymbol)) {
-        QObject::connect(view->selectionModel(), &QItemSelectionModel::currentRowChanged, view, [=](const QModelIndex &current) {
-            const auto symbol = current.data(symbolRole).value<Data::Symbol>();
-            callback(CallbackAction::SelectSymbol, symbol);
-        });
+        QObject::connect(view->selectionModel(), &QItemSelectionModel::currentRowChanged, view,
+                         [=](const QModelIndex& current) {
+                             const auto symbol = current.data(symbolRole).value<Data::Symbol>();
+                             callback(CallbackAction::SelectSymbol, symbol);
+                         });
     }
 }
 

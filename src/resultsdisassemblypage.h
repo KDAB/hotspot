@@ -27,9 +27,9 @@
 
 #pragma once
 
-#include <QWidget>
 #include "data.h"
 #include "models/costdelegate.h"
+#include <QWidget>
 
 class QMenu;
 
@@ -53,8 +53,11 @@ class CostDelegate;
 struct DisassemblyOutput
 {
     QString errorMessage;
-    explicit operator bool() const { return errorMessage.isEmpty(); }
-    static DisassemblyOutput fromProcess(const QString &processName, const QStringList &arguments);
+    explicit operator bool() const
+    {
+        return errorMessage.isEmpty();
+    }
+    static DisassemblyOutput fromProcess(const QString& processName, const QStringList& arguments);
 
     struct DisassemblyLine
     {
@@ -71,8 +74,7 @@ class ResultsDisassemblyPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsDisassemblyPage(FilterAndZoomStack* filterStack, PerfParser* parser,
-                                 QWidget* parent = nullptr);
+    explicit ResultsDisassemblyPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent = nullptr);
     ~ResultsDisassemblyPage();
 
     void clear();
@@ -87,10 +89,11 @@ public:
     void setObjdump(const QString& objdump);
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
+
 private:
     QScopedPointer<Ui::ResultsDisassemblyPage> ui;
     // Model
-    QStandardItemModel *m_model;
+    QStandardItemModel* m_model;
     // Perf.data path
     QString m_perfDataPath;
     // Current chosen function symbol
@@ -110,5 +113,5 @@ private:
     // Map of symbols and its locations with costs
     Data::CallerCalleeResults m_callerCalleeResults;
     // Cost delegate
-    CostDelegate *m_costDelegate;
+    CostDelegate* m_costDelegate;
 };

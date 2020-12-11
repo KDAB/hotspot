@@ -30,8 +30,8 @@
 #include <QTest>
 #include <QTextStream>
 
-#include "modeltest.h"
 #include "../testutils.h"
+#include "modeltest.h"
 
 #include <models/eventmodel.h>
 
@@ -53,7 +53,7 @@ Data::BottomUpResults buildBottomUpTree(const QByteArray& stacks)
         auto* parent = &ret.root;
         for (auto it = frames.rbegin(), end = frames.rend(); it != end; ++it) {
             const auto& frame = *it;
-            const auto symbol = Data::Symbol{frame, {}};
+            const auto symbol = Data::Symbol {frame, {}};
             auto node = parent->entryForSymbol(symbol, &maxId);
             Q_ASSERT(!ids.contains(node->id) || ids[node->id] == symbol);
             ids[node->id] = symbol;
@@ -105,29 +105,10 @@ private slots:
 
         QCOMPARE(tree.costs.totalCost(0), qint64(9));
 
-        const auto expectedTree = QStringList{
-            //clang-format: off
-            "C=5",
-            " B=1",
-            "  A=1",
-            " E=1",
-            "  C=1",
-            "   B=1",
-            "    A=1",
-            " C=1",
-            "  B=1",
-            "   A=1",
-            "D=2",
-            " B=2",
-            "  A=2",
-            "E=2",
-            " C=2",
-            "  B=1",
-            "   A=1",
-            "  E=1",
-            "   C=1",
-            "    B=1",
-            "     A=1"
+        const auto expectedTree = QStringList {
+            // clang-format: off
+            "C=5",  " B=1",  "  A=1", " E=1", "  C=1", "   B=1", "    A=1", " C=1",   "  B=1",   "   A=1",  "D=2",
+            " B=2", "  A=2", "E=2",   " C=2", "  B=1", "   A=1", "  E=1",   "   C=1", "    B=1", "     A=1"
             //clang-format on
         };
         QCOMPARE(printTree(tree), expectedTree);
@@ -210,26 +191,13 @@ private slots:
 
         const auto modelData = printModel(&model);
         QTextStream str(stdout);
-        for (const auto &l : modelData)
+        for (const auto& l : modelData)
             str << l << '\n';
 
-        const auto expectedModelData = QStringList{
-            //clang-format: off
-            "1",
-            " 2",
-            " ↪3",
-            "  4",
-            "  5",
-            "6",
-            " 7",
-            "  8",
-            "   9",
-            "  10",
-            "   11",
-            "  12",
-            " 13",
-            "14",
-            //clang-format: on
+        const auto expectedModelData = QStringList {
+            // clang-format: off
+            "1", " 2", " ↪3", "  4", "  5", "6", " 7", "  8", "   9", "  10", "   11", "  12", " 13", "14",
+            // clang-format: on
         };
         QCOMPARE(modelData, expectedModelData);
     }

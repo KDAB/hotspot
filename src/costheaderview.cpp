@@ -27,11 +27,11 @@
 
 #include "costheaderview.h"
 
-#include <QPainter>
-#include <QEvent>
-#include <QScopedValueRollback>
-#include <QMenu>
 #include <QDebug>
+#include <QEvent>
+#include <QMenu>
+#include <QPainter>
+#include <QScopedValueRollback>
 
 CostHeaderView::CostHeaderView(QWidget* parent)
     : QHeaderView(Qt::Horizontal, parent)
@@ -42,9 +42,7 @@ CostHeaderView::CostHeaderView(QWidget* parent)
 #endif
     setDefaultSectionSize(150);
     setStretchLastSection(false);
-    connect(this, &QHeaderView::sectionCountChanged, this, [this]() {
-        resizeColumns(false);
-    });
+    connect(this, &QHeaderView::sectionCountChanged, this, [this]() { resizeColumns(false); });
     connect(this, &QHeaderView::sectionResized, this, [this](int index, int oldSize, int newSize) {
         if (m_isResizing)
             return;
@@ -79,14 +77,12 @@ CostHeaderView::CostHeaderView(QWidget* parent)
     });
 
     setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(this, &QHeaderView::customContextMenuRequested, this, [this](const QPoint &pos) {
+    connect(this, &QHeaderView::customContextMenuRequested, this, [this](const QPoint& pos) {
         const auto numSections = count();
 
         QMenu menu;
         auto resetSizes = menu.addAction(tr("Reset Column Sizes"));
-        connect(resetSizes, &QAction::triggered, this, [this]() {
-            resizeColumns(true);
-        });
+        connect(resetSizes, &QAction::triggered, this, [this]() { resizeColumns(true); });
 
         if (numSections > 1) {
             auto* subMenu = menu.addMenu(tr("Visible Columns"));
@@ -94,9 +90,7 @@ CostHeaderView::CostHeaderView(QWidget* parent)
                 auto* action = subMenu->addAction(model()->headerData(i, Qt::Horizontal).toString());
                 action->setCheckable(true);
                 action->setChecked(!isSectionHidden(i));
-                connect(action, &QAction::toggled, this, [this, i](bool visible) {
-                    setSectionHidden(i, !visible);
-                });
+                connect(action, &QAction::toggled, this, [this, i](bool visible) { setSectionHidden(i, !visible); });
             }
         }
 

@@ -84,7 +84,7 @@ void TimeLineData::zoom(const Data::TimeRange& t)
 
 namespace {
 
-TimeLineData dataFromIndex(const QModelIndex& index, QRect rect, const Data::ZoomAction &zoom)
+TimeLineData dataFromIndex(const QModelIndex& index, QRect rect, const Data::ZoomAction& zoom)
 {
     TimeLineData data(
         index.data(EventModel::EventsRole).value<Data::Events>(), index.data(EventModel::MaxCostRole).value<quint64>(),
@@ -240,7 +240,7 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, con
         const auto mappedX = localX - option.rect.x() - data.padding;
         const auto time = data.mapXToTime(mappedX);
         const auto start = findEvent(data.events.constBegin(), data.events.constEnd(), time);
-        const auto results =  index.data(EventModel::EventResultsRole).value<Data::EventResults>();
+        const auto results = index.data(EventModel::EventResultsRole).value<Data::EventResults>();
         // find the maximum sample cost in the range spanned by one pixel
         struct FoundSamples
         {
@@ -299,10 +299,10 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, con
         const auto formattedTime = Util::formatTimeString(time - data.time.start);
         const auto totalCosts = index.data(EventModel::TotalCostsRole).value<QVector<Data::CostSummary>>();
         if (found.numLost > 0) {
-            QToolTip::showText(event->globalPos(),
-                               tr("time: %1\nlost chunks: %2\nlost events: %3")
-                                   .arg(formattedTime, QString::number(found.numLost),
-                                        QString::number(found.totalLost)));
+            QToolTip::showText(
+                event->globalPos(),
+                tr("time: %1\nlost chunks: %2\nlost events: %3")
+                    .arg(formattedTime, QString::number(found.numLost), QString::number(found.totalLost)));
         } else if (found.numSamples > 0 && found.type == results.offCpuTimeCostId) {
             QToolTip::showText(event->globalPos(),
                                tr("time: %1\nsched switches: %2\ntotal off-CPU time: %3\nlongest sched switch: %4")
@@ -398,9 +398,11 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
             && threadId != Data::INVALID_TID
             && ((!isZoomed && !isMainThread)
                 || (isZoomed && zoom.time.start != threadStartTime && zoom.time.end != threadEndTime))) {
-            contextMenu->addAction(
-                QIcon::fromTheme(QStringLiteral("zoom-in")), tr("Zoom In On Thread #%1 By Time").arg(threadId), this,
-                [this, threadStartTime, threadEndTime]() { m_filterAndZoomStack->zoomIn({threadStartTime, threadEndTime}); });
+            contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")),
+                                   tr("Zoom In On Thread #%1 By Time").arg(threadId), this,
+                                   [this, threadStartTime, threadEndTime]() {
+                                       m_filterAndZoomStack->zoomIn({threadStartTime, threadEndTime});
+                                   });
         }
 
         if (isRightButtonEvent && isZoomed) {
@@ -419,10 +421,11 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         if (isRightButtonEvent && index.isValid() && numThreads > 1 && threadId != Data::INVALID_TID) {
             if ((!isFiltered && !isMainThread)
                 || (isFiltered && filter.time.end != threadStartTime && filter.time.end != threadEndTime)) {
-                contextMenu->addAction(
-                    QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                    tr("Filter In On Thread #%1 By Time").arg(threadId), this,
-                    [this, threadStartTime, threadEndTime]() { m_filterAndZoomStack->filterInByTime({threadStartTime, threadEndTime}); });
+                contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                                       tr("Filter In On Thread #%1 By Time").arg(threadId), this,
+                                       [this, threadStartTime, threadEndTime]() {
+                                           m_filterAndZoomStack->filterInByTime({threadStartTime, threadEndTime});
+                                       });
             }
             if ((!isFiltered || filter.threadId == Data::INVALID_TID)) {
                 contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
@@ -433,8 +436,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                                        [this, threadId]() { m_filterAndZoomStack->filterOutByThread(threadId); });
             }
             if (numProcesses > 1
-                && (!isFiltered
-                    || (filter.processId == Data::INVALID_PID && filter.threadId == Data::INVALID_TID))) {
+                && (!isFiltered || (filter.processId == Data::INVALID_PID && filter.threadId == Data::INVALID_TID))) {
                 contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
                                        tr("Filter In On Process #%1").arg(processId), this,
                                        [this, processId]() { m_filterAndZoomStack->filterInByProcess(processId); });

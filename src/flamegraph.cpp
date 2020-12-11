@@ -45,10 +45,10 @@
 #include <QPushButton>
 #include <QScrollBar>
 #include <QStyleOption>
+#include <QSvgGenerator>
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QWheelEvent>
-#include <QSvgGenerator>
 
 #include <KColorScheme>
 #include <KLocalizedString>
@@ -71,7 +71,8 @@ enum SearchMatchType
 class FrameGraphicsItem : public QGraphicsRectItem
 {
 public:
-    FrameGraphicsItem(const qint64 cost, Data::Costs::Unit unit, const Data::Symbol& symbol, FrameGraphicsItem* parent = nullptr);
+    FrameGraphicsItem(const qint64 cost, Data::Costs::Unit unit, const Data::Symbol& symbol,
+                      FrameGraphicsItem* parent = nullptr);
 
     qint64 cost() const;
     void setCost(qint64 cost);
@@ -96,7 +97,8 @@ private:
 
 Q_DECLARE_METATYPE(FrameGraphicsItem*)
 
-FrameGraphicsItem::FrameGraphicsItem(const qint64 cost, Data::Costs::Unit unit, const Data::Symbol& symbol, FrameGraphicsItem* parent)
+FrameGraphicsItem::FrameGraphicsItem(const qint64 cost, Data::Costs::Unit unit, const Data::Symbol& symbol,
+                                     FrameGraphicsItem* parent)
     : QGraphicsRectItem(parent)
     , m_cost(cost)
     , m_symbol(symbol)
@@ -354,7 +356,8 @@ FrameGraphicsItem* parseData(const Data::Costs& costs, int type, const QVector<T
     auto rootItem = new FrameGraphicsItem(totalCost, costs.unit(type), {label, {}});
     rootItem->setBrush(scheme.background());
     rootItem->setPen(pen);
-    toGraphicsItems(costs, type, topDownData, rootItem, static_cast<double>(totalCost) * costThreshold / 100., collapseRecursion);
+    toGraphicsItems(costs, type, topDownData, rootItem, static_cast<double>(totalCost) * costThreshold / 100.,
+                    collapseRecursion);
     return rootItem;
 }
 
@@ -423,9 +426,8 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     m_forwardButton->setToolTip(QStringLiteral("Go forward in symbol view history"));
 
     auto bottomUpCheckbox = new QCheckBox(i18n("Bottom-Up View"), this);
-    connect(this, &FlameGraph::uiResetRequested, bottomUpCheckbox, [bottomUpCheckbox](){
-        bottomUpCheckbox->setChecked(false);
-    });
+    connect(this, &FlameGraph::uiResetRequested, bottomUpCheckbox,
+            [bottomUpCheckbox]() { bottomUpCheckbox->setChecked(false); });
     bottomUpCheckbox->setToolTip(i18n(
         "Enable the bottom-up flame graph view. When this is unchecked, the top-down view is enabled by default."));
     bottomUpCheckbox->setChecked(m_showBottomUpData);
@@ -435,9 +437,8 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     });
 
     auto collapseRecursionCheckbox = new QCheckBox(i18n("Collapse Recursion"), this);
-    connect(this, &FlameGraph::uiResetRequested, collapseRecursionCheckbox, [collapseRecursionCheckbox](){
-        collapseRecursionCheckbox->setChecked(false);
-    });
+    connect(this, &FlameGraph::uiResetRequested, collapseRecursionCheckbox,
+            [collapseRecursionCheckbox]() { collapseRecursionCheckbox->setChecked(false); });
     collapseRecursionCheckbox->setChecked(m_collapseRecursion);
     collapseRecursionCheckbox->setToolTip(
         i18n("Collapse stack frames for functions calling themselves. "
@@ -454,9 +455,8 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     costThreshold->setPrefix(i18n("Cost Threshold: "));
     costThreshold->setSuffix(QStringLiteral("%"));
     costThreshold->setValue(DEFAULT_COST_THRESHOLD);
-    connect(this, &FlameGraph::uiResetRequested, costThreshold, [costThreshold](){
-        costThreshold->setValue(DEFAULT_COST_THRESHOLD);
-    });
+    connect(this, &FlameGraph::uiResetRequested, costThreshold,
+            [costThreshold]() { costThreshold->setValue(DEFAULT_COST_THRESHOLD); });
     costThreshold->setSingleStep(0.01);
     costThreshold->setToolTip(
         i18n("<qt>The cost threshold defines a fractional cut-off value. "
@@ -474,9 +474,7 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     m_searchInput->setToolTip(i18n("<qt>Search the flame graph for a symbol.</qt>"));
     m_searchInput->setClearButtonEnabled(true);
     connect(m_searchInput, &QLineEdit::textChanged, this, &FlameGraph::setSearchValue);
-    connect(this, &FlameGraph::uiResetRequested, this, [this](){
-        m_searchInput->clear();
-    });
+    connect(this, &FlameGraph::uiResetRequested, this, [this]() { m_searchInput->clear(); });
 
     auto controls = new QWidget(this);
     controls->setLayout(new QHBoxLayout);
@@ -568,16 +566,14 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
         QMenu contextMenu;
         if (item) {
             auto* viewCallerCallee = contextMenu.addAction(tr("View Caller/Callee"));
-            connect(viewCallerCallee, &QAction::triggered, this, [this, item](){
-                emit jumpToCallerCallee(item->symbol());
-            });
+            connect(viewCallerCallee, &QAction::triggered, this,
+                    [this, item]() { emit jumpToCallerCallee(item->symbol()); });
             auto* openEditorAction = contextMenu.addAction(tr("Open in Editor"));
             connect(openEditorAction, &QAction::triggered, this, [this, item]() { emit openEditor(item->symbol()); });
             contextMenu.addSeparator();
             auto* viewDisassembly = contextMenu.addAction(tr("Disassembly"));
-            connect(viewDisassembly, &QAction::triggered, this, [this, item](){
-                emit jumpToDisassembly(item->symbol());
-            });
+            connect(viewDisassembly, &QAction::triggered, this,
+                    [this, item]() { emit jumpToDisassembly(item->symbol()); });
         }
         ResultsUtil::addFilterActions(&contextMenu, item ? item->symbol() : Data::Symbol(), m_filterStack);
         contextMenu.addSeparator();
@@ -638,7 +634,7 @@ QImage FlameGraph::toImage() const
     return image;
 }
 
-void FlameGraph::saveSvg(const QString &fileName) const
+void FlameGraph::saveSvg(const QString& fileName) const
 {
     if (!m_rootItem)
         return;
@@ -655,8 +651,7 @@ void FlameGraph::saveSvg(const QString &fileName) const
         generator.setTitle(tr("Top Down FlameGraph"));
     const auto costType = m_bottomUpData.costs.typeName(m_costSource->currentData().value<int>());
     generator.setDescription(tr("Cost type: %1, cost threshold: %2\n%3")
-                                .arg(costType, QString::number(m_costThreshold),
-                                     m_displayLabel->text()));
+                                 .arg(costType, QString::number(m_costThreshold), m_displayLabel->text()));
 
     const auto oldPen = m_rootItem->pen();
     const auto oldBrush = m_rootItem->brush();

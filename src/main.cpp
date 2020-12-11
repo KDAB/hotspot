@@ -27,9 +27,9 @@
 
 #include <QApplication>
 #include <QCommandLineParser>
-#include <QProcessEnvironment>
-#include <QFile>
 #include <QDebug>
+#include <QFile>
+#include <QProcessEnvironment>
 
 #include "hotspot-config.h"
 #include "mainwindow.h"
@@ -40,8 +40,8 @@
 #include <QThread>
 
 #if APPIMAGE_BUILD
-#include <QResource>
 #include <KIconTheme>
+#include <QResource>
 
 // FIXME: patch KIconTheme so that this isn't needed here
 void Q_DECL_UNUSED initRCCIconTheme()

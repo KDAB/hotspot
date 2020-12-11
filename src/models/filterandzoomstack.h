@@ -59,19 +59,19 @@ public:
     void clear();
 
 public slots:
-    void filterInByTime(const Data::TimeRange &time);
+    void filterInByTime(const Data::TimeRange& time);
     void filterInByProcess(qint32 processId);
     void filterOutByProcess(qint32 processId);
     void filterInByThread(qint32 threadId);
     void filterOutByThread(qint32 threadId);
     void filterInByCpu(quint32 cpuId);
     void filterOutByCpu(quint32 cpuId);
-    void filterInBySymbol(const Data::Symbol &symbol);
-    void filterOutBySymbol(const Data::Symbol &symbol);
+    void filterInBySymbol(const Data::Symbol& symbol);
+    void filterOutBySymbol(const Data::Symbol& symbol);
     void applyFilter(Data::FilterAction filter);
     void resetFilter();
     void filterOut();
-    void zoomIn(const Data::TimeRange &time);
+    void zoomIn(const Data::TimeRange& time);
     void resetZoom();
     void zoomOut();
     void resetFilterAndZoom();

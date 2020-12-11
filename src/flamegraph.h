@@ -50,13 +50,13 @@ public:
     explicit FlameGraph(QWidget* parent = nullptr, Qt::WindowFlags flags = {});
     ~FlameGraph();
 
-    void setFilterStack(FilterAndZoomStack *filterStack);
+    void setFilterStack(FilterAndZoomStack* filterStack);
     void setTopDownData(const Data::TopDownResults& topDownData);
     void setBottomUpData(const Data::BottomUpResults& bottomUpData);
     void clear();
 
     QImage toImage() const;
-    void saveSvg(const QString &fileName) const;
+    void saveSvg(const QString& fileName) const;
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;

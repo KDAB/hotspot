@@ -28,48 +28,49 @@
 #include "resultsdisassemblypage.h"
 #include "ui_resultsdisassemblypage.h"
 
-#include <QMenu>
-#include <QFileDialog>
-#include <QFile>
-#include <QTextStream>
-#include <QMessageBox>
-#include <QString>
-#include <QListWidgetItem>
-#include <QProcess>
 #include <QDebug>
 #include <QDir>
 #include <QDirIterator>
+#include <QFile>
+#include <QFileDialog>
+#include <QListWidgetItem>
+#include <QMenu>
+#include <QMessageBox>
+#include <QProcess>
+#include <QString>
 #include <QTemporaryFile>
+#include <QTextStream>
 
 #include <KRecursiveFilterProxyModel>
 
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
 
+#include "data.h"
 #include "models/costdelegate.h"
 #include "models/hashmodel.h"
 #include "models/topproxy.h"
 #include "models/treemodel.h"
-#include "data.h"
 
-#include <QStandardItemModel>
-#include <QStringRef>
 #include <KMessageBox>
+#include <QStandardItemModel>
 #include <QStandardPaths>
+#include <QStringRef>
 
 namespace {
-    enum CustomRoles {
-        CostRole = Qt::UserRole,
-        TotalCostRole = Qt::UserRole + 1,
-    };
+enum CustomRoles
+{
+    CostRole = Qt::UserRole,
+    TotalCostRole = Qt::UserRole + 1,
+};
 }
 
-ResultsDisassemblyPage::ResultsDisassemblyPage(FilterAndZoomStack *filterStack, PerfParser *parser, QWidget *parent)
-        : QWidget(parent)
-        , ui(new Ui::ResultsDisassemblyPage)
-        , m_model(new QStandardItemModel(this))
-        , m_costDelegate(new CostDelegate(CostRole, TotalCostRole, this))
-        , m_objdumpPath(QString())
+ResultsDisassemblyPage::ResultsDisassemblyPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent)
+    : QWidget(parent)
+    , ui(new Ui::ResultsDisassemblyPage)
+    , m_model(new QStandardItemModel(this))
+    , m_costDelegate(new CostDelegate(CostRole, TotalCostRole, this))
+    , m_objdumpPath(QString())
 {
     ui->setupUi(this);
     ui->asmView->setModel(m_model);
@@ -115,7 +116,8 @@ void ResultsDisassemblyPage::showDisassembly()
     showDisassembly(processName, arguments);
 }
 
-static DisassemblyOutput fromProcess(const QString& processName, const QStringList& arguments, const QString& arch, const Data::Symbol &curSymbol, const int numTypes)
+static DisassemblyOutput fromProcess(const QString& processName, const QStringList& arguments, const QString& arch,
+                                     const Data::Symbol& curSymbol, const int numTypes)
 {
     QByteArray output;
     DisassemblyOutput disassemblyOutput;
@@ -126,12 +128,14 @@ static DisassemblyOutput fromProcess(const QString& processName, const QStringLi
 
     const auto processPath = QStandardPaths::findExecutable(processName);
     if (processPath.isEmpty()) {
-        disassemblyOutput.errorMessage = QApplication::tr("Cannot find objdump process %1, please install the missing binutils package for arch %2").arg(processName, arch);
+        disassemblyOutput.errorMessage =
+            QApplication::tr("Cannot find objdump process %1, please install the missing binutils package for arch %2")
+                .arg(processName, arch);
         return disassemblyOutput;
     }
 
     QProcess asmProcess;
-    QObject::connect(&asmProcess, &QProcess::readyRead, [&asmProcess, &disassemblyOutput, &output] () {
+    QObject::connect(&asmProcess, &QProcess::readyRead, [&asmProcess, &disassemblyOutput, &output]() {
         output += asmProcess.readAllStandardOutput();
         disassemblyOutput.errorMessage += QString::fromStdString(asmProcess.readAllStandardError().toStdString());
     });
@@ -161,7 +165,7 @@ void ResultsDisassemblyPage::showDisassembly(const QString& processName, const Q
     int numTypes = m_callerCalleeResults.selfCosts.numTypes();
     DisassemblyOutput disassemblyOutput = fromProcess(processName, arguments, m_arch, m_curSymbol, numTypes);
 
-    //TODO: that this dialog should be replaced by a passive KMessageWidget instead
+    // TODO: that this dialog should be replaced by a passive KMessageWidget instead
     if (!disassemblyOutput) {
         KMessageBox::detailedSorry(this, tr("Failed to disassemble function"), disassemblyOutput.errorMessage);
         emit jumpToCallerCallee(m_curSymbol);
@@ -178,30 +182,30 @@ void ResultsDisassemblyPage::showDisassembly(const QString& processName, const Q
     }
     m_model->setHorizontalHeaderLabels(headerList);
 
-    auto &entry = m_callerCalleeResults.entry(m_curSymbol);
+    auto& entry = m_callerCalleeResults.entry(m_curSymbol);
     for (int row = 0; row < disassemblyOutput.disassemblyLines.size(); row++) {
         DisassemblyOutput::DisassemblyLine disassemblyLine = disassemblyOutput.disassemblyLines.at(row);
         QString asmLine = disassemblyLine.disassembly;
         const auto addr = disassemblyLine.addr;
 
-        QStandardItem *asmItem = new QStandardItem();
+        QStandardItem* asmItem = new QStandardItem();
         asmItem->setText(asmLine);
         m_model->setItem(row, 0, asmItem);
 
         // Calculate event times and add them in red to corresponding columns of the current disassembly row
         float costLine = 0;
-        auto &entry = m_callerCalleeResults.entry(m_curSymbol);
+        auto& entry = m_callerCalleeResults.entry(m_curSymbol);
 
         auto it = entry.offsetMap.find(addr);
         if (it != entry.offsetMap.end()) {
-            const auto &locationCost = it.value();
+            const auto& locationCost = it.value();
             for (int event = 0; event < numTypes; event++) {
                 costLine = locationCost.selfCost[event];
                 const auto totalCost = m_callerCalleeResults.selfCosts.totalCost(event);
                 QString costInstruction = Util::formatCostRelative(costLine, totalCost, true);
 
-                //FIXME QStandardItem stuff should be reimplemented properly
-                QStandardItem *costItem = new QStandardItem(costInstruction);
+                // FIXME QStandardItem stuff should be reimplemented properly
+                QStandardItem* costItem = new QStandardItem(costInstruction);
                 costItem->setData(costLine, CostRole);
                 costItem->setData(totalCost, TotalCostRole);
                 m_model->setItem(row, event + 1, costItem);
@@ -211,12 +215,12 @@ void ResultsDisassemblyPage::showDisassembly(const QString& processName, const Q
     setupAsmViewModel(numTypes);
 }
 
-void ResultsDisassemblyPage::setSymbol(const Data::Symbol &symbol)
+void ResultsDisassemblyPage::setSymbol(const Data::Symbol& symbol)
 {
     m_curSymbol = symbol;
 }
 
-void ResultsDisassemblyPage::setData(const Data::DisassemblyResult &data)
+void ResultsDisassemblyPage::setData(const Data::DisassemblyResult& data)
 {
     m_perfDataPath = data.perfDataPath;
     m_appPath = data.appPath;
@@ -229,7 +233,7 @@ void ResultsDisassemblyPage::setData(const Data::DisassemblyResult &data)
         return;
     }
 
-    //TODO: add the ability to configure the arch <-> objdump mapping somehow in the settings
+    // TODO: add the ability to configure the arch <-> objdump mapping somehow in the settings
     const auto isArm = m_arch.startsWith(QLatin1String("arm"));
     m_objdump = isArm ? QStringLiteral("arm-linux-gnueabi-objdump") : QStringLiteral("objdump");
 
@@ -256,7 +260,8 @@ static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(QByteArray outpu
     for (int line = 0; line < asmLineList.size(); line++) {
         DisassemblyOutput::DisassemblyLine disassemblyLine;
         QString asmLine = QString::fromStdString(asmLineList.at(line).toStdString());
-        if (asmLine.isEmpty() || asmLine.startsWith(QLatin1String("Disassembly"))) continue;
+        if (asmLine.isEmpty() || asmLine.startsWith(QLatin1String("Disassembly")))
+            continue;
 
         const auto asmTokens = asmLine.splitRef(QLatin1Char(':'));
         const auto addrLine = asmTokens.value(0).trimmed();

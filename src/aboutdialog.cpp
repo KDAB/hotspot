@@ -35,7 +35,7 @@ AboutDialog::AboutDialog(QWidget* parent)
     ui->setupUi(this);
 }
 
-AboutDialog::~AboutDialog() {}
+AboutDialog::~AboutDialog() { }
 
 void AboutDialog::setTitle(const QString& title)
 {

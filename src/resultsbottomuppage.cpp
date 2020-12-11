@@ -28,11 +28,11 @@
 #include "resultsbottomuppage.h"
 #include "ui_resultsbottomuppage.h"
 
-#include <QMenu>
-#include <QFileDialog>
 #include <QFile>
-#include <QTextStream>
+#include <QFileDialog>
+#include <QMenu>
 #include <QMessageBox>
+#include <QTextStream>
 
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
@@ -42,7 +42,7 @@
 #include "models/treemodel.h"
 
 namespace {
-void stackCollapsedExport(QTextStream& file, int type, const Data::Costs &costs, const Data::BottomUp &node)
+void stackCollapsedExport(QTextStream& file, int type, const Data::Costs& costs, const Data::BottomUp& node)
 {
     if (!node.children.isEmpty()) {
         for (const auto& child : node.children)
@@ -67,14 +67,15 @@ void stackCollapsedExport(QTextStream& file, int type, const Data::Costs &costs,
     file << '\n';
 }
 
-void stackCollapsedExport(QFile& file, int type, const Data::BottomUpResults &results)
+void stackCollapsedExport(QFile& file, int type, const Data::BottomUpResults& results)
 {
     QTextStream stream(&file);
     stackCollapsedExport(stream, type, results.costs, results.root);
 }
 }
 
-ResultsBottomUpPage::ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfParser* parser, QMenu* exportMenu, QWidget* parent)
+ResultsBottomUpPage::ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfParser* parser, QMenu* exportMenu,
+                                         QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsBottomUpPage)
 {
@@ -85,31 +86,34 @@ ResultsBottomUpPage::ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfPa
     ResultsUtil::setupCostDelegate(bottomUpCostModel, ui->bottomUpTreeView);
     ResultsUtil::setupContextMenu(ui->bottomUpTreeView, bottomUpCostModel, filterStack, this);
 
-    connect(parser, &PerfParser::bottomUpDataAvailable, this,
-            [this, bottomUpCostModel, exportMenu](const Data::BottomUpResults& data) {
-                bottomUpCostModel->setData(data);
-                ResultsUtil::hideEmptyColumns(data.costs, ui->bottomUpTreeView, BottomUpModel::NUM_BASE_COLUMNS);
+    connect(
+        parser, &PerfParser::bottomUpDataAvailable, this,
+        [this, bottomUpCostModel, exportMenu](const Data::BottomUpResults& data) {
+            bottomUpCostModel->setData(data);
+            ResultsUtil::hideEmptyColumns(data.costs, ui->bottomUpTreeView, BottomUpModel::NUM_BASE_COLUMNS);
 
-                {
-                    auto stackCollapsed = exportMenu->addMenu(QIcon::fromTheme(QStringLiteral("text-plain")), tr("Stack Collapsed"));
-                    stackCollapsed->setToolTip(tr("Export data in textual form compatible with <tt>flamegraph.pl</tt>."));
-                    for (int i = 0; i < data.costs.numTypes(); ++i) {
-                        const auto costName = data.costs.typeName(i);
-                        stackCollapsed->addAction(costName, [this, i, bottomUpCostModel, costName]() {
-                            const auto fileName = QFileDialog::getSaveFileName(this, tr("Export %1 Data").arg(costName));
-                            if (fileName.isEmpty())
-                                return;
-                            QFile file(fileName);
-                            if (!file.open(QIODevice::Text | QIODevice::WriteOnly)) {
-                                QMessageBox::warning(this, tr("Failed to export data"),
-                                                     tr("Failed to export stack collapsed data:\n%1").arg(file.errorString()));
-                                return;
-                            }
-                            stackCollapsedExport(file, i, bottomUpCostModel->results());
-                        });
-                    }
+            {
+                auto stackCollapsed =
+                    exportMenu->addMenu(QIcon::fromTheme(QStringLiteral("text-plain")), tr("Stack Collapsed"));
+                stackCollapsed->setToolTip(tr("Export data in textual form compatible with <tt>flamegraph.pl</tt>."));
+                for (int i = 0; i < data.costs.numTypes(); ++i) {
+                    const auto costName = data.costs.typeName(i);
+                    stackCollapsed->addAction(costName, [this, i, bottomUpCostModel, costName]() {
+                        const auto fileName = QFileDialog::getSaveFileName(this, tr("Export %1 Data").arg(costName));
+                        if (fileName.isEmpty())
+                            return;
+                        QFile file(fileName);
+                        if (!file.open(QIODevice::Text | QIODevice::WriteOnly)) {
+                            QMessageBox::warning(
+                                this, tr("Failed to export data"),
+                                tr("Failed to export stack collapsed data:\n%1").arg(file.errorString()));
+                            return;
+                        }
+                        stackCollapsedExport(file, i, bottomUpCostModel->results());
+                    });
                 }
-            });
+            }
+        });
 }
 
 ResultsBottomUpPage::~ResultsBottomUpPage() = default;

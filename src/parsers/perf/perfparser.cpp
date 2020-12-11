@@ -184,8 +184,8 @@ struct Location
 
 QDataStream& operator>>(QDataStream& stream, Location& location)
 {
-    return stream >> location.address >> location.relAddr >> location.file >> location.pid >> location.line >> location.column
-        >> location.parentLocationId;
+    return stream >> location.address >> location.relAddr >> location.file >> location.pid >> location.line
+        >> location.column >> location.parentLocationId;
 }
 
 QDebug operator<<(QDebug stream, const Location& location)
@@ -357,8 +357,7 @@ QDataStream& operator>>(QDataStream& stream, LostDefinition& lostDefinition)
 
 QDebug operator<<(QDebug stream, const LostDefinition& lostDefinition)
 {
-    stream.noquote().nospace() << "LostDefinition{"
-                               << static_cast<const Record&>(lostDefinition)
+    stream.noquote().nospace() << "LostDefinition{" << static_cast<const Record&>(lostDefinition)
                                << "lost=" << lostDefinition.lost << "}";
     return stream;
 }
@@ -555,7 +554,8 @@ void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& loca
     }
 }
 
-struct SymbolCount {
+struct SymbolCount
+{
     qint32 total = 0;
     qint32 missing = 0;
 };
@@ -852,11 +852,14 @@ public:
         // Add error messages for all modules with missing debug symbols
         for (auto i = numSymbolsByModule.begin(); i != numSymbolsByModule.end(); ++i) {
             const auto& numSymbols = i.value();
-            if (!numSymbols.missing) continue;
+            if (!numSymbols.missing)
+                continue;
 
             const auto& moduleName = strings.value(i.key());
             summaryResult.errors << PerfParser::tr("Module \"%1\" is missing %2 of %3 debug symbols.")
-                .arg(moduleName).arg(numSymbols.missing).arg(numSymbols.total);
+                                        .arg(moduleName)
+                                        .arg(numSymbols.missing)
+                                        .arg(numSymbols.total);
         }
     }
 
@@ -939,8 +942,8 @@ public:
                 locationString += QLatin1Char(':') + QString::number(location.location.line);
             }
         }
-        bottomUpResult.locations.push_back(
-            {location.location.parentLocationId, {location.location.address, location.location.relAddr, locationString}});
+        bottomUpResult.locations.push_back({location.location.parentLocationId,
+                                            {location.location.address, location.location.relAddr, locationString}});
         bottomUpResult.symbols.push_back({});
     }
 
@@ -958,7 +961,7 @@ public:
         bottomUpResult.symbols[symbol.id] = {symbolString, relAddr, size, binaryString, pathString, actualPathString};
 
         // Count total and missing symbols per module for error report
-        auto &numSymbols = numSymbolsByModule[symbol.symbol.binary.id];
+        auto& numSymbols = numSymbolsByModule[symbol.symbol.binary.id];
         ++numSymbols.total;
         if (symbolString.isEmpty() && !binaryString.isEmpty()) {
             ++numSymbols.missing;
@@ -1165,7 +1168,7 @@ public:
         event.cpuId = lost.cpu;
         thread->events.push_back(event);
         // the lost event never has a valid cpu set, add to all CPUs
-        for (auto &cpu : eventResult.cpus)
+        for (auto& cpu : eventResult.cpus)
             cpu.events.push_back(event);
     }
 
@@ -1216,7 +1219,8 @@ public:
         PARSE_ERROR
     };
 
-    enum class EventType {
+    enum class EventType
+    {
         ThreadStart,
         ThreadEnd,
         Command,
@@ -1517,15 +1521,18 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                     auto included = filter.includeSymbols;
                     // if false, then none of the exclude filters matched
                     bool excluded = false;
-                    m_bottomUpResults.foreachFrame(m_events.stacks.at(stackId), [&included, &excluded, &filter](const Data::Symbol& symbol, const Data::Location& /*location*/){
-                        excluded = filter.excludeSymbols.contains(symbol);
-                        if (excluded) {
-                            return false;
-                        }
-                        included.remove(symbol);
-                        // only stop when we included everything and no exclude filter is set
-                        return !included.isEmpty() || !filter.excludeSymbols.isEmpty();
-                    });
+                    m_bottomUpResults.foreachFrame(m_events.stacks.at(stackId),
+                                                   [&included, &excluded, &filter](const Data::Symbol& symbol,
+                                                                                   const Data::Location& /*location*/) {
+                                                       excluded = filter.excludeSymbols.contains(symbol);
+                                                       if (excluded) {
+                                                           return false;
+                                                       }
+                                                       included.remove(symbol);
+                                                       // only stop when we included everything and no exclude filter is
+                                                       // set
+                                                       return !included.isEmpty() || !filter.excludeSymbols.isEmpty();
+                                                   });
                     filterStacks[stackId] = !excluded && included.isEmpty();
                 }
             }
@@ -1549,7 +1556,8 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                 if (filterByTime || filterByCpu || excludeByCpu || filterByStack) {
                     auto it = std::remove_if(
                         thread.events.begin(), thread.events.end(),
-                        [filter, filterByTime, filterByCpu, excludeByCpu, filterByStack, filterStacks](const Data::Event& event) {
+                        [filter, filterByTime, filterByCpu, excludeByCpu, filterByStack,
+                         filterStacks](const Data::Event& event) {
                             if (filterByTime && !filter.time.contains(event.time)) {
                                 return true;
                             } else if (filterByCpu && event.cpuId != filter.cpuId) {
@@ -1573,7 +1581,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                     // only add non-time events to the cpu line, context switches shouldn't show up there
                     if (event.type == events.lostEventCostId) {
                         // the lost event never has a valid cpu set, add to all CPUs
-                        for (auto &cpu : events.cpus)
+                        for (auto& cpu : events.cpus)
                             cpu.events.push_back(event);
                     } else if (event.type != events.offCpuTimeCostId) {
                         events.cpus[event.cpuId].events.push_back(event);
