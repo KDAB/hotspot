@@ -65,7 +65,7 @@ enum CustomRoles
 };
 }
 
-ResultsDisassemblyPage::ResultsDisassemblyPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent)
+ResultsDisassemblyPage::ResultsDisassemblyPage(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsDisassemblyPage)
     , m_model(new QStandardItemModel(this))

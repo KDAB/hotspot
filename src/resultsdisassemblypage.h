@@ -44,8 +44,6 @@ struct DisassemblyResult;
 
 class QTreeView;
 
-class PerfParser;
-class FilterAndZoomStack;
 class QStandardItemModel;
 class QTemporaryFile;
 class CostDelegate;
@@ -74,7 +72,7 @@ class ResultsDisassemblyPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsDisassemblyPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent = nullptr);
+    explicit ResultsDisassemblyPage(QWidget* parent = nullptr);
     ~ResultsDisassemblyPage();
 
     void clear();
