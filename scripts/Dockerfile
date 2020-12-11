@@ -47,11 +47,13 @@ ENV PATH="/opt/bin:/opt/qt510/bin:${PATH}" \
 FROM hotspot_appimage_intermediate
 
 ARG DISABLE_RUSTC_DEMANGLE
+ARG DISABLE_D_DEMANGLE
 
 ADD . /opt/hotspot
 WORKDIR /opt/hotspot
 
 RUN tar -C / -xvf scripts/elfutils/elfutils.build.tar.bz2
 RUN if [ -z "$DISABLE_RUSTC_DEMANGLE" ]; then tar -C / -xvf scripts/rustc-demangle/rustc_demangle.build.tar.bz2; fi
+RUN if [ -z "$DISABLE_D_DEMANGLE" ]; then tar -C / -xvf scripts/d-demangle/ddemangle.build.tar.bz2; fi
 
 CMD ./scripts/build_appimage.sh /opt /artifacts

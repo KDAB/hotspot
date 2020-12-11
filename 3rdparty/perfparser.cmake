@@ -46,6 +46,13 @@ if (RUSTC_DEMANGLE_INCLUDE_DIR AND RUSTC_DEMANGLE_LIBRARY)
     target_compile_definitions(hotspot-perfparser PRIVATE HAVE_RUSTC_DEMANGLE=1)
 endif()
 
+set(D_DEMANGLE_LIBRARY "" CACHE STRING "Path to the libddemangle.so library.")
+
+if (D_DEMANGLE_LIBRARY)
+    target_link_libraries(hotspot-perfparser LINK_PRIVATE ${D_DEMANGLE_LIBRARY})
+    target_compile_definitions(hotspot-perfparser PRIVATE HAVE_D_DEMANGLE=1)
+endif()
+
 set_target_properties(hotspot-perfparser
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_LIBEXECDIR}"
