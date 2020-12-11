@@ -40,6 +40,8 @@
 #include <QString>
 #include <QTemporaryFile>
 #include <QTextStream>
+#include <QStandardItemModel>
+#include <QStandardPaths>
 
 #include <KRecursiveFilterProxyModel>
 
@@ -51,10 +53,6 @@
 #include "models/hashmodel.h"
 #include "models/topproxy.h"
 #include "models/treemodel.h"
-
-#include <QStandardItemModel>
-#include <QStandardPaths>
-#include <QStringRef>
 
 namespace {
 enum CustomRoles
@@ -117,13 +115,14 @@ void ResultsDisassemblyPage::showDisassembly()
     showDisassembly(DisassemblyOutput::disassemble(objdump(), m_arch, m_curSymbol));
 }
 
-static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(QByteArray output)
+static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(const QByteArray &output)
 {
     QVector<DisassemblyOutput::DisassemblyLine> disassemblyLines;
-    QByteArrayList asmLineList = output.split('\n');
-    for (int line = 0; line < asmLineList.size(); line++) {
-        DisassemblyOutput::DisassemblyLine disassemblyLine;
-        QString asmLine = QString::fromStdString(asmLineList.at(line).toStdString());
+
+    QTextStream stream(output);
+    QString asmLine;
+    while (stream.readLineInto(&asmLine))
+    {
         if (asmLine.isEmpty() || asmLine.startsWith(QLatin1String("Disassembly")))
             continue;
 
@@ -137,9 +136,7 @@ static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(QByteArray outpu
             continue;
         }
 
-        disassemblyLine.addr = addr;
-        disassemblyLine.disassembly = asmLine;
-        disassemblyLines.push_back(disassemblyLine);
+        disassemblyLines.push_back({addr, asmLine});
     }
     return disassemblyLines;
 }
