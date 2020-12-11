@@ -69,8 +69,8 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsDisassemblyPage)
     , m_model(new QStandardItemModel(this))
-    , m_costDelegate(new CostDelegate(CostRole, TotalCostRole, this))
     , m_objdumpPath(QString())
+    , m_costDelegate(new CostDelegate(CostRole, TotalCostRole, this))
 {
     ui->setupUi(this);
     ui->asmView->setModel(m_model);
