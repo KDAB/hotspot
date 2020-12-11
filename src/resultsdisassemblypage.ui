@@ -24,6 +24,16 @@
     <number>0</number>
    </property>
    <item>
+    <widget class="KSqueezedTextLabel" name="symbolLabel">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="textElideMode">
+      <enum>Qt::ElideRight</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QTreeView" name="asmView">
      <property name="alternatingRowColors">
       <bool>true</bool>
@@ -41,6 +51,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KSqueezedTextLabel</class>
+   <extends>QLabel</extends>
+   <header>ksqueezedtextlabel.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

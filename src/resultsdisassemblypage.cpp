@@ -243,6 +243,10 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
         }
     }
     setupAsmViewModel(numTypes);
+
+    ui->symbolLabel->setText(tr("Disassembly for symbol:  %1").arg(Util::formatSymbol(m_curSymbol)));
+    ui->symbolLabel->setToolTip(Util::formatTooltip(entry.id, m_curSymbol, m_callerCalleeResults.selfCosts,
+                                                    m_callerCalleeResults.inclusiveCosts));
 }
 
 void ResultsDisassemblyPage::setSymbol(const Data::Symbol& symbol)
