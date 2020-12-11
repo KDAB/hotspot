@@ -1199,7 +1199,6 @@ public:
         summaryResult.totalMemoryInKiB = features.totalMem;
 
         eventResult.cpus.resize(features.nrCpusAvailable);
-        disassemblyResult.arch = QString::fromUtf8(features.arch);
     }
 
     void addError(const Error& error)
@@ -1250,7 +1249,6 @@ public:
     Data::TimeRange applicationTime;
     QSet<quint32> uniqueThreads;
     QSet<quint32> uniqueProcess;
-    Data::DisassemblyResult disassemblyResult;
     Data::BottomUpResults bottomUpResult;
     Data::TopDownResults topDownResult;
     Data::CallerCalleeResults callerCalleeResult;
@@ -1358,13 +1356,11 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
     m_bottomUpResults = {};
     m_callerCalleeResults = {};
     m_events = {};
-    m_disassemblyResult = {path, appPath, extraLibPaths, arch};
 
     emit parsingStarted();
     using namespace ThreadWeaver;
     stream() << make_job([path, parserBinary, parserArgs, this]() {
         PerfParserPrivate d;
-        d.disassemblyResult = m_disassemblyResult;
         connect(&d, &PerfParserPrivate::progress, this, &PerfParser::progress);
         connect(this, &PerfParser::stopRequested, &d, &PerfParserPrivate::stop);
 
@@ -1373,7 +1369,6 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
             emit bottomUpDataAvailable(d.bottomUpResult);
             emit topDownDataAvailable(d.topDownResult);
             emit summaryDataAvailable(d.summaryResult);
-            emit disassemblyDataAvailable(d.disassemblyResult);
             emit callerCalleeDataAvailable(d.callerCalleeResult);
             emit eventsAvailable(d.eventResult);
             emit parsingFinished();
@@ -1487,7 +1482,6 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         Data::BottomUpResults bottomUp;
         Data::EventResults events = m_events;
         Data::CallerCalleeResults callerCallee;
-        Data::DisassemblyResult disassembly = m_disassemblyResult;
         const bool filterByTime = filter.time.isValid();
         const bool filterByCpu = filter.cpuId != std::numeric_limits<quint32>::max();
         const bool excludeByCpu = !filter.excludeCpuIds.isEmpty();

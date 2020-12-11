@@ -79,9 +79,9 @@ public:
     void showDisassembly();
     void setAppPath(const QString& path);
     void setSymbol(const Data::Symbol& data);
-    void setData(const Data::DisassemblyResult& data);
     void setCostsMap(const Data::CallerCalleeResults& callerCalleeResults);
     void setObjdump(const QString& objdump);
+    void setArch(const QString& arch);
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
 
@@ -91,22 +91,12 @@ private:
     QScopedPointer<Ui::ResultsDisassemblyPage> ui;
     // Model
     QStandardItemModel* m_model;
-    // Perf.data path
-    QString m_perfDataPath;
     // Current chosen function symbol
     Data::Symbol m_curSymbol;
-    // Application path
-    QString m_appPath;
-    // Extra libs path
-    QString m_extraLibPaths;
     // Architecture
     QString m_arch;
     // Objdump binary name
     QString m_objdump;
-    // Objdump path from settings
-    QString m_objdumpPath;
-    // Map of symbols
-    Data::DisassemblyResult m_disasmResult;
     // Map of symbols and its locations with costs
     Data::CallerCalleeResults m_callerCalleeResults;
     // Cost delegate

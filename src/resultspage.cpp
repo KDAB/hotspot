@@ -178,7 +178,6 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
                                              ki18n("Show timeline for %1 events."));
     });
 
-    connect(parser, &PerfParser::disassemblyDataAvailable, m_resultsDisassemblyPage, &ResultsDisassemblyPage::setData);
     connect(parser, &PerfParser::callerCalleeDataAvailable, m_resultsDisassemblyPage,
             &ResultsDisassemblyPage::setCostsMap);
 
@@ -228,6 +227,8 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
         } else {
             ui->lostMessage->hide();
         }
+
+        m_resultsDisassemblyPage->setArch(data.cpuArchitecture);
     });
     connect(parser, &PerfParser::exportFailed, this, &ResultsPage::showError);
 

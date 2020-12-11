@@ -84,18 +84,6 @@ struct Symbol
     }
 };
 
-struct DisassemblyResult
-{
-    // Architecture
-    QString arch;
-    // Application path
-    QString appPath;
-    // Extra libs path
-    QString extraLibPaths;
-    // perf.data path
-    QString perfDataPath;
-};
-
 QDebug operator<<(QDebug stream, const Symbol& symbol);
 
 inline bool operator==(const Symbol& lhs, const Symbol& rhs)
@@ -789,9 +777,6 @@ struct ZoomAction
 
 Q_DECLARE_METATYPE(Data::Symbol)
 Q_DECLARE_TYPEINFO(Data::Symbol, Q_MOVABLE_TYPE);
-
-Q_DECLARE_METATYPE(Data::DisassemblyResult)
-Q_DECLARE_TYPEINFO(Data::DisassemblyResult, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::Location)
 Q_DECLARE_TYPEINFO(Data::Location, Q_MOVABLE_TYPE);

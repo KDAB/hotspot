@@ -105,7 +105,19 @@ void ResultsDisassemblyPage::showDisassembly()
         clear();
     }
 
-    showDisassembly(DisassemblyOutput::disassemble(m_objdump, m_arch, m_curSymbol));
+    // TODO: add the ability to configure the arch <-> objdump mapping somehow in the settings
+    const auto objdump = [this]() {
+        if (!m_objdump.isEmpty())
+            return m_objdump;
+
+        if (m_arch.startsWith(QStringLiteral("armv8")) || m_arch.startsWith(QStringLiteral("aarch64"))) {
+            return QStringLiteral("aarch64-linux-gnu-objdump");
+        }
+        const auto isArm = m_arch.startsWith(QLatin1String("arm"));
+        return isArm ? QStringLiteral("arm-linux-gnueabi-objdump") : QStringLiteral("objdump");
+    };
+
+    showDisassembly(DisassemblyOutput::disassemble(objdump(), m_arch, m_curSymbol));
 }
 
 static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(QByteArray output)
@@ -238,29 +250,6 @@ void ResultsDisassemblyPage::setSymbol(const Data::Symbol& symbol)
     m_curSymbol = symbol;
 }
 
-void ResultsDisassemblyPage::setData(const Data::DisassemblyResult& data)
-{
-    m_perfDataPath = data.perfDataPath;
-    m_appPath = data.appPath;
-    m_extraLibPaths = data.extraLibPaths;
-    m_arch = data.arch.trimmed().toLower();
-    m_disasmResult = data;
-
-    if (!m_objdumpPath.isEmpty()) {
-        m_objdump = m_objdumpPath;
-        return;
-    }
-
-    // TODO: add the ability to configure the arch <-> objdump mapping somehow in the settings
-    const auto isArm = m_arch.startsWith(QLatin1String("arm"));
-    m_objdump = isArm ? QStringLiteral("arm-linux-gnueabi-objdump") : QStringLiteral("objdump");
-
-    if (m_arch.startsWith(QStringLiteral("armv8")) || m_arch.startsWith(QStringLiteral("aarch64"))) {
-        m_arch = QStringLiteral("armv8");
-        m_objdump = QStringLiteral("aarch64-linux-gnu-objdump");
-    }
-}
-
 void ResultsDisassemblyPage::setCostsMap(const Data::CallerCalleeResults& callerCalleeResults)
 {
     m_callerCalleeResults = callerCalleeResults;
@@ -268,5 +257,10 @@ void ResultsDisassemblyPage::setCostsMap(const Data::CallerCalleeResults& caller
 
 void ResultsDisassemblyPage::setObjdump(const QString& objdump)
 {
-    m_objdumpPath = objdump;
+    m_objdump = objdump;
+}
+
+void ResultsDisassemblyPage::setArch(const QString& arch)
+{
+    m_arch = arch.trimmed().toLower();
 }
