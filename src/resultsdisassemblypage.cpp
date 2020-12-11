@@ -107,7 +107,7 @@ void ResultsDisassemblyPage::showDisassembly()
         if (!m_objdump.isEmpty())
             return m_objdump;
 
-        if (m_arch.startsWith(QStringLiteral("armv8")) || m_arch.startsWith(QStringLiteral("aarch64"))) {
+        if (m_arch.startsWith(QLatin1String("armv8")) || m_arch.startsWith(QLatin1String("aarch64"))) {
             return QStringLiteral("aarch64-linux-gnu-objdump");
         }
         const auto isArm = m_arch.startsWith(QLatin1String("arm"));
