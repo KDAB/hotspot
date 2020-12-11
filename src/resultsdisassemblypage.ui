@@ -10,7 +10,7 @@
     <height>391</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_4">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -24,29 +24,19 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QSplitter" name="splitter_2">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+    <widget class="QTreeView" name="asmView">
+     <property name="alternatingRowColors">
+      <bool>true</bool>
      </property>
-     <widget class="QSplitter" name="splitter">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-      <widget class="QTreeView" name="asmView">
-       <property name="alternatingRowColors">
-        <bool>true</bool>
-       </property>
-       <property name="rootIsDecorated">
-        <bool>false</bool>
-       </property>
-       <property name="uniformRowHeights">
-        <bool>true</bool>
-       </property>
-       <attribute name="headerDefaultSectionSize">
-        <number>200</number>
-       </attribute>
-      </widget>
-     </widget>
+     <property name="rootIsDecorated">
+      <bool>false</bool>
+     </property>
+     <property name="uniformRowHeights">
+      <bool>true</bool>
+     </property>
+     <attribute name="headerDefaultSectionSize">
+      <number>200</number>
+     </attribute>
     </widget>
    </item>
   </layout>
