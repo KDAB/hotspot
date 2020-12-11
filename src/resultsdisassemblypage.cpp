@@ -147,7 +147,6 @@ static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(QByteArray outpu
 DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const QString& arch,
                                                  const Data::Symbol& symbol)
 {
-    QByteArray output;
     DisassemblyOutput disassemblyOutput;
     if (symbol.symbol.isEmpty()) {
         disassemblyOutput.errorMessage = QApplication::tr("Empty symbol ?? is selected");
@@ -163,6 +162,7 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
     }
 
     QProcess asmProcess;
+    QByteArray output;
     QObject::connect(&asmProcess, &QProcess::readyRead, [&asmProcess, &disassemblyOutput, &output]() {
         output += asmProcess.readAllStandardOutput();
         disassemblyOutput.errorMessage += QString::fromStdString(asmProcess.readAllStandardError().toStdString());
@@ -214,14 +214,16 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
 
     ui->errorMessage->hide();
 
+    const auto numTypes = m_callerCalleeResults.selfCosts.numTypes();
+
     QStringList headerList;
+    headerList.reserve(numTypes + 1);
     headerList.append({tr("Assembly")});
-    for (int i = 0; i < m_callerCalleeResults.selfCosts.numTypes(); i++) {
+    for (int i = 0; i < numTypes; i++) {
         headerList.append(m_callerCalleeResults.selfCosts.typeName(i));
     }
     m_model->setHorizontalHeaderLabels(headerList);
 
-    const auto numTypes = m_callerCalleeResults.selfCosts.numTypes();
     for (int row = 0; row < disassemblyOutput.disassemblyLines.size(); row++) {
         const auto& disassemblyLine = disassemblyOutput.disassemblyLines.at(row);
 
@@ -235,10 +237,10 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
             for (int event = 0; event < numTypes; event++) {
                 const auto &costLine = locationCost.selfCost[event];
                 const auto totalCost = m_callerCalleeResults.selfCosts.totalCost(event);
-                QString costInstruction = Util::formatCostRelative(costLine, totalCost, true);
+                const auto cost = Util::formatCostRelative(costLine, totalCost, true);
 
                 // FIXME QStandardItem stuff should be reimplemented properly
-                auto* costItem = new QStandardItem(costInstruction);
+                auto* costItem = new QStandardItem(cost);
                 costItem->setData(costLine, CostRole);
                 costItem->setData(totalCost, TotalCostRole);
                 m_model->setItem(row, event + 1, costItem);
