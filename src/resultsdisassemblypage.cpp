@@ -228,6 +228,7 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
         const auto& disassemblyLine = disassemblyOutput.disassemblyLines.at(row);
 
         auto* asmItem = new QStandardItem(disassemblyLine.disassembly);
+        asmItem->setFlags(asmItem->flags().setFlag(Qt::ItemIsEditable, false));
         m_model->setItem(row, 0, asmItem);
 
         // Calculate event times and add them in red to corresponding columns of the current disassembly row
@@ -241,6 +242,7 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
 
                 // FIXME QStandardItem stuff should be reimplemented properly
                 auto* costItem = new QStandardItem(cost);
+                costItem->setFlags(asmItem->flags().setFlag(Qt::ItemIsEditable, false));
                 costItem->setData(costLine, CostRole);
                 costItem->setData(totalCost, TotalCostRole);
                 m_model->setItem(row, event + 1, costItem);
