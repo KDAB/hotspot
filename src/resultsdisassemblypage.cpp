@@ -200,8 +200,9 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
     const auto& entry = m_callerCalleeResults.entry(m_curSymbol);
 
     ui->symbolLabel->setText(tr("Disassembly for symbol:  %1").arg(Util::formatSymbol(m_curSymbol)));
-    ui->symbolLabel->setToolTip(Util::formatTooltip(entry.id, m_curSymbol, m_callerCalleeResults.selfCosts,
-                                                    m_callerCalleeResults.inclusiveCosts));
+    // don't set tooltip on symbolLabel, as that will be called internally and then get overwritten
+    setToolTip(Util::formatTooltip(entry.id, m_curSymbol, m_callerCalleeResults.selfCosts,
+                                   m_callerCalleeResults.inclusiveCosts));
 
     if (!disassemblyOutput) {
         ui->errorMessage->setText(disassemblyOutput.errorMessage);
