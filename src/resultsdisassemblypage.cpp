@@ -52,7 +52,6 @@
 #include "models/topproxy.h"
 #include "models/treemodel.h"
 
-#include <KMessageBox>
 #include <QStandardItemModel>
 #include <QStandardPaths>
 #include <QStringRef>
@@ -73,7 +72,6 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(QWidget* parent)
 {
     ui->setupUi(this);
     ui->asmView->setModel(m_model);
-    ui->asmView->hide();
 }
 
 ResultsDisassemblyPage::~ResultsDisassemblyPage() = default;
@@ -95,7 +93,6 @@ void ResultsDisassemblyPage::setupAsmViewModel(int numTypes)
         ui->asmView->header()->setSectionResizeMode(event + 1, QHeaderView::Interactive);
         ui->asmView->setItemDelegateForColumn(event + 1, m_costDelegate);
     }
-    ui->asmView->show();
 }
 
 void ResultsDisassemblyPage::showDisassembly()
@@ -201,14 +198,21 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
 
 void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassemblyOutput)
 {
-    // TODO: that this dialog should be replaced by a passive KMessageWidget instead
+    m_model->clear();
+
+    const auto& entry = m_callerCalleeResults.entry(m_curSymbol);
+
+    ui->symbolLabel->setText(tr("Disassembly for symbol:  %1").arg(Util::formatSymbol(m_curSymbol)));
+    ui->symbolLabel->setToolTip(Util::formatTooltip(entry.id, m_curSymbol, m_callerCalleeResults.selfCosts,
+                                                    m_callerCalleeResults.inclusiveCosts));
+
     if (!disassemblyOutput) {
-        KMessageBox::detailedSorry(this, tr("Failed to disassemble function"), disassemblyOutput.errorMessage);
-        emit jumpToCallerCallee(m_curSymbol);
+        ui->errorMessage->setText(disassemblyOutput.errorMessage);
+        ui->errorMessage->show();
         return;
     }
 
-    m_model->clear();
+    ui->errorMessage->hide();
 
     QStringList headerList;
     headerList.append({tr("Assembly")});
@@ -218,7 +222,6 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
     m_model->setHorizontalHeaderLabels(headerList);
 
     const auto numTypes = m_callerCalleeResults.selfCosts.numTypes();
-    auto& entry = m_callerCalleeResults.entry(m_curSymbol);
     for (int row = 0; row < disassemblyOutput.disassemblyLines.size(); row++) {
         const auto& disassemblyLine = disassemblyOutput.disassemblyLines.at(row);
 
@@ -243,10 +246,6 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
         }
     }
     setupAsmViewModel(numTypes);
-
-    ui->symbolLabel->setText(tr("Disassembly for symbol:  %1").arg(Util::formatSymbol(m_curSymbol)));
-    ui->symbolLabel->setToolTip(Util::formatTooltip(entry.id, m_curSymbol, m_callerCalleeResults.selfCosts,
-                                                    m_callerCalleeResults.inclusiveCosts));
 }
 
 void ResultsDisassemblyPage::setSymbol(const Data::Symbol& symbol)

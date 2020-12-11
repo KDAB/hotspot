@@ -86,6 +86,8 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     , m_filterBusyIndicator(nullptr) // create after we setup the UI to keep it on top
     , m_timelineVisible(true)
 {
+    m_resultsDisassemblyPage->hide();
+
     m_exportMenu->setIcon(QIcon::fromTheme(QStringLiteral("document-export")));
     {
         const auto actions = m_filterAndZoomStack->actions();

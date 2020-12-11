@@ -24,6 +24,9 @@
     <number>0</number>
    </property>
    <item>
+    <widget class="KMessageWidget" name="errorMessage"/>
+   </item>
+   <item>
     <widget class="KSqueezedTextLabel" name="symbolLabel">
      <property name="text">
       <string/>
@@ -52,6 +55,11 @@
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>KMessageWidget</class>
+   <extends>QFrame</extends>
+   <header>kmessagewidget.h</header>
+  </customwidget>
   <customwidget>
    <class>KSqueezedTextLabel</class>
    <extends>QLabel</extends>
