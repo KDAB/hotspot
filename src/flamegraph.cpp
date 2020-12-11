@@ -49,6 +49,7 @@
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QWheelEvent>
+#include <QRandomGenerator>
 
 #include <KColorScheme>
 #include <KLocalizedString>
@@ -223,12 +224,17 @@ void FrameGraphicsItem::setSearchMatchType(SearchMatchType matchType)
 
 namespace {
 
+int rand(int max)
+{
+    return max * QRandomGenerator::global()->generateDouble();
+}
+
 /**
  * Generate a brush from the "mem" color space used in upstream flamegraph.pl
  */
 Q_DECL_UNUSED QBrush memBrush()
 {
-    return QColor(0, 190 + 50 * qreal(qrand()) / RAND_MAX, 210 * qreal(qrand()) / RAND_MAX, 125);
+    return QColor(0, 190 + rand(50), rand(210), 125);
 }
 
 /**
@@ -236,8 +242,7 @@ Q_DECL_UNUSED QBrush memBrush()
  */
 QBrush hotBrush()
 {
-    return QColor(205 + 50 * qreal(qrand()) / RAND_MAX, 230 * qreal(qrand()) / RAND_MAX, 55 * qreal(qrand()) / RAND_MAX,
-                  125);
+    return QColor(205 + rand(50), rand(230), rand(55), 125);
 }
 
 template<typename Generator>
