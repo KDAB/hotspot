@@ -500,6 +500,7 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     m_searchResultsLabel->hide();
 
     setLayout(new QVBoxLayout);
+    layout()->setContentsMargins(0, 0, 0, 0);
     layout()->addWidget(controls);
     layout()->addWidget(m_view);
     layout()->addWidget(m_displayLabel);
