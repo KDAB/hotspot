@@ -141,7 +141,8 @@ MainWindow::MainWindow(QWidget* parent)
     connect(m_parser, &PerfParser::exportFinished, this, [this](const QUrl& url) {
         m_exportAction->setEnabled(true);
 
-        auto* notification = new KNotification(QStringLiteral("fileSaved"), this);
+        auto* notification = new KNotification(QStringLiteral("fileSaved"));
+        notification->setWidget(this);
         notification->setUrls({url});
         notification->setText(tr("Processed data saved"));
         notification->sendEvent();
