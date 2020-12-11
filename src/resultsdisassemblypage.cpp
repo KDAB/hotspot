@@ -233,6 +233,8 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
         auto it = entry.offsetMap.find(disassemblyLine.addr);
         if (it != entry.offsetMap.end()) {
             const auto& locationCost = it.value();
+            const auto tooltip = Util::formatTooltip(asmItem->text(), locationCost, m_callerCalleeResults.selfCosts);
+            asmItem->setToolTip(tooltip);
             for (int event = 0; event < numTypes; event++) {
                 const auto &costLine = locationCost.selfCost[event];
                 const auto totalCost = m_callerCalleeResults.selfCosts.totalCost(event);
@@ -243,8 +245,12 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
                 costItem->setFlags(asmItem->flags().setFlag(Qt::ItemIsEditable, false));
                 costItem->setData(costLine, CostRole);
                 costItem->setData(totalCost, TotalCostRole);
+                costItem->setToolTip(tooltip);
                 m_model->setItem(row, event + 1, costItem);
             }
+        } else {
+            asmItem->setToolTip(
+                tr("<qt><tt>%1</tt><hr/>No samples at this location.</qt>").arg(asmItem->text().toHtmlEscaped()));
         }
     }
     setupAsmViewModel(numTypes);
