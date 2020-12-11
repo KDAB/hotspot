@@ -66,8 +66,6 @@ struct DisassemblyOutput
 };
 Q_DECLARE_TYPEINFO(DisassemblyOutput::DisassemblyLine, Q_MOVABLE_TYPE);
 
-static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(QByteArray output, int numTypes);
-
 class ResultsDisassemblyPage : public QWidget
 {
     Q_OBJECT

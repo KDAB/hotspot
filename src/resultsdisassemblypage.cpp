@@ -116,6 +116,33 @@ void ResultsDisassemblyPage::showDisassembly()
     showDisassembly(processName, arguments);
 }
 
+static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(QByteArray output, int numTypes)
+{
+    QVector<DisassemblyOutput::DisassemblyLine> disassemblyLines;
+    QByteArrayList asmLineList = output.split('\n');
+    for (int line = 0; line < asmLineList.size(); line++) {
+        DisassemblyOutput::DisassemblyLine disassemblyLine;
+        QString asmLine = QString::fromStdString(asmLineList.at(line).toStdString());
+        if (asmLine.isEmpty() || asmLine.startsWith(QLatin1String("Disassembly")))
+            continue;
+
+        const auto asmTokens = asmLine.splitRef(QLatin1Char(':'));
+        const auto addrLine = asmTokens.value(0).trimmed();
+
+        bool ok = false;
+        const auto addr = addrLine.toULongLong(&ok, 16);
+        if (!ok) {
+            qWarning() << "unhandled asm line format:" << addrLine;
+            continue;
+        }
+
+        disassemblyLine.addr = addr;
+        disassemblyLine.disassembly = asmLine;
+        disassemblyLines.push_back(disassemblyLine);
+    }
+    return disassemblyLines;
+}
+
 static DisassemblyOutput fromProcess(const QString& processName, const QStringList& arguments, const QString& arch,
                                      const Data::Symbol& curSymbol, const int numTypes)
 {
@@ -251,31 +278,4 @@ void ResultsDisassemblyPage::setCostsMap(const Data::CallerCalleeResults& caller
 void ResultsDisassemblyPage::setObjdump(const QString& objdump)
 {
     m_objdumpPath = objdump;
-}
-
-static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(QByteArray output, int numTypes)
-{
-    QVector<DisassemblyOutput::DisassemblyLine> disassemblyLines;
-    QByteArrayList asmLineList = output.split('\n');
-    for (int line = 0; line < asmLineList.size(); line++) {
-        DisassemblyOutput::DisassemblyLine disassemblyLine;
-        QString asmLine = QString::fromStdString(asmLineList.at(line).toStdString());
-        if (asmLine.isEmpty() || asmLine.startsWith(QLatin1String("Disassembly")))
-            continue;
-
-        const auto asmTokens = asmLine.splitRef(QLatin1Char(':'));
-        const auto addrLine = asmTokens.value(0).trimmed();
-
-        bool ok = false;
-        const auto addr = addrLine.toULongLong(&ok, 16);
-        if (!ok) {
-            qWarning() << "unhandled asm line format:" << addrLine;
-            continue;
-        }
-
-        disassemblyLine.addr = addr;
-        disassemblyLine.disassembly = asmLine;
-        disassemblyLines.push_back(disassemblyLine);
-    }
-    return disassemblyLines;
 }
