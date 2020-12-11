@@ -40,6 +40,8 @@ class QLabel;
 class QLineEdit;
 class QPushButton;
 
+class KSqueezedTextLabel;
+
 class FrameGraphicsItem;
 class FilterAndZoomStack;
 
@@ -89,7 +91,7 @@ private:
     QComboBox* m_costSource;
     QGraphicsScene* m_scene;
     QGraphicsView* m_view;
-    QLabel* m_displayLabel;
+    KSqueezedTextLabel* m_displayLabel;
     QLabel* m_searchResultsLabel;
     QLineEdit* m_searchInput = nullptr;
     QAction* m_forwardAction = nullptr;

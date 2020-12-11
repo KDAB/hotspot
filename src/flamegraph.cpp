@@ -54,6 +54,7 @@
 #include <KColorScheme>
 #include <KLocalizedString>
 #include <KStandardAction>
+#include <KSqueezedTextLabel>
 #include <ThreadWeaver/ThreadWeaver>
 
 #include "models/filterandzoomstack.h"
@@ -405,9 +406,10 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     , m_costSource(new QComboBox(this))
     , m_scene(new QGraphicsScene(this))
     , m_view(new QGraphicsView(this))
-    , m_displayLabel(new QLabel)
-    , m_searchResultsLabel(new QLabel)
+    , m_displayLabel(new KSqueezedTextLabel(this))
+    , m_searchResultsLabel(new QLabel(this))
 {
+    m_displayLabel->setTextElideMode(Qt::ElideRight);
     qRegisterMetaType<FrameGraphicsItem*>();
 
     m_costSource->setToolTip(i18n("Select the data source that should be visualized in the flame graph."));
@@ -723,8 +725,7 @@ void FlameGraph::updateTooltip()
 {
     const auto text = m_tooltipItem ? m_tooltipItem->description() : QString();
     m_displayLabel->setToolTip(text);
-    const auto metrics = m_displayLabel->fontMetrics();
-    m_displayLabel->setText(metrics.elidedText(text, Qt::ElideRight, m_displayLabel->width()));
+    m_displayLabel->setText(text);
 }
 
 void FlameGraph::setData(FrameGraphicsItem* rootItem)
