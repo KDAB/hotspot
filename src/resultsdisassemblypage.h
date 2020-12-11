@@ -50,19 +50,20 @@ class CostDelegate;
 
 struct DisassemblyOutput
 {
-    QString errorMessage;
-    explicit operator bool() const
-    {
-        return errorMessage.isEmpty();
-    }
-    static DisassemblyOutput fromProcess(const QString& processName, const QStringList& arguments);
-
     struct DisassemblyLine
     {
         quint64 addr = 0;
         QString disassembly;
     };
     QVector<DisassemblyLine> disassemblyLines;
+
+    QString errorMessage;
+    explicit operator bool() const
+    {
+        return errorMessage.isEmpty();
+    }
+
+    static DisassemblyOutput disassemble(const QString& objdump, const QString& arch, const Data::Symbol& symbol);
 };
 Q_DECLARE_TYPEINFO(DisassemblyOutput::DisassemblyLine, Q_MOVABLE_TYPE);
 
@@ -76,8 +77,6 @@ public:
     void clear();
     void setupAsmViewModel(int numTypes);
     void showDisassembly();
-    // Output Disassembly that is the result of call process running 'processName' command on tab Disassembly
-    void showDisassembly(const QString& processName, const QStringList& arguments);
     void setAppPath(const QString& path);
     void setSymbol(const Data::Symbol& data);
     void setData(const Data::DisassemblyResult& data);
@@ -87,6 +86,8 @@ signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
 
 private:
+    void showDisassembly(const DisassemblyOutput& disassemblyOutput);
+
     QScopedPointer<Ui::ResultsDisassemblyPage> ui;
     // Model
     QStandardItemModel* m_model;

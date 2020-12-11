@@ -69,7 +69,6 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsDisassemblyPage)
     , m_model(new QStandardItemModel(this))
-    , m_objdumpPath(QString())
     , m_costDelegate(new CostDelegate(CostRole, TotalCostRole, this))
 {
     ui->setupUi(this);
@@ -83,7 +82,7 @@ void ResultsDisassemblyPage::clear()
 {
     int rowCount = m_model->rowCount();
     if (rowCount > 0) {
-        m_model->removeRows(0, rowCount, QModelIndex());
+        m_model->removeRows(0, rowCount, {});
     }
 }
 
@@ -106,14 +105,7 @@ void ResultsDisassemblyPage::showDisassembly()
         clear();
     }
 
-    // Call objdump with arguments: addresses range and binary file
-    QString processName = m_objdump;
-    QStringList arguments;
-    arguments << QStringLiteral("-d") << QStringLiteral("--start-address")
-              << QStringLiteral("0x%1").arg(m_curSymbol.relAddr, 0, 16) << QStringLiteral("--stop-address")
-              << QStringLiteral("0x%1").arg(m_curSymbol.relAddr + m_curSymbol.size, 0, 16) << m_curSymbol.actualPath;
-
-    showDisassembly(processName, arguments);
+    showDisassembly(DisassemblyOutput::disassemble(m_objdump, m_arch, m_curSymbol));
 }
 
 static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(QByteArray output)
@@ -143,21 +135,21 @@ static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(QByteArray outpu
     return disassemblyLines;
 }
 
-static DisassemblyOutput fromProcess(const QString& processName, const QStringList& arguments, const QString& arch,
-                                     const Data::Symbol& curSymbol)
+DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const QString& arch,
+                                                 const Data::Symbol& symbol)
 {
     QByteArray output;
     DisassemblyOutput disassemblyOutput;
-    if (curSymbol.symbol.isEmpty()) {
+    if (symbol.symbol.isEmpty()) {
         disassemblyOutput.errorMessage = QApplication::tr("Empty symbol ?? is selected");
         return disassemblyOutput;
     }
 
-    const auto processPath = QStandardPaths::findExecutable(processName);
+    const auto processPath = QStandardPaths::findExecutable(objdump);
     if (processPath.isEmpty()) {
         disassemblyOutput.errorMessage =
             QApplication::tr("Cannot find objdump process %1, please install the missing binutils package for arch %2")
-                .arg(processName, arch);
+                .arg(objdump, arch);
         return disassemblyOutput;
     }
 
@@ -167,7 +159,15 @@ static DisassemblyOutput fromProcess(const QString& processName, const QStringLi
         disassemblyOutput.errorMessage += QString::fromStdString(asmProcess.readAllStandardError().toStdString());
     });
 
-    asmProcess.start(processName, arguments);
+    // Call objdump with arguments: addresses range and binary file
+    auto toHex = [](quint64 addr) -> QString { return QLatin1String("0x") + QString::number(addr, 16); };
+    const auto arguments = QStringList {QStringLiteral("-d"),
+                                        QStringLiteral("--start-address"),
+                                        toHex(symbol.relAddr),
+                                        QStringLiteral("--stop-address"),
+                                        toHex(symbol.relAddr + symbol.size),
+                                        symbol.actualPath};
+    asmProcess.start(objdump, arguments);
 
     if (!asmProcess.waitForStarted()) {
         disassemblyOutput.errorMessage += QApplication::tr("Process was not started.");
@@ -180,17 +180,15 @@ static DisassemblyOutput fromProcess(const QString& processName, const QStringLi
     }
 
     if (output.isEmpty()) {
-        disassemblyOutput.errorMessage += QApplication::tr("Empty output of command ").arg(processName);
+        disassemblyOutput.errorMessage += QApplication::tr("Empty output of command %1").arg(objdump);
     }
 
     disassemblyOutput.disassemblyLines = objdumpParse(output);
     return disassemblyOutput;
 }
 
-void ResultsDisassemblyPage::showDisassembly(const QString& processName, const QStringList& arguments)
+void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassemblyOutput)
 {
-    DisassemblyOutput disassemblyOutput = fromProcess(processName, arguments, m_arch, m_curSymbol);
-
     // TODO: that this dialog should be replaced by a passive KMessageWidget instead
     if (!disassemblyOutput) {
         KMessageBox::detailedSorry(this, tr("Failed to disassemble function"), disassemblyOutput.errorMessage);
