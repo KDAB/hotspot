@@ -116,7 +116,7 @@ void ResultsDisassemblyPage::showDisassembly()
     showDisassembly(processName, arguments);
 }
 
-static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(QByteArray output, int numTypes)
+static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(QByteArray output)
 {
     QVector<DisassemblyOutput::DisassemblyLine> disassemblyLines;
     QByteArrayList asmLineList = output.split('\n');
@@ -144,7 +144,7 @@ static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(QByteArray outpu
 }
 
 static DisassemblyOutput fromProcess(const QString& processName, const QStringList& arguments, const QString& arch,
-                                     const Data::Symbol& curSymbol, const int numTypes)
+                                     const Data::Symbol& curSymbol)
 {
     QByteArray output;
     DisassemblyOutput disassemblyOutput;
@@ -183,14 +183,13 @@ static DisassemblyOutput fromProcess(const QString& processName, const QStringLi
         disassemblyOutput.errorMessage += QApplication::tr("Empty output of command ").arg(processName);
     }
 
-    disassemblyOutput.disassemblyLines = objdumpParse(output, numTypes);
+    disassemblyOutput.disassemblyLines = objdumpParse(output);
     return disassemblyOutput;
 }
 
 void ResultsDisassemblyPage::showDisassembly(const QString& processName, const QStringList& arguments)
 {
-    int numTypes = m_callerCalleeResults.selfCosts.numTypes();
-    DisassemblyOutput disassemblyOutput = fromProcess(processName, arguments, m_arch, m_curSymbol, numTypes);
+    DisassemblyOutput disassemblyOutput = fromProcess(processName, arguments, m_arch, m_curSymbol);
 
     // TODO: that this dialog should be replaced by a passive KMessageWidget instead
     if (!disassemblyOutput) {
@@ -199,7 +198,6 @@ void ResultsDisassemblyPage::showDisassembly(const QString& processName, const Q
         return;
     }
 
-    int row = 0;
     m_model->clear();
 
     QStringList headerList;
@@ -209,30 +207,25 @@ void ResultsDisassemblyPage::showDisassembly(const QString& processName, const Q
     }
     m_model->setHorizontalHeaderLabels(headerList);
 
+    const auto numTypes = m_callerCalleeResults.selfCosts.numTypes();
     auto& entry = m_callerCalleeResults.entry(m_curSymbol);
     for (int row = 0; row < disassemblyOutput.disassemblyLines.size(); row++) {
-        DisassemblyOutput::DisassemblyLine disassemblyLine = disassemblyOutput.disassemblyLines.at(row);
-        QString asmLine = disassemblyLine.disassembly;
-        const auto addr = disassemblyLine.addr;
+        const auto& disassemblyLine = disassemblyOutput.disassemblyLines.at(row);
 
-        QStandardItem* asmItem = new QStandardItem();
-        asmItem->setText(asmLine);
+        auto* asmItem = new QStandardItem(disassemblyLine.disassembly);
         m_model->setItem(row, 0, asmItem);
 
         // Calculate event times and add them in red to corresponding columns of the current disassembly row
-        float costLine = 0;
-        auto& entry = m_callerCalleeResults.entry(m_curSymbol);
-
-        auto it = entry.offsetMap.find(addr);
+        auto it = entry.offsetMap.find(disassemblyLine.addr);
         if (it != entry.offsetMap.end()) {
             const auto& locationCost = it.value();
             for (int event = 0; event < numTypes; event++) {
-                costLine = locationCost.selfCost[event];
+                const auto &costLine = locationCost.selfCost[event];
                 const auto totalCost = m_callerCalleeResults.selfCosts.totalCost(event);
                 QString costInstruction = Util::formatCostRelative(costLine, totalCost, true);
 
                 // FIXME QStandardItem stuff should be reimplemented properly
-                QStandardItem* costItem = new QStandardItem(costInstruction);
+                auto* costItem = new QStandardItem(costInstruction);
                 costItem->setData(costLine, CostRole);
                 costItem->setData(totalCost, TotalCostRole);
                 m_model->setItem(row, event + 1, costItem);
