@@ -111,7 +111,7 @@ As of now, you will need the following dependencies to build this project:
 ### On Debian/Ubuntu
 
 ```
-add-apt-repository ppa:kubuntu-ppa/backports 
+add-apt-repository ppa:kubuntu-ppa/backports
 apt-get update
 apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev \
     libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libkf5kio-dev \
@@ -124,7 +124,8 @@ apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev \
 dnf install cmake gcc glibc-static gcc-c++ libstdc++-static qt5 qt5-devel \
     extra-cmake-modules elfutils-devel kf5-threadweaver-devel kf5-ki18n-devel \
     kf5-kconfigwidgets-devel kf5-kitemviews-devel kf5-kitemmodels-devel \
-    kf5-kio-devel kf5-solid-devel kf5-kwindowsystem-devel
+    kf5-kio-devel kf5-solid-devel kf5-kwindowsystem-devel kf5-kiconthemes-devel \
+    kf5-knotifications-devel
 ```
 
 ### Arch Linux
