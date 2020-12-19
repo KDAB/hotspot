@@ -167,6 +167,10 @@ If you need help building this project for your platform, [contact us for help](
 
 hotspot is available in AUR (https://aur.archlinux.org/packages/hotspot).
 
+### Debian / Ubuntu
+
+hotspot is available in Debian (https://packages.debian.org/hotspot) and Ubuntu (https://packages.ubuntu.com/hotspot)
+
 ### Gentoo
 
 hotspot ebuilds are available from our overlay (https://github.com/KDAB/kdab-overlay).
