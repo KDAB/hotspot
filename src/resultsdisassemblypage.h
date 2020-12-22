@@ -47,25 +47,7 @@ class QTreeView;
 class QStandardItemModel;
 class QTemporaryFile;
 class CostDelegate;
-
-struct DisassemblyOutput
-{
-    struct DisassemblyLine
-    {
-        quint64 addr = 0;
-        QString disassembly;
-    };
-    QVector<DisassemblyLine> disassemblyLines;
-
-    QString errorMessage;
-    explicit operator bool() const
-    {
-        return errorMessage.isEmpty();
-    }
-
-    static DisassemblyOutput disassemble(const QString& objdump, const QString& arch, const Data::Symbol& symbol);
-};
-Q_DECLARE_TYPEINFO(DisassemblyOutput::DisassemblyLine, Q_MOVABLE_TYPE);
+class DisassemblyOutput;
 
 class ResultsDisassemblyPage : public QWidget
 {

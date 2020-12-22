@@ -11,6 +11,7 @@ add_library(models STATIC
     timeaxisheaderview.cpp
     eventmodel.cpp
     filterandzoomstack.cpp
+    disassemblyoutput.cpp
     ../settings.cpp
     ../util.cpp
 )
