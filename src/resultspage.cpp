@@ -45,7 +45,6 @@
 #include <KLocalizedString>
 
 #include <QDebug>
-#include <QEvent>
 #include <QLabel>
 #include <QMenu>
 #include <QProgressBar>
@@ -155,30 +154,30 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
 
     connect(parser, &PerfParser::parsingStarted, this, [this]() {
         // disable when we apply a filter
-        m_timeLineWidget->setEnabled(false);
+        ui->splitter->setEnabled(false);
         repositionFilterBusyIndicator();
         m_filterBusyIndicator->setVisible(true);
     });
     connect(parser, &PerfParser::parsingFinished, this, [this]() {
         // re-enable when we finished filtering
-        m_timeLineWidget->setEnabled(true);
+        ui->splitter->setEnabled(true);
         m_filterBusyIndicator->setVisible(false);
     });
 
     {
         // create a busy indicator
         m_filterBusyIndicator = new QWidget(this);
-        m_filterBusyIndicator->setToolTip(i18n("Filtering in progress, please wait..."));
-        m_filterBusyIndicator->setLayout(new QVBoxLayout);
+        m_filterBusyIndicator->setMinimumHeight(100);
         m_filterBusyIndicator->setVisible(false);
-        auto progressBar = new QProgressBar;
-        progressBar->setAlignment(Qt::AlignHCenter | Qt::AlignBottom);
-        m_filterBusyIndicator->layout()->addWidget(progressBar);
+        m_filterBusyIndicator->setToolTip(i18n("Filtering in progress, please wait..."));
+        auto layout = new QVBoxLayout(m_filterBusyIndicator);
+        layout->setAlignment(Qt::AlignCenter);
+        auto progressBar = new QProgressBar(m_filterBusyIndicator);
+        layout->addWidget(progressBar);
         progressBar->setMaximum(0);
-        auto label = new QLabel(m_filterBusyIndicator->toolTip());
-        label->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
-        m_filterBusyIndicator->layout()->addWidget(label);
-        m_timeLineWidget->installEventFilter(this);
+        auto label = new QLabel(m_filterBusyIndicator->toolTip(), m_filterBusyIndicator);
+        label->setAlignment(Qt::AlignCenter);
+        layout->addWidget(label);
     }
 }
 
@@ -244,22 +243,18 @@ QMenu* ResultsPage::exportMenu() const
     return m_exportMenu;
 }
 
-bool ResultsPage::eventFilter(QObject* watched, QEvent* event)
+void ResultsPage::resizeEvent(QResizeEvent* event)
 {
-    if (watched == m_timeLineWidget && event->type() == QEvent::Resize) {
-        repositionFilterBusyIndicator();
-    }
-    return QWidget::eventFilter(watched, event);
+    QWidget::resizeEvent(event);
+    repositionFilterBusyIndicator();
 }
 
 void ResultsPage::repositionFilterBusyIndicator()
 {
-    auto rect = m_timeLineWidget->geometry();
-    const auto dx = rect.width() / 4;
-    const auto dy = rect.height() / 4;
-    rect.adjust(dx, dy, -dx, -dy);
-    QRect mapped(m_timeLineWidget->mapTo(this, rect.topLeft()), m_timeLineWidget->mapTo(this, rect.bottomRight()));
-    m_filterBusyIndicator->setGeometry(mapped);
+    auto geometry = m_filterBusyIndicator->geometry();
+    geometry.setWidth(width() / 2);
+    geometry.moveCenter(rect().center());
+    m_filterBusyIndicator->setGeometry(geometry);
 }
 
 void ResultsPage::setTimelineVisible(bool visible)

@@ -77,7 +77,7 @@ signals:
     void navigateToCode(const QString& url, int lineNumber, int columnNumber);
 
 private:
-    bool eventFilter(QObject* watched, QEvent* event) override;
+    void resizeEvent(QResizeEvent* event) override;
     void repositionFilterBusyIndicator();
 
     QScopedPointer<Ui::ResultsPage> ui;
