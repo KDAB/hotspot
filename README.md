@@ -163,7 +163,7 @@ If you need help building this project for your platform, [contact us for help](
 
 ## Getting Hotspot
 
-*Note: Hotspot is not packaged for most Linux distributions yet -- you'll likely have to resort to using the AppImage which will work on any recent Linux distro just fine*
+*Note: Hotspot is not yet packaged on all Linux distributions. In such cases, or when you want to use the latest version, please use the AppImage which will work on any recent Linux distro just fine.*
 
 ### ArchLinux
 
