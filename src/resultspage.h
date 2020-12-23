@@ -29,8 +29,6 @@
 
 #include <QWidget>
 
-#include <atomic>
-
 class QMenu;
 class QAction;
 
@@ -49,9 +47,8 @@ class ResultsTopDownPage;
 class ResultsFlameGraphPage;
 class ResultsCallerCalleePage;
 class ResultsDisassemblyPage;
-class TimeLineDelegate;
-class TimeAxisHeaderView;
 class FilterAndZoomStack;
+class TimeLineWidget;
 
 class ResultsPage : public QWidget
 {
@@ -94,9 +91,7 @@ private:
     ResultsFlameGraphPage* m_resultsFlameGraphPage;
     ResultsCallerCalleePage* m_resultsCallerCalleePage;
     ResultsDisassemblyPage* m_resultsDisassemblyPage;
-    TimeLineDelegate* m_timeLineDelegate;
-    TimeAxisHeaderView* m_timeAxisHeaderView;
-    QWidget* m_filterBusyIndicator;
+    TimeLineWidget* m_timeLineWidget;
+    QWidget* m_filterBusyIndicator = nullptr;
     bool m_timelineVisible;
-    std::atomic<uint> m_currentSelectStackJobId;
 };

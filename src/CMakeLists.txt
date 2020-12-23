@@ -41,6 +41,7 @@ set(hotspot_SRCS
     resultsdisassemblypage.cpp
     resultsutil.cpp
     costheaderview.cpp
+    timelinewidget.cpp
 
     # ui files:
     mainwindow.ui
@@ -54,6 +55,7 @@ set(hotspot_SRCS
     resultsflamegraphpage.ui
     resultscallercalleepage.ui
     resultsdisassemblypage.ui
+    timelinewidget.ui
 
     # resources:
     resources.qrc
