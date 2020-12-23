@@ -55,23 +55,21 @@ find_package(Threads REQUIRED)
 find_package(Zstd)
 find_package(objdump)
 
-if(Qt5_FOUND AND ECM_FOUND)
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
-    find_package(KF5 COMPONENTS
-        ThreadWeaver
-        I18n
-        ConfigWidgets
-        CoreAddons
-        ItemViews
-        ItemModels
-        KIO
-        Solid
-        WindowSystem
-        Notifications
-        IconThemes
-        REQUIRED
-    )
-endif()
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
+find_package(KF5 COMPONENTS
+    ThreadWeaver
+    I18n
+    ConfigWidgets
+    CoreAddons
+    ItemViews
+    ItemModels
+    KIO
+    Solid
+    WindowSystem
+    Notifications
+    IconThemes
+    REQUIRED
+)
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
