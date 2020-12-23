@@ -86,6 +86,8 @@ into account though.
 
 ## Building Hotspot
 
+Building hotspot from source gives you the latest and greatest, but you'll have to make sure all its dependencies are available. Most users should probably [install hotspot](#getting-hotspot) from the distro package manager or as an [AppImage](#for-any-linux-distro-appimage).
+
 ### Required Dependencies
 
 As of now, you will need the following dependencies to build this project:
