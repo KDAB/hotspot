@@ -109,6 +109,8 @@ As of now, you will need the following dependencies to build this project:
   - kio
   - solid
   - windowsystem
+  - notifications
+  - iconthemes
 
 ### On Debian/Ubuntu
 
