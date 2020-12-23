@@ -1,0 +1,291 @@
+{
+    "allDockWidgets": [
+        {
+            "lastPosition": {
+                "lastFloatingGeometry": {
+                    "height": 0,
+                    "width": 0,
+                    "x": 0,
+                    "y": 0
+                },
+                "placeholders": [
+                    {
+                        "isFloatingWindow": false,
+                        "itemIndex": 0,
+                        "mainWindowUniqueName": "results"
+                    }
+                ],
+                "tabIndex": -1,
+                "wasFloating": false
+            },
+            "uniqueName": "summary"
+        },
+        {
+            "lastPosition": {
+                "lastFloatingGeometry": {
+                    "height": 0,
+                    "width": 0,
+                    "x": 0,
+                    "y": 0
+                },
+                "placeholders": [
+                    {
+                        "isFloatingWindow": false,
+                        "itemIndex": 0,
+                        "mainWindowUniqueName": "results"
+                    }
+                ],
+                "tabIndex": -1,
+                "wasFloating": false
+            },
+            "uniqueName": "bottomUp"
+        },
+        {
+            "lastPosition": {
+                "lastFloatingGeometry": {
+                    "height": 0,
+                    "width": 0,
+                    "x": 0,
+                    "y": 0
+                },
+                "placeholders": [
+                    {
+                        "isFloatingWindow": false,
+                        "itemIndex": 0,
+                        "mainWindowUniqueName": "results"
+                    }
+                ],
+                "tabIndex": -1,
+                "wasFloating": false
+            },
+            "uniqueName": "topDown"
+        },
+        {
+            "lastPosition": {
+                "lastFloatingGeometry": {
+                    "height": 0,
+                    "width": 0,
+                    "x": 0,
+                    "y": 0
+                },
+                "placeholders": [
+                    {
+                        "isFloatingWindow": false,
+                        "itemIndex": 0,
+                        "mainWindowUniqueName": "results"
+                    }
+                ],
+                "tabIndex": -1,
+                "wasFloating": false
+            },
+            "uniqueName": "flameGraph"
+        },
+        {
+            "lastPosition": {
+                "lastFloatingGeometry": {
+                    "height": 0,
+                    "width": 0,
+                    "x": 0,
+                    "y": 0
+                },
+                "placeholders": [
+                    {
+                        "isFloatingWindow": false,
+                        "itemIndex": 0,
+                        "mainWindowUniqueName": "results"
+                    }
+                ],
+                "tabIndex": -1,
+                "wasFloating": false
+            },
+            "uniqueName": "callerCallee"
+        },
+        {
+            "lastPosition": {
+                "lastFloatingGeometry": {
+                    "height": 0,
+                    "width": 0,
+                    "x": 0,
+                    "y": 0
+                },
+                "placeholders": [
+                    {
+                        "isFloatingWindow": false,
+                        "itemIndex": 0,
+                        "mainWindowUniqueName": "results"
+                    }
+                ],
+                "tabIndex": 5,
+                "wasFloating": false
+            },
+            "uniqueName": "disassembly"
+        },
+        {
+            "lastPosition": {
+                "lastFloatingGeometry": {
+                    "height": 0,
+                    "width": 0,
+                    "x": 0,
+                    "y": 0
+                },
+                "placeholders": [
+                    {
+                        "isFloatingWindow": false,
+                        "itemIndex": 1,
+                        "mainWindowUniqueName": "results"
+                    }
+                ],
+                "tabIndex": -1,
+                "wasFloating": false
+            },
+            "uniqueName": "timeLine"
+        }
+    ],
+    "closedDockWidgets": [
+        "disassembly"
+    ],
+    "floatingWindows": [
+    ],
+    "mainWindows": [
+        {
+            "affinities": [
+            ],
+            "geometry": {
+                "height": 769,
+                "width": 1123,
+                "x": 1357,
+                "y": 367
+            },
+            "isVisible": true,
+            "multiSplitterLayout": {
+                "frames": {
+                    "2": {
+                        "currentTabIndex": 0,
+                        "dockWidgets": [
+                            "summary",
+                            "bottomUp",
+                            "topDown",
+                            "flameGraph",
+                            "callerCallee"
+                        ],
+                        "geometry": {
+                            "height": 489,
+                            "width": 1121,
+                            "x": 0,
+                            "y": 0
+                        },
+                        "id": "2",
+                        "isNull": false,
+                        "objectName": "summary",
+                        "options": 0
+                    },
+                    "3": {
+                        "currentTabIndex": 0,
+                        "dockWidgets": [
+                            "timeLine"
+                        ],
+                        "geometry": {
+                            "height": 239,
+                            "width": 1121,
+                            "x": 0,
+                            "y": 494
+                        },
+                        "id": "3",
+                        "isNull": false,
+                        "objectName": "timeLine",
+                        "options": 0
+                    }
+                },
+                "layout": {
+                    "children": [
+                        {
+                            "guestId": "2",
+                            "isContainer": false,
+                            "isVisible": true,
+                            "objectName": "summary",
+                            "sizingInfo": {
+                                "geometry": {
+                                    "height": 489,
+                                    "width": 1121,
+                                    "x": 0,
+                                    "y": 0
+                                },
+                                "maxSize": {
+                                    "height": 524326,
+                                    "width": 524295
+                                },
+                                "minSize": {
+                                    "height": 257,
+                                    "width": 807
+                                }
+                            }
+                        },
+                        {
+                            "guestId": "3",
+                            "isContainer": false,
+                            "isVisible": true,
+                            "objectName": "timeLine",
+                            "sizingInfo": {
+                                "geometry": {
+                                    "height": 239,
+                                    "width": 1121,
+                                    "x": 0,
+                                    "y": 494
+                                },
+                                "maxSize": {
+                                    "height": 524325,
+                                    "width": 524295
+                                },
+                                "minSize": {
+                                    "height": 238,
+                                    "width": 311
+                                }
+                            }
+                        }
+                    ],
+                    "isContainer": true,
+                    "isVisible": false,
+                    "objectName": "",
+                    "orientation": 2,
+                    "sizingInfo": {
+                        "geometry": {
+                            "height": 733,
+                            "width": 1121,
+                            "x": 0,
+                            "y": 0
+                        },
+                        "maxSize": {
+                            "height": 16777215,
+                            "width": 16777215
+                        },
+                        "minSize": {
+                            "height": 90,
+                            "width": 80
+                        }
+                    }
+                }
+            },
+            "options": 0,
+            "screenIndex": 0,
+            "screenSize": {
+                "height": 1440,
+                "width": 2560
+            },
+            "uniqueName": "results"
+        }
+    ],
+    "screenInfo": [
+        {
+            "devicePixelRatio": 1.5,
+            "geometry": {
+                "height": 1440,
+                "width": 2560,
+                "x": 0,
+                "y": 0
+            },
+            "index": 0,
+            "name": "DP-1"
+        }
+    ],
+    "serializationVersion": 3
+}

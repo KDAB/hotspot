@@ -31,6 +31,7 @@
 #include <QFile>
 #include <QProcessEnvironment>
 
+#include "dockwidgetsetup.h"
 #include "hotspot-config.h"
 #include "mainwindow.h"
 #include "models/data.h"
@@ -151,6 +152,8 @@ int main(int argc, char** argv)
         QStringLiteral("[files...]"));
 
     parser.process(app);
+
+    setupDockWidgets();
 
     ThreadWeaver::Queue::instance()->setMaximumNumberOfThreads(QThread::idealThreadCount());
 

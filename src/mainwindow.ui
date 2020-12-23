@@ -23,7 +23,7 @@
      <x>0</x>
      <y>0</y>
      <width>1123</width>
-     <height>29</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="helpMenu">
@@ -52,9 +52,15 @@
      <bool>true</bool>
     </property>
    </widget>
+   <widget class="QMenu" name="windowMenu">
+    <property name="title">
+     <string>Window</string>
+    </property>
+   </widget>
    <addaction name="fileMenu"/>
    <addaction name="settingsMenu"/>
    <addaction name="viewMenu"/>
+   <addaction name="windowMenu"/>
    <addaction name="helpMenu"/>
   </widget>
   <action name="actionAbout_Hotspot">

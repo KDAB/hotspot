@@ -30,6 +30,7 @@
 
 #include "parsers/perf/perfparser.h"
 
+#include "dockwidgetsetup.h"
 #include "resultsbottomuppage.h"
 #include "resultscallercalleepage.h"
 #include "resultsdisassemblypage.h"
@@ -44,17 +45,19 @@
 
 #include <KLocalizedString>
 
+#include <kddockwidgets/DockWidget.h>
+#include <kddockwidgets/MainWindow.h>
+
 #include <QDebug>
 #include <QLabel>
 #include <QMenu>
 #include <QProgressBar>
 #include <QTimer>
 
-static const int SUMMARY_TABINDEX = 0;
-
 ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsPage)
+    , m_contents(createDockingArea(QStringLiteral("results"), this))
     , m_filterAndZoomStack(new FilterAndZoomStack(this))
     , m_filterMenu(new QMenu(this))
     , m_exportMenu(new QMenu(tr("Export"), this))
@@ -64,10 +67,9 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     , m_resultsFlameGraphPage(new ResultsFlameGraphPage(m_filterAndZoomStack, parser, m_exportMenu, this))
     , m_resultsCallerCalleePage(new ResultsCallerCalleePage(m_filterAndZoomStack, parser, this))
     , m_resultsDisassemblyPage(new ResultsDisassemblyPage(this))
+    , m_timeLineWidget(new TimeLineWidget(parser, m_filterMenu, m_filterAndZoomStack, this))
     , m_timelineVisible(true)
 {
-    m_resultsDisassemblyPage->hide();
-
     m_exportMenu->setIcon(QIcon::fromTheme(QStringLiteral("document-export")));
     {
         const auto actions = m_filterAndZoomStack->actions();
@@ -81,33 +83,44 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     }
 
     ui->setupUi(this);
+    ui->verticalLayout->addWidget(m_contents);
 
     ui->errorWidget->hide();
     ui->lostMessage->hide();
 
-    ui->resultsTabWidget->setFocus();
-    ui->resultsTabWidget->addTab(m_resultsSummaryPage, tr("Summary"));
-    ui->resultsTabWidget->addTab(m_resultsBottomUpPage, tr("Bottom Up"));
-    ui->resultsTabWidget->addTab(m_resultsTopDownPage, tr("Top Down"));
-    ui->resultsTabWidget->addTab(m_resultsFlameGraphPage, tr("Flame Graph"));
-    ui->resultsTabWidget->addTab(m_resultsCallerCalleePage, tr("Caller / Callee"));
-    ui->resultsTabWidget->setCurrentWidget(m_resultsSummaryPage);
+    auto dockify = [](QWidget* widget, const QString& id, const QString& title, const QString& shortcut) {
+        auto* dock = new KDDockWidgets::DockWidget(id);
+        dock->setWidget(widget);
+        dock->setTitle(title);
+        dock->toggleAction()->setShortcut(shortcut);
+        return dock;
+    };
 
-    for (int i = 0, c = ui->resultsTabWidget->count(); i < c; ++i) {
-        ui->resultsTabWidget->setTabToolTip(i, ui->resultsTabWidget->widget(i)->toolTip());
-    }
+    m_summaryPageDock = dockify(m_resultsSummaryPage, QStringLiteral("summary"), tr("Summar&y"), tr("Ctrl+Y"));
+    m_contents->addDockWidget(m_summaryPageDock, KDDockWidgets::Location_OnTop);
+    m_bottomUpDock = dockify(m_resultsBottomUpPage, QStringLiteral("bottomUp"), tr("Bottom &Up"), tr("Ctrl+U"));
+    m_summaryPageDock->addDockWidgetAsTab(m_bottomUpDock);
+    m_topDownDock = dockify(m_resultsTopDownPage, QStringLiteral("topDown"), tr("Top &Down"), tr("Ctrl+D"));
+    m_summaryPageDock->addDockWidgetAsTab(m_topDownDock);
+    m_flameGraphDock = dockify(m_resultsFlameGraphPage, QStringLiteral("flameGraph"), tr("Flame &Graph"), tr("Ctrl+G"));
+    m_summaryPageDock->addDockWidgetAsTab(m_flameGraphDock);
+    m_callerCalleeDock =
+        dockify(m_resultsCallerCalleePage, QStringLiteral("callerCallee"), tr("Ca&ller / Callee"), tr("Ctrl+L"));
+    m_summaryPageDock->addDockWidgetAsTab(m_callerCalleeDock);
+    m_disassemblyDock =
+        dockify(m_resultsDisassemblyPage, QStringLiteral("disassembly"), tr("D&isassembly"), tr("Ctrl+I"));
+    m_summaryPageDock->addDockWidgetAsTab(m_disassemblyDock, KDDockWidgets::AddingOption_StartHidden);
+    m_disassemblyDock->toggleAction()->setEnabled(false);
+    m_summaryPageDock->setAsCurrentTab();
 
-    m_timeLineWidget = new TimeLineWidget(parser, m_filterMenu, m_filterAndZoomStack, this);
-    ui->timeLineLayout->addWidget(m_timeLineWidget);
+    m_timeLineDock = dockify(m_timeLineWidget, QStringLiteral("timeLine"), tr("&Time Line"), tr("Ctrl+T"));
+    m_contents->addDockWidget(m_timeLineDock, KDDockWidgets::Location_OnBottom);
 
     connect(parser, &PerfParser::callerCalleeDataAvailable, m_resultsDisassemblyPage,
             &ResultsDisassemblyPage::setCostsMap);
 
     connect(m_filterAndZoomStack, &FilterAndZoomStack::filterChanged, parser, &PerfParser::filterResults);
 
-    m_timeLineWidget->hide();
-    connect(ui->resultsTabWidget, &QTabWidget::currentChanged, this,
-            [this](int index) { m_timeLineWidget->setVisible(index != SUMMARY_TABINDEX && m_timelineVisible); });
     connect(parser, &PerfParser::summaryDataAvailable, this, [this](const Data::Summary& data) {
         if (data.lostChunks > 0) {
             //: %1: Lost 1 event(s). %2: Lost 1 chunk(s).
@@ -154,13 +167,15 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
 
     connect(parser, &PerfParser::parsingStarted, this, [this]() {
         // disable when we apply a filter
-        ui->splitter->setEnabled(false);
+        m_contents->setEnabled(false);
         repositionFilterBusyIndicator();
         m_filterBusyIndicator->setVisible(true);
+        m_resultsDisassemblyPage->clear();
+        m_disassemblyDock->toggleAction()->setEnabled(false);
     });
     connect(parser, &PerfParser::parsingFinished, this, [this]() {
         // re-enable when we finished filtering
-        ui->splitter->setEnabled(true);
+        m_contents->setEnabled(true);
         m_filterBusyIndicator->setVisible(false);
     });
 
@@ -193,18 +208,25 @@ void ResultsPage::setAppPath(const QString& path)
     m_resultsCallerCalleePage->setAppPath(path);
 }
 
+static void showDock(KDDockWidgets::DockWidget* dock)
+{
+    dock->show();
+    dock->setFocus();
+    dock->setAsCurrentTab();
+}
+
 void ResultsPage::onJumpToCallerCallee(const Data::Symbol& symbol)
 {
     m_resultsCallerCalleePage->jumpToCallerCallee(symbol);
-    ui->resultsTabWidget->setCurrentWidget(m_resultsCallerCalleePage);
+    showDock(m_callerCalleeDock);
 }
 
 void ResultsPage::onJumpToDisassembly(const Data::Symbol& symbol)
 {
-    ui->resultsTabWidget->addTab(m_resultsDisassemblyPage, tr("Disassembly"));
-    ui->resultsTabWidget->setCurrentWidget(m_resultsDisassemblyPage);
+    m_disassemblyDock->toggleAction()->setEnabled(true);
     m_resultsDisassemblyPage->setSymbol(symbol);
     m_resultsDisassemblyPage->showDisassembly();
+    showDock(m_disassemblyDock);
 }
 
 void ResultsPage::setObjdump(const QString& objdump)
@@ -219,7 +241,9 @@ void ResultsPage::onOpenEditor(const Data::Symbol& symbol)
 
 void ResultsPage::selectSummaryTab()
 {
-    ui->resultsTabWidget->setCurrentWidget(m_resultsSummaryPage);
+    m_summaryPageDock->show();
+    m_summaryPageDock->setFocus();
+    m_summaryPageDock->setAsCurrentTab();
 }
 
 void ResultsPage::clear()
@@ -243,6 +267,15 @@ QMenu* ResultsPage::exportMenu() const
     return m_exportMenu;
 }
 
+QList<QAction*> ResultsPage::windowActions() const
+{
+    return {
+        m_summaryPageDock->toggleAction(), m_bottomUpDock->toggleAction(),     m_topDownDock->toggleAction(),
+        m_flameGraphDock->toggleAction(),  m_callerCalleeDock->toggleAction(), m_disassemblyDock->toggleAction(),
+        m_timeLineDock->toggleAction(),
+    };
+}
+
 void ResultsPage::resizeEvent(QResizeEvent* event)
 {
     QWidget::resizeEvent(event);
@@ -255,12 +288,6 @@ void ResultsPage::repositionFilterBusyIndicator()
     geometry.setWidth(width() / 2);
     geometry.moveCenter(rect().center());
     m_filterBusyIndicator->setGeometry(geometry);
-}
-
-void ResultsPage::setTimelineVisible(bool visible)
-{
-    m_timelineVisible = visible;
-    m_timeLineWidget->setVisible(visible && ui->resultsTabWidget->currentIndex() != SUMMARY_TABINDEX);
 }
 
 void ResultsPage::showError(const QString& message)

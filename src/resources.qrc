@@ -8,5 +8,6 @@
         <file>images/background_bright.png</file>
         <file>images/background_dark.png</file>
         <file>images/icons/128-apps-hotspot.png</file>
+        <file>default-dockwidget-layout.json</file>
     </qresource>
 </RCC>

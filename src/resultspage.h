@@ -40,6 +40,11 @@ namespace Data {
 struct Symbol;
 }
 
+namespace KDDockWidgets {
+class MainWindow;
+class DockWidget;
+}
+
 class PerfParser;
 class ResultsSummaryPage;
 class ResultsBottomUpPage;
@@ -61,6 +66,7 @@ public:
     void clear();
     QMenu* filterMenu() const;
     QMenu* exportMenu() const;
+    QList<QAction*> windowActions() const;
 
 public slots:
     void setSysroot(const QString& path);
@@ -69,7 +75,6 @@ public slots:
 
     void onJumpToCallerCallee(const Data::Symbol& symbol);
     void onOpenEditor(const Data::Symbol& symbol);
-    void setTimelineVisible(bool visible);
     void showError(const QString& message);
     void onJumpToDisassembly(const Data::Symbol& symbol);
 
@@ -81,16 +86,23 @@ private:
     void repositionFilterBusyIndicator();
 
     QScopedPointer<Ui::ResultsPage> ui;
-
+    KDDockWidgets::MainWindow* m_contents;
     FilterAndZoomStack* m_filterAndZoomStack;
     QMenu* m_filterMenu;
     QMenu* m_exportMenu;
+    KDDockWidgets::DockWidget* m_summaryPageDock;
     ResultsSummaryPage* m_resultsSummaryPage;
+    KDDockWidgets::DockWidget* m_bottomUpDock;
     ResultsBottomUpPage* m_resultsBottomUpPage;
+    KDDockWidgets::DockWidget* m_topDownDock;
     ResultsTopDownPage* m_resultsTopDownPage;
+    KDDockWidgets::DockWidget* m_flameGraphDock;
     ResultsFlameGraphPage* m_resultsFlameGraphPage;
+    KDDockWidgets::DockWidget* m_callerCalleeDock;
     ResultsCallerCalleePage* m_resultsCallerCalleePage;
+    KDDockWidgets::DockWidget* m_disassemblyDock;
     ResultsDisassemblyPage* m_resultsDisassemblyPage;
+    KDDockWidgets::DockWidget* m_timeLineDock;
     TimeLineWidget* m_timeLineWidget;
     QWidget* m_filterBusyIndicator = nullptr;
     bool m_timelineVisible;

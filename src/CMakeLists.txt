@@ -42,6 +42,7 @@ set(hotspot_SRCS
     resultsutil.cpp
     costheaderview.cpp
     timelinewidget.cpp
+    dockwidgetsetup.cpp
 
     # ui files:
     mainwindow.ui
@@ -89,6 +90,7 @@ target_link_libraries(hotspot
     KF5::IconThemes
     models
     PrefixTickLabels
+    KDAB::kddockwidgets
 )
 
 set_target_properties(hotspot

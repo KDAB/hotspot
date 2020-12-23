@@ -71,6 +71,13 @@ find_package(KF5 COMPONENTS
     REQUIRED
 )
 
+find_package(KDDockWidgets CONFIG)
+set_package_properties(KDDockWidgets PROPERTIES
+    PURPOSE "KDDockWidgets is a Qt dock widget library written by KDAB, suitable for replacing QDockWidget and implementing
+ advanced functionalities missing in Qt. https://github.com/KDAB/KDDockWidgets"
+    TYPE REQUIRED
+)
+
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
 include(KDEInstallDirs)

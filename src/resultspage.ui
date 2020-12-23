@@ -10,49 +10,31 @@
     <height>510</height>
    </rect>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_5">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
-    <widget class="QSplitter" name="splitter">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+    <widget class="KMessageWidget" name="errorWidget">
+     <property name="wordWrap">
+      <bool>false</bool>
      </property>
-     <widget class="QWidget" name="resultsWidget" native="true">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>1</verstretch>
-       </sizepolicy>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout_2">
-       <item>
-        <widget class="KMessageWidget" name="errorWidget">
-         <property name="wordWrap">
-          <bool>false</bool>
-         </property>
-         <property name="messageType">
-          <enum>KMessageWidget::Warning</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="KMessageWidget" name="lostMessage"/>
-       </item>
-       <item>
-        <widget class="QTabWidget" name="resultsTabWidget">
-         <property name="currentIndex">
-          <number>-1</number>
-         </property>
-         <property name="documentMode">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="verticalLayoutWidget">
-      <layout class="QVBoxLayout" name="timeLineLayout"/>
-     </widget>
+     <property name="messageType">
+      <enum>KMessageWidget::Warning</enum>
+     </property>
     </widget>
+   </item>
+   <item>
+    <widget class="KMessageWidget" name="lostMessage"/>
    </item>
   </layout>
  </widget>

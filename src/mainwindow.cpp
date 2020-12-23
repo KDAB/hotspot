@@ -51,6 +51,8 @@
 #include <KShell>
 #include <KStandardAction>
 
+#include <kddockwidgets/LayoutSaver.h>
+
 #include "aboutdialog.h"
 
 #include "parsers/perf/perfparser.h"
@@ -117,6 +119,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_pageStack->addWidget(m_recordPage);
 
     QVBoxLayout* layout = new QVBoxLayout;
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_pageStack);
     centralWidget()->setLayout(layout);
 
@@ -183,12 +186,6 @@ MainWindow::MainWindow(QWidget* parent)
         });
     }
 
-    auto* showTimelineAction = ui->viewMenu->addAction(tr("Show Timeline"));
-    showTimelineAction->setCheckable(true);
-    showTimelineAction->setChecked(true);
-    showTimelineAction->setShortcut(tr("Ctrl+T"));
-    connect(showTimelineAction, &QAction::toggled, m_resultsPage, &ResultsPage::setTimelineVisible);
-
     auto* prettifySymbolsAction = ui->viewMenu->addAction(tr("Prettify Symbols"));
     prettifySymbolsAction->setCheckable(true);
     prettifySymbolsAction->setChecked(Settings::instance()->prettifySymbols());
@@ -202,6 +199,8 @@ MainWindow::MainWindow(QWidget* parent)
     ui->viewMenu->addSeparator();
     ui->viewMenu->addMenu(m_resultsPage->exportMenu());
 
+    ui->windowMenu->addActions(m_resultsPage->windowActions());
+
     setupCodeNavigationMenu();
     setupPathSettingsMenu();
 
@@ -210,6 +209,13 @@ MainWindow::MainWindow(QWidget* parent)
     auto config = m_config->group("Window");
     restoreGeometry(config.readEntry("geometry", QByteArray()));
     restoreState(config.readEntry("state", QByteArray()));
+    KDDockWidgets::LayoutSaver serializer(KDDockWidgets::RestoreOption_RelativeToMainWindow);
+    const auto dockWidgetLayout = config.readEntry("layout", QByteArray());
+    if (!dockWidgetLayout.isEmpty()) {
+        serializer.restoreLayout(dockWidgetLayout);
+    } else {
+        serializer.restoreFromFile(QStringLiteral(":/default-dockwidget-layout.json"));
+    }
 }
 
 MainWindow::~MainWindow() = default;
@@ -219,6 +225,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
     auto config = m_config->group("Window");
     config.writeEntry("geometry", saveGeometry());
     config.writeEntry("state", saveState());
+    KDDockWidgets::LayoutSaver serializer(KDDockWidgets::RestoreOption_RelativeToMainWindow);
+    config.writeEntry("layout", serializer.serializeLayout());
 
     m_parser->stop();
     QMainWindow::closeEvent(event);
