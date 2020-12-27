@@ -64,6 +64,8 @@ The main feature of hotspot is visualizing a `perf.data` file graphically.
 
 ![hotspot top-down page](screenshots/top-down.png?raw=true "hotspot top-down page")
 
+![hotspot dockwidget layouts](screenshots/dockwidgets.png?raw=true "hotspot with custom dockwidget layout and disassembly view")
+
 ### Time Line
 
 The time line allows filtering the results by time, process or thread. The data views will update accordingly.
