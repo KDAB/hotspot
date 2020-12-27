@@ -253,6 +253,7 @@ void ResultsPage::clear()
     m_resultsCallerCalleePage->clear();
     m_resultsFlameGraphPage->clear();
     m_exportMenu->clear();
+    m_disassemblyDock->forceClose();
 
     m_filterAndZoomStack->clear();
 }
