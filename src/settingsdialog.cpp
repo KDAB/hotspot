@@ -27,7 +27,10 @@
 
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
+
 #include <KUrlRequester>
+#include <KComboBox>
+#include <QListView>
 
 SettingsDialog::SettingsDialog(QWidget* parent)
     : QDialog(parent)
@@ -37,6 +40,24 @@ SettingsDialog::SettingsDialog(QWidget* parent)
 
     connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+
+    auto setupMultiPath = [](KEditListWidget* listWidget, QLabel* buddy, QWidget* previous)
+    {
+        auto editor = new KUrlRequester(listWidget);
+        editor->setPlaceholderText(tr("auto-detect"));
+        editor->setMode(KFile::LocalOnly | KFile::Directory | KFile::ExistingOnly);
+        buddy->setBuddy(editor);
+        listWidget->setCustomEditor(editor->customEditor());
+        QWidget::setTabOrder(previous, editor);
+        QWidget::setTabOrder(editor, listWidget->listView());
+        QWidget::setTabOrder(listWidget->listView(), listWidget->addButton());
+        QWidget::setTabOrder(listWidget->addButton(), listWidget->removeButton());
+        QWidget::setTabOrder(listWidget->removeButton(), listWidget->upButton());
+        QWidget::setTabOrder(listWidget->upButton(), listWidget->downButton());
+        return listWidget->downButton();
+    };
+    auto lastExtraLibsWidget = setupMultiPath(ui->extraLibraryPaths, ui->extraLibraryPathsLabel, ui->lineEditApplicationPath);
+    setupMultiPath(ui->debugPaths, ui->debugPathsLabel, lastExtraLibsWidget);
 }
 
 SettingsDialog::~SettingsDialog() = default;
@@ -45,10 +66,15 @@ void SettingsDialog::initSettings(const QString &sysroot, const QString &appPath
                                   const QString &debugPaths, const QString &kallsyms, const QString &arch,
                                   const QString &objdump)
 {
+    auto fromPathString = [](KEditListWidget* listWidget, const QString &string)
+    {
+        listWidget->setItems(string.split(QLatin1Char(':'), Qt::SkipEmptyParts));
+    };
+    fromPathString(ui->extraLibraryPaths, extraLibPaths);
+    fromPathString(ui->debugPaths, debugPaths);
+
     ui->lineEditSysroot->setText(sysroot);
     ui->lineEditApplicationPath->setText(appPath);
-    ui->lineEditExtraLibraryPaths->setText(extraLibPaths);
-    ui->lineEditDebugPaths->setText(debugPaths);
     ui->lineEditKallsyms->setText(kallsyms);
     ui->lineEditObjdump->setText(objdump);
 
@@ -75,12 +101,12 @@ QString SettingsDialog::appPath() const
 
 QString SettingsDialog::extraLibPaths() const
 {
-    return ui->lineEditExtraLibraryPaths->text();
+    return ui->extraLibraryPaths->items().join(QLatin1Char(':'));
 }
 
 QString SettingsDialog::debugPaths() const
 {
-    return ui->lineEditDebugPaths->text();
+    return ui->debugPaths->items().join(QLatin1Char(':'));
 }
 
 QString SettingsDialog::kallsyms() const
