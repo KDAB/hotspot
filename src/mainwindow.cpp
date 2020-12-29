@@ -138,7 +138,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(this, &MainWindow::sysrootChanged, m_resultsPage, &ResultsPage::setSysroot);
     connect(this, &MainWindow::appPathChanged, m_resultsPage, &ResultsPage::setAppPath);
-    connect(m_startPage, &StartPage::pathsAndArchSettingsButtonClicked, this, &MainWindow::openSettingsDialog);
+    connect(m_startPage, &StartPage::pathSettingsButtonClicked, this, &MainWindow::openSettingsDialog);
 
     connect(m_startPage, &StartPage::openFileButtonClicked, this, &MainWindow::onOpenFileButtonClicked);
     connect(m_startPage, &StartPage::recordButtonClicked, this, &MainWindow::onRecordButtonClicked);

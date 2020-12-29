@@ -59,7 +59,7 @@ signals:
     void openFileButtonClicked();
     void recordButtonClicked();
     void stopParseButtonClicked();
-    void pathsAndArchSettingsButtonClicked();
+    void pathSettingsButtonClicked();
 
 private:
     void updateBackground();
