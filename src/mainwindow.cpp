@@ -188,7 +188,7 @@ MainWindow::MainWindow(QWidget* parent)
     ui->fileMenu->addAction(KStandardAction::quit(this, SLOT(close()), this));
     connect(ui->actionAbout_Qt, &QAction::triggered, qApp, &QApplication::aboutQt);
     connect(ui->actionAbout_KDAB, &QAction::triggered, this, &MainWindow::aboutKDAB);
-    connect(ui->actionPathsAndArchSettingsWindow, &QAction::triggered, this, &MainWindow::openSettingsDialog);
+    connect(ui->settingsAction, &QAction::triggered, this, &MainWindow::openSettingsDialog);
     connect(ui->actionAbout_Hotspot, &QAction::triggered, this, &MainWindow::aboutHotspot);
 
     {
@@ -217,7 +217,6 @@ MainWindow::MainWindow(QWidget* parent)
     ui->windowMenu->addActions(m_resultsPage->windowActions());
 
     setupCodeNavigationMenu();
-    setupPathSettingsMenu();
 
     clear();
 
@@ -432,44 +431,6 @@ void MainWindow::aboutHotspot()
     dialog.setWindowIcon(QIcon::fromTheme(QStringLiteral("hotspot")));
     dialog.adjustSize();
     dialog.exec();
-}
-
-void MainWindow::setupPathSettingsMenu()
-{
-    auto menu = new QMenu(this);
-    auto addPathAction = [this, menu](const QString& label, void (MainWindow::*setPath)(const QString&),
-                                      void (MainWindow::*pathChanged)(const QString&), const QString& placeHolder,
-                                      const QString& tooltip) {
-        auto action = new QWidgetAction(menu);
-        auto container = new QWidget;
-        auto layout = new QHBoxLayout;
-        layout->addWidget(new QLabel(label));
-        auto lineEdit = new QLineEdit;
-        lineEdit->setPlaceholderText(placeHolder);
-        connect(this, pathChanged, lineEdit, &QLineEdit::setText);
-        connect(lineEdit, &QLineEdit::textChanged, this, setPath);
-        layout->addWidget(lineEdit);
-        container->setToolTip(tooltip);
-        container->setLayout(layout);
-        action->setDefaultWidget(container);
-        menu->addAction(action);
-    };
-    addPathAction(tr("Sysroot:"), &MainWindow::setSysroot, &MainWindow::sysrootChanged, tr("local machine"),
-                  tr("Path to the sysroot. Leave empty to use the local machine."));
-    addPathAction(tr("Application Path:"), &MainWindow::setAppPath, &MainWindow::appPathChanged, tr("auto-detect"),
-                  tr("Path to the application binary and library."));
-    addPathAction(tr("Extra Library Paths:"), &MainWindow::setExtraLibPaths, &MainWindow::extraLibPathsChanged,
-                  tr("empty"), tr("List of colon-separated paths that contain additional libraries."));
-    addPathAction(tr("Debug Paths:"), &MainWindow::setDebugPaths, &MainWindow::debugPathsChanged, tr("auto-detect"),
-                  tr("List of colon-separated paths that contain debug information."));
-    addPathAction(tr("Kallsyms:"), &MainWindow::setKallsyms, &MainWindow::kallsymsChanged, tr("auto-detect"),
-                  tr("Path to the kernel symbol mapping."));
-    addPathAction(tr("Architecture:"), &MainWindow::setArch, &MainWindow::archChanged, tr("auto-detect"),
-                  tr("System architecture, e.g. x86_64, arm, aarch64 etc."));
-    addPathAction(tr("Objdump:"), &MainWindow::setObjdump, &MainWindow::objdumpChanged, tr("auto-detect"),
-                  tr("Path to the objdump."));
-    connect(this, &MainWindow::objdumpChanged, m_resultsPage, &ResultsPage::setObjdump);
-    m_startPage->setPathSettingsMenu(menu);
 }
 
 void MainWindow::setupCodeNavigationMenu()

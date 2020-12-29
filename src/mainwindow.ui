@@ -43,7 +43,7 @@
     <property name="title">
      <string>Setti&amp;ngs</string>
     </property>
-    <addaction name="actionPathsAndArchSettingsWindow"/>
+    <addaction name="settingsAction"/>
    </widget>
    <widget class="QMenu" name="viewMenu">
     <property name="title">
@@ -91,9 +91,12 @@
     <string>About &amp;Qt</string>
    </property>
   </action>
-  <action name="actionPathsAndArchSettingsWindow">
+  <action name="settingsAction">
+   <property name="icon">
+    <iconset theme="configure"/>
+   </property>
    <property name="text">
-    <string>Paths and Architecture Settings</string>
+    <string>Settings</string>
    </property>
   </action>
  </widget>

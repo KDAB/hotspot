@@ -45,8 +45,6 @@ public:
     void showStartPage();
     void showParseFileProgress();
 
-    void setPathSettingsMenu(QMenu* menu);
-
 protected:
     void paintEvent(QPaintEvent* event) override;
     void changeEvent(QEvent* event) override;

@@ -64,11 +64,6 @@ void StartPage::showParseFileProgress()
     ui->openFileProgressBar->setMaximum(0);
 }
 
-void StartPage::setPathSettingsMenu(QMenu* menu)
-{
-    ui->pathSettings->setMenu(menu);
-}
-
 void StartPage::onOpenFileError(const QString& errorMessage)
 {
     qWarning() << errorMessage;

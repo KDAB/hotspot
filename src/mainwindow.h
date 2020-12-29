@@ -96,7 +96,6 @@ private:
     void openFile(const QString& path, bool isReload);
     void closeEvent(QCloseEvent* event) override;
     void setupCodeNavigationMenu();
-    void setupPathSettingsMenu();
 
     QScopedPointer<Ui::MainWindow> ui;
     PerfParser* m_parser;
