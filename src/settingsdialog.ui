@@ -37,287 +37,199 @@
   <property name="modal">
    <bool>true</bool>
   </property>
-  <widget class="KUrlRequester" name="lineEditExtraLibraryPaths">
-   <property name="geometry">
-    <rect>
-     <x>180</x>
-     <y>110</y>
-     <width>300</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>List of colon-separated paths that contain additional libraries.</string>
-   </property>
-   <property name="mode">
-    <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
-   </property>
-   <property name="placeholderText">
-    <string>empty</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="KUrlRequester" name="lineEditDebugPaths">
-   <property name="geometry">
-    <rect>
-     <x>180</x>
-     <y>150</y>
-     <width>300</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>List of colon-separated paths that contain debug information.</string>
-   </property>
-   <property name="mode">
-    <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
-   </property>
-   <property name="placeholderText">
-    <string>auto-detect</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="KUrlRequester" name="lineEditKallsyms">
-   <property name="geometry">
-    <rect>
-     <x>180</x>
-     <y>190</y>
-     <width>300</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>Path to the kernel symbol mapping.</string>
-   </property>
-   <property name="mode">
-    <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
-   </property>
-   <property name="placeholderText">
-    <string>auto-detect</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label1">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>30</y>
-     <width>161</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Sysroot:</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label2">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>70</y>
-     <width>161</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Application Path:</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label3">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>110</y>
-     <width>161</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Extra Library Paths:</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label4">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>150</y>
-     <width>161</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Debug Paths:</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label5">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>190</y>
-     <width>161</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Kallsyms:</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label6">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>230</y>
-     <width>161</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Architecture:</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
-   </property>
-  </widget>
-  <widget class="QComboBox" name="comboBoxArchitecture">
-   <property name="geometry">
-    <rect>
-     <x>180</x>
-     <y>230</y>
-     <width>300</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>System architecture, e.g. x86_64, arm, aarch64 etc.</string>
-   </property>
-   <item>
-    <property name="text">
-     <string>auto-detect</string>
-    </property>
+  <layout class="QFormLayout" name="formLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="sysrootLabel">
+     <property name="text">
+      <string>Sysroot:</string>
+     </property>
+     <property name="buddy">
+      <cstring>lineEditSysroot</cstring>
+     </property>
+    </widget>
    </item>
-   <item>
-    <property name="text">
-     <string>x64</string>
-    </property>
+   <item row="0" column="1">
+    <widget class="KUrlRequester" name="lineEditSysroot">
+     <property name="toolTip">
+      <string>Path to the sysroot. Leave empty to use the local machine.</string>
+     </property>
+     <property name="mode">
+      <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
+     </property>
+     <property name="placeholderText">
+      <string>local machine</string>
+     </property>
+    </widget>
    </item>
-   <item>
-    <property name="text">
-     <string>ARMv7 (32 bit)</string>
-    </property>
+   <item row="1" column="0">
+    <widget class="QLabel" name="applicationPathLabel">
+     <property name="text">
+      <string>Application Path:</string>
+     </property>
+     <property name="buddy">
+      <cstring>lineEditApplicationPath</cstring>
+     </property>
+    </widget>
    </item>
-   <item>
-    <property name="text">
-     <string>ARMv8 (64 bit)</string>
-    </property>
+   <item row="1" column="1">
+    <widget class="KUrlRequester" name="lineEditApplicationPath">
+     <property name="toolTip">
+      <string>Path to the application binary and library.</string>
+     </property>
+     <property name="mode">
+      <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
+     </property>
+     <property name="placeholderText">
+      <string>auto-detect</string>
+     </property>
+    </widget>
    </item>
-  </widget>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>372</x>
-     <y>325</y>
-     <width>166</width>
-     <height>24</height>
-    </rect>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
-  <widget class="KUrlRequester" name="lineEditObjdump">
-   <property name="geometry">
-    <rect>
-     <x>180</x>
-     <y>270</y>
-     <width>300</width>
-     <height>30</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>Set objdump used to disassemble or it is auto-detected otherwise</string>
-   </property>
-   <property name="placeholderText">
-    <string>auto-detect</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label7">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>270</y>
-     <width>161</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Objdump:</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
-   </property>
-  </widget>
-  <widget class="KUrlRequester" name="lineEditSysroot">
-   <property name="geometry">
-    <rect>
-     <x>180</x>
-     <y>30</y>
-     <width>300</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>Path to the sysroot. Leave empty to use the local machine.</string>
-   </property>
-   <property name="mode">
-    <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
-   </property>
-   <property name="placeholderText">
-    <string>local machine</string>
-   </property>
-  </widget>
-  <widget class="KUrlRequester" name="lineEditApplicationPath">
-   <property name="geometry">
-    <rect>
-     <x>180</x>
-     <y>70</y>
-     <width>300</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>Path to the application binary and library.</string>
-   </property>
-   <property name="mode">
-    <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
-   </property>
-   <property name="placeholderText">
-    <string>auto-detect</string>
-   </property>
-  </widget>
+   <item row="2" column="0">
+    <widget class="QLabel" name="extraLibraryPathsLabel">
+     <property name="text">
+      <string>Extra Library Paths:</string>
+     </property>
+     <property name="buddy">
+      <cstring>lineEditExtraLibraryPaths</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="KUrlRequester" name="lineEditExtraLibraryPaths">
+     <property name="toolTip">
+      <string>List of colon-separated paths that contain additional libraries.</string>
+     </property>
+     <property name="mode">
+      <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
+     </property>
+     <property name="placeholderText">
+      <string>empty</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="debugPathsLabel">
+     <property name="text">
+      <string>Debug Paths:</string>
+     </property>
+     <property name="buddy">
+      <cstring>lineEditDebugPaths</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="KUrlRequester" name="lineEditDebugPaths">
+     <property name="toolTip">
+      <string>List of colon-separated paths that contain debug information.</string>
+     </property>
+     <property name="mode">
+      <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
+     </property>
+     <property name="placeholderText">
+      <string>auto-detect</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="kallsymsLabel">
+     <property name="text">
+      <string>Kallsyms:</string>
+     </property>
+     <property name="buddy">
+      <cstring>lineEditKallsyms</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="KUrlRequester" name="lineEditKallsyms">
+     <property name="toolTip">
+      <string>Path to the kernel symbol mapping.</string>
+     </property>
+     <property name="mode">
+      <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
+     </property>
+     <property name="placeholderText">
+      <string>auto-detect</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="archLabel">
+     <property name="text">
+      <string>Architecture:</string>
+     </property>
+     <property name="buddy">
+      <cstring>comboBoxArchitecture</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QComboBox" name="comboBoxArchitecture">
+     <property name="toolTip">
+      <string>System architecture, e.g. x86_64, arm, aarch64 etc.</string>
+     </property>
+     <item>
+      <property name="text">
+       <string>auto-detect</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>x64</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ARMv7 (32 bit)</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>ARMv8 (64 bit)</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="objdumpLabel">
+     <property name="text">
+      <string>Objdump:</string>
+     </property>
+     <property name="buddy">
+      <cstring>lineEditObjdump</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="KUrlRequester" name="lineEditObjdump">
+     <property name="toolTip">
+      <string>Set objdump used to disassemble or it is auto-detected otherwise</string>
+     </property>
+     <property name="placeholderText">
+      <string>auto-detect</string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <customwidgets>
   <customwidget>
