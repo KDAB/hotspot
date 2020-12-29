@@ -177,6 +177,9 @@
      <property name="toolTip">
       <string>System architecture, e.g. x86_64, arm, aarch64 etc.</string>
      </property>
+     <property name="editable">
+      <bool>true</bool>
+     </property>
      <item>
       <property name="text">
        <string>auto-detect</string>
