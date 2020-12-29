@@ -43,6 +43,7 @@ set(hotspot_SRCS
     costheaderview.cpp
     timelinewidget.cpp
     dockwidgetsetup.cpp
+    settingsdialog.cpp
 
     # ui files:
     mainwindow.ui
@@ -57,6 +58,7 @@ set(hotspot_SRCS
     resultscallercalleepage.ui
     resultsdisassemblypage.ui
     timelinewidget.ui
+    settingsdialog.ui
 
     # resources:
     resources.qrc

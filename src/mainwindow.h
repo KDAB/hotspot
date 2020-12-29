@@ -45,6 +45,7 @@ class KRecentFilesAction;
 class StartPage;
 class ResultsPage;
 class RecordPage;
+class SettingsDialog;
 
 class MainWindow : public QMainWindow
 {
@@ -74,6 +75,7 @@ public slots:
     void onHomeButtonClicked();
 
     void aboutKDAB();
+    void openSettingsDialog();
     void aboutHotspot();
 
     void setCodeNavigationIDE(QAction* action);
@@ -103,6 +105,7 @@ private:
     StartPage* m_startPage;
     RecordPage* m_recordPage;
     ResultsPage* m_resultsPage;
+    SettingsDialog* m_settingsDialog;
 
     QString m_sysroot;
     QString m_kallsyms;
