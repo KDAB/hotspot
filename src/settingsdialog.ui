@@ -40,6 +40,9 @@
   <layout class="QFormLayout" name="formLayout">
    <item row="0" column="0">
     <widget class="QLabel" name="sysrootLabel">
+     <property name="toolTip">
+      <string>Path to the sysroot. Leave empty to use the local machine.</string>
+     </property>
      <property name="text">
       <string>Sysroot:</string>
      </property>
@@ -63,6 +66,9 @@
    </item>
    <item row="1" column="0">
     <widget class="QLabel" name="applicationPathLabel">
+     <property name="toolTip">
+      <string>Path to the application binary and library.</string>
+     </property>
      <property name="text">
       <string>Application Path:</string>
      </property>
@@ -86,6 +92,9 @@
    </item>
    <item row="2" column="0">
     <widget class="QLabel" name="extraLibraryPathsLabel">
+     <property name="toolTip">
+      <string>List of colon-separated paths that contain additional libraries.</string>
+     </property>
      <property name="text">
       <string>Extra Library Paths:</string>
      </property>
@@ -112,6 +121,9 @@
    </item>
    <item row="3" column="0">
     <widget class="QLabel" name="debugPathsLabel">
+     <property name="toolTip">
+      <string>List of colon-separated paths that contain debug information.</string>
+     </property>
      <property name="text">
       <string>Debug Paths:</string>
      </property>
@@ -138,6 +150,9 @@
    </item>
    <item row="4" column="0">
     <widget class="QLabel" name="kallsymsLabel">
+     <property name="toolTip">
+      <string>Path to the kernel symbol mapping.</string>
+     </property>
      <property name="text">
       <string>Kallsyms:</string>
      </property>
@@ -164,6 +179,9 @@
    </item>
    <item row="5" column="0">
     <widget class="QLabel" name="archLabel">
+     <property name="toolTip">
+      <string>System architecture, e.g. x86_64, arm, aarch64 etc.</string>
+     </property>
      <property name="text">
       <string>Architecture:</string>
      </property>
@@ -204,6 +222,9 @@
    </item>
    <item row="6" column="0">
     <widget class="QLabel" name="objdumpLabel">
+     <property name="toolTip">
+      <string>&lt;qt&gt;The &lt;tt&gt;objdump&lt;/tt&gt; binary that will be used for the disassembly view. Leave empty to let it be auto-detected.&lt;/qt&gt;</string>
+     </property>
      <property name="text">
       <string>Objdump:</string>
      </property>
@@ -215,7 +236,7 @@
    <item row="6" column="1">
     <widget class="KUrlRequester" name="lineEditObjdump">
      <property name="toolTip">
-      <string>Set objdump used to disassemble or it is auto-detected otherwise</string>
+      <string>&lt;qt&gt;The &lt;tt&gt;objdump&lt;/tt&gt; binary that will be used for the disassembly view. Leave empty to let it be auto-detected.&lt;/qt&gt;</string>
      </property>
      <property name="placeholderText">
       <string>auto-detect</string>
