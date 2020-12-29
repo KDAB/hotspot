@@ -31,6 +31,8 @@
 #include "settings.h"
 #include "startpage.h"
 #include "ui_mainwindow.h"
+#include "settingsdialog.h"
+#include "ui_settingsdialog.h"
 
 #include <QApplication>
 #include <QFileDialog>
@@ -111,6 +113,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_startPage(new StartPage(this))
     , m_recordPage(new RecordPage(this))
     , m_resultsPage(new ResultsPage(m_parser, this))
+    , m_settingsDialog(new SettingsDialog(this))
 {
     ui->setupUi(this);
 
@@ -123,8 +126,19 @@ MainWindow::MainWindow(QWidget* parent)
     layout->addWidget(m_pageStack);
     centralWidget()->setLayout(layout);
 
+    connect(m_settingsDialog, &QDialog::accepted, this, [this]() {
+        setSysroot(m_settingsDialog->sysroot());
+        setAppPath(m_settingsDialog->appPath());
+        setExtraLibPaths(m_settingsDialog->extraLibPaths());
+        setDebugPaths(m_settingsDialog->debugPaths());
+        setKallsyms(m_settingsDialog->kallsyms());
+        setArch(m_settingsDialog->arch());
+        setObjdump(m_settingsDialog->objdump());
+    });
+
     connect(this, &MainWindow::sysrootChanged, m_resultsPage, &ResultsPage::setSysroot);
     connect(this, &MainWindow::appPathChanged, m_resultsPage, &ResultsPage::setAppPath);
+    connect(m_startPage, &StartPage::pathsAndArchSettingsButtonClicked, this, &MainWindow::openSettingsDialog);
 
     connect(m_startPage, &StartPage::openFileButtonClicked, this, &MainWindow::onOpenFileButtonClicked);
     connect(m_startPage, &StartPage::recordButtonClicked, this, &MainWindow::onRecordButtonClicked);
@@ -174,6 +188,7 @@ MainWindow::MainWindow(QWidget* parent)
     ui->fileMenu->addAction(KStandardAction::quit(this, SLOT(close()), this));
     connect(ui->actionAbout_Qt, &QAction::triggered, qApp, &QApplication::aboutQt);
     connect(ui->actionAbout_KDAB, &QAction::triggered, this, &MainWindow::aboutKDAB);
+    connect(ui->actionPathsAndArchSettingsWindow, &QAction::triggered, this, &MainWindow::openSettingsDialog);
     connect(ui->actionAbout_Hotspot, &QAction::triggered, this, &MainWindow::aboutHotspot);
 
     {
@@ -386,6 +401,15 @@ void MainWindow::aboutKDAB()
     dialog.setWindowIcon(QIcon(QStringLiteral(":/images/kdablogo.png")));
     dialog.adjustSize();
     dialog.exec();
+}
+
+void MainWindow::openSettingsDialog()
+{
+    m_settingsDialog->setWindowTitle(tr("Paths and Architecture Settings"));
+    m_settingsDialog->setWindowIcon(windowIcon());
+    m_settingsDialog->adjustSize();
+    m_settingsDialog->initSettings(m_sysroot, m_appPath, m_extraLibPaths, m_debugPaths, m_kallsyms, m_arch, m_objdump);
+    m_settingsDialog->open();
 }
 
 void MainWindow::aboutHotspot()

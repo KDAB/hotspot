@@ -1,10 +1,10 @@
 /*
-  startpage.h
+  settingsdialog.h
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2017-2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
-  Author: Nate Rogers <nate.rogers@kdab.com>
+  Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Author: Petr Lyapidevskiy <p.lyapidevskiy@nips.ru>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
   accordance with Hotspot Commercial License Agreement provided with the Software.
@@ -27,44 +27,29 @@
 
 #pragma once
 
-#include <QWidget>
+#include <memory>
+#include <QDialog>
 
 namespace Ui {
-class StartPage;
+class SettingsDialog;
 }
 
-class QMenu;
-
-class StartPage : public QWidget
+class SettingsDialog : public QDialog
 {
     Q_OBJECT
+
 public:
-    explicit StartPage(QWidget* parent = nullptr);
-    ~StartPage();
-
-    void showStartPage();
-    void showParseFileProgress();
-
-    void setPathSettingsMenu(QMenu* menu);
-
-protected:
-    void paintEvent(QPaintEvent* event) override;
-    void changeEvent(QEvent* event) override;
-
-public slots:
-    void onOpenFileError(const QString& errorMessage);
-    void onParseFileProgress(float percent);
-
-signals:
-    void openFileButtonClicked();
-    void recordButtonClicked();
-    void stopParseButtonClicked();
-    void pathsAndArchSettingsButtonClicked();
-
+    explicit SettingsDialog(QWidget* parent = nullptr);
+    ~SettingsDialog();
+    void initSettings(const QString& sysroot, const QString& appPath, const QString& extraLibPaths,
+                      const QString& debugPaths, const QString& kallsyms, const QString& arch, const QString& objdump);    
+    QString sysroot() const;
+    QString appPath() const;
+    QString extraLibPaths() const;
+    QString debugPaths() const;
+    QString kallsyms() const;
+    QString arch() const;
+    QString objdump() const;
 private:
-    void updateBackground();
-
-    QScopedPointer<Ui::StartPage> ui;
-
-    QPixmap m_background;
+    std::unique_ptr<Ui::SettingsDialog> ui;
 };
