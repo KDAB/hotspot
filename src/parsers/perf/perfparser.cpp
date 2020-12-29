@@ -184,8 +184,8 @@ struct Location
 
 QDataStream& operator>>(QDataStream& stream, Location& location)
 {
-    return stream >> location.address >> location.relAddr >> location.file >> location.pid >> location.line
-        >> location.column >> location.parentLocationId;
+    return stream >> location.address >> location.file >> location.pid >> location.line >> location.column
+        >> location.parentLocationId >> location.relAddr;
 }
 
 QDebug operator<<(QDebug stream, const Location& location)
@@ -233,8 +233,8 @@ struct Symbol
 
 QDataStream& operator>>(QDataStream& stream, Symbol& symbol)
 {
-    return stream >> symbol.name >> symbol.relAddr >> symbol.size >> symbol.binary >> symbol.path >> symbol.actualPath
-        >> symbol.isKernel;
+    return stream >> symbol.name >> symbol.binary >> symbol.path >> symbol.isKernel >> symbol.relAddr >> symbol.size
+        >> symbol.actualPath;
 }
 
 QDebug operator<<(QDebug stream, const Symbol& symbol)
