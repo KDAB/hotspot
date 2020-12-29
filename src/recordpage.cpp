@@ -40,6 +40,7 @@
 #include <QStandardItemModel>
 #include <QStandardPaths>
 #include <QTimer>
+#include <QScrollArea>
 #include <QtConcurrent/QtConcurrentRun>
 
 #include <KColumnResizer>
@@ -174,7 +175,18 @@ RecordPage::RecordPage(QWidget* parent)
     , m_updateRuntimeTimer(new QTimer(this))
     , m_watcher(new QFutureWatcher<ProcDataList>(this))
 {
-    ui->setupUi(this);
+    {
+        auto* layout = new QVBoxLayout(this);
+        layout->setContentsMargins(0, 0, 0, 0);
+        auto* scrollArea = new QScrollArea(this);
+        scrollArea->setFrameStyle(QFrame::NoFrame);
+        layout->addWidget(scrollArea);
+        auto *contents = new QWidget(this);
+        scrollArea->setWidget(contents);
+        scrollArea->setWidgetResizable(true);
+
+        ui->setupUi(contents);
+    }
 
     auto completion = ui->applicationName->completionObject();
     ui->applicationName->comboBox()->setEditable(true);
