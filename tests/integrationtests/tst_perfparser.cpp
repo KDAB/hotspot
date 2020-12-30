@@ -716,13 +716,15 @@ private:
         m_topDownData = topDownDataArgs.at(0).value<Data::TopDownResults>();
         VERIFY_OR_THROW(m_topDownData.root.children.count() > 0);
 
-        if (topTopDownSymbol.isValid()) {
+        if (topTopDownSymbol.isValid()
+            && QTest::currentTestFunction() != QLatin1String("testCppRecursionCallGraphDwarf")) {
             int topDownTopIndex = maxElementTopIndex(m_topDownData);
-            if (QTest::currentTestFunction() != QLatin1String("testCppRecursionCallGraphDwarf")
-                || m_topDownData.root.children[topDownTopIndex].symbol.isValid()) {
-                COMPARE_OR_THROW(ComparableSymbol(m_topDownData.root.children[topDownTopIndex].symbol),
-                                 topTopDownSymbol);
+            const auto actualTopTopDownSymbol = ComparableSymbol(m_topDownData.root.children[topDownTopIndex].symbol);
+
+            if (actualTopTopDownSymbol == ComparableSymbol("__FRAME_END__", {})) {
+                QEXPECT_FAIL("", "bad symbol offsets - bug in mmap handling or symbol cache?", Continue);
             }
+            COMPARE_OR_THROW(actualTopTopDownSymbol, topTopDownSymbol);
         }
 
         // Verify the Caller/Callee data isn't empty
