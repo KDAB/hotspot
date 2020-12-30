@@ -400,7 +400,7 @@ bool PerfRecord::canUseAio()
 
 bool PerfRecord::canCompress()
 {
-    return ZSTD_FOUND && perfBuildOptions().contains("zstd: [ on  ]");
+    return Zstd_FOUND && perfBuildOptions().contains("zstd: [ on  ]");
 }
 
 bool PerfRecord::isPerfInstalled()

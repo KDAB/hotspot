@@ -31,9 +31,9 @@ LINK_PRIVATE
     ${LIBELF_LIBRARIES}
 )
 
-if (ZSTD_FOUND)
-    target_include_directories(hotspot-perfparser PRIVATE ${ZSTD_INCLUDE_DIR})
-    target_link_libraries(hotspot-perfparser PRIVATE ${ZSTD_LIBRARY})
+if (Zstd_FOUND)
+    target_include_directories(hotspot-perfparser PRIVATE ${Zstd_INCLUDE_DIR})
+    target_link_libraries(hotspot-perfparser PRIVATE ${Zstd_LIBRARY})
     target_compile_definitions(hotspot-perfparser PRIVATE HAVE_ZSTD=1)
 endif()
 
@@ -108,9 +108,9 @@ ecm_add_test(
         tst_perfdata
 )
 
-if (ZSTD_FOUND)
-    target_include_directories(tst_perfdata PRIVATE ${ZSTD_INCLUDE_DIR})
-    target_link_libraries(tst_perfdata ${ZSTD_LIBRARY})
+if (Zstd_FOUND)
+    target_include_directories(tst_perfdata PRIVATE ${Zstd_INCLUDE_DIR})
+    target_link_libraries(tst_perfdata ${Zstd_LIBRARY})
     target_compile_definitions(tst_perfdata PRIVATE HAVE_ZSTD=1)
 endif()
 
