@@ -85,6 +85,50 @@ int maxElementTopIndex(const Results& collection, int costIndex = 0)
     return std::distance(collection.root.children.begin(), topResult);
 }
 }
+
+struct ComparableSymbol
+{
+    ComparableSymbol() = default;
+
+    ComparableSymbol(Data::Symbol symbol)
+        : symbol(std::move(symbol))
+        , isPattern(false)
+    {
+    }
+
+    ComparableSymbol(QString symbol, QString binary)
+        : symbol(std::move(symbol), 0, 0, std::move(binary))
+        , isPattern(true)
+    {
+    }
+
+    bool isValid() const
+    {
+        return symbol.isValid();
+    }
+
+    bool operator==(const ComparableSymbol& rhs) const
+    {
+        Q_ASSERT(isPattern != rhs.isPattern);
+        auto cmp = [](const Data::Symbol& symbol, const Data::Symbol& pattern) {
+            return symbol.symbol.contains(pattern.symbol) && symbol.binary.contains(pattern.binary);
+        };
+        return isPattern ? cmp(rhs.symbol, symbol) : cmp(symbol, rhs.symbol);
+    }
+
+    Data::Symbol symbol;
+    bool isPattern = false;
+};
+
+namespace QTest
+{
+template<>
+char *toString(const ComparableSymbol &symbol)
+{
+    return toString("ComparableSymbol{" + symbol.symbol.symbol + ", " + symbol.symbol.binary + "}");
+}
+}
+
 class TestPerfParser : public QObject
 {
     Q_OBJECT
@@ -123,7 +167,7 @@ private slots:
         // top-down data is too vague here, don't check it
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-            testPerfData(Data::Symbol {"hypot", 0, 0, "libm"}, {}, tempFile.fileName());
+            testPerfData({"hypot", "libm"}, {}, tempFile.fileName());
         } catch (...) {
         }
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
@@ -145,8 +189,7 @@ private slots:
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-            testPerfData(Data::Symbol {"hypot", 0, 0, "libm"}, Data::Symbol {"start", 0, 0, "cpp-inlining"},
-                         tempFile.fileName());
+            testPerfData({"hypot", "libm"}, {"start", "cpp-inlining"}, tempFile.fileName());
         } catch (...) {
         }
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
@@ -167,8 +210,7 @@ private slots:
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-            testPerfData(Data::Symbol {"hypot", 0, 0, "libm"}, Data::Symbol {"hypot", 0, 0, "libm"},
-                         tempFile.fileName());
+            testPerfData({"hypot", "libm"}, {"hypot", "libm"}, tempFile.fileName());
         } catch (...) {
         }
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
@@ -187,8 +229,7 @@ private slots:
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-            testPerfData(Data::Symbol {"hypot", 0, 0, "libm"}, Data::Symbol {"start", 0, 0, "cpp-inlining"},
-                         tempFile.fileName());
+            testPerfData({"hypot", "libm"}, {"start", "cpp-inlining"}, tempFile.fileName());
         } catch (...) {
         }
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
@@ -235,8 +276,7 @@ private slots:
         tempFile.open();
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-            testPerfData(Data::Symbol {"fibonacci", 0, 0, "cpp-recursion"},
-                         Data::Symbol {"fibonacci", 0, 0, "cpp-recursion"}, tempFile.fileName());
+            testPerfData({"fibonacci", "cpp-recursion"}, {"fibonacci", "cpp-recursion"}, tempFile.fileName());
         } catch (...) {
         }
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
@@ -254,8 +294,7 @@ private slots:
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-            testPerfData(Data::Symbol {"fibonacci", 0, 0, "cpp-recursion"},
-                         Data::Symbol {"start", 0, 0, "cpp-recursion"}, tempFile.fileName());
+            testPerfData({"fibonacci", "cpp-recursion"}, {"start", "cpp-recursion"}, tempFile.fileName());
         } catch (...) {
         }
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
@@ -281,8 +320,7 @@ private slots:
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-            testPerfData(Data::Symbol {"fibonacci", 0, 0, "cpp-recursion"},
-                         Data::Symbol {"fibonacci", 0, 0, "cpp-recursion"}, tempFile.fileName());
+            testPerfData({"fibonacci", "cpp-recursion"}, {"fibonacci", "cpp-recursion"}, tempFile.fileName());
         } catch (...) {
         }
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
@@ -300,8 +338,7 @@ private slots:
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-            testPerfData(Data::Symbol {"fibonacci", 0, 0, "cpp-recursion"},
-                         Data::Symbol {"start", 0, 0, "cpp-recursion"}, tempFile.fileName());
+            testPerfData({"fibonacci", "cpp-recursion"}, {"start", "cpp-recursion"}, tempFile.fileName());
         } catch (...) {
         }
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
@@ -356,8 +393,7 @@ private slots:
 
         try {
             perfRecord(perfOptions, exePath, {}, tempFile.fileName());
-            testPerfData(Data::Symbol {"hypot", 0, 0, "libm"}, Data::Symbol {"start", 0, 0, "cpp-sleep"},
-                         tempFile.fileName(), false);
+            testPerfData({"hypot", "libm"}, {"start", "cpp-sleep"}, tempFile.fileName(), false);
         } catch (...) {
         }
 
@@ -425,8 +461,7 @@ private slots:
 
         try {
             perfRecord(perfOptions, exePath, {}, tempFile.fileName());
-            testPerfData(Data::Symbol {"hypot", 0, 0, "libm"}, Data::Symbol {"start", 0, 0, "cpp-sleep"},
-                         tempFile.fileName(), false);
+            testPerfData({"hypot", "libm"}, {"start", "cpp-sleep"}, tempFile.fileName(), false);
         } catch (...) {
         }
 
@@ -443,8 +478,7 @@ private slots:
         QCOMPARE(bottomUpTopIndex, maxElementTopIndex(m_bottomUpData, 2));
 
         const auto topBottomUp = m_bottomUpData.root.children[bottomUpTopIndex];
-        QVERIFY(topBottomUp.symbol.symbol.contains("schedule"));
-        QVERIFY(topBottomUp.symbol.binary.contains("kernel"));
+        QCOMPARE(ComparableSymbol(topBottomUp.symbol), ComparableSymbol("schedule", "kernel"));
         QVERIFY(searchForChildSymbol(topBottomUp, "std::this_thread::sleep_for", false));
 
         QVERIFY(m_bottomUpData.costs.cost(1, topBottomUp.id) >= 10); // at least 10 sched switches
@@ -471,7 +505,7 @@ private slots:
 
         try {
             perfRecord(perfOptions, sleep, {".5"}, tempFile.fileName());
-            testPerfData(Data::Symbol {}, Data::Symbol {}, tempFile.fileName(), false);
+            testPerfData({}, {}, tempFile.fileName(), false);
         } catch (...) {
         }
 
@@ -579,7 +613,7 @@ private:
         }
     }
 
-    void testPerfData(const Data::Symbol& topBottomUpSymbol, const Data::Symbol& topTopDownSymbol,
+    void testPerfData(const ComparableSymbol& topBottomUpSymbol, const ComparableSymbol& topTopDownSymbol,
                       const QString& fileName, bool checkFrequency = true)
     {
         PerfParser parser(this);
@@ -629,11 +663,8 @@ private:
 
         if (topBottomUpSymbol.isValid()) {
             int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData);
-            qWarning() << bottomUpTopIndex << m_bottomUpData.root.children[bottomUpTopIndex].symbol.symbol;
-            VERIFY_OR_THROW(
-                m_bottomUpData.root.children[bottomUpTopIndex].symbol.symbol.contains(topBottomUpSymbol.symbol));
-            VERIFY_OR_THROW(
-                m_bottomUpData.root.children[bottomUpTopIndex].symbol.binary.contains(topBottomUpSymbol.binary));
+            COMPARE_OR_THROW(ComparableSymbol(m_bottomUpData.root.children[bottomUpTopIndex].symbol),
+                             topBottomUpSymbol);
         }
 
         // Verify the top Top-Down symbol result contains the expected data
@@ -646,10 +677,8 @@ private:
             int topDownTopIndex = maxElementTopIndex(m_topDownData);
             if (QTest::currentTestFunction() != QLatin1String("testCppRecursionCallGraphDwarf")
                 || m_topDownData.root.children[topDownTopIndex].symbol.isValid()) {
-                VERIFY_OR_THROW(
-                    m_topDownData.root.children[topDownTopIndex].symbol.symbol.contains(topTopDownSymbol.symbol));
-                VERIFY_OR_THROW(
-                    m_topDownData.root.children[topDownTopIndex].symbol.binary.contains(topTopDownSymbol.binary));
+                COMPARE_OR_THROW(ComparableSymbol(m_topDownData.root.children[topDownTopIndex].symbol),
+                                 topTopDownSymbol);
             }
         }
 
