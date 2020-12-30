@@ -415,7 +415,7 @@ private slots:
 
         perf.record({}, tempFile.fileName(), false, exePath, exeOptions);
         perf.sendInput(QByteArrayLiteral("some input\n"));
-        QVERIFY(recordingFinishedSpy.wait(1000));
+        QVERIFY(recordingFinishedSpy.wait());
 
         QCOMPARE(recordingFailedSpy.count(), 0);
         QCOMPARE(recordingFinishedSpy.count(), 1);
