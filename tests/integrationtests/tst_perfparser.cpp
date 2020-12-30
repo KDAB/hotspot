@@ -161,6 +161,13 @@ ComparableSymbol cppRecursionTopSymbol(QString binary = "cpp-recursion")
     return ComparableSymbol(QVector<QPair<QString, QString>> {{"fibonacci", binary}, {{}, binary}});
 }
 
+QString findExe(const QString& name)
+{
+    QFileInfo exe(QCoreApplication::applicationDirPath() + QLatin1String("/../tests/test-clients/%1/%1").arg(name));
+    VERIFY_OR_THROW(exe.exists() && exe.isExecutable());
+    return exe.canonicalFilePath();
+}
+
 class TestPerfParser : public QObject
 {
     Q_OBJECT
@@ -192,7 +199,7 @@ private slots:
         const QStringList perfOptions;
         QStringList exeOptions;
 
-        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-inlining/cpp-inlining";
+        const QString exePath = findExe("cpp-inlining");
         QTemporaryFile tempFile;
         tempFile.open();
 
@@ -215,7 +222,7 @@ private slots:
         const QStringList perfOptions = {"--call-graph", "dwarf"};
         QStringList exeOptions;
 
-        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-inlining/cpp-inlining";
+        const QString exePath = findExe("cpp-inlining");
         QTemporaryFile tempFile;
         tempFile.open();
 
@@ -236,7 +243,7 @@ private slots:
         const QStringList perfOptions = {"--event", "cycles"};
         QStringList exeOptions;
 
-        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-inlining/cpp-inlining";
+        const QString exePath = findExe("cpp-inlining");
         QTemporaryFile tempFile;
         tempFile.open();
 
@@ -255,7 +262,7 @@ private slots:
         const QStringList perfOptions = {"--call-graph", "dwarf", "--event", eventSpec};
         QStringList exeOptions;
 
-        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-inlining/cpp-inlining";
+        const QString exePath = findExe("cpp-inlining");
         QTemporaryFile tempFile;
         tempFile.open();
 
@@ -303,7 +310,7 @@ private slots:
         const QStringList perfOptions;
         const QStringList exeOptions = {"40"};
 
-        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-recursion/cpp-recursion";
+        const QString exePath = findExe("cpp-recursion");
         QTemporaryFile tempFile;
         tempFile.open();
         try {
@@ -320,7 +327,7 @@ private slots:
         const QStringList perfOptions = {"--call-graph", "dwarf"};
         const QStringList exeOptions = {"40"};
 
-        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-recursion/cpp-recursion";
+        const QString exePath = findExe("cpp-recursion");
         QTemporaryFile tempFile;
         tempFile.open();
 
@@ -346,7 +353,7 @@ private slots:
         const QStringList perfOptions = {"--event", "cycles"};
         const QStringList exeOptions = {"40"};
 
-        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-recursion/cpp-recursion";
+        const QString exePath = findExe("cpp-recursion");
         QTemporaryFile tempFile;
         tempFile.open();
 
@@ -364,7 +371,7 @@ private slots:
         const QStringList perfOptions = {"--call-graph", "dwarf", "--event", "cycles,instructions"};
         const QStringList exeOptions = {"40"};
 
-        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-recursion/cpp-recursion";
+        const QString exePath = findExe("cpp-recursion");
         QTemporaryFile tempFile;
         tempFile.open();
 
@@ -397,7 +404,7 @@ private slots:
         const QStringList perfOptions = {"--call-graph", "dwarf", "--event", "cycles,instructions"};
         const QStringList exeOptions = {"40"};
 
-        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-stdin/cpp-stdin";
+        const QString exePath = findExe("cpp-stdin");
 
         QTemporaryFile tempFile;
         tempFile.open();
@@ -418,7 +425,7 @@ private slots:
     {
         const QStringList perfOptions = {"--call-graph", "dwarf", "--switch-events"};
 
-        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-sleep/cpp-sleep";
+        const QString exePath = findExe("cpp-sleep");
 
         QTemporaryFile tempFile;
         tempFile.open();
@@ -438,7 +445,7 @@ private slots:
     {
         const QStringList perfOptions = {"--call-graph", "dwarf", "--switch-events"};
 
-        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-threadnames/cpp-threadnames";
+        const QString exePath = findExe("cpp-threadnames");
 
         QTemporaryFile tempFile;
         tempFile.open();
@@ -486,7 +493,7 @@ private slots:
         QStringList perfOptions = {"--call-graph", "dwarf", "-e", "cycles"};
         perfOptions += PerfRecord::offCpuProfilingOptions();
 
-        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-sleep/cpp-sleep";
+        const QString exePath = findExe("cpp-sleep");
 
         QTemporaryFile tempFile;
         tempFile.open();
@@ -556,7 +563,7 @@ private slots:
             perfOptions += PerfRecord::offCpuProfilingOptions();
         }
 
-        const QString exePath = qApp->applicationDirPath() + "/../tests/test-clients/cpp-parallel/cpp-parallel";
+        const QString exePath = findExe("cpp-parallel");
         const int numThreads = QThread::idealThreadCount();
         const QStringList exeArgs = {QString::number(numThreads)};
 
