@@ -591,9 +591,9 @@ private slots:
                     eventCpuIds[event.type].insert(event.cpuId);
                 }
             }
-            QCOMPARE(eventCpuIds[0].size(), numThreads);
-            QCOMPARE(eventCpuIds[1].size(), numThreads);
-            QCOMPARE(eventCpuIds[2].size(), numThreads);
+            QVERIFY(eventCpuIds[0].size() > 1);
+            QVERIFY(eventCpuIds[1].size() > 1);
+            QVERIFY(eventCpuIds[2].size() > 1);
         } else {
             qDebug() << "skipping extended off-CPU profiling check";
         }
