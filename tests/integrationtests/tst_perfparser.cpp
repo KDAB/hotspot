@@ -217,9 +217,24 @@ private slots:
         QCOMPARE(m_summaryData.offCpuTime, quint64(0));
     }
 
+    void testCppInliningCallGraphDwarf_data()
+    {
+        QTest::addColumn<QStringList>("otherOptions");
+
+        QTest::addRow("normal") << QStringList();
+        if (PerfRecord::canUseAio())
+            QTest::addRow("aio") << QStringList("--aio");
+        if (PerfRecord::canCompress())
+            QTest::addRow("zstd") << QStringList("-z");
+    }
+
     void testCppInliningCallGraphDwarf()
     {
-        const QStringList perfOptions = {"--call-graph", "dwarf"};
+        QFETCH(QStringList, otherOptions);
+
+        QStringList perfOptions = {"--call-graph", "dwarf"};
+        perfOptions + otherOptions;
+
         QStringList exeOptions;
 
         const QString exePath = findExe("cpp-inlining");
