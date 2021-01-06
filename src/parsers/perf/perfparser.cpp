@@ -191,7 +191,7 @@ QDataStream& operator>>(QDataStream& stream, Location& location)
 QDebug operator<<(QDebug stream, const Location& location)
 {
     stream.noquote().nospace() << "Location{"
-                               << "address=0x" << hex << location.address << dec << ", "
+                               << "address=0x" << Qt::hex << location.address << Qt::dec << ", "
                                << "relAddr=" << location.relAddr << ", "
                                << "file=" << location.file << ", "
                                << "pid=" << location.pid << ", "
@@ -1043,7 +1043,7 @@ public:
                                  bottomUpResult.costs.numTypes());
 
             if (perfScriptOutput) {
-                *perfScriptOutput << '\t' << hex << qSetFieldWidth(16) << location.address << qSetFieldWidth(0) << dec
+                *perfScriptOutput << '\t' << Qt::hex << qSetFieldWidth(16) << location.address << qSetFieldWidth(0) << Qt::dec
                                   << ' ' << (symbol.symbol.isEmpty() ? QStringLiteral("[unknown]") : symbol.symbol)
                                   << " (" << symbol.binary << ")\n";
             }
