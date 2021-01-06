@@ -54,6 +54,11 @@ find_package(ECM 1.0.0 NO_MODULE REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Zstd)
 find_package(objdump)
+set_package_properties(objdump PROPERTIES
+        DESCRIPTION "Utility to generate disassembler"
+        PURPOSE "Support for annotating individual instructions"
+        URL "https://www.gnu.org/software/binutils/"
+        TYPE RUNTIME)
 
 find_package(LibRustcDemangle)
 set_package_properties(LibRustcDemangle PROPERTIES
