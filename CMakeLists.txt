@@ -55,6 +55,13 @@ find_package(Threads REQUIRED)
 find_package(Zstd)
 find_package(objdump)
 
+find_package(LibRustcDemangle)
+set_package_properties(LibRustcDemangle PROPERTIES
+        DESCRIPTION "Demangling for Rust symbols, written in Rust."
+        PURPOSE "Demangling of Rust symbols"
+        URL "https://github.com/alexcrichton/rustc-demangle"
+        TYPE RUNTIME)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
 find_package(KF5 COMPONENTS
     ThreadWeaver

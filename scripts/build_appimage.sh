@@ -30,15 +30,14 @@ fi
 
 cd build-appimage
 
-rustc_args=""
-if [ -e "$PREFIX/lib/librustc_demangle.so" ]; then
-    echo "RUSTC ENABLED"
-    rustc_args="-DRUSTC_DEMANGLE_INCLUDE_DIR=$PREFIX/include -DRUSTC_DEMANGLE_LIBRARY=$PREFIX/lib/librustc_demangle.so"
-fi
-
-cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PREFIX -DAPPIMAGE_BUILD=ON $rustc_args
+cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PREFIX -DAPPIMAGE_BUILD=ON
 make -j$(nproc)
 make DESTDIR=appdir install
+
+if [ -e "$PREFIX/lib/librustc_demangle.so" ]; then
+    echo "RUSTC ENABLED"
+    cp "$PREFIX/lib/librustc_demangle.so" "appdir/$PREFIX/lib/"
+fi
 
 # FIXME: Do in CMakeLists.txt
 mkdir -p appdir/$PREFIX/share/applications/

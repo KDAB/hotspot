@@ -41,7 +41,7 @@ script:
   - set -e # Exit immediately if anything fails
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DAPPIMAGE_BUILD=ON -DRUSTC_DEMANGLE_INCLUDE_DIR=/opt/include -DRUSTC_DEMANGLE_LIBRARY=/opt/lib/librustc_demangle.so
+  - cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DAPPIMAGE_BUILD=ON
   - make -j$(nproc)
   - make DESTDIR=appdir install ; find appdir/
   - mkdir -p appdir/usr/share/applications/ # FIXME: Do in CMakeLists.txt
