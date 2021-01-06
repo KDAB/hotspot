@@ -29,9 +29,9 @@
 #include <QObject>
 #include <QTest>
 #include <QTextStream>
+#include <QAbstractItemModelTester>
 
 #include "../testutils.h"
-#include "modeltest.h"
 
 #include <models/eventmodel.h>
 
@@ -114,7 +114,7 @@ private slots:
         QCOMPARE(printTree(tree), expectedTree);
 
         BottomUpModel model;
-        ModelTest tester(&model);
+        QAbstractItemModelTester tester(&model);
 
         model.setData(tree);
     }
@@ -149,7 +149,7 @@ private slots:
 
         BottomUpModel model;
         model.setSimplify(true);
-        ModelTest tester(&model);
+        QAbstractItemModelTester tester(&model);
 
         model.setData(tree);
         QCOMPARE(model.rowCount(), 3);
@@ -218,7 +218,7 @@ private slots:
         QCOMPARE(printTree(tree), expectedTree);
 
         TopDownModel model;
-        ModelTest tester(&model);
+        QAbstractItemModelTester tester(&model);
 
         model.setData(tree);
     }
@@ -227,7 +227,7 @@ private slots:
     {
         BottomUpModel model;
         TopProxy proxy;
-        ModelTest tester(&proxy);
+        QAbstractItemModelTester tester(&proxy);
 
         const auto data = generateTree1();
         model.setData(data);
@@ -259,7 +259,7 @@ private slots:
         QCOMPARE(printMap(results), expectedMap);
 
         CallerCalleeModel model;
-        ModelTest tester(&model);
+        QAbstractItemModelTester tester(&model);
         model.setResults(results);
         QTextStream(stdout) << "\nActual Model:\n" << printCallerCalleeModel(model).join("\n") << "\n";
         QCOMPARE(printCallerCalleeModel(model), expectedMap);
@@ -267,17 +267,17 @@ private slots:
         for (const auto& entry : results.entries) {
             {
                 CallerModel model;
-                ModelTest tester(&model);
+                QAbstractItemModelTester tester(&model);
                 model.setResults(entry.callers, results.selfCosts);
             }
             {
                 CalleeModel model;
-                ModelTest tester(&model);
+                QAbstractItemModelTester tester(&model);
                 model.setResults(entry.callees, results.selfCosts);
             }
             {
                 SourceMapModel model;
-                ModelTest tester(&model);
+                QAbstractItemModelTester tester(&model);
                 model.setResults(entry.sourceMap, results.selfCosts);
             }
         }
@@ -346,7 +346,7 @@ private slots:
         events.totalCosts = {costSummary};
 
         EventModel model;
-        ModelTest tester(&model);
+        QAbstractItemModelTester tester(&model);
         model.setData(events);
 
         QCOMPARE(model.columnCount(), static_cast<int>(EventModel::NUM_COLUMNS));
