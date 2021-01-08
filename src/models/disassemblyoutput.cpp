@@ -62,6 +62,7 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
                                                  const Data::Symbol& symbol)
 {
     DisassemblyOutput disassemblyOutput;
+    disassemblyOutput.symbol = symbol;
     if (symbol.symbol.isEmpty()) {
         disassemblyOutput.errorMessage = QApplication::tr("Empty symbol ?? is selected");
         return disassemblyOutput;

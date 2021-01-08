@@ -34,6 +34,7 @@
 #include "../testutils.h"
 
 #include <models/eventmodel.h>
+#include <models/disassemblymodel.h>
 
 namespace {
 Data::BottomUpResults buildBottomUpTree(const QByteArray& stacks)
@@ -281,6 +282,47 @@ private slots:
                 model.setResults(entry.sourceMap, results.selfCosts);
             }
         }
+    }
+
+    void testDisassemblyModel_data()
+    {
+        QTest::addColumn<Data::Symbol>("symbol");
+        Data::Symbol symbol = {"__cos_fma",
+                               4294544,
+                               2093,
+                               "vector_static_gcc/vector_static_gcc_v9.1.0",
+                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/vector_static_gcc/vector_static_gcc_v9.1.0",
+                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/vector_static_gcc/vector_static_gcc_v9.1.0"};
+
+        QTest::newRow("curSymbol") << symbol;
+    }
+
+    void testDisassemblyModel()
+    {
+        QFETCH(Data::Symbol, symbol);
+
+        const auto actualBinaryFile = QFINDTESTDATA(symbol.binary);
+        symbol.actualPath = actualBinaryFile;
+
+        const auto tree = generateTree1();
+
+        Data::CallerCalleeResults results;
+        Data::callerCalleesFromBottomUpData(tree, &results);
+
+        auto entry = results.entry(symbol);
+        auto& locationCost = entry.offset(4294563, results.selfCosts.numTypes());
+        locationCost.inclusiveCost[0] += 200;
+        locationCost.selfCost[0] += 200;
+
+        DisassemblyModel model;
+        QAbstractItemModelTester tester(&model);
+        model.setResults(results);
+        QCOMPARE(model.columnCount(), 1 + results.selfCosts.numTypes());
+        QCOMPARE(model.rowCount(), 0); // no disassembly data yet
+
+        DisassemblyOutput disassemblyOutput = DisassemblyOutput::disassemble("objdump","x86_64", symbol);
+        model.setDisassembly(disassemblyOutput);
+        QCOMPARE(model.rowCount(), disassemblyOutput.disassemblyLines.size());
     }
 
     void testEventModel()
