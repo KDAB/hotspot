@@ -26,10 +26,7 @@
 */
 
 #include <QString>
-
-namespace Data {
-    struct Symbol;
-}
+#include "data.h"
 
 struct DisassemblyOutput
 {
@@ -40,6 +37,7 @@ struct DisassemblyOutput
     };
     QVector<DisassemblyLine> disassemblyLines;
 
+    Data::Symbol symbol;
     QString errorMessage;
     explicit operator bool() const
     {

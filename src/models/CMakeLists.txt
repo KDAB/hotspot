@@ -12,6 +12,7 @@ add_library(models STATIC
     eventmodel.cpp
     filterandzoomstack.cpp
     disassemblyoutput.cpp
+    disassemblymodel.cpp
     ../settings.cpp
     ../util.cpp
 )

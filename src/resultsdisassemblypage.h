@@ -48,6 +48,7 @@ class QStandardItemModel;
 class QTemporaryFile;
 class CostDelegate;
 class DisassemblyOutput;
+class DisassemblyModel;
 
 class ResultsDisassemblyPage : public QWidget
 {
@@ -57,7 +58,7 @@ public:
     ~ResultsDisassemblyPage();
 
     void clear();
-    void setupAsmViewModel(int numTypes);
+    void setupAsmViewModel();
     void showDisassembly();
     void setAppPath(const QString& path);
     void setSymbol(const Data::Symbol& data);
@@ -72,7 +73,7 @@ private:
 
     QScopedPointer<Ui::ResultsDisassemblyPage> ui;
     // Model
-    QStandardItemModel* m_model;
+    DisassemblyModel* m_model;
     // Current chosen function symbol
     Data::Symbol m_curSymbol;
     // Architecture
