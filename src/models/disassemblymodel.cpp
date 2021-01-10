@@ -28,7 +28,7 @@
 #include "disassemblymodel.h"
 
 DisassemblyModel::DisassemblyModel(QObject *parent)
-        : QAbstractTableModel(parent)
+    : QAbstractTableModel(parent)
 {
 }
 
@@ -58,12 +58,10 @@ void DisassemblyModel::setResults(const Data::CallerCalleeResults& results)
 
 QVariant DisassemblyModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (section < 0 || section >= m_numTypes + COLUMN_COUNT) {
+    if (section < 0 || section >= m_numTypes + COLUMN_COUNT)
         return {};
-    }
-    if (role != Qt::DisplayRole || orientation != Qt::Horizontal) {
+    if (role != Qt::DisplayRole || orientation != Qt::Horizontal)
         return {};
-    }
 
     if (section == DisassemblyColumn)
         return tr("Assembly");
@@ -98,18 +96,18 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
             const auto &costLine = locationCost.selfCost[event];
             const auto totalCost = m_results.selfCosts.totalCost(event);
 
-            if (role == CostRole) return costLine;
-            if (role == TotalCostRole) return totalCost;
+            if (role == CostRole)
+                return costLine;
+            if (role == TotalCostRole)
+                return totalCost;
             if (role == Qt::ToolTipRole)
                 return Util::formatTooltip(data.disassembly, locationCost, m_results.selfCosts);
 
-            const auto cost = Util::formatCostRelative(costLine, totalCost, true);
-            return cost;
+            return Util::formatCostRelative(costLine, totalCost, true);
         } else {
-            if (role == Qt::ToolTipRole) {
-                const auto tooltip = tr("<qt><tt>%1</tt><hr/>No samples at this location.</qt>").arg(data.disassembly.toHtmlEscaped());
-                return tooltip;
-            } else
+            if (role == Qt::ToolTipRole)
+                return tr("<qt><tt>%1</tt><hr/>No samples at this location.</qt>").arg(data.disassembly.toHtmlEscaped());
+            else
                 return QString();
         }
     }
