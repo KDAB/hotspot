@@ -420,6 +420,17 @@ struct BottomUpResults
         return parent;
     }
 
+    template<typename FrameCallback>
+    const BottomUp* addDisasmEvent(int type, quint64 cost, const QVector<qint32>& frames, FrameCallback frameCallback)
+    {
+        auto parent = &root;
+        foreachFrame(frames, [this, type, cost, &parent, frameCallback](const Data::Symbol &symbol, const Data::Location &location) {
+            frameCallback(symbol, location);
+            return true;
+        });
+        return parent;
+    }
+
 private:
     quint32 maxBottomUpId = 0;
 

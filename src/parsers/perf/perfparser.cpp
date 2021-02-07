@@ -291,13 +291,14 @@ QDebug operator<<(QDebug stream, const SampleCost& sampleCost)
 struct Sample : Record
 {
     QVector<qint32> frames;
+    QVector<qint32> disasmFrames;
     quint8 guessedFrames = 0;
     QVector<SampleCost> costs;
 };
 
 QDataStream& operator>>(QDataStream& stream, Sample& sample)
 {
-    return stream >> static_cast<Record&>(sample) >> sample.frames >> sample.guessedFrames >> sample.costs;
+    return stream >> static_cast<Record&>(sample) >> sample.frames >> sample.guessedFrames >> sample.costs >> sample.disasmFrames;
 }
 
 QDebug operator<<(QDebug stream, const Sample& sample)
@@ -305,7 +306,8 @@ QDebug operator<<(QDebug stream, const Sample& sample)
     stream.noquote().nospace() << "Sample{" << static_cast<const Record&>(sample) << ", "
                                << "frames=" << sample.frames << ", "
                                << "guessedFrames=" << sample.guessedFrames << ", "
-                               << "costs=" << sample.costs << "}";
+                               << "costs=" << sample.costs << ", "
+                               << "disasmFrames=" << sample.disasmFrames << "}";
     return stream;
 }
 
@@ -1048,6 +1050,10 @@ public:
                                   << " (" << symbol.binary << ")\n";
             }
         };
+
+        bool hasStackBranch = !sample.disasmFrames.empty();
+        if (hasStackBranch)
+            bottomUpResult.addDisasmEvent(type, sampleCost.cost, sample.disasmFrames, frameCallback);
 
         bottomUpResult.addEvent(type, sampleCost.cost, sample.frames, frameCallback);
 
