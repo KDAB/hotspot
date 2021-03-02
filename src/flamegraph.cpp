@@ -30,7 +30,9 @@
 #include <cmath>
 
 #include <QAction>
+#include <QApplication>
 #include <QCheckBox>
+#include <QClipboard>
 #include <QComboBox>
 #include <QCursor>
 #include <QDebug>
@@ -43,13 +45,13 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QPushButton>
+#include <QRandomGenerator>
 #include <QScrollBar>
 #include <QStyleOption>
 #include <QSvgGenerator>
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QWheelEvent>
-#include <QRandomGenerator>
 
 #include <KColorScheme>
 #include <KLocalizedString>
@@ -582,6 +584,11 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
             auto* viewDisassembly = contextMenu.addAction(tr("Disassembly"));
             connect(viewDisassembly, &QAction::triggered, this,
                     [this, item]() { emit jumpToDisassembly(item->symbol()); });
+
+            auto* copy = contextMenu.addAction(QIcon::fromTheme(QStringLiteral("edit-copy")), tr("Copy"));
+            connect(copy, &QAction::triggered, this, [item]() { qApp->clipboard()->setText(item->description()); });
+
+            contextMenu.addSeparator();
         }
         ResultsUtil::addFilterActions(&contextMenu, item ? item->symbol() : Data::Symbol(), m_filterStack);
         contextMenu.addSeparator();
