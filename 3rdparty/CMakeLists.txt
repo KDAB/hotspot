@@ -1,2 +1,4 @@
+check_submodule_exists(perfparser perfparser)
 include(perfparser.cmake)
+check_submodule_exists(PrefixTickLabels PrefixTickLabels)
 include(PrefixTickLabels.cmake)
