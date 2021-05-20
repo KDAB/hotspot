@@ -119,7 +119,7 @@ KConfigGroup config()
 
 KConfigGroup applicationConfig(const QString& application)
 {
-    return config().group(QLatin1String("Application ") + application);
+    return config().group(QLatin1String("Application ") + KShell::tildeExpand(application));
 }
 
 constexpr const int MAX_COMBO_ENTRIES = 10;
@@ -206,6 +206,25 @@ RecordPage::RecordPage(QWidget* parent)
     ui->outputFile->setText(QDir::currentPath() + QDir::separator() + QStringLiteral("perf.data"));
     ui->outputFile->setMode(KFile::File | KFile::LocalOnly);
     ui->eventTypeBox->lineEdit()->setPlaceholderText(tr("perf defaults (usually cycles:Pu)"));
+
+    ui->launchConfigComboBox->setEditable(true);
+    ui->launchConfigComboBox->setDisabled(true);
+    ui->launchConfigComboBox->setInsertPolicy(QComboBox::InsertAtCurrent);
+    connect(ui->launchConfigComboBox->lineEdit(), &QLineEdit::editingFinished, this,
+            &RecordPage::onApplicationConfigRenamed);
+    connect(ui->launchConfigComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+            &RecordPage::onApplicationConfigChanged);
+    connect(ui->addConfig, &QPushButton::clicked, this, &RecordPage::onApplicationConfigAdded);
+    connect(ui->removeConfig, &QPushButton::clicked, this, &RecordPage::onApplicationConfigRemoved);
+
+    const auto updateLaunchConfig = [this] {
+        if (ui->launchConfigComboBox->count() > 0) {
+            saveApplicationConfig(ui->launchConfigComboBox->currentText());
+        }
+    };
+
+    connect(ui->applicationParametersBox, &QLineEdit::editingFinished, this, updateLaunchConfig);
+    connect(ui->workingDirectory, &KUrlRequester::textChanged, this, updateLaunchConfig);
 
     auto columnResizer = new KColumnResizer(this);
     columnResizer->addWidgetsFromLayout(ui->formLayout);
@@ -609,6 +628,8 @@ void RecordPage::onApplicationNameChanged(const QString& filePath)
         ui->applicationParametersBox->setText(config.readEntry("params", QString()));
         ui->workingDirectory->setPlaceholderText(application.path());
         setError({});
+
+        updateListOfApplicationConfigs();
     }
     updateStartRecordingButtonState(ui);
 }
@@ -664,6 +685,45 @@ void RecordPage::onOutputFileNameSelected(const QString& filePath)
     }
 }
 
+void RecordPage::onApplicationConfigAdded()
+{
+    saveApplicationConfig(QStringLiteral("Config %1").arg(ui->launchConfigComboBox->count() + 1));
+
+    updateListOfApplicationConfigs();
+}
+
+void RecordPage::onApplicationConfigRenamed()
+{
+    auto group = applicationConfig(ui->applicationName->text());
+    const int index = ui->launchConfigComboBox->currentIndex();
+
+    // itemData is used to store the old name of the config
+    // after deleting the old config this must be changed to the new name
+    const auto oldText = ui->launchConfigComboBox->itemData(index).toString();
+
+    group.deleteGroup(oldText);
+
+    const auto currentText = ui->launchConfigComboBox->currentText();
+    saveApplicationConfig(currentText);
+
+    ui->launchConfigComboBox->setItemData(index, currentText);
+}
+
+void RecordPage::onApplicationConfigRemoved()
+{
+    auto appConfig = applicationConfig(ui->applicationName->text());
+    appConfig.deleteGroup(ui->launchConfigComboBox->currentText());
+
+    updateListOfApplicationConfigs();
+
+    applyApplicationConfig(ui->applicationName->text());
+}
+
+void RecordPage::onApplicationConfigChanged()
+{
+    applyApplicationConfig(ui->launchConfigComboBox->currentText());
+}
+
 void RecordPage::onOutputFileUrlChanged(const QUrl& fileUrl)
 {
     onOutputFileNameSelected(fileUrl.toLocalFile());
@@ -687,6 +747,56 @@ void RecordPage::updateProcessesFinished()
         updateStartRecordingButtonState(ui);
         QTimer::singleShot(1000, this, &RecordPage::updateProcesses);
     }
+}
+
+void RecordPage::saveApplicationConfig(const QString& name)
+{
+    const auto& group = applicationConfig(ui->applicationName->text());
+    KConfigGroup config(&group, name);
+    config.writeEntry("params", ui->applicationParametersBox->text());
+    config.writeEntry("workingDir", ui->workingDirectory->text());
+    config.sync();
+}
+
+void RecordPage::applyApplicationConfig(const QString& name)
+{
+    if (name.isEmpty())
+        return;
+
+    const auto& config = applicationConfig(ui->applicationName->text()).group(name);
+    ui->applicationParametersBox->setText(config.readEntry("params", ""));
+    ui->workingDirectory->setText(config.readEntry("workingDir", ""));
+}
+
+void RecordPage::updateListOfApplicationConfigs()
+{
+    ui->launchConfigComboBox->clear();
+
+    const auto configurations = applicationConfigurations();
+    for (const auto& group : configurations) {
+        ui->launchConfigComboBox->addItem(group, group);
+    }
+
+    ui->launchConfigComboBox->setEnabled(!configurations.isEmpty());
+    applyApplicationConfig(configurations.value(0));
+}
+
+QStringList RecordPage::applicationConfigurations()
+{
+    const auto& config = applicationConfig(ui->applicationName->text());
+    const auto availableGroups = config.groupList();
+    QStringList groups;
+    groups.reserve(availableGroups.size());
+
+    for (const auto& group : availableGroups) {
+        // KDE Bug
+        // groupList returns groups that are deleted, for these hasGroup / exists return false
+        if (config.hasGroup(group)) {
+            groups.append(group);
+        }
+    }
+
+    return groups;
 }
 
 void RecordPage::appendOutput(const QString& text)

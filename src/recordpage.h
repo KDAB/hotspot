@@ -74,12 +74,20 @@ private slots:
     void onOutputFileNameChanged(const QString& filePath);
     void onOutputFileUrlChanged(const QUrl& fileUrl);
     void onOutputFileNameSelected(const QString& filePath);
+    void onApplicationConfigAdded();
+    void onApplicationConfigRenamed();
+    void onApplicationConfigRemoved();
+    void onApplicationConfigChanged();
     void updateOffCpuCheckboxState();
 
     void updateProcesses();
     void updateProcessesFinished();
 
 private:
+    void saveApplicationConfig(const QString& name);
+    void applyApplicationConfig(const QString& name);
+    void updateListOfApplicationConfigs();
+    QStringList applicationConfigurations();
     void recordingStopped();
     void updateRecordType();
     void appendOutput(const QString& text);
