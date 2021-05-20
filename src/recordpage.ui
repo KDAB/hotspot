@@ -72,11 +72,11 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="KUrlComboRequester" name="applicationName">
+       <widget class="KUrlComboRequester" name="applicationName" native="true">
         <property name="toolTip">
          <string>Path to the application to be recorded</string>
         </property>
-        <property name="text">
+        <property name="text" stdset="0">
          <string/>
         </property>
        </widget>
@@ -104,7 +104,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="workingDirectoryLabel">
         <property name="toolTip">
          <string>Directory to store the perf data file while recording</string>
@@ -117,10 +117,38 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="KUrlRequester" name="workingDirectory">
+      <item row="3" column="1">
+       <widget class="KUrlRequester" name="workingDirectory" native="true">
         <property name="toolTip">
          <string>Directory to store the perf data file while recording</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <layout class="QHBoxLayout" name="configLayout">
+        <item>
+         <widget class="QComboBox" name="launchConfigComboBox"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="addConfig">
+          <property name="text">
+           <string>Copy Config</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="removeConfig">
+          <property name="text">
+           <string>Remove Config</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Config</string>
         </property>
        </widget>
       </item>
@@ -264,8 +292,8 @@
        </widget>
       </item>
       <item row="3" column="0" colspan="2">
-       <widget class="KCollapsibleGroupBox" name="perfOptionsBox2">
-        <property name="title">
+       <widget class="KCollapsibleGroupBox" name="perfOptionsBox2" native="true">
+        <property name="title" stdset="0">
          <string>Advanced</string>
         </property>
         <layout class="QFormLayout" name="formLayout_3">
@@ -286,7 +314,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="KUrlRequester" name="outputFile">
+          <widget class="KUrlRequester" name="outputFile" native="true">
            <property name="toolTip">
             <string>Path to the file location, where perf will write its output to</string>
            </property>
@@ -592,11 +620,6 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>KUrlComboRequester</class>
-   <extends>KUrlRequester</extends>
-   <header>kurlrequester.h</header>
-  </customwidget>
-  <customwidget>
    <class>KUrlRequester</class>
    <extends>QWidget</extends>
    <header>kurlrequester.h</header>
@@ -612,6 +635,11 @@
    <extends>QFrame</extends>
    <header>kmessagewidget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>KUrlComboRequester</class>
+   <extends>KUrlRequester</extends>
+   <header>kurlrequester.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
