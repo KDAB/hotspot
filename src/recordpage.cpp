@@ -397,7 +397,7 @@ RecordPage::RecordPage(QWidget* parent)
     connect(stopRecordingShortcut, &QShortcut::activated, this,
             [this] { ui->startRecordingButton->setChecked(false); });
 
-    auto* startRecordingShortcut = new QShortcut(Qt::Key_Return, this);
+    auto* startRecordingShortcut = new QShortcut(Qt::CTRL + Qt::Key_Return, this);
     startRecordingShortcut->setContext(Qt::WidgetWithChildrenShortcut);
     connect(startRecordingShortcut, &QShortcut::activated, this, [this] {
         if (ui->viewPerfRecordResultsButton->isEnabled()) {
