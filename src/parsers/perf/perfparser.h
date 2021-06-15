@@ -77,7 +77,7 @@ signals:
     void progress(float progress);
     void stopRequested();
 
-    void exportFailed(const QString& errorMessage);
+    void parserWarning(const QString& errorMessage);
     void exportFinished(const QUrl& url);
 
 private:

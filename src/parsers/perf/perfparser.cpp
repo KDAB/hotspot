@@ -1003,6 +1003,10 @@ public:
 
         addSampleToBottomUp(sample);
         addSampleToSummary(sample);
+
+        if (sample.frames.length() > 1) {
+            m_numSamplesWithMoreThanOneFrame++;
+        }
     }
 
     void addString(const StringDefinition& string)
@@ -1264,6 +1268,9 @@ public:
     qint32 m_nextCostId = 0;
     qint32 m_schedSwitchCostId = -1;
 
+    // samples recorded without --call-graph have only one frame
+    int m_numSamplesWithMoreThanOneFrame = 0;
+
 public slots:
     void stop()
     {
@@ -1372,6 +1379,11 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
             emit callerCalleeDataAvailable(d.callerCalleeResult);
             emit eventsAvailable(d.eventResult);
             emit parsingFinished();
+
+            if (d.m_numSamplesWithMoreThanOneFrame == 0) {
+                emit parserWarning(tr("Samples contained no call stack frames. Consider passing <code>--call-graph "
+                                      "dwarf</code> to <code>perf record</code>."));
+            }
         };
 
         if (path.endsWith(QLatin1String(".perfparser"))) {
@@ -1652,7 +1664,7 @@ void PerfParser::exportResults(const QUrl& url)
         } else {
             tmpFile = QSharedPointer<QTemporaryFile>::create();
             if (!tmpFile->open()) {
-                emit exportFailed(
+                emit parserWarning(
                     tr("File export failed: Failed to create temporary file %1.").arg(tmpFile->errorString()));
                 return;
             }
@@ -1663,7 +1675,7 @@ void PerfParser::exportResults(const QUrl& url)
         perfParser.setStandardErrorFile(QProcess::nullDevice());
         perfParser.start(Util::perfParserBinaryPath(), m_parserArgs);
         if (!perfParser.waitForFinished(-1)) {
-            emit exportFailed(tr("File export failed: %1").arg(perfParser.errorString()));
+            emit parserWarning(tr("File export failed: %1").arg(perfParser.errorString()));
             return;
         }
 
@@ -1677,7 +1689,7 @@ void PerfParser::exportResults(const QUrl& url)
             auto* job = KIO::file_move(QUrl::fromLocalFile(tmpFile->fileName()), url, -1, KIO::Overwrite);
             connect(job, &KIO::FileCopyJob::result, this, [this, url, job, tmpFile]() {
                 if (job->error())
-                    emit exportFailed(tr("File export failed: %1").arg(job->errorString()));
+                    emit parserWarning(tr("File export failed: %1").arg(job->errorString()));
                 else
                     emit exportFinished(url);
                 // we need to keep the file alive until the copy job has finished
