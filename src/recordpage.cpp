@@ -296,6 +296,23 @@ RecordPage::RecordPage(QWidget* parent)
         ui->callGraphComboBox->setCurrentIndex(dwarfIdx);
     }
 
+    {
+        for (const auto size : {1024, 2048, 4096, 8192, 16384}) {
+            ui->stackDumpComboBox->addItem(QString::number(size));
+        }
+
+        // select 8196 (perf default)
+        ui->stackDumpComboBox->setCurrentIndex(3);
+    }
+
+    connect(ui->callGraphComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int index) {
+        // these elements only need to hide if the user changed the callgraph method
+        // the default is DWARF
+        const bool isDwarf = ui->callGraphComboBox->itemData(index) == QLatin1String("dwarf");
+        ui->stackDumpComboBox->setVisible(isDwarf);
+        ui->stackSizeLabel->setVisible(isDwarf);
+    });
+
     connect(m_perfRecord, &PerfRecord::recordingStarted, this,
             [this](const QString& perfBinary, const QStringList& arguments) {
                 m_recordTimer.start();
@@ -468,7 +485,12 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         const auto callGraphOption = ui->callGraphComboBox->currentData().toString();
         config().writeEntry("callGraph", callGraphOption);
         if (!callGraphOption.isEmpty()) {
-            perfOptions << QStringLiteral("--call-graph") << callGraphOption;
+            perfOptions << QStringLiteral("--call-graph");
+            if (callGraphOption == QLatin1String("dwarf")) {
+                perfOptions << callGraphOption + QStringLiteral(",") + ui->stackDumpComboBox->currentText();
+            } else {
+                perfOptions << callGraphOption;
+            }
         }
 
         const auto eventType = ui->eventTypeBox->currentText();
