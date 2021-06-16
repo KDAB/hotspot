@@ -363,7 +363,14 @@ static QByteArray perfOutput(const QStringList& arguments)
 
 static QByteArray perfRecordHelp()
 {
-    static const QByteArray recordHelp = perfOutput({QStringLiteral("record"), QStringLiteral("--help")});
+    static const QByteArray recordHelp = []() {
+        static QByteArray help = perfOutput({QStringLiteral("record"), QStringLiteral("--help")});
+        if (help.isEmpty()) {
+            // no man page installed, assume the best
+            help = "--sample-cpu --switch-events";
+        }
+        return help;
+    }();
     return recordHelp;
 }
 
