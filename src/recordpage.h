@@ -35,6 +35,7 @@
 #include "processlist.h"
 
 class QTimer;
+class QTemporaryFile;
 
 namespace Ui {
 class RecordPage;
@@ -43,6 +44,10 @@ class RecordPage;
 class PerfRecord;
 class ProcessModel;
 class ProcessFilterModel;
+
+namespace KParts {
+class ReadOnlyPart;
+}
 
 enum RecordType
 {
@@ -85,6 +90,7 @@ private:
     void updateRecordType();
     void appendOutput(const QString& text);
     void setError(const QString& message);
+    void addKonsoleWidget();
 
     QScopedPointer<Ui::RecordPage> ui;
 
@@ -92,6 +98,8 @@ private:
     QString m_resultsFile;
     QElapsedTimer m_recordTimer;
     QTimer* m_updateRuntimeTimer;
+    KParts::ReadOnlyPart* m_konsolePart = nullptr;
+    QTemporaryFile* m_konsoleFile = nullptr;
     MultiConfigWidget* m_multiConfig;
 
     ProcessModel* m_processModel;

@@ -72,11 +72,11 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="KUrlComboRequester" name="applicationName" native="true">
+       <widget class="KUrlComboRequester" name="applicationName">
         <property name="toolTip">
          <string>Path to the application to be recorded</string>
         </property>
-        <property name="text" stdset="0">
+        <property name="text">
          <string/>
         </property>
        </widget>
@@ -118,7 +118,7 @@
        </widget>
       </item>
       <item row="3" column="1">
-       <widget class="KUrlRequester" name="workingDirectory" native="true">
+       <widget class="KUrlRequester" name="workingDirectory">
         <property name="toolTip">
          <string>Directory to store the perf data file while recording</string>
         </property>
@@ -264,8 +264,8 @@
        </widget>
       </item>
       <item row="3" column="0" colspan="2">
-       <widget class="KCollapsibleGroupBox" name="perfOptionsBox2" native="true">
-        <property name="title" stdset="0">
+       <widget class="KCollapsibleGroupBox" name="perfOptionsBox2">
+        <property name="title">
          <string>Advanced</string>
         </property>
         <layout class="QFormLayout" name="formLayout_3">
@@ -286,7 +286,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="KUrlRequester" name="outputFile" native="true">
+          <widget class="KUrlRequester" name="outputFile">
            <property name="toolTip">
             <string>Path to the file location, where perf will write its output to</string>
            </property>
@@ -569,7 +569,7 @@
      <property name="title">
       <string>Record Output</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <layout class="QVBoxLayout" name="recordOutputBoxLayout">
       <item>
        <widget class="QTextEdit" name="perfResultsTextEdit">
         <property name="font">
@@ -605,6 +605,11 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>KUrlComboRequester</class>
+   <extends>KUrlRequester</extends>
+   <header>kurlrequester.h</header>
+  </customwidget>
+  <customwidget>
    <class>KUrlRequester</class>
    <extends>QWidget</extends>
    <header>kurlrequester.h</header>
@@ -620,11 +625,6 @@
    <extends>QFrame</extends>
    <header>kmessagewidget.h</header>
    <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>KUrlComboRequester</class>
-   <extends>KUrlRequester</extends>
-   <header>kurlrequester.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
