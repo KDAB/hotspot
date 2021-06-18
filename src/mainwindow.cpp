@@ -265,6 +265,8 @@ MainWindow::MainWindow(QWidget* parent)
     } else {
         serializer.restoreFromFile(QStringLiteral(":/default-dockwidget-layout.json"));
     }
+
+    m_lastUsedSettings = m_config->group("PerfPaths").readEntry("lastUsed");
 }
 
 MainWindow::~MainWindow() = default;
@@ -442,7 +444,7 @@ void MainWindow::openSettingsDialog()
     m_settingsDialog->setWindowTitle(tr("Paths and Architecture Settings"));
     m_settingsDialog->setWindowIcon(windowIcon());
     m_settingsDialog->adjustSize();
-    m_settingsDialog->initSettings(m_sysroot, m_appPath, m_extraLibPaths, m_debugPaths, m_kallsyms, m_arch, m_objdump);
+    m_settingsDialog->initSettings(m_lastUsedSettings);
     m_settingsDialog->open();
 }
 

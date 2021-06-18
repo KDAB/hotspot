@@ -41,6 +41,7 @@ class SettingsDialog : public KPageDialog
 public:
     explicit SettingsDialog(QWidget* parent = nullptr);
     ~SettingsDialog();
+    void initSettings(const QString& configName);
     void initSettings(const QString& sysroot, const QString& appPath, const QString& extraLibPaths,
                       const QString& debugPaths, const QString& kallsyms, const QString& arch, const QString& objdump);    
     QString sysroot() const;
@@ -50,6 +51,13 @@ public:
     QString kallsyms() const;
     QString arch() const;
     QString objdump() const;
+
+private slots:
+    void saveCurrentConfig();
+    void renameCurrentConfig();
+    void removeCurrentConfig();
+    void applyCurrentConfig();
+
 private:
     void addPathSettingsPage();
 
