@@ -52,6 +52,8 @@ public:
     QString arch() const;
     QString objdump() const;
 
+    void keyPressEvent(QKeyEvent* event) override;
+
 private slots:
     void saveCurrentConfig();
     void renameCurrentConfig();
