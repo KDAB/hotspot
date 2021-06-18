@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>240</width>
-    <height>196</height>
+    <width>491</width>
+    <height>656</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,25 +20,12 @@
    <bool>true</bool>
   </property>
   <layout class="QFormLayout" name="formLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="sysrootLabel">
-     <property name="toolTip">
-      <string>Path to the sysroot. Leave empty to use the local machine.</string>
-     </property>
-     <property name="text">
-      <string>Sysroot:</string>
-     </property>
-     <property name="buddy">
-      <cstring>lineEditSysroot</cstring>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="1">
-    <widget class="KUrlRequester" name="lineEditSysroot" native="true">
+    <widget class="KUrlRequester" name="lineEditSysroot">
      <property name="toolTip">
       <string>Path to the sysroot. Leave empty to use the local machine.</string>
      </property>
-     <property name="placeholderText" stdset="0">
+     <property name="placeholderText">
       <string>local machine</string>
      </property>
     </widget>
@@ -57,27 +44,30 @@
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="KUrlRequester" name="lineEditApplicationPath" native="true">
+    <widget class="KUrlRequester" name="lineEditApplicationPath">
      <property name="toolTip">
       <string>Path to the application binary and library.</string>
      </property>
-     <property name="placeholderText" stdset="0">
+     <property name="placeholderText">
       <string>auto-detect</string>
      </property>
     </widget>
    </item>
    <item row="2" column="0">
-    <widget class="QLabel" name="extraLibraryPathsLabel">
+    <widget class="QLabel" name="sysrootLabel">
      <property name="toolTip">
-      <string>List of paths that contain additional libraries.</string>
+      <string>Path to the sysroot. Leave empty to use the local machine.</string>
      </property>
      <property name="text">
-      <string>Extra Library Paths:</string>
+      <string>Sysroot:</string>
+     </property>
+     <property name="buddy">
+      <cstring>lineEditSysroot</cstring>
      </property>
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="KEditListWidget" name="extraLibraryPaths" native="true">
+    <widget class="KEditListWidget" name="extraLibraryPaths">
      <property name="focusPolicy">
       <enum>Qt::TabFocus</enum>
      </property>
@@ -97,7 +87,7 @@
     </widget>
    </item>
    <item row="4" column="1">
-    <widget class="KEditListWidget" name="debugPaths" native="true">
+    <widget class="KEditListWidget" name="debugPaths">
      <property name="focusPolicy">
       <enum>Qt::TabFocus</enum>
      </property>
@@ -120,14 +110,14 @@
     </widget>
    </item>
    <item row="6" column="1">
-    <widget class="KUrlRequester" name="lineEditKallsyms" native="true">
+    <widget class="KUrlRequester" name="lineEditKallsyms">
      <property name="toolTip">
       <string>Path to the kernel symbol mapping.</string>
      </property>
-     <property name="placeholderText" stdset="0">
+     <property name="placeholderText">
       <string>auto-detect</string>
      </property>
-     <property name="text" stdset="0">
+     <property name="text">
       <string/>
      </property>
     </widget>
@@ -189,15 +179,57 @@
     </widget>
    </item>
    <item row="8" column="1">
-    <widget class="KUrlRequester" name="lineEditObjdump" native="true">
+    <widget class="KUrlRequester" name="lineEditObjdump">
      <property name="toolTip">
       <string>&lt;qt&gt;The &lt;tt&gt;objdump&lt;/tt&gt; binary that will be used for the disassembly view. Leave empty to let it be auto-detected.&lt;/qt&gt;</string>
      </property>
-     <property name="placeholderText" stdset="0">
+     <property name="placeholderText">
       <string>auto-detect</string>
      </property>
-     <property name="text" stdset="0">
+     <property name="text">
       <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Config:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QComboBox" name="configComboBox">
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="copyConfigButton">
+       <property name="text">
+        <string>Copy Config</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="removeConfigButton">
+       <property name="text">
+        <string>Remove Config</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="extraLibraryPathsLabel">
+     <property name="toolTip">
+      <string>List of paths that contain additional libraries.</string>
+     </property>
+     <property name="text">
+      <string>Extra Library Paths:</string>
      </property>
     </widget>
    </item>

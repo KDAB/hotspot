@@ -113,6 +113,7 @@ private:
     QString m_appPath;
     QString m_arch;
     QString m_objdump;
+    QString m_lastUsedSettings;
     KRecentFilesAction* m_recentFilesAction = nullptr;
     QAction* m_reloadAction = nullptr;
     QAction* m_exportAction = nullptr;
