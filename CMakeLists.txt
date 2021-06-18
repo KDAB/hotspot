@@ -67,6 +67,7 @@ find_package(KF5 COMPONENTS
     WindowSystem
     Notifications
     IconThemes
+    Parts
     REQUIRED
 )
 

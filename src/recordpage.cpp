@@ -36,23 +36,29 @@
 #include <QDebug>
 #include <QKeyEvent>
 #include <QListView>
+#include <QScrollArea>
 #include <QShortcut>
 #include <QStandardItemModel>
 #include <QStandardPaths>
+#include <QTemporaryFile>
 #include <QTimer>
-#include <QScrollArea>
 #include <QtConcurrent/QtConcurrentRun>
 
 #include <KColumnResizer>
 #include <KComboBox>
 #include <KConfigGroup>
+#include <KParts/ReadOnlyPart>
+#include <KService>
 #include <KSharedConfig>
 #include <KShell>
 #include <KUrlCompletion>
 #include <KUrlRequester>
 #include <Solid/Device>
 #include <Solid/Processor>
+#include <kde_terminal_interface.h>
 #include <kio_version.h>
+
+#include <QRegularExpression>
 
 #include "perfrecord.h"
 
@@ -459,6 +465,8 @@ RecordPage::RecordPage(QWidget* parent)
         if (index != -1)
             ui->compressionComboBox->setCurrentIndex(index);
     }
+
+    addKonsoleWidget();
 }
 
 RecordPage::~RecordPage() = default;
@@ -484,6 +492,9 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-stop")));
         ui->startRecordingButton->setText(tr("Stop Recording"));
         ui->perfResultsTextEdit->clear();
+
+        // clear konsole
+        addKonsoleWidget();
 
         QStringList perfOptions;
 
@@ -739,15 +750,71 @@ void RecordPage::updateProcessesFinished()
 
 void RecordPage::appendOutput(const QString& text)
 {
+    if (m_konsolePart) {
+        m_konsoleFile->write(text.toUtf8());
+        m_konsoleFile->flush();
+        return;
+    }
+
+    // this regex finds ansi escapes
+    static const QRegularExpression regex(QStringLiteral("\\x1b\\[[0-9;]+m"));
+
     QTextCursor cursor(ui->perfResultsTextEdit->document());
     cursor.movePosition(QTextCursor::End);
-    cursor.insertText(text);
+
+    QString cleanOutput = text;
+    cursor.insertText(cleanOutput.replace(regex, QString()));
 }
 
 void RecordPage::setError(const QString& message)
 {
     ui->applicationRecordErrorMessage->setText(message);
     ui->applicationRecordErrorMessage->setVisible(!message.isEmpty());
+}
+
+void RecordPage::addKonsoleWidget()
+{
+    KService::Ptr service = KService::serviceByDesktopName(QStringLiteral("konsolepart"));
+
+    if (!service) {
+        return;
+    }
+
+    const auto tail = QStandardPaths::findExecutable(QStringLiteral("tail"));
+
+    if (tail.isEmpty()) {
+        return;
+    }
+
+    if (m_konsolePart) {
+        ui->recordOutputBox->layout()->removeWidget(m_konsolePart->widget());
+        m_konsolePart->deleteLater();
+    }
+    m_konsolePart = service->createInstance<KParts::ReadOnlyPart>(this);
+
+    if (!m_konsolePart) {
+        return;
+    }
+
+    const auto terminalInterface = qobject_cast<TerminalInterface*>(m_konsolePart);
+    if (!terminalInterface) {
+        qWarning("konsole kpart doesn't implement terminal interface");
+        delete m_konsolePart;
+        m_konsolePart = nullptr;
+        return;
+    }
+
+    if (m_konsoleFile) {
+        m_konsoleFile->deleteLater();
+    }
+    m_konsoleFile = new QTemporaryFile(this);
+    m_konsoleFile->open();
+
+    terminalInterface->startProgram(tail, {tail, QStringLiteral("-f"), m_konsoleFile->fileName()});
+    ui->recordOutputBoxLayout->insertWidget(1, m_konsolePart->widget());
+    ui->perfResultsTextEdit->setVisible(false);
+
+    m_konsolePart->widget()->setFocusPolicy(Qt::FocusPolicy::NoFocus);
 }
 
 void RecordPage::updateRecordType()
@@ -770,6 +837,9 @@ void RecordPage::updateRecordType()
     if (recordType == AttachToProcess) {
         updateProcesses();
     }
+
+    // clear konsole
+    addKonsoleWidget();
 
     updateStartRecordingButtonState(ui);
 }

@@ -106,7 +106,7 @@ int firstAvailableIde()
 }
 
 MainWindow::MainWindow(QWidget* parent)
-    : QMainWindow(parent)
+    : KParts::MainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_parser(new PerfParser(this))
     , m_config(KSharedConfig::openConfig())

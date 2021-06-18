@@ -92,6 +92,7 @@ target_link_libraries(hotspot
     KF5::WindowSystem
     KF5::Notifications
     KF5::IconThemes
+    KF5::Parts
     models
     PrefixTickLabels
     KDAB::kddockwidgets
