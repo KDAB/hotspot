@@ -40,4 +40,6 @@
 
 #cmakedefine01 Zstd_FOUND
 
+#cmakedefine01 KF5Auth_FOUND
+
 #endif // HOTSPOT_CONFIG_H

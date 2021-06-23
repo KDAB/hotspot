@@ -20,6 +20,10 @@ ecm_add_test(
         tst_perfparser
 )
 
+if (KF5Auth_FOUND)
+    target_link_libraries(tst_perfparser KF5::Auth)
+endif (KF5Auth_FOUND)
+
 set_target_properties(tst_perfparser
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"

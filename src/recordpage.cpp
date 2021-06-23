@@ -60,6 +60,7 @@
 
 #include <QRegularExpression>
 
+#include "hotspot-config.h"
 #include "perfrecord.h"
 
 namespace {
@@ -385,11 +386,11 @@ RecordPage::RecordPage(QWidget* parent)
     if (m_perfRecord->currentUsername() == QLatin1String("root")) {
         ui->elevatePrivilegesCheckBox->setChecked(true);
         ui->elevatePrivilegesCheckBox->setEnabled(false);
-    } else if (m_perfRecord->sudoUtil().isEmpty()) {
+    } else if (m_perfRecord->sudoUtil().isEmpty() && !KF5Auth_FOUND) {
         ui->elevatePrivilegesCheckBox->setChecked(false);
         ui->elevatePrivilegesCheckBox->setEnabled(false);
         ui->elevatePrivilegesCheckBox->setText(
-            tr("(Note: Install pkexec, kdesudo or kdesu to temporarily elevate perf privileges.)"));
+            tr("(Note: Install pkexec, kdesudo, kdesu or KAuth to temporarily elevate perf privileges.)"));
     }
 
     connect(ui->elevatePrivilegesCheckBox, &QCheckBox::toggled, this, &RecordPage::updateOffCpuCheckboxState);
