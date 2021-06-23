@@ -105,3 +105,15 @@ set_target_properties(hotspot
 
 install(TARGETS hotspot RUNTIME DESTINATION ${KDE_INSTALL_BINDIR})
 install(FILES hotspot.notifyrc DESTINATION ${KDE_INSTALL_KNOTIFY5RCDIR})
+
+if (KF5Auth_FOUND)
+    target_link_libraries(hotspot KF5::AuthCore)
+
+    add_executable(hotspot-auth-helper authhelper.cpp)
+    target_link_libraries(hotspot-auth-helper KF5::AuthCore)
+
+    install(TARGETS hotspot-auth-helper DESTINATION ${KAUTH_HELPER_INSTALL_DIR})
+
+    kauth_install_helper_files(hotspot-auth-helper com.kdab.hotspot.perf root)
+    kauth_install_actions(com.kdab.hotspot.perf hotspot-perf-authhelper.actions)
+endif (KF5Auth_FOUND)
