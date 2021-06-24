@@ -210,6 +210,15 @@ MainWindow::MainWindow(QWidget* parent)
 
         connect(Settings::instance(), &Settings::collapseDepthChanged, this,
                 [this](int collapseDepth) { m_config->group("Settings").writeEntry("collapseDepth", collapseDepth); });
+
+        const QStringList userPaths = {QDir::homePath()};
+        const QStringList systemPaths = {QDir::rootPath()};
+        settings->setPaths(m_config->group("PathSettings").readEntry("userPaths", userPaths),
+                           m_config->group("PathSettings").readEntry("systemPaths", systemPaths));
+        connect(Settings::instance(), &Settings::pathsChanged, this, [this, settings] {
+            m_config->group("PathSettings").writeEntry("userPaths", settings->userPaths());
+            m_config->group("PathSettings").writeEntry("systemPaths", settings->systemPaths());
+        });
     }
 
     auto* prettifySymbolsAction = ui->viewMenu->addAction(tr("Prettify Symbols"));

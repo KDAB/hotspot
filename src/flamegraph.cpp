@@ -274,10 +274,78 @@ QBrush brushImpl(uint hash, BrushType type)
     return brushes.at(hash % brushes.size());
 }
 
-template<typename T>
-QBrush brush(const T& entry, BrushType type)
+QBrush brushBinary(const Data::Symbol& symbol)
 {
-    return brushImpl(qHash(entry), type);
+    static QHash<QString, QBrush> brushes;
+
+    auto& brush = brushes[symbol.binary];
+    if (brush == QBrush()) {
+        brush = brushImpl(qHash(symbol.binary), BrushType::Hot);
+    }
+    return brush;
+}
+
+QBrush brushKernel(const Data::Symbol& symbol)
+{
+    static QBrush kernel(QColor(255, 0, 0, 125));
+    static QBrush user(QColor(0, 0, 255, 125));
+
+    if (symbol.isKernel) {
+        return kernel;
+    }
+    return user;
+}
+
+bool isInPathList(const QStringList& paths, const QString& subPath)
+{
+    auto containsSubPath = [subPath](const auto& path) { return subPath.startsWith(path); };
+
+    return std::any_of(paths.cbegin(), paths.cend(), containsSubPath);
+}
+
+bool isSystemPath(const QString& path)
+{
+    return isInPathList(Settings::instance()->systemPaths(), path);
+}
+
+bool isUserPath(const QString& path)
+{
+    return isInPathList(Settings::instance()->userPaths(), path);
+}
+
+QBrush brushSystem(const Data::Symbol& symbol)
+{
+    static QBrush system(QColor(0, 125, 0, 125));
+    static QBrush user(QColor(200, 200, 0, 125));
+    static QBrush unkown(QColor(50, 50, 50, 125));
+
+    // I have seen [ only on kernel calls
+    if (symbol.path.isEmpty() || symbol.path.startsWith(QLatin1Char('['))) {
+        return unkown;
+    } else if (isSystemPath(symbol.path)) {
+        if (isUserPath(symbol.path)) {
+            return user;
+        }
+        return system;
+    }
+    return user;
+}
+
+QBrush brush(const Data::Symbol& entry, Settings::ColorScheme scheme)
+{
+    switch (scheme) {
+    case Settings::ColorScheme::Binary:
+        return brushBinary(entry);
+    case Settings::ColorScheme::Kernel:
+        return brushKernel(entry);
+    case Settings::ColorScheme::System:
+        return brushSystem(entry);
+    case Settings::ColorScheme::Default:
+        return brushImpl(qHash(entry), BrushType::Hot);
+    case Settings::ColorScheme::NumColorSchemes:
+        Q_UNREACHABLE();
+    }
+    return QBrush();
 }
 
 /**
@@ -341,7 +409,7 @@ void toGraphicsItems(const Data::Costs& costs, int type, const QVector<Tree>& da
         if (!item) {
             item = new FrameGraphicsItem(costs.cost(type, row.id), costs.unit(type), row.symbol, parent);
             item->setPen(parent->pen());
-            item->setBrush(brush(row.symbol, BrushType::Hot));
+            item->setBrush(brush(row.symbol, Settings::instance()->colorScheme()));
         } else {
             item->setCost(item->cost() + costs.cost(type, row.id));
         }
@@ -403,6 +471,15 @@ SearchResults applySearch(FrameGraphicsItem* item, const QString& searchValue)
 }
 }
 
+void updateFlameGraphColorScheme(FrameGraphicsItem* item, Settings::ColorScheme scheme)
+{
+    item->setBrush(brush(item->symbol(), scheme));
+    const auto children = item->childItems();
+    for (const auto& child : children) {
+        updateFlameGraphColorScheme(static_cast<FrameGraphicsItem*>(child), scheme);
+    }
+}
+
 FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     : QWidget(parent, flags)
     , m_costSource(new QComboBox(this))
@@ -410,6 +487,8 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     , m_view(new QGraphicsView(this))
     , m_displayLabel(new KSqueezedTextLabel(this))
     , m_searchResultsLabel(new QLabel(this))
+    , m_colorSchemeLabel(new QLabel(this))
+    , m_colorSchemeSelector(new QComboBox(this))
 {
     m_displayLabel->setTextElideMode(Qt::ElideRight);
     qRegisterMetaType<FrameGraphicsItem*>();
@@ -500,6 +579,8 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     controls->layout()->addWidget(collapseRecursionCheckbox);
     controls->layout()->addWidget(costThreshold);
     controls->layout()->addWidget(m_searchInput);
+    controls->layout()->addWidget(m_colorSchemeLabel);
+    controls->layout()->addWidget(m_colorSchemeSelector);
 
     m_displayLabel->setWordWrap(true);
     m_displayLabel->setTextInteractionFlags(m_displayLabel->textInteractionFlags() | Qt::TextSelectableByMouse);
@@ -529,6 +610,37 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     connect(m_resetAction, &QAction::triggered, this, [this]() { selectItem(0); });
     addAction(m_resetAction);
     updateNavigationActions();
+
+    m_colorSchemeLabel->setText(tr("Color Scheme:"));
+
+    m_colorSchemeSelector->addItem(tr("Default"), QVariant::fromValue(Settings::ColorScheme::Default));
+    m_colorSchemeSelector->addItem(tr("Binary"), QVariant::fromValue(Settings::ColorScheme::Binary));
+    m_colorSchemeSelector->addItem(tr("Kernel"), QVariant::fromValue(Settings::ColorScheme::Kernel));
+    m_colorSchemeSelector->addItem(tr("System"), QVariant::fromValue(Settings::ColorScheme::System));
+
+    auto setColorScheme = [this](Settings::ColorScheme scheme) {
+        Settings::instance()->setColorScheme(scheme);
+
+        if (m_rootItem) {
+            const auto children = m_rootItem->childItems();
+            // don't recolor the root item
+            for (const auto& child : children) {
+                updateFlameGraphColorScheme(static_cast<FrameGraphicsItem*>(child), scheme);
+            }
+        }
+    };
+
+    connect(m_colorSchemeSelector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this, setColorScheme] {
+        setColorScheme(m_colorSchemeSelector->currentData().value<Settings::ColorScheme>());
+    });
+
+    connect(Settings::instance(), &Settings::pathsChanged, this, [setColorScheme] {
+        if (Settings::instance()->colorScheme() == Settings::ColorScheme::System) {
+            // setColorScheme triggers a redraw
+            // we only need to redraw the flamegraph if the current color scheme is affected by the changed paths
+            setColorScheme(Settings::ColorScheme::System);
+        }
+    });
 }
 
 FlameGraph::~FlameGraph() = default;

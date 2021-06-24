@@ -19,6 +19,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <QDir>
+
 #include "settings.h"
 
 Settings* Settings::instance()
@@ -49,5 +51,22 @@ void Settings::setCollapseDepth(int depth)
     if (m_collapseDepth != depth) {
         m_collapseDepth = depth;
         emit collapseDepthChanged(m_collapseDepth);
+    }
+}
+
+void Settings::setColorScheme(Settings::ColorScheme scheme)
+{
+    if (m_colorScheme != scheme) {
+        m_colorScheme = scheme;
+        emit colorSchemeChanged(m_colorScheme);
+    }
+}
+
+void Settings::setPaths(const QStringList& userPaths, const QStringList& systemPaths)
+{
+    if (m_userPaths != userPaths || m_systemPaths != systemPaths) {
+        m_userPaths = userPaths;
+        m_systemPaths = systemPaths;
+        emit pathsChanged();
     }
 }
