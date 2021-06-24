@@ -29,6 +29,16 @@ class Settings : public QObject
     Q_DISABLE_COPY(Settings)
 
 public:
+    enum class ColorScheme : int
+    {
+        Default,
+        Binary,
+        Kernel,
+        System,
+        NumColorSchemes
+    };
+    Q_ENUM(ColorScheme);
+
     static Settings* instance();
 
     bool prettifySymbols() const
@@ -46,15 +56,34 @@ public:
         return m_collapseDepth;
     }
 
+    ColorScheme colorScheme() const
+    {
+        return m_colorScheme;
+    }
+
+    QStringList userPaths() const
+    {
+        return m_userPaths;
+    }
+
+    QStringList systemPaths() const
+    {
+        return m_systemPaths;
+    }
+
 signals:
     void prettifySymbolsChanged(bool);
     void collapseTemplatesChanged(bool);
     void collapseDepthChanged(int);
+    void colorSchemeChanged(ColorScheme);
+    void pathsChanged();
 
 public slots:
     void setPrettifySymbols(bool prettifySymbols);
     void setCollapseTemplates(bool collapseTemplates);
     void setCollapseDepth(int depth);
+    void setColorScheme(ColorScheme scheme);
+    void setPaths(const QStringList& userPaths, const QStringList& systemPaths);
 
 private:
     Settings() = default;
@@ -63,4 +92,7 @@ private:
     bool m_prettifySymbols = true;
     bool m_collapseTemplates = true;
     int m_collapseDepth = 1;
+    ColorScheme m_colorScheme = ColorScheme::Default;
+    QStringList m_userPaths;
+    QStringList m_systemPaths;
 };
