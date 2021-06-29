@@ -36,15 +36,31 @@ public:
         return m_prettifySymbols;
     }
 
+    bool collapseTemplates() const
+    {
+        return m_collapseTemplates;
+    }
+
+    int collapseDepth() const
+    {
+        return m_collapseDepth;
+    }
+
 signals:
     void prettifySymbolsChanged(bool);
+    void collapseTemplatesChanged(bool);
+    void collapseDepthChanged(int);
 
 public slots:
     void setPrettifySymbols(bool prettifySymbols);
+    void setCollapseTemplates(bool collapseTemplates);
+    void setCollapseDepth(int depth);
 
 private:
     Settings() = default;
     ~Settings() = default;
 
     bool m_prettifySymbols = true;
+    bool m_collapseTemplates = true;
+    int m_collapseDepth = 1;
 };

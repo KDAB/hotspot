@@ -41,6 +41,32 @@
 #include "data.h"
 #include "settings.h"
 
+static QString collapseTemplate(const QString& str, int level)
+{
+    if (str.indexOf(QLatin1Char('<')) == -1) {
+        return str;
+    }
+
+    QString output;
+    output.reserve(str.size());
+    int depth = 0;
+    for (auto c : str) {
+        if (c == QLatin1Char('<')) {
+            depth++;
+            if (depth == level) {
+                output.append(QLatin1String("<..."));
+            }
+        } else if (c == QLatin1Char('>')) {
+            depth--;
+        }
+        if (depth < level) {
+            output.append(c);
+        }
+    }
+
+    return output;
+}
+
 QString Util::findLibexecBinary(const QString& name)
 {
     QDir dir(qApp->applicationDirPath());
@@ -72,8 +98,12 @@ QString Util::formatString(const QString& input, bool replaceEmptyString)
 
 QString Util::formatSymbol(const Data::Symbol& symbol, bool replaceEmptyString)
 {
-    return formatString(Settings::instance()->prettifySymbols() ? symbol.prettySymbol : symbol.symbol,
-                        replaceEmptyString);
+    QString symbolString = Settings::instance()->prettifySymbols() ? symbol.prettySymbol : symbol.symbol;
+    if (Settings::instance()->collapseTemplates()) {
+        symbolString = collapseTemplate(symbolString, Settings::instance()->collapseDepth());
+    }
+
+    return formatString(symbolString, replaceEmptyString);
 }
 
 QString Util::formatCost(quint64 cost)
