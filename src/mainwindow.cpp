@@ -44,6 +44,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QProcess>
+#include <QSpinBox>
 #include <QStandardPaths>
 #include <QWidgetAction>
 
@@ -196,10 +197,19 @@ MainWindow::MainWindow(QWidget* parent)
         auto config = m_config->group("Settings");
         auto settings = Settings::instance();
         settings->setPrettifySymbols(config.readEntry("prettifySymbols", true));
+        settings->setCollapseTemplates(config.readEntry("collapseTemplates", true));
+        settings->setCollapseDepth(config.readEntry("collapseDepth", 1));
 
         connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, [this](bool prettifySymbols) {
             m_config->group("Settings").writeEntry("prettifySymbols", prettifySymbols);
         });
+
+        connect(Settings::instance(), &Settings::collapseTemplatesChanged, this, [this](bool collapseTemplates) {
+            m_config->group("Settings").writeEntry("collapseTemplates", collapseTemplates);
+        });
+
+        connect(Settings::instance(), &Settings::collapseDepthChanged, this,
+                [this](int collapseDepth) { m_config->group("Settings").writeEntry("collapseDepth", collapseDepth); });
     }
 
     auto* prettifySymbolsAction = ui->viewMenu->addAction(tr("Prettify Symbols"));
@@ -209,6 +219,30 @@ MainWindow::MainWindow(QWidget* parent)
         tr("Replace fully qualified and expanded STL type names with their shorter and more commonly used equivalents. "
            "E.g. show std::string instead of std::basic_string<char, ...>"));
     connect(prettifySymbolsAction, &QAction::toggled, Settings::instance(), &Settings::setPrettifySymbols);
+
+    auto* collapseTemplatesAction = ui->viewMenu->addAction(tr("Collapse Templates"));
+    collapseTemplatesAction->setCheckable(true);
+    collapseTemplatesAction->setChecked(Settings::instance()->collapseTemplates());
+    collapseTemplatesAction->setToolTip(tr("Collapse complex templates to simpler ones. E.g. <tt>QHash&lt;...&gt;</tt> "
+                                           "instead of <tt>QHash&lt;QString, QVector&lt;QString&gt;&gt;</tt>"));
+    connect(collapseTemplatesAction, &QAction::toggled, Settings::instance(), &Settings::setCollapseTemplates);
+
+    {
+        auto* action = new QWidgetAction(this);
+        auto* widget = new QWidget(this);
+        auto* layout = new QHBoxLayout(widget);
+        auto* label = new QLabel(tr("Collapse Depth"));
+        layout->addWidget(label);
+        auto* box = new QSpinBox(widget);
+        box->setValue(Settings::instance()->collapseDepth());
+
+        connect(box, QOverload<int>::of(&QSpinBox::valueChanged), Settings::instance(), &Settings::setCollapseDepth);
+
+        layout->addWidget(box);
+
+        action->setDefaultWidget(widget);
+        ui->viewMenu->addAction(action);
+    }
 
     ui->viewMenu->addSeparator();
     ui->viewMenu->addActions(m_resultsPage->filterMenu()->actions());

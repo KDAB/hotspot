@@ -39,12 +39,18 @@ AbstractTreeModel::~AbstractTreeModel() = default;
 BottomUpModel::BottomUpModel(QObject* parent)
     : CostTreeModel(parent)
 {
-    connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, [this]() {
+    auto prettifySymbolsHelper = [this]() {
         if (rowCount() == 0) {
             return;
         }
         emit dataChanged(index(0, Symbol), index(rowCount() - 1, Symbol));
-    });
+    };
+
+    connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, prettifySymbolsHelper);
+
+    connect(Settings::instance(), &Settings::collapseTemplatesChanged, this, prettifySymbolsHelper);
+
+    connect(Settings::instance(), &Settings::collapseDepthChanged, this, prettifySymbolsHelper);
 }
 
 BottomUpModel::~BottomUpModel() = default;
@@ -107,12 +113,19 @@ int BottomUpModel::numColumns() const
 TopDownModel::TopDownModel(QObject* parent)
     : CostTreeModel(parent)
 {
-    connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, [this]() {
+
+    auto prettifySymbolsHelper = [this]() {
         if (rowCount() == 0) {
             return;
         }
         emit dataChanged(index(0, Symbol), index(rowCount() - 1, Symbol));
-    });
+    };
+
+    connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, prettifySymbolsHelper);
+
+    connect(Settings::instance(), &Settings::collapseTemplatesChanged, this, prettifySymbolsHelper);
+
+    connect(Settings::instance(), &Settings::collapseDepthChanged, this, prettifySymbolsHelper);
 }
 
 TopDownModel::~TopDownModel() = default;

@@ -416,10 +416,16 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
 
     m_costSource->setToolTip(i18n("Select the data source that should be visualized in the flame graph."));
 
-    connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, [this]() {
+    const auto updateHelper = [this]() {
         m_scene->update(m_scene->sceneRect());
         updateTooltip();
-    });
+    };
+
+    connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, updateHelper);
+
+    connect(Settings::instance(), &Settings::collapseTemplatesChanged, this, updateHelper);
+
+    connect(Settings::instance(), &Settings::collapseDepthChanged, this, updateHelper);
 
     m_scene->setItemIndexMethod(QGraphicsScene::NoIndex);
     m_view->setScene(m_scene);

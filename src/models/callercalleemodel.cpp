@@ -33,12 +33,19 @@
 CallerCalleeModel::CallerCalleeModel(QObject* parent)
     : HashModel(parent)
 {
-    connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, [this]() {
+    auto prettifySymbolsHelper = [this]() {
         if (rowCount() == 0) {
             return;
         }
+
         emit dataChanged(index(0, Symbol), index(rowCount() - 1, Symbol));
-    });
+    };
+
+    connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, prettifySymbolsHelper);
+
+    connect(Settings::instance(), &Settings::collapseTemplatesChanged, this, prettifySymbolsHelper);
+
+    connect(Settings::instance(), &Settings::collapseDepthChanged, this, prettifySymbolsHelper);
 }
 
 CallerCalleeModel::~CallerCalleeModel() = default;

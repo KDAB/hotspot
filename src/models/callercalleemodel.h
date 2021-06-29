@@ -85,12 +85,19 @@ public:
         : HashModel<Data::SymbolCostMap, ModelImpl>(parent)
     {
         using Parent = HashModel<Data::SymbolCostMap, ModelImpl>;
-        Parent::connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, [this]() {
+
+        auto dataChangedHelper = [this]() {
             if (Parent::rowCount() == 0) {
                 return;
             }
             emit Parent::dataChanged(Parent::index(0, Symbol), Parent::index(Parent::rowCount() - 1, Symbol));
-        });
+        };
+
+        Parent::connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, dataChangedHelper);
+
+        Parent::connect(Settings::instance(), &Settings::collapseTemplatesChanged, this, dataChangedHelper);
+
+        Parent::connect(Settings::instance(), &Settings::collapseDepthChanged, this, dataChangedHelper);
     }
 
     virtual ~SymbolCostModelImpl() = default;
