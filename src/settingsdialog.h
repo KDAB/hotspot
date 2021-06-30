@@ -27,14 +27,14 @@
 
 #pragma once
 
+#include <KPageDialog>
 #include <memory>
-#include <QDialog>
 
 namespace Ui {
 class SettingsDialog;
 }
 
-class SettingsDialog : public QDialog
+class SettingsDialog : public KPageDialog
 {
     Q_OBJECT
 
@@ -51,5 +51,7 @@ public:
     QString arch() const;
     QString objdump() const;
 private:
-    std::unique_ptr<Ui::SettingsDialog> ui;
+    void addPathSettingsPage();
+
+    std::unique_ptr<Ui::SettingsDialog> unwindPage;
 };

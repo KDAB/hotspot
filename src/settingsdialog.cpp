@@ -33,16 +33,87 @@
 #include <QListView>
 
 SettingsDialog::SettingsDialog(QWidget* parent)
-    : QDialog(parent)
-    , ui(new Ui::SettingsDialog)
+    : KPageDialog(parent)
+    , unwindPage(new Ui::SettingsDialog)
 {
-    ui->setupUi(this);
+    addPathSettingsPage();
+}
 
-    connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
-    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+SettingsDialog::~SettingsDialog() = default;
 
-    auto setupMultiPath = [](KEditListWidget* listWidget, QLabel* buddy, QWidget* previous)
+void SettingsDialog::initSettings(const QString &sysroot, const QString &appPath, const QString &extraLibPaths,
+                                  const QString &debugPaths, const QString &kallsyms, const QString &arch,
+                                  const QString &objdump)
+{
+    auto fromPathString = [](KEditListWidget* listWidget, const QString &string)
     {
+        listWidget->setItems(string.split(QLatin1Char(':'), Qt::SkipEmptyParts));
+    };
+    fromPathString(unwindPage->extraLibraryPaths, extraLibPaths);
+    fromPathString(unwindPage->debugPaths, debugPaths);
+
+    unwindPage->lineEditSysroot->setText(sysroot);
+    unwindPage->lineEditApplicationPath->setText(appPath);
+    unwindPage->lineEditKallsyms->setText(kallsyms);
+    unwindPage->lineEditObjdump->setText(objdump);
+
+    int itemIndex = 0;
+    if (!arch.isEmpty()) {
+        itemIndex = unwindPage->comboBoxArchitecture->findText(arch);
+        if (itemIndex == -1) {
+            itemIndex = unwindPage->comboBoxArchitecture->count();
+            unwindPage->comboBoxArchitecture->addItem(arch);
+        }
+    }
+    unwindPage->comboBoxArchitecture->setCurrentIndex(itemIndex);
+}
+
+QString SettingsDialog::sysroot() const
+{
+    return unwindPage->lineEditSysroot->text();
+}
+
+QString SettingsDialog::appPath() const
+{
+    return unwindPage->lineEditApplicationPath->text();
+}
+
+QString SettingsDialog::extraLibPaths() const
+{
+    return unwindPage->extraLibraryPaths->items().join(QLatin1Char(':'));
+}
+
+QString SettingsDialog::debugPaths() const
+{
+    return unwindPage->debugPaths->items().join(QLatin1Char(':'));
+}
+
+QString SettingsDialog::kallsyms() const
+{
+    return unwindPage->lineEditKallsyms->text();
+}
+
+QString SettingsDialog::arch() const
+{
+    QString sArch = unwindPage->comboBoxArchitecture->currentText();
+    return (sArch == QLatin1String("auto-detect")) ? QString() : sArch;
+}
+
+QString SettingsDialog::objdump() const
+{
+    return unwindPage->lineEditObjdump->text();
+}
+
+void SettingsDialog::addPathSettingsPage()
+{
+    auto page = new QWidget(this);
+    auto item = addPage(page, tr("Unwinding"));
+    item->setHeader(tr("Unwind Options"));
+    item->setIcon(QIcon::fromTheme(QStringLiteral("preferences-system-windows-behavior")));
+
+    unwindPage->setupUi(page);
+
+    auto setupMultiPath = [](KEditListWidget* listWidget, QLabel* buddy, QWidget* previous) {
         auto editor = new KUrlRequester(listWidget);
         editor->setPlaceholderText(tr("auto-detect"));
         editor->setMode(KFile::LocalOnly | KFile::Directory | KFile::ExistingOnly);
@@ -56,71 +127,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
         QWidget::setTabOrder(listWidget->upButton(), listWidget->downButton());
         return listWidget->downButton();
     };
-    auto lastExtraLibsWidget = setupMultiPath(ui->extraLibraryPaths, ui->extraLibraryPathsLabel, ui->lineEditApplicationPath);
-    setupMultiPath(ui->debugPaths, ui->debugPathsLabel, lastExtraLibsWidget);
-}
-
-SettingsDialog::~SettingsDialog() = default;
-
-void SettingsDialog::initSettings(const QString &sysroot, const QString &appPath, const QString &extraLibPaths,
-                                  const QString &debugPaths, const QString &kallsyms, const QString &arch,
-                                  const QString &objdump)
-{
-    auto fromPathString = [](KEditListWidget* listWidget, const QString &string)
-    {
-        listWidget->setItems(string.split(QLatin1Char(':'), Qt::SkipEmptyParts));
-    };
-    fromPathString(ui->extraLibraryPaths, extraLibPaths);
-    fromPathString(ui->debugPaths, debugPaths);
-
-    ui->lineEditSysroot->setText(sysroot);
-    ui->lineEditApplicationPath->setText(appPath);
-    ui->lineEditKallsyms->setText(kallsyms);
-    ui->lineEditObjdump->setText(objdump);
-
-    int itemIndex = 0;
-    if (!arch.isEmpty()) {
-        itemIndex = ui->comboBoxArchitecture->findText(arch);
-        if (itemIndex == -1) {
-            itemIndex = ui->comboBoxArchitecture->count();
-            ui->comboBoxArchitecture->addItem(arch);
-        }
-    }
-    ui->comboBoxArchitecture->setCurrentIndex(itemIndex);
-}
-
-QString SettingsDialog::sysroot() const
-{
-    return ui->lineEditSysroot->text();
-}
-
-QString SettingsDialog::appPath() const
-{
-    return ui->lineEditApplicationPath->text();
-}
-
-QString SettingsDialog::extraLibPaths() const
-{
-    return ui->extraLibraryPaths->items().join(QLatin1Char(':'));
-}
-
-QString SettingsDialog::debugPaths() const
-{
-    return ui->debugPaths->items().join(QLatin1Char(':'));
-}
-
-QString SettingsDialog::kallsyms() const
-{
-    return ui->lineEditKallsyms->text();
-}
-
-QString SettingsDialog::arch() const
-{
-    QString sArch = ui->comboBoxArchitecture->currentText();
-    return (sArch == QLatin1String("auto-detect")) ? QString() : sArch;
-}
-
-QString SettingsDialog::objdump() const
-{
-    return ui->lineEditObjdump->text();
+    auto lastExtraLibsWidget = setupMultiPath(unwindPage->extraLibraryPaths, unwindPage->extraLibraryPathsLabel,
+                                              unwindPage->lineEditApplicationPath);
+    setupMultiPath(unwindPage->debugPaths, unwindPage->debugPathsLabel, lastExtraLibsWidget);
 }
