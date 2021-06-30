@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>SettingsDialog</class>
- <widget class="QDialog" name="SettingsDialog">
+ <widget class="QWidget" name="SettingsDialog">
+  <property name="modal" stdset="0">
+   <bool>false</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>240</width>
+    <height>196</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <property name="sizeGripEnabled">
-   <bool>true</bool>
-  </property>
-  <property name="modal">
+  <property name="sizeGripEnabled" stdset="0">
    <bool>true</bool>
   </property>
   <layout class="QFormLayout" name="formLayout">
@@ -26,14 +34,11 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="KUrlRequester" name="lineEditSysroot">
+    <widget class="KUrlRequester" name="lineEditSysroot" native="true">
      <property name="toolTip">
       <string>Path to the sysroot. Leave empty to use the local machine.</string>
      </property>
-     <property name="mode">
-      <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
-     </property>
-     <property name="placeholderText">
+     <property name="placeholderText" stdset="0">
       <string>local machine</string>
      </property>
     </widget>
@@ -52,14 +57,11 @@
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="KUrlRequester" name="lineEditApplicationPath">
+    <widget class="KUrlRequester" name="lineEditApplicationPath" native="true">
      <property name="toolTip">
       <string>Path to the application binary and library.</string>
      </property>
-     <property name="mode">
-      <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
-     </property>
-     <property name="placeholderText">
+     <property name="placeholderText" stdset="0">
       <string>auto-detect</string>
      </property>
     </widget>
@@ -74,6 +76,16 @@
      </property>
     </widget>
    </item>
+   <item row="2" column="1">
+    <widget class="KEditListWidget" name="extraLibraryPaths" native="true">
+     <property name="focusPolicy">
+      <enum>Qt::TabFocus</enum>
+     </property>
+     <property name="toolTip">
+      <string>List of paths that contain additional libraries.</string>
+     </property>
+    </widget>
+   </item>
    <item row="4" column="0">
     <widget class="QLabel" name="debugPathsLabel">
      <property name="toolTip">
@@ -81,6 +93,16 @@
      </property>
      <property name="text">
       <string>Debug Paths:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="KEditListWidget" name="debugPaths" native="true">
+     <property name="focusPolicy">
+      <enum>Qt::TabFocus</enum>
+     </property>
+     <property name="toolTip">
+      <string>List of paths that contain debug information.</string>
      </property>
     </widget>
    </item>
@@ -98,17 +120,14 @@
     </widget>
    </item>
    <item row="6" column="1">
-    <widget class="KUrlRequester" name="lineEditKallsyms">
+    <widget class="KUrlRequester" name="lineEditKallsyms" native="true">
      <property name="toolTip">
       <string>Path to the kernel symbol mapping.</string>
      </property>
-     <property name="mode">
-      <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
-     </property>
-     <property name="placeholderText">
+     <property name="placeholderText" stdset="0">
       <string>auto-detect</string>
      </property>
-     <property name="text">
+     <property name="text" stdset="0">
       <string/>
      </property>
     </widget>
@@ -170,42 +189,15 @@
     </widget>
    </item>
    <item row="8" column="1">
-    <widget class="KUrlRequester" name="lineEditObjdump">
+    <widget class="KUrlRequester" name="lineEditObjdump" native="true">
      <property name="toolTip">
       <string>&lt;qt&gt;The &lt;tt&gt;objdump&lt;/tt&gt; binary that will be used for the disassembly view. Leave empty to let it be auto-detected.&lt;/qt&gt;</string>
      </property>
-     <property name="placeholderText">
+     <property name="placeholderText" stdset="0">
       <string>auto-detect</string>
      </property>
-     <property name="text">
+     <property name="text" stdset="0">
       <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="0" colspan="2">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="KEditListWidget" name="extraLibraryPaths">
-     <property name="focusPolicy">
-      <enum>Qt::TabFocus</enum>
-     </property>
-     <property name="toolTip">
-      <string>List of paths that contain additional libraries.</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1">
-    <widget class="KEditListWidget" name="debugPaths">
-     <property name="focusPolicy">
-      <enum>Qt::TabFocus</enum>
-     </property>
-     <property name="toolTip">
-      <string>List of that contain debug information.</string>
      </property>
     </widget>
    </item>
