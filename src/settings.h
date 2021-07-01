@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <QDir>
 #include <QObject>
 
 class Settings : public QObject
@@ -29,6 +30,15 @@ class Settings : public QObject
     Q_DISABLE_COPY(Settings)
 
 public:
+    enum class ColorScheme : int
+    {
+        Default,
+        Binary,
+        Kernel,
+        System
+    };
+    Q_ENUM(ColorScheme);
+
     static Settings* instance();
 
     bool prettifySymbols() const
@@ -36,15 +46,37 @@ public:
         return m_prettifySymbols;
     }
 
+    ColorScheme colorScheme() const
+    {
+        return m_colorScheme;
+    }
+
+    QStringList userPaths() const
+    {
+        return m_userPaths;
+    }
+
+    QStringList systemPaths() const
+    {
+        return m_systemPaths;
+    }
+
 signals:
     void prettifySymbolsChanged(bool);
+    void colorSchemeChanged(ColorScheme);
+    void pathsChanged();
 
 public slots:
     void setPrettifySymbols(bool prettifySymbols);
+    void setColorScheme(ColorScheme scheme);
+    void setPaths(const QStringList& userPaths, const QStringList& systemPaths);
 
 private:
     Settings() = default;
     ~Settings() = default;
 
     bool m_prettifySymbols = true;
+    ColorScheme m_colorScheme = ColorScheme::Default;
+    QStringList m_userPaths = {QDir::homePath()};
+    QStringList m_systemPaths = {QDir::rootPath()};
 };

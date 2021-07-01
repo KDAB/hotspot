@@ -34,3 +34,20 @@ void Settings::setPrettifySymbols(bool prettifySymbols)
         emit prettifySymbolsChanged(m_prettifySymbols);
     }
 }
+
+void Settings::setColorScheme(Settings::ColorScheme scheme)
+{
+    if (m_colorScheme != scheme) {
+        m_colorScheme = scheme;
+        emit colorSchemeChanged(m_colorScheme);
+    }
+}
+
+void Settings::setPaths(const QStringList& userPaths, const QStringList& systemPaths)
+{
+    if (m_userPaths != userPaths || m_systemPaths != systemPaths) {
+        m_userPaths = userPaths;
+        m_systemPaths = systemPaths;
+        emit pathsChanged();
+    }
+}
