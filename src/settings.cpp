@@ -34,3 +34,19 @@ void Settings::setPrettifySymbols(bool prettifySymbols)
         emit prettifySymbolsChanged(m_prettifySymbols);
     }
 }
+
+void Settings::setCollapseTemplates(bool collapseTemplates)
+{
+    if (m_collapseTemplates != collapseTemplates) {
+        m_collapseTemplates = collapseTemplates;
+        emit collapseTemplatesChanged(m_collapseTemplates);
+    }
+}
+
+void Settings::setCollapseDepth(int depth)
+{
+    if (m_collapseDepth != depth) {
+        m_collapseDepth = depth;
+        emit collapseDepthChanged(m_collapseDepth);
+    }
+}

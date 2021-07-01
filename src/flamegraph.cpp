@@ -421,6 +421,16 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
         updateTooltip();
     });
 
+    connect(Settings::instance(), &Settings::collapseTemplatesChanged, this, [this]() {
+        m_scene->update(m_scene->sceneRect());
+        updateTooltip();
+    });
+
+    connect(Settings::instance(), &Settings::collapseDepthChanged, this, [this]() {
+        m_scene->update(m_scene->sceneRect());
+        updateTooltip();
+    });
+
     m_scene->setItemIndexMethod(QGraphicsScene::NoIndex);
     m_view->setScene(m_scene);
     m_view->viewport()->installEventFilter(this);

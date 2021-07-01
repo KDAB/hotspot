@@ -91,6 +91,20 @@ public:
             }
             emit Parent::dataChanged(Parent::index(0, Symbol), Parent::index(Parent::rowCount() - 1, Symbol));
         });
+
+        Parent::connect(Settings::instance(), &Settings::collapseTemplatesChanged, this, [this]() {
+            if (Parent::rowCount() == 0) {
+                return;
+            }
+            emit Parent::dataChanged(Parent::index(0, Symbol), Parent::index(Parent::rowCount() - 1, Symbol));
+        });
+
+        Parent::connect(Settings::instance(), &Settings::collapseDepthChanged, this, [this]() {
+            if (Parent::rowCount() == 0) {
+                return;
+            }
+            emit Parent::dataChanged(Parent::index(0, Symbol), Parent::index(Parent::rowCount() - 1, Symbol));
+        });
     }
 
     virtual ~SymbolCostModelImpl() = default;
