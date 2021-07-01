@@ -60,6 +60,7 @@ set(hotspot_SRCS
     resultsdisassemblypage.ui
     timelinewidget.ui
     settingsdialog.ui
+    flamegraphsettings.ui
 
     # resources:
     resources.qrc

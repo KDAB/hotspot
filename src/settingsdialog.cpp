@@ -26,6 +26,7 @@
 */
 
 #include "settingsdialog.h"
+#include "ui_flamegraphsettings.h"
 #include "ui_settingsdialog.h"
 
 #include <KComboBox>
@@ -34,6 +35,7 @@
 #include <ksharedconfig.h>
 #include <QKeyEvent>
 #include <QLineEdit>
+#include <settings.h>
 #include <QListView>
 
 #include "multiconfigwidget.h"
@@ -48,8 +50,10 @@ KConfigGroup config()
 SettingsDialog::SettingsDialog(QWidget* parent)
     : KPageDialog(parent)
     , unwindPage(new Ui::SettingsDialog)
+    , flamegraphPage(new Ui::FlamegraphSettings)
 {
     addPathSettingsPage();
+    addFlamegraphPage();
 }
 
 SettingsDialog::~SettingsDialog() = default;
@@ -205,4 +209,38 @@ void SettingsDialog::keyPressEvent(QKeyEvent* event)
         return;
     }
     QDialog::keyPressEvent(event);
+}
+
+void SettingsDialog::addFlamegraphPage()
+{
+    auto page = new QWidget(this);
+    auto item = addPage(page, tr("Flamegraph"));
+    item->setHeader(tr("Flamegraph Options"));
+    item->setIcon(QIcon::fromTheme(QStringLiteral("preferences-system-windows-behavior")));
+
+    flamegraphPage->setupUi(page);
+
+    auto setupMultiPath = [](KEditListWidget* listWidget, QLabel* buddy, QWidget* previous) {
+        auto editor = new KUrlRequester(listWidget);
+        editor->setMode(KFile::LocalOnly | KFile::Directory | KFile::ExistingOnly);
+        buddy->setBuddy(editor);
+        listWidget->setCustomEditor(editor->customEditor());
+        QWidget::setTabOrder(previous, editor);
+        QWidget::setTabOrder(editor, listWidget->listView());
+        QWidget::setTabOrder(listWidget->listView(), listWidget->addButton());
+        QWidget::setTabOrder(listWidget->addButton(), listWidget->removeButton());
+        QWidget::setTabOrder(listWidget->removeButton(), listWidget->upButton());
+        QWidget::setTabOrder(listWidget->upButton(), listWidget->downButton());
+        return listWidget->downButton();
+    };
+
+    auto lastUserPath = setupMultiPath(flamegraphPage->userPaths, flamegraphPage->userPathsLabel, nullptr);
+    setupMultiPath(flamegraphPage->systemPaths, flamegraphPage->systemPathsLabel, lastUserPath);
+
+    flamegraphPage->userPaths->insertStringList(Settings::instance()->userPaths());
+    flamegraphPage->systemPaths->insertStringList(Settings::instance()->systemPaths());
+
+    connect(buttonBox(), &QDialogButtonBox::accepted, this, [this] {
+        Settings::instance()->setPaths(flamegraphPage->userPaths->items(), flamegraphPage->systemPaths->items());
+    });
 }
