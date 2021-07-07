@@ -149,7 +149,8 @@ pacman -S cmake gcc extra-cmake-modules threadweaver ki18n kconfigwidgets knotif
 zypper in cmake gcc-c++ extra-cmake-modules threadweaver-devel ki18n-devel kio-devel \
     solid-devel kcoreaddons-devel threadweaver-devel kconfigwidgets-devel \
     kitemmodels-devel kitemviews-devel kwindowsystem-devel \
-    libqt5-qtbase-devel libelf-devel libdw-devel gettext glibc-devel-static
+    libqt5-qtbase-devel libelf-devel libdw-devel gettext glibc-devel-static \
+    knotifications-devel kiconthemes-devel libzstd-devel binutils
 ```
 
 ### Building Hotspot itself
