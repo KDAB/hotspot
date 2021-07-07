@@ -124,34 +124,6 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
-       <layout class="QHBoxLayout" name="configLayout">
-        <item>
-         <widget class="QComboBox" name="launchConfigComboBox"/>
-        </item>
-        <item>
-         <widget class="QPushButton" name="addConfig">
-          <property name="text">
-           <string>Copy Config</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="removeConfig">
-          <property name="text">
-           <string>Remove Config</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Config</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>

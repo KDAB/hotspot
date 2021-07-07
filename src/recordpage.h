@@ -31,6 +31,7 @@
 #include <QFutureWatcher>
 #include <QWidget>
 
+#include "multiconfigwidget.h"
 #include "processlist.h"
 
 class QTimer;
@@ -74,20 +75,12 @@ private slots:
     void onOutputFileNameChanged(const QString& filePath);
     void onOutputFileUrlChanged(const QUrl& fileUrl);
     void onOutputFileNameSelected(const QString& filePath);
-    void onApplicationConfigAdded();
-    void onApplicationConfigRenamed();
-    void onApplicationConfigRemoved();
-    void onApplicationConfigChanged();
     void updateOffCpuCheckboxState();
 
     void updateProcesses();
     void updateProcessesFinished();
 
 private:
-    void saveApplicationConfig(const QString& name);
-    void applyApplicationConfig(const QString& name);
-    void updateListOfApplicationConfigs();
-    QStringList applicationConfigurations();
     void recordingStopped();
     void updateRecordType();
     void appendOutput(const QString& text);
@@ -99,6 +92,7 @@ private:
     QString m_resultsFile;
     QElapsedTimer m_recordTimer;
     QTimer* m_updateRuntimeTimer;
+    MultiConfigWidget* m_multiConfig;
 
     ProcessModel* m_processModel;
     ProcessFilterModel* m_processProxyModel;

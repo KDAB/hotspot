@@ -28,6 +28,7 @@
 #pragma once
 
 #include <KPageDialog>
+#include "multiconfigwidget.h"
 #include <memory>
 
 namespace Ui {
@@ -54,14 +55,9 @@ public:
 
     void keyPressEvent(QKeyEvent* event) override;
 
-private slots:
-    void saveCurrentConfig();
-    void renameCurrentConfig();
-    void removeCurrentConfig();
-    void applyCurrentConfig();
-
 private:
     void addPathSettingsPage();
 
     std::unique_ptr<Ui::SettingsDialog> unwindPage;
+    MultiConfigWidget* m_configs;
 };
