@@ -44,6 +44,10 @@
 
 #include <hotspot-config.h>
 
+#ifdef USE_KAUTH
+#include <KAuth>
+#endif
+
 PerfRecord::PerfRecord(QObject* parent)
     : QObject(parent)
     , m_perfRecordProcess(nullptr)
@@ -82,7 +86,7 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfO
 {
     if (elevatePrivileges) {
         // elevate privileges temporarily as root
-        // use kdesudo/kdesu to start the elevate_perf_privileges.sh script
+        // use kauth/kdesudo to start the elevate_perf_privileges.sh script
         // then parse its output and once we get the "waiting..." line the privileges got elevated
         // in that case, we can continue to start perf and quit the elevate_perf_privileges.sh script
         // once perf has started
@@ -110,7 +114,7 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfO
 
         // I/O redirection of client scripts launched by kdesu & friends doesn't work, i.e. no data can be read...
         // so instead we use a temporary file and parse its contents via a polling timer :-/
-        auto* outputFile = new QTemporaryFile(m_elevatePrivilegesProcess);
+        auto* outputFile = new QTemporaryFile(this);
         outputFile->open();
         options.append(outputFile->fileName());
 
@@ -128,6 +132,7 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfO
                         m_elevatePrivilegesProcess->deleteLater();
                     }
                 });
+
         // poll the file for new input, readyRead isn't being emitted by QFile (cf. docs)
         auto* readTimer = new QTimer(outputFile);
         auto readSlot = [this, outputFile, perfOptions, outputPath, recordOptions, workingDirectory]() {
@@ -162,7 +167,36 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfO
                     }
                 });
 
+#ifdef USE_KAUTH
+        KAuth::Action action(QLatin1String("com.kdab.hotspot.perf.elevate"));
+        action.setHelperId(QLatin1String("com.kdab.hotspot.perf"));
+        QVariantMap args;
+        args[QLatin1String("script")] = elevateScript;
+        args[QLatin1String("output")] = outputFile->fileName();
+        action.setArguments(args);
+
+        KAuth::ExecuteJob* job = action.execute();
+
+        connect(job, &KAuth::ExecuteJob::result, this, [this, sudoBinary, options, readTimer](KJob* kjob) {
+            auto* job = qobject_cast<KAuth::ExecuteJob*>(kjob);
+
+            if (job->error() == KAuth::ActionReply::NoError) {
+                // we already used kauth to run the script
+                m_elevatePrivilegesProcess->deleteLater();
+                readTimer->start(250);
+            } else if (job->error() == KAuth::ActionReply::DBusError) {
+                // could not start the helper, maybe the helper is not installed
+                // fall back to kdesu
+                m_elevatePrivilegesProcess->start(sudoBinary, options);
+            } else {
+                emit recordingFailed(tr("Failed to elevate privileges."));
+            }
+        });
+
+        job->start();
+#else
         m_elevatePrivilegesProcess->start(sudoBinary, options);
+#endif
     } else {
         startRecording(perfOptions, outputPath, recordOptions, workingDirectory);
     }
