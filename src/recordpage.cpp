@@ -36,11 +36,12 @@
 #include <QDebug>
 #include <QKeyEvent>
 #include <QListView>
+#include <QScrollArea>
 #include <QShortcut>
 #include <QStandardItemModel>
 #include <QStandardPaths>
+#include <QTemporaryFile>
 #include <QTimer>
-#include <QScrollArea>
 #include <QtConcurrent/QtConcurrentRun>
 
 #include <KColumnResizer>
@@ -52,7 +53,11 @@
 #include <KUrlRequester>
 #include <Solid/Device>
 #include <Solid/Processor>
+#include <kde_terminal_interface.h>
 #include <kio_version.h>
+#include <kservice.h>
+
+#include <QRegularExpression>
 
 #include "perfrecord.h"
 
@@ -173,6 +178,8 @@ RecordPage::RecordPage(QWidget* parent)
     , ui(new Ui::RecordPage)
     , m_perfRecord(new PerfRecord(this))
     , m_updateRuntimeTimer(new QTimer(this))
+    , m_konsolePart(nullptr)
+    , m_service(nullptr)
     , m_watcher(new QFutureWatcher<ProcDataList>(this))
 {
     {
@@ -454,6 +461,12 @@ RecordPage::RecordPage(QWidget* parent)
         if (index != -1)
             ui->compressionComboBox->setCurrentIndex(index);
     }
+
+#ifdef __linux__
+    m_service = KService::serviceByDesktopName(QLatin1String("konsolepart"));
+
+    addKonsoleWidget();
+#endif
 }
 
 RecordPage::~RecordPage() = default;
@@ -479,6 +492,9 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-stop")));
         ui->startRecordingButton->setText(tr("Stop Recording"));
         ui->perfResultsTextEdit->clear();
+
+        // clear konsole
+        addKonsoleWidget();
 
         QStringList perfOptions;
 
@@ -823,15 +839,51 @@ QStringList RecordPage::applicationConfigurations()
 
 void RecordPage::appendOutput(const QString& text)
 {
+#ifdef __linux__
+    if (m_konsolePart) {
+        m_konsoleFile->write(text.toUtf8());
+        m_konsoleFile->flush();
+        return;
+    }
+#endif
+
+    // this regex finds ansi escapes and extracts all the numbers in it
+    QRegularExpression regex(QLatin1String("\\x1b\\[[0-9;]+m"));
+
     QTextCursor cursor(ui->perfResultsTextEdit->document());
     cursor.movePosition(QTextCursor::End);
-    cursor.insertText(text);
+
+    QString cleanOutput = text;
+    cursor.insertText(cleanOutput.replace(regex, QLatin1String("")));
 }
 
 void RecordPage::setError(const QString& message)
 {
     ui->applicationRecordErrorMessage->setText(message);
     ui->applicationRecordErrorMessage->setVisible(!message.isEmpty());
+}
+
+void RecordPage::addKonsoleWidget()
+{
+    if (m_service) {
+        const auto tail = QStandardPaths::findExecutable(QLatin1String("tail"));
+
+        if (!tail.isEmpty()) {
+            if (m_konsolePart) {
+                ui->recordOutputBox->layout()->removeWidget(m_konsolePart->widget());
+                m_konsolePart->deleteLater();
+            }
+            m_konsolePart = m_service->createInstance<KParts::ReadOnlyPart>(this);
+            m_konsoleFile = new QTemporaryFile(this);
+            m_konsoleFile->open();
+            qobject_cast<TerminalInterface*>(m_konsolePart)
+                ->startProgram(tail, {QLatin1String("tail"), QLatin1String("-f"), m_konsoleFile->fileName()});
+            if (m_konsolePart) {
+                qobject_cast<QVBoxLayout*>(ui->recordOutputBox->layout())->insertWidget(1, m_konsolePart->widget());
+                ui->perfResultsTextEdit->setVisible(false);
+            }
+        }
+    }
 }
 
 void RecordPage::updateRecordType()

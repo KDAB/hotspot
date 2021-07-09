@@ -27,10 +27,10 @@
 
 #pragma once
 
-#include <QMainWindow>
 #include <QScopedPointer>
 #include <QString>
 
+#include <KParts/MainWindow>
 #include <KSharedConfig>
 
 namespace Ui {
@@ -47,7 +47,7 @@ class ResultsPage;
 class RecordPage;
 class SettingsDialog;
 
-class MainWindow : public QMainWindow
+class MainWindow : public KParts::MainWindow
 {
     Q_OBJECT
 

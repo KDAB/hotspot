@@ -27,6 +27,8 @@
 
 #pragma once
 
+#include <KParts/ReadOnlyPart>
+#include <KService>
 #include <QElapsedTimer>
 #include <QFutureWatcher>
 #include <QWidget>
@@ -34,6 +36,7 @@
 #include "processlist.h"
 
 class QTimer;
+class QTemporaryFile;
 
 namespace Ui {
 class RecordPage;
@@ -92,6 +95,7 @@ private:
     void updateRecordType();
     void appendOutput(const QString& text);
     void setError(const QString& message);
+    void addKonsoleWidget();
 
     QScopedPointer<Ui::RecordPage> ui;
 
@@ -99,6 +103,9 @@ private:
     QString m_resultsFile;
     QElapsedTimer m_recordTimer;
     QTimer* m_updateRuntimeTimer;
+    KParts::ReadOnlyPart* m_konsolePart;
+    KService::Ptr m_service;
+    QTemporaryFile* m_konsoleFile;
 
     ProcessModel* m_processModel;
     ProcessFilterModel* m_processProxyModel;
