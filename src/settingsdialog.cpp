@@ -28,9 +28,22 @@
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
 
-#include <KUrlRequester>
 #include <KComboBox>
+#include <KUrlRequester>
+#include <kconfiggroup.h>
+#include <ksharedconfig.h>
+#include <QKeyEvent>
+#include <QLineEdit>
 #include <QListView>
+
+#include "multiconfigwidget.h"
+
+namespace {
+KConfigGroup config()
+{
+    return KSharedConfig::openConfig()->group("PerfPaths");
+}
+}
 
 SettingsDialog::SettingsDialog(QWidget* parent)
     : KPageDialog(parent)
@@ -40,6 +53,11 @@ SettingsDialog::SettingsDialog(QWidget* parent)
 }
 
 SettingsDialog::~SettingsDialog() = default;
+
+void SettingsDialog::initSettings(const QString& configName)
+{
+    m_configs->selectConfig(configName);
+}
 
 void SettingsDialog::initSettings(const QString &sysroot, const QString &appPath, const QString &extraLibPaths,
                                   const QString &debugPaths, const QString &kallsyms, const QString &arch,
@@ -130,4 +148,62 @@ void SettingsDialog::addPathSettingsPage()
     auto lastExtraLibsWidget = setupMultiPath(unwindPage->extraLibraryPaths, unwindPage->extraLibraryPathsLabel,
                                               unwindPage->lineEditApplicationPath);
     setupMultiPath(unwindPage->debugPaths, unwindPage->debugPathsLabel, lastExtraLibsWidget);
+    
+    auto* label = new QLabel(this);
+    label->setText(tr("Config:"));
+
+    m_configs = new MultiConfigWidget(this);
+    m_configs->setKConfigGroup(config());
+
+    auto saveFunction = [this](KConfigGroup group) {
+        group.writeEntry("sysroot", sysroot());
+        group.writeEntry("appPath", appPath());
+        group.writeEntry("extraLibPaths", extraLibPaths());
+        group.writeEntry("debugPaths", debugPaths());
+        group.writeEntry("kallsyms", kallsyms());
+        group.writeEntry("arch", arch());
+        group.writeEntry("objdump", objdump());
+    };
+
+    m_configs->setSaveFunction(saveFunction);
+
+    auto restoreFunction = [this](const KConfigGroup& group) {
+        const auto sysroot = group.readEntry("sysroot");
+        const auto appPath = group.readEntry("appPath");
+        const auto extraLibPaths = group.readEntry("extraLibPaths");
+        const auto debugPaths = group.readEntry("debugPaths");
+        const auto kallsyms = group.readEntry("kallsyms");
+        const auto arch = group.readEntry("arch");
+        const auto objdump = group.readEntry("objdump");
+        initSettings(sysroot, appPath, extraLibPaths, debugPaths, kallsyms, arch, objdump);
+        ::config().writeEntry("lastUsed", m_configs->currentConfig());
+    };
+
+    m_configs->setRestoreFunction(restoreFunction);
+    m_configs->restoreCurrent();
+
+    unwindPage->formLayout->insertRow(0, label, m_configs);
+
+    connect(this, &KPageDialog::accepted, this, [this] { m_configs->updateCurrentConfig(); });
+
+    for (auto field : {unwindPage->lineEditSysroot, unwindPage->lineEditApplicationPath, unwindPage->lineEditKallsyms, unwindPage->lineEditObjdump}) {
+        connect(field, &KUrlRequester::textEdited, m_configs, &MultiConfigWidget::updateCurrentConfig);
+        connect(field, &KUrlRequester::urlSelected, m_configs, &MultiConfigWidget::updateCurrentConfig);
+    }
+
+    connect(unwindPage->comboBoxArchitecture, QOverload<int>::of(&QComboBox::currentIndexChanged), m_configs,
+            &MultiConfigWidget::updateCurrentConfig);
+
+    connect(unwindPage->debugPaths, &KEditListWidget::changed, m_configs, &MultiConfigWidget::updateCurrentConfig);
+    connect(unwindPage->extraLibraryPaths, &KEditListWidget::changed, m_configs, &MultiConfigWidget::updateCurrentConfig);
+}
+
+void SettingsDialog::keyPressEvent(QKeyEvent* event)
+{
+    // disable the return -> accept policy since it prevents the user from confirming name changes in the combobox
+    // you can still press CTRL + Enter to close the dialog
+    if (event->modifiers() != Qt::Key_Control && (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)) {
+        return;
+    }
+    QDialog::keyPressEvent(event);
 }

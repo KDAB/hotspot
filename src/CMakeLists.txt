@@ -44,6 +44,7 @@ set(hotspot_SRCS
     timelinewidget.cpp
     dockwidgetsetup.cpp
     settingsdialog.cpp
+    multiconfigwidget.cpp
 
     # ui files:
     mainwindow.ui

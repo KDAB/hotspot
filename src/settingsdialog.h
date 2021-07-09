@@ -28,6 +28,7 @@
 #pragma once
 
 #include <KPageDialog>
+#include "multiconfigwidget.h"
 #include <memory>
 
 namespace Ui {
@@ -41,6 +42,7 @@ class SettingsDialog : public KPageDialog
 public:
     explicit SettingsDialog(QWidget* parent = nullptr);
     ~SettingsDialog();
+    void initSettings(const QString& configName);
     void initSettings(const QString& sysroot, const QString& appPath, const QString& extraLibPaths,
                       const QString& debugPaths, const QString& kallsyms, const QString& arch, const QString& objdump);    
     QString sysroot() const;
@@ -50,8 +52,12 @@ public:
     QString kallsyms() const;
     QString arch() const;
     QString objdump() const;
+
+    void keyPressEvent(QKeyEvent* event) override;
+
 private:
     void addPathSettingsPage();
 
     std::unique_ptr<Ui::SettingsDialog> unwindPage;
+    MultiConfigWidget* m_configs;
 };
