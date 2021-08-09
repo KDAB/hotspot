@@ -42,7 +42,6 @@ public:
     {
         SortRole = Qt::UserRole,
         TotalCostRole,
-        FilterRole,
         SymbolRole
     };
 };
@@ -151,10 +150,7 @@ public:
             return {};
         }
 
-        if (role == FilterRole) {
-            // TODO: optimize
-            return QString(Util::formatSymbol(item->symbol, false) + item->symbol.binary);
-        } else if (role == SymbolRole) {
+        if (role == SymbolRole) {
             return QVariant::fromValue(item->symbol);
         } else {
             auto ret = rowData(item, index.column(), role);
@@ -185,7 +181,6 @@ public:
         endResetModel();
     }
 
-private:
     const TreeNode* itemFromIndex(const QModelIndex& index) const
     {
         if (!index.isValid() || index.column() >= numColumns()) {
@@ -210,6 +205,7 @@ private:
         }
     }
 
+private:
     QModelIndex indexFromItem(const TreeNode* item, int column) const
     {
         if (!item || column < 0 || column >= numColumns()) {

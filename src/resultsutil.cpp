@@ -67,18 +67,14 @@ void connectFilter(QLineEdit* filter, QSortFilterProxyModel* proxy)
     QObject::connect(filter, &QLineEdit::textChanged, timer, [timer]() { timer->start(300); });
 }
 
-void setupTreeView(QTreeView* view, QLineEdit* filter, QAbstractItemModel* model, int initialSortColumn, int sortRole,
-                   int filterRole)
+void setupTreeView(QTreeView* view, QLineEdit* filter, QSortFilterProxyModel* model, int initialSortColumn,
+                   int sortRole)
 {
-    auto proxy = new QSortFilterProxyModel(view);
-    proxy->setRecursiveFilteringEnabled(true);
-    proxy->setSortRole(sortRole);
-    proxy->setFilterRole(filterRole);
-    proxy->setSourceModel(model);
-    connectFilter(filter, proxy);
+    model->setSortRole(sortRole);
+    connectFilter(filter, model);
 
     view->sortByColumn(initialSortColumn, Qt::DescendingOrder);
-    view->setModel(proxy);
+    view->setModel(model);
     setupHeaderView(view);
 }
 

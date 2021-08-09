@@ -29,6 +29,7 @@
 
 #include <functional>
 
+#include "models/costproxy.h"
 #include <QFlags>
 
 class QMenu;
@@ -51,13 +52,15 @@ void setupHeaderView(QTreeView* view);
 
 void connectFilter(QLineEdit* filter, QSortFilterProxyModel* proxy);
 
-void setupTreeView(QTreeView* view, QLineEdit* filter, QAbstractItemModel* model, int initialSortColumn, int sortRole,
-                   int filterRole);
+void setupTreeView(QTreeView* view, QLineEdit* filter, QSortFilterProxyModel* model, int initialSortColumn,
+                   int sortRole);
 
 template<typename Model>
 void setupTreeView(QTreeView* view, QLineEdit* filter, Model* model)
 {
-    setupTreeView(view, filter, model, Model::InitialSortColumn, Model::SortRole, Model::FilterRole);
+    auto* proxy = new CostProxy<Model>(view);
+    proxy->setSourceModel(model);
+    setupTreeView(view, filter, qobject_cast<QSortFilterProxyModel*>(proxy), Model::InitialSortColumn, Model::SortRole);
 }
 
 void setupCostDelegate(QAbstractItemModel* model, QTreeView* view, int sortRole, int totalCostRole, int numBaseColumns);
