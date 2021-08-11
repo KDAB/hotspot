@@ -43,7 +43,8 @@ QString imageFormatFilter()
     QString filter;
     {
         QTextStream stream(&filter);
-        for (const auto format : QImageWriter::supportedImageFormats())
+        const auto supportedFormats = QImageWriter::supportedImageFormats();
+        for (const auto& format : supportedFormats)
             stream << "*." << format.toLower() << ' ';
     }
     filter.chop(1); // remove trailing whitespace
