@@ -109,7 +109,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     m_summaryPageDock->addDockWidgetAsTab(m_callerCalleeDock);
     m_disassemblyDock =
         dockify(m_resultsDisassemblyPage, QStringLiteral("disassembly"), tr("D&isassembly"), tr("Ctrl+I"));
-    m_summaryPageDock->addDockWidgetAsTab(m_disassemblyDock, KDDockWidgets::AddingOption_StartHidden);
+    m_summaryPageDock->addDockWidgetAsTab(m_disassemblyDock, KDDockWidgets::InitialVisibilityOption::StartHidden);
     m_disassemblyDock->toggleAction()->setEnabled(false);
     m_summaryPageDock->setAsCurrentTab();
 
