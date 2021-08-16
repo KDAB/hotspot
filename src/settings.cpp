@@ -45,6 +45,7 @@ void Settings::setCollapseTemplates(bool collapseTemplates)
 
 void Settings::setCollapseDepth(int depth)
 {
+    depth = std::max(1, depth);
     if (m_collapseDepth != depth) {
         m_collapseDepth = depth;
         emit collapseDepthChanged(m_collapseDepth);

@@ -234,6 +234,7 @@ MainWindow::MainWindow(QWidget* parent)
         auto* label = new QLabel(tr("Collapse Depth"));
         layout->addWidget(label);
         auto* box = new QSpinBox(widget);
+        box->setMinimum(1);
         box->setValue(Settings::instance()->collapseDepth());
 
         connect(box, QOverload<int>::of(&QSpinBox::valueChanged), Settings::instance(), &Settings::setCollapseDepth);
