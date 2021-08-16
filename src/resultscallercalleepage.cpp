@@ -51,10 +51,10 @@ Model* setupModelAndProxyForView(QTreeView* view)
     auto proxy = new QSortFilterProxyModel(model);
     proxy->setSourceModel(model);
     proxy->setSortRole(Model::SortRole);
-    view->sortByColumn(Model::InitialSortColumn, Qt::DescendingOrder);
     view->setModel(proxy);
     ResultsUtil::setupHeaderView(view);
     ResultsUtil::setupCostDelegate(model, view);
+    view->sortByColumn(Model::InitialSortColumn, Qt::DescendingOrder);
 
     return model;
 }

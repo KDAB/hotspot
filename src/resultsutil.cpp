@@ -73,9 +73,9 @@ void setupTreeView(QTreeView* view, QLineEdit* filter, QSortFilterProxyModel* mo
     model->setSortRole(sortRole);
     connectFilter(filter, model);
 
-    view->sortByColumn(initialSortColumn, Qt::DescendingOrder);
     view->setModel(model);
     setupHeaderView(view);
+    view->sortByColumn(initialSortColumn, Qt::DescendingOrder);
 }
 
 void addFilterActions(QMenu* menu, const Data::Symbol& symbol, FilterAndZoomStack* filterStack)
