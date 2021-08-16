@@ -231,6 +231,10 @@ MainWindow::MainWindow(QWidget* parent)
         auto* action = new QWidgetAction(this);
         auto* widget = new QWidget(this);
         auto* layout = new QHBoxLayout(widget);
+        auto margins = layout->contentsMargins();
+        margins.setTop(0);
+        margins.setBottom(0);
+        layout->setContentsMargins(margins);
         auto* label = new QLabel(tr("Collapse Depth"));
         layout->addWidget(label);
         auto* box = new QSpinBox(widget);
