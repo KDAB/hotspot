@@ -45,6 +45,9 @@ set(hotspot_SRCS
     dockwidgetsetup.cpp
     settingsdialog.cpp
     multiconfigwidget.cpp
+    perfoutputwidget.cpp
+    perfoutputwidgettext.cpp
+    perfoutputwidgetkonsole.cpp
 
     # ui files:
     mainwindow.ui

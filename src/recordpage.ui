@@ -592,36 +592,7 @@
      <property name="title">
       <string>Record Output</string>
      </property>
-     <layout class="QVBoxLayout" name="recordOutputBoxLayout">
-      <item>
-       <widget class="QTextEdit" name="perfResultsTextEdit">
-        <property name="font">
-         <font>
-          <family>Monospace</family>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>Detailed output from the perf record operation.</string>
-        </property>
-        <property name="readOnly">
-         <bool>true</bool>
-        </property>
-        <property name="placeholderText">
-         <string>Waiting for recording to start...</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="perfInputEdit">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="placeholderText">
-         <string>send input to process...</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+     <layout class="QVBoxLayout" name="recordOutputBoxLayout"/>
     </widget>
    </item>
   </layout>
