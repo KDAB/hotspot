@@ -240,6 +240,13 @@ void SettingsDialog::addFlamegraphPage()
     flamegraphPage->userPaths->insertStringList(Settings::instance()->userPaths());
     flamegraphPage->systemPaths->insertStringList(Settings::instance()->systemPaths());
 
+    connect(Settings::instance(), &Settings::pathsChanged, this, [this] {
+        flamegraphPage->userPaths->clear();
+        flamegraphPage->systemPaths->clear();
+        flamegraphPage->userPaths->insertStringList(Settings::instance()->userPaths());
+        flamegraphPage->systemPaths->insertStringList(Settings::instance()->systemPaths());
+    });
+
     connect(buttonBox(), &QDialogButtonBox::accepted, this, [this] {
         Settings::instance()->setPaths(flamegraphPage->userPaths->items(), flamegraphPage->systemPaths->items());
     });
