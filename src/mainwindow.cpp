@@ -219,6 +219,10 @@ MainWindow::MainWindow(QWidget* parent)
             m_config->group("PathSettings").writeEntry("userPaths", settings->userPaths());
             m_config->group("PathSettings").writeEntry("systemPaths", settings->systemPaths());
         });
+
+        settings->setDebuginfodUrls(m_config->group("debuginfod").readEntry("urls", QStringList()));
+        connect(Settings::instance(), &Settings::debuginfodUrlsChanged, this,
+                [this, settings] { m_config->group("debuginfod").writeEntry("urls", settings->debuginfodUrls()); });
     }
 
     auto* prettifySymbolsAction = ui->viewMenu->addAction(tr("Prettify Symbols"));

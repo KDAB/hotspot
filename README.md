@@ -360,6 +360,11 @@ notably, unwinding will fail when:
     Note that this can dramatically increase the size of the `perf.data` files - use it with care. Also have a look at `man perf record`.
   - For some scenarios, recursive function calls simply fail to be unwound. See also https://github.com/KDAB/hotspot/issues/93
 
+### debuginfod
+
+hotspot supports downloading debug symbols via [debuginfod](https://sourceware.org/elfutils/Debuginfod.html).
+This can be enabled by either adding download urls in the settings or launching hotspot with `DEBUGINFOD_URLS` defined in the environment.
+
 ### Missing Features
 
 Compared to `perf report`, hotspot misses a lot of features. Some of these are planned to be resolved
