@@ -26,6 +26,7 @@
 */
 
 #include "settingsdialog.h"
+#include "ui_debuginfoddialog.h"
 #include "ui_flamegraphsettings.h"
 #include "ui_settingsdialog.h"
 
@@ -51,9 +52,11 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     : KPageDialog(parent)
     , unwindPage(new Ui::SettingsDialog)
     , flamegraphPage(new Ui::FlamegraphSettings)
+    , debuginfodPage(new Ui::DebuginfodDialog)
 {
     addPathSettingsPage();
     addFlamegraphPage();
+    addDebuginfodPage();
 }
 
 SettingsDialog::~SettingsDialog() = default;
@@ -250,4 +253,24 @@ void SettingsDialog::addFlamegraphPage()
     connect(buttonBox(), &QDialogButtonBox::accepted, this, [this] {
         Settings::instance()->setPaths(flamegraphPage->userPaths->items(), flamegraphPage->systemPaths->items());
     });
+}
+
+void SettingsDialog::addDebuginfodPage()
+{
+    auto page = new QWidget(this);
+    auto item = addPage(page, tr("debuginfod"));
+    item->setHeader(tr("debuginfod Urls"));
+    item->setIcon(QIcon::fromTheme(QStringLiteral("preferences-system-windows-behavior")));
+
+    debuginfodPage->setupUi(page);
+
+    debuginfodPage->urls->insertStringList(Settings::instance()->debuginfodUrls());
+
+    connect(Settings::instance(), &Settings::debuginfodUrlsChanged, this, [this] {
+        debuginfodPage->urls->clear();
+        debuginfodPage->urls->insertStringList(Settings::instance()->debuginfodUrls());
+    });
+
+    connect(buttonBox(), &QDialogButtonBox::accepted, this,
+            [this] { Settings::instance()->setDebuginfodUrls(debuginfodPage->urls->items()); });
 }

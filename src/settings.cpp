@@ -70,3 +70,11 @@ void Settings::setPaths(const QStringList& userPaths, const QStringList& systemP
         emit pathsChanged();
     }
 }
+
+void Settings::setDebuginfodUrls(const QStringList& urls)
+{
+    if (m_debuginfodUrls != urls) {
+        m_debuginfodUrls = urls;
+        emit debuginfodUrlsChanged();
+    }
+}

@@ -48,6 +48,8 @@
 
 #include <functional>
 
+#include "settings.h"
+
 Q_LOGGING_CATEGORY(LOG_PERFPARSER, "hotspot.perfparser", QtWarningMsg)
 
 namespace {
@@ -1405,7 +1407,17 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
         }
 
         QProcess process;
-        process.setProcessEnvironment(Util::appImageEnvironment());
+        auto env = Util::appImageEnvironment();
+
+        const auto customUrls = Settings::instance()->debuginfodUrls();
+        if (!customUrls.isEmpty()) {
+            const auto envVar = QStringLiteral("DEBUGINFOD_URLS");
+            const auto defaultUrls = env.value(envVar);
+            const auto separator = QLatin1Char(' ');
+            env.insert(envVar, customUrls.join(separator) + separator + defaultUrls);
+        }
+
+        process.setProcessEnvironment(env);
         process.setProcessChannelMode(QProcess::ForwardedErrorChannel);
         connect(this, &PerfParser::stopRequested, &process, &QProcess::kill);
 

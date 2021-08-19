@@ -71,12 +71,18 @@ public:
         return m_systemPaths;
     }
 
+    QStringList debuginfodUrls() const
+    {
+        return m_debuginfodUrls;
+    }
+
 signals:
     void prettifySymbolsChanged(bool);
     void collapseTemplatesChanged(bool);
     void collapseDepthChanged(int);
     void colorSchemeChanged(ColorScheme);
     void pathsChanged();
+    void debuginfodUrlsChanged();
 
 public slots:
     void setPrettifySymbols(bool prettifySymbols);
@@ -84,6 +90,7 @@ public slots:
     void setCollapseDepth(int depth);
     void setColorScheme(ColorScheme scheme);
     void setPaths(const QStringList& userPaths, const QStringList& systemPaths);
+    void setDebuginfodUrls(const QStringList& urls);
 
 private:
     Settings() = default;
@@ -95,4 +102,5 @@ private:
     ColorScheme m_colorScheme = ColorScheme::Default;
     QStringList m_userPaths;
     QStringList m_systemPaths;
+    QStringList m_debuginfodUrls;
 };
