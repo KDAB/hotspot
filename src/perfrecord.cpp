@@ -36,6 +36,7 @@
 #include <QTimer>
 
 #include <csignal>
+#include <unistd.h>
 
 #include <KUser>
 #include <KWindowSystem>
@@ -80,7 +81,7 @@ static QStringList sudoOptions(const QString& sudoBinary)
 void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
                                 const QStringList& recordOptions, const QString& workingDirectory)
 {
-    if (elevatePrivileges) {
+    if (elevatePrivileges && geteuid() != 0) {
         // elevate privileges temporarily as root
         // use kdesudo/kdesu to start the elevate_perf_privileges.sh script
         // then parse its output and once we get the "waiting..." line the privileges got elevated
