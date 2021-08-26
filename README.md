@@ -96,7 +96,7 @@ As of now, you will need the following dependencies to build this project:
 
 - CMake 3.1.0 or higher
 - any C++11 enabled compiler
-- Qt 5.10.0 or higher
+- Qt 5.15.0 or higher
 - libelf
 - libelfutils
 - gettext
@@ -123,25 +123,25 @@ As of now, you will need the following dependencies to build this project:
 add-apt-repository ppa:kubuntu-ppa/backports
 apt-get update
 apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev \
-    libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libkf5kio-dev \
+    libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libkf5kio-dev libkf5parts-dev \
     libkf5solid-dev libkf5windowsystem-dev libkf5notifications-dev libkf5iconthemes-dev libelf-dev \
     libdw-dev cmake extra-cmake-modules gettext libqt5svg5-dev
 ```
 
 ### On Fedora
 ```
-dnf install cmake gcc glibc-static gcc-c++ libstdc++-static qt5 qt5-devel \
+dnf install cmake gcc glibc-static gcc-c++ libstdc++-static qt5-qtbase qt5-qtbase-devel qt5-qtsvg-devel \
     extra-cmake-modules elfutils-devel kf5-threadweaver-devel kf5-ki18n-devel \
     kf5-kconfigwidgets-devel kf5-kitemviews-devel kf5-kitemmodels-devel \
     kf5-kio-devel kf5-solid-devel kf5-kwindowsystem-devel kf5-kiconthemes-devel \
-    kf5-knotifications-devel
+    kf5-knotifications-devel kf5-kparts-devel
 ```
 
 ### Arch Linux
 ```
 pacman -Syu
 pacman -S cmake gcc extra-cmake-modules threadweaver ki18n kconfigwidgets knotifications \
-    kiconthemes kitemviews kitemmodels kwindowsystem kio solid libelf gettext qt5-base
+    kiconthemes kitemviews kitemmodels kwindowsystem kio kparts solid libelf gettext qt5-base
 ```
 
 ### OpenSUSE
@@ -149,8 +149,8 @@ pacman -S cmake gcc extra-cmake-modules threadweaver ki18n kconfigwidgets knotif
 ```
 zypper in cmake gcc-c++ extra-cmake-modules threadweaver-devel ki18n-devel kio-devel \
     solid-devel kcoreaddons-devel threadweaver-devel kconfigwidgets-devel \
-    kitemmodels-devel kitemviews-devel kwindowsystem-devel \
-    libqt5-qtbase-devel libelf-devel libdw-devel gettext glibc-devel-static \
+    kitemmodels-devel kitemviews-devel kwindowsystem-devel kparts-devel \
+    libqt5-qtbase-devel libqt5-qtsvg-devel libelf-devel libdw-devel gettext glibc-devel-static \
     knotifications-devel kiconthemes-devel libzstd-devel binutils
 ```
 
