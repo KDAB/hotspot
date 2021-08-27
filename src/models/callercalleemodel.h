@@ -58,7 +58,6 @@ public:
     {
         SortRole = Qt::UserRole,
         TotalCostRole,
-        FilterRole,
         CalleesRole,
         CallersRole,
         SourceMapRole,
@@ -123,7 +122,6 @@ public:
     {
         SortRole = Qt::UserRole,
         TotalCostRole,
-        FilterRole,
         SymbolRole
     };
 
@@ -167,9 +165,6 @@ public:
             return costs[column - NUM_BASE_COLUMNS];
         } else if (role == TotalCostRole && column >= NUM_BASE_COLUMNS) {
             return m_costs.totalCost(column - NUM_BASE_COLUMNS);
-        } else if (role == FilterRole) {
-            // TODO: optimize this
-            return QString(Util::formatSymbol(symbol, false) + symbol.binary);
         } else if (role == Qt::DisplayRole) {
             switch (column) {
             case Symbol:
@@ -250,7 +245,6 @@ public:
     {
         SortRole = Qt::UserRole,
         TotalCostRole,
-        FilterRole,
         LocationRole
     };
 
@@ -303,8 +297,6 @@ public:
                 column -= m_totalCosts.numTypes();
             }
             return m_totalCosts.totalCost(column);
-        } else if (role == FilterRole) {
-            return location;
         } else if (role == Qt::DisplayRole) {
             if (column == Location) {
                 if (location.isEmpty()) {

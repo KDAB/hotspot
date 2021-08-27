@@ -119,9 +119,6 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
 
         column -= m_results.selfCosts.numTypes();
         return m_results.inclusiveCosts.totalCost(column);
-    } else if (role == FilterRole) {
-        // TODO: optimize this
-        return QString(Util::formatSymbol(symbol, false) + symbol.binary);
     } else if (role == Qt::DisplayRole) {
         switch (column) {
         case Symbol:
