@@ -83,6 +83,11 @@ public:
         return index(row, column);
     }
 
+    typename Rows::key_type key(int row) const
+    {
+        return m_keys.value(row);
+    }
+
 protected:
     void setRows(const Rows& rows)
     {

@@ -38,6 +38,7 @@
 #include "resultsutil.h"
 
 #include "models/callercalleemodel.h"
+#include "models/callercalleeproxy.h"
 #include "models/costdelegate.h"
 #include "models/filterandzoomstack.h"
 #include "models/hashmodel.h"
@@ -48,7 +49,7 @@ template<typename Model>
 Model* setupModelAndProxyForView(QTreeView* view)
 {
     auto model = new Model(view);
-    auto proxy = new QSortFilterProxyModel(model);
+    auto proxy = new CallerCalleeProxy<Model>(model);
     proxy->setSourceModel(model);
     proxy->setSortRole(Model::SortRole);
     view->setModel(proxy);
@@ -77,7 +78,7 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
     ui->setupUi(this);
 
     m_callerCalleeCostModel = new CallerCalleeModel(this);
-    m_callerCalleeProxy = new QSortFilterProxyModel(this);
+    m_callerCalleeProxy = new CallerCalleeProxy<CallerCalleeModel>(this);
     m_callerCalleeProxy->setSourceModel(m_callerCalleeCostModel);
     m_callerCalleeProxy->setSortRole(CallerCalleeModel::SortRole);
     ResultsUtil::connectFilter(ui->callerCalleeFilter, m_callerCalleeProxy);

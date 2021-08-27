@@ -15,6 +15,7 @@ add_library(models STATIC
     disassemblymodel.cpp
     ../settings.cpp
     ../util.cpp
+    callercalleeproxy.cpp
 )
 
 target_link_libraries(models
