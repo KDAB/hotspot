@@ -26,6 +26,15 @@
 #include "models/hashmodel.h"
 #include "models/treemodel.h"
 
+#include <QPushButton>
+#include <QTemporaryFile>
+
+#include "hotspot-config.h"
+
+#if KGRAPHVIEWER_FOUND
+#include "callgraphwidget.h"
+#endif
+
 namespace {
 template<typename Model>
 Model* setupModelAndProxyForView(QTreeView* view, CostContextMenu* contextMenu)
@@ -85,7 +94,16 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
         ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->callersView, CallerModel::NUM_BASE_COLUMNS);
         ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->calleesView, CalleeModel::NUM_BASE_COLUMNS);
         ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->sourceMapView, SourceMapModel::NUM_BASE_COLUMNS);
+
+#if KGRAPHVIEWER_FOUND
+    m_callgraph->setResults(data);
+#endif
     });
+
+#if KGRAPHVIEWER_FOUND
+    m_callgraph = CallgraphWidget::createCallgraphWidget({}, this);
+    ui->callerCalleeLayout->addWidget(m_callgraph);
+#endif
 
     auto calleesModel = setupModelAndProxyForView<CalleeModel>(ui->calleesView, contextMenu);
     auto callersModel = setupModelAndProxyForView<CallerModel>(ui->callersView, contextMenu);
@@ -102,6 +120,9 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
         if (index.model() == m_callerCalleeCostModel) {
             ui->callerCalleeTableView->setCurrentIndex(m_callerCalleeProxy->mapFromSource(index));
         }
+#if KGRAPHVIEWER_FOUND
+        m_callgraph->selectSymbol(index.data(CallerCalleeModel::SymbolRole).value<Data::Symbol>());
+#endif
     };
     connectCallerOrCalleeModel<CalleeModel>(ui->calleesView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
     connectCallerOrCalleeModel<CallerModel>(ui->callersView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
@@ -111,6 +132,13 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
     ResultsUtil::setupContextMenu(ui->callersView, contextMenu, callersModel, filterStack, this,
                                   {ResultsUtil::CallbackAction::OpenEditor, ResultsUtil::CallbackAction::SelectSymbol,
                                    ResultsUtil::CallbackAction::ViewDisassembly});
+
+#if KGRAPHVIEWER_FOUND
+    connect(m_callgraph, &CallgraphWidget::clickedOn, this, [this, selectCallerCaleeeIndex](const Data::Symbol& symbol){
+        const auto index = m_callerCalleeCostModel->indexForKey(symbol);
+        selectCallerCaleeeIndex(index);
+    });
+#endif
 
     ui->sourceMapView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->sourceMapView, &QTreeView::customContextMenuRequested, this,

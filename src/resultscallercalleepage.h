@@ -25,6 +25,7 @@ class PerfParser;
 class CallerCalleeModel;
 class FilterAndZoomStack;
 class CostContextMenu;
+class CallgraphWidget;
 
 class ResultsCallerCalleePage : public QWidget
 {
@@ -66,6 +67,7 @@ private:
     SourceMapLocation toSourceMapLocation(const QString& location, const Data::Symbol& symbol) const;
 
     QScopedPointer<Ui::ResultsCallerCalleePage> ui;
+    CallgraphWidget* m_callgraph;
 
     CallerCalleeModel* m_callerCalleeCostModel;
     QSortFilterProxyModel* m_callerCalleeProxy;
