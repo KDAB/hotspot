@@ -66,10 +66,15 @@ set(hotspot_SRCS
     settingsdialog.ui
     flamegraphsettings.ui
     debuginfoddialog.ui
+    callgraphwidget.ui
 
     # resources:
     resources.qrc
 )
+
+if (KGRAPHVIEWER_FOUND)
+    set(hotspot_SRCS ${hotspot_SRCS} callgraphwidget.cpp callgraphgenerator.cpp)
+endif(KGRAPHVIEWER_FOUND)
 
 ecm_add_app_icon(hotspot_SRCS ICONS
     ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/128-hotspot_app_icon.png

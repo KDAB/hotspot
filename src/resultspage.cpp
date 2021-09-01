@@ -104,10 +104,10 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     m_summaryPageDock->addDockWidgetAsTab(m_disassemblyDock, KDDockWidgets::InitialVisibilityOption::StartHidden);
     m_disassemblyDock->toggleAction()->setEnabled(false);
     m_summaryPageDock->setAsCurrentTab();
-    if (m_frequencyPage) {
-        m_frequencyDock = dockify(m_frequencyPage, QStringLiteral("frequency"), tr("Fr&equency"), tr("Ctrl+E"));
-        m_summaryPageDock->addDockWidgetAsTab(m_frequencyDock);
-    }
+#if QCustomPlot_FOUND
+    m_frequencyDock = dockify(m_frequencyPage, QStringLiteral("frequency"), tr("Fr&equency"), tr("Ctrl+E"));
+    m_summaryPageDock->addDockWidgetAsTab(m_frequencyDock);
+#endif
 
     m_timeLineDock = dockify(m_timeLineWidget, QStringLiteral("timeLine"), tr("&Time Line"), tr("Ctrl+T"));
     m_contents->addDockWidget(m_timeLineDock, KDDockWidgets::Location_OnBottom);

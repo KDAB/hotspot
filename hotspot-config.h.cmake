@@ -24,3 +24,5 @@
 #cmakedefine01 KF5Archive_FOUND
 
 #cmakedefine01 QCustomPlot_FOUND
+
+#cmakedefine01 KGRAPHVIEWER_FOUND

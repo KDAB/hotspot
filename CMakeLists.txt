@@ -88,6 +88,8 @@ set_package_properties(QCustomPlot PROPERTIES
     TYPE OPTIONAL
 )
 
+find_program(KGRAPHVIEWER_FOUND kgraphviewer)
+
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
 include(KDEInstallDirs)
