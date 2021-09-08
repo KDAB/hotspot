@@ -162,6 +162,7 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
         if (offCpuCostId != -1) {
             const auto offCpuColor = scheme.background(KColorScheme::NegativeBackground).color();
+            const auto offCpuColorSelected = scheme.background(KColorScheme::ActiveBackground).color();
             for (const auto& event : data.events) {
                 if (event.type != offCpuCostId) {
                     continue;
@@ -169,7 +170,8 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
                 const auto x = data.mapTimeToX(event.time);
                 const auto x2 = data.mapTimeToX(event.time + event.cost);
-                painter->fillRect(x, 0, x2 - x, data.h, offCpuColor);
+                const auto& color = m_selectedStacks.contains(event.stackId) ? offCpuColorSelected : offCpuColor;
+                painter->fillRect(x, 0, x2 - x, data.h, color);
             }
         }
 
