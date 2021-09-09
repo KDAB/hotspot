@@ -265,7 +265,6 @@ RecordPage::RecordPage(QWidget* parent)
                                     QVariant::fromValue(ProfileSystem));
     connect(ui->recordTypeComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             &RecordPage::updateRecordType);
-    updateRecordType();
 
     {
         ui->callGraphComboBox->addItem(tr("None"), QVariant::fromValue(QString()));
@@ -411,8 +410,6 @@ RecordPage::RecordPage(QWidget* parent)
 
     updateOffCpuCheckboxState();
 
-    showRecordPage();
-
     m_updateRuntimeTimer->setInterval(1000);
     connect(m_updateRuntimeTimer, &QTimer::timeout, this, [this] {
         // round to the nearest second
@@ -466,7 +463,7 @@ RecordPage::RecordPage(QWidget* parent)
             ui->compressionComboBox->setCurrentIndex(index);
     }
 
-    addKonsoleWidget();
+    showRecordPage();
 }
 
 RecordPage::~RecordPage() = default;
