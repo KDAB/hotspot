@@ -162,7 +162,7 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
 
         if (offCpuCostId != -1) {
             const auto offCpuColor = scheme.background(KColorScheme::NegativeBackground).color();
-            const auto offCpuColorSelected = scheme.background(KColorScheme::ActiveBackground).color();
+            const auto offCpuColorSelected = scheme.foreground(KColorScheme::NegativeText).color();
             for (const auto& event : data.events) {
                 if (event.type != offCpuCostId) {
                     continue;
