@@ -30,6 +30,8 @@
 
 #include <QSortFilterProxyModel>
 
+#include "callercalleeproxy.h"
+
 template<typename Model>
 class CostProxy : public QSortFilterProxyModel
 {
@@ -57,13 +59,7 @@ protected:
             return false;
         }
 
-        const auto needle = filterRegExp().pattern();
-
-        if (item->symbol.symbol.indexOf(needle) == -1 && item->symbol.binary.indexOf(needle) == -1) {
-            return false;
-        }
-
-        return true;
+        return CallerCalleeProxyDetail::match(this, item->symbol);
     }
 };
 
