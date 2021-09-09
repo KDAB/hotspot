@@ -26,3 +26,28 @@
 */
 
 #include "callercalleeproxy.h"
+
+#include "data.h"
+
+namespace {
+bool matchImpl(const QString& needle, const QString& haystack)
+{
+    return haystack.contains(needle, Qt::CaseInsensitive);
+}
+}
+
+namespace CallerCalleeProxyDetail {
+bool match(const QSortFilterProxyModel* proxy, const Data::Symbol& symbol)
+{
+    const auto needle = proxy->filterRegExp().pattern();
+
+    return matchImpl(needle, symbol.symbol) || matchImpl(needle, symbol.binary);
+}
+
+bool match(const QSortFilterProxyModel* proxy, const QString& location)
+{
+    const auto needle = proxy->filterRegExp().pattern();
+
+    return matchImpl(needle, location);
+}
+}
