@@ -285,15 +285,16 @@ MainWindow::MainWindow(QWidget* parent)
     }
 
     m_lastUsedSettings = m_config->group("PerfPaths").readEntry("lastUsed");
-
-    auto currentConfig = m_config->group("PerfPaths").group(m_lastUsedSettings);
-    setSysroot(currentConfig.readEntry("sysroot", ""));
-    setAppPath(currentConfig.readEntry("appPath", ""));
-    setExtraLibPaths(currentConfig.readEntry("extraLibPaths", ""));
-    setDebugPaths(currentConfig.readEntry("debugPaths", ""));
-    setKallsyms(currentConfig.readEntry("kallsyms", ""));
-    setArch(currentConfig.readEntry("arch", ""));
-    setObjdump(currentConfig.readEntry("objdump", ""));
+    if (!m_lastUsedSettings.isEmpty()) {
+        auto currentConfig = m_config->group("PerfPaths").group(m_lastUsedSettings);
+        setSysroot(currentConfig.readEntry("sysroot", ""));
+        setAppPath(currentConfig.readEntry("appPath", ""));
+        setExtraLibPaths(currentConfig.readEntry("extraLibPaths", ""));
+        setDebugPaths(currentConfig.readEntry("debugPaths", ""));
+        setKallsyms(currentConfig.readEntry("kallsyms", ""));
+        setArch(currentConfig.readEntry("arch", ""));
+        setObjdump(currentConfig.readEntry("objdump", ""));
+    }
 }
 
 MainWindow::~MainWindow() = default;
