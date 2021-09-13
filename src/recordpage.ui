@@ -519,6 +519,19 @@
     <widget class="KMessageWidget" name="applicationRecordErrorMessage"/>
    </item>
    <item>
+    <widget class="KMessageWidget" name="applicationRecordWarningMessage">
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+     <property name="closeButtonVisible">
+      <bool>false</bool>
+     </property>
+     <property name="messageType">
+      <enum>KMessageWidget::Warning</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QWidget" name="widget" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>

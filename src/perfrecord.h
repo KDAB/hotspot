@@ -68,6 +68,7 @@ signals:
     void recordingFinished(const QString& fileLocation);
     void recordingFailed(const QString& errorMessage);
     void recordingOutput(const QString& errorMessage);
+    void debuggeeCrashed();
 
 private:
     QPointer<QProcess> m_perfRecordProcess;
