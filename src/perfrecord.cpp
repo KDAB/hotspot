@@ -203,6 +203,9 @@ void PerfRecord::startRecording(const QStringList& perfOptions, const QString& o
                 QFileInfo outputFileInfo(m_outputPath);
                 if ((exitCode == EXIT_SUCCESS || (exitCode == SIGTERM && m_userTerminated) || outputFileInfo.size() > 0)
                     && outputFileInfo.exists()) {
+                    if (exitCode != EXIT_SUCCESS && !m_userTerminated) {
+                        emit debuggeeCrashed();
+                    }
                     emit recordingFinished(m_outputPath);
                 } else {
                     emit recordingFailed(tr("Failed to record perf data, error code %1.").arg(exitCode));
@@ -236,6 +239,8 @@ void PerfRecord::startRecording(const QStringList& perfOptions, const QString& o
     connect(m_perfRecordProcess.data(), &QProcess::started, this,
             [this, perfBinary, perfCommand] { emit recordingStarted(perfBinary, perfCommand); });
     m_perfRecordProcess->start(perfBinary, perfCommand);
+
+    m_userTerminated = false;
 }
 
 void PerfRecord::record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,

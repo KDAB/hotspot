@@ -352,6 +352,11 @@ RecordPage::RecordPage(QWidget* parent)
         ui->viewPerfRecordResultsButton->setEnabled(false);
     });
 
+    connect(m_perfRecord, &PerfRecord::debuggeeCrashed, this, [this]{
+        ui->applicationRecordWarningMessage->setText(tr("Debugge crashed. Results may be unusable."));
+        ui->applicationRecordWarningMessage->show();
+    });
+
     connect(m_perfRecord, &PerfRecord::recordingOutput, this, &RecordPage::appendOutput);
 
     connect(ui->perfInputEdit, &QLineEdit::returnPressed, this, [this]() {
@@ -464,6 +469,8 @@ RecordPage::RecordPage(QWidget* parent)
     }
 
     showRecordPage();
+
+    ui->applicationRecordWarningMessage->setVisible(false);
 }
 
 RecordPage::~RecordPage() = default;
@@ -489,6 +496,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-stop")));
         ui->startRecordingButton->setText(tr("Stop Recording"));
         ui->perfResultsTextEdit->clear();
+        ui->applicationRecordWarningMessage->hide();
 
         // clear konsole
         addKonsoleWidget();
