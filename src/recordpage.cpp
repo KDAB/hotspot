@@ -206,9 +206,6 @@ RecordPage::RecordPage(QWidget* parent)
         {QStringLiteral("application/x-executable"), QStringLiteral("application/x-sharedlib")});
 #endif
     ui->workingDirectory->setMode(KFile::Directory | KFile::LocalOnly);
-    ui->applicationRecordErrorMessage->setCloseButtonVisible(false);
-    ui->applicationRecordErrorMessage->setWordWrap(true);
-    ui->applicationRecordErrorMessage->setMessageType(KMessageWidget::Error);
     ui->outputFile->setText(QDir::currentPath() + QDir::separator() + QStringLiteral("perf.data"));
     ui->outputFile->setMode(KFile::File | KFile::LocalOnly);
     ui->eventTypeBox->lineEdit()->setPlaceholderText(tr("perf defaults (usually cycles:Pu)"));
