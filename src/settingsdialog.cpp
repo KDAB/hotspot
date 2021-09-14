@@ -10,6 +10,7 @@
 #include "ui_debuginfoddialog.h"
 #include "ui_flamegraphsettings.h"
 #include "ui_settingsdialog.h"
+#include "ui_callgraphsettings.h"
 
 #include <KComboBox>
 #include <KUrlRequester>
@@ -21,6 +22,8 @@
 #include <QListView>
 
 #include "multiconfigwidget.h"
+
+#include "hotspot-config.h"
 
 namespace {
 KConfigGroup config()
@@ -34,10 +37,16 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     , unwindPage(new Ui::SettingsDialog)
     , flamegraphPage(new Ui::FlamegraphSettings)
     , debuginfodPage(new Ui::DebuginfodDialog)
+#if KGRAPHVIEWER_FOUND
+    , callgraphSettings(new Ui::CallgraphSettings)
+#endif
 {
     addPathSettingsPage();
     addFlamegraphPage();
     addDebuginfodPage();
+#if KGRAPHVIEWER_FOUND
+    addCallgraphPage();
+#endif
 }
 
 SettingsDialog::~SettingsDialog() = default;
@@ -254,4 +263,29 @@ void SettingsDialog::addDebuginfodPage()
 
     connect(buttonBox(), &QDialogButtonBox::accepted, this,
             [this] { Settings::instance()->setDebuginfodUrls(debuginfodPage->urls->items()); });
+}
+
+void SettingsDialog::addCallgraphPage()
+{
+    auto page = new QWidget(this);
+    auto item = addPage(page, tr("Callgraph"));
+    item->setHeader(tr("Callgraph Settings"));
+    item->setIcon(QIcon::fromTheme(QStringLiteral("preferences-system-windows-behavior")));
+
+    callgraphSettings->setupUi(page);
+
+    connect(Settings::instance(), &Settings::callgraphChanged, this, [this] {
+        auto settings = Settings::instance();
+        callgraphSettings->parentSpinBox->setValue(settings->callgraphParentDepth());
+        callgraphSettings->childSpinBox->setValue(settings->callgraphChildDepth());
+        callgraphSettings->currentFunctionColor->setColor(settings->callgraphActiveColor());
+        callgraphSettings->functionColor->setColor(settings->callgraphColor());
+    });
+
+    connect(buttonBox(), &QDialogButtonBox::accepted, this, [this]{
+        auto settings = Settings::instance();
+        settings->setCallgraphParentDepth(callgraphSettings->parentSpinBox->value());
+        settings->setCallgraphChildDepth(callgraphSettings->childSpinBox->value());
+        settings->setCallgraphColors(callgraphSettings->currentFunctionColor->color().name(), callgraphSettings->functionColor->color().name());
+    });
 }

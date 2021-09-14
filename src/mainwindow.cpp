@@ -35,6 +35,7 @@
 #include <KRecentFilesAction>
 #include <KShell>
 #include <KStandardAction>
+#include <KColorScheme>
 
 #include <kddockwidgets/LayoutSaver.h>
 
@@ -207,6 +208,20 @@ MainWindow::MainWindow(QWidget* parent)
         connect(Settings::instance(), &Settings::pathsChanged, this, [this, settings] {
             m_config->group("PathSettings").writeEntry("userPaths", settings->userPaths());
             m_config->group("PathSettings").writeEntry("systemPaths", settings->systemPaths());
+        });
+
+        // fix build error in app image build
+        const auto colorScheme = KColorScheme(QPalette::Normal, KColorScheme::View, m_config);
+        const auto color = colorScheme.background(KColorScheme::AlternateBackground).color().name();
+        const auto currentColor = colorScheme.background(KColorScheme::ActiveBackground).color().name();
+        settings->setCallgraphParentDepth(m_config->group("CallgraphSettings").readEntry("parent", 3));
+        settings->setCallgraphChildDepth(m_config->group("CallgraphSettings").readEntry("child", 3));
+        settings->setCallgraphColors(m_config->group("CallgraphSettings").readEntry("activeColor", currentColor), m_config->group("CallgraphSettings").readEntry("color", color));
+        connect(Settings::instance(), &Settings::callgraphChanged, this, [this, settings] {
+            m_config->group("CallgraphSettings").writeEntry("parent", settings->callgraphParentDepth());
+            m_config->group("CallgraphSettings").writeEntry("child", settings->callgraphChildDepth());
+            m_config->group("CallgraphSettings").writeEntry("activeColor", settings->callgraphActiveColor());
+            m_config->group("CallgraphSettings").writeEntry("color", settings->callgraphColor());
         });
 
         settings->setDebuginfodUrls(m_config->group("debuginfod").readEntry("urls", QStringList()));
