@@ -108,3 +108,28 @@ void Settings::setObjdump(const QString& objdump)
     m_objdump = objdump;
     emit objdumpChanged(m_objdump);
 }
+
+void Settings::setCallgraphParentDepth(int parent)
+{
+    if (m_callgraphParentDepth != parent) {
+        m_callgraphParentDepth = parent;
+        emit callgraphChanged();
+    }
+}
+
+void Settings::setCallgraphChildDepth(int child)
+{
+    if (m_callgraphChildDepth != child) {
+        m_callgraphChildDepth = child;
+        emit callgraphChanged();
+    }
+}
+
+void Settings::setCallgraphColors(const QColor& active, const QColor& inactive)
+{
+    if (m_callgraphActiveColor != active || m_callgraphColor != inactive) {
+        m_callgraphActiveColor = active;
+        m_callgraphColor = inactive;
+        emit callgraphChanged();
+    }
+}

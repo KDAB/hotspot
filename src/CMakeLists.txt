@@ -67,6 +67,7 @@ set(hotspot_SRCS
     flamegraphsettings.ui
     debuginfoddialog.ui
     callgraphwidget.ui
+    callgraphsettings.ui
 
     # resources:
     resources.qrc

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <QColor>
 #include <QObject>
 
 class Settings : public QObject
@@ -98,6 +99,26 @@ public:
         return m_objdump;
     }
 
+    int callgraphParentDepth() const
+    {
+        return m_callgraphParentDepth;
+    }
+
+    int callgraphChildDepth() const
+    {
+        return m_callgraphChildDepth;
+    }
+
+    QColor callgraphActiveColor() const
+    {
+        return m_callgraphActiveColor;
+    }
+
+    QColor callgraphColor() const
+    {
+        return m_callgraphColor;
+    }
+
 signals:
     void prettifySymbolsChanged(bool);
     void collapseTemplatesChanged(bool);
@@ -112,6 +133,7 @@ signals:
     void appPathChanged(const QString& path);
     void archChanged(const QString& arch);
     void objdumpChanged(const QString& objdump);
+    void callgraphChanged();
 
 public slots:
     void setPrettifySymbols(bool prettifySymbols);
@@ -127,6 +149,9 @@ public slots:
     void setAppPath(const QString& path);
     void setArch(const QString& arch);
     void setObjdump(const QString& objdump);
+    void setCallgraphParentDepth(int parent);
+    void setCallgraphChildDepth(int child);
+    void setCallgraphColors(const QColor& active, const QColor& inactive);
 
 private:
     Settings() = default;
@@ -147,4 +172,9 @@ private:
     QString m_appPath;
     QString m_arch;
     QString m_objdump;
+
+    int m_callgraphParentDepth = 3;
+    int m_callgraphChildDepth = 2;
+    QColor m_callgraphActiveColor;
+    QColor m_callgraphColor;
 };

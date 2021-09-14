@@ -16,6 +16,7 @@ namespace Ui {
 class SettingsDialog;
 class FlamegraphSettings;
 class DebuginfodDialog;
+class CallgraphSettings;
 }
 
 class SettingsDialog : public KPageDialog
@@ -42,9 +43,11 @@ private:
     void addPathSettingsPage();
     void addFlamegraphPage();
     void addDebuginfodPage();
+    void addCallgraphPage();
 
     std::unique_ptr<Ui::SettingsDialog> unwindPage;
     std::unique_ptr<Ui::FlamegraphSettings> flamegraphPage;
     std::unique_ptr<Ui::DebuginfodDialog> debuginfodPage;
+    std::unique_ptr<Ui::CallgraphSettings> callgraphSettings;
     MultiConfigWidget* m_configs;
 };
