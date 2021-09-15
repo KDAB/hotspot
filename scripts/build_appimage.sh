@@ -46,7 +46,7 @@ cp ../hotspot.desktop appdir/$PREFIX/share/applications/
 unset QTDIR
 unset QT_PLUGIN_PATH
 unset LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=$PREFIX/lib:/opt/qt510/lib/x86_64-linux-gnu # make sure these paths are known so all libs are found
+export LD_LIBRARY_PATH=$PREFIX/lib:/opt/qt515/lib/x86_64-linux-gnu # make sure these paths are known so all libs are found
 linuxdeployqt ./appdir/$PREFIX/share/applications/*.desktop -bundle-non-qt-libs
 # workaround for https://github.com/KDAB/hotspot/issues/87
 linuxdeployqt ./appdir/$PREFIX/lib/x86_64-linux-gnu/libexec/hotspot-perfparser -bundle-non-qt-libs -no-plugins
@@ -62,6 +62,8 @@ ln -sr ./appdir/$PREFIX/lib/ ./appdir/$PREFIX/lib/x86_64-linux-gnu/libexec/lib
 if [ -d /opt/qt*/share/icons/breeze ]; then
     cp -a /opt/qt*/share/icons/breeze ./appdir/$PREFIX/share/icons/
 fi
+
+cp -a /usr/lib/x86_64-linux-gnu/libkddockwidgets ./appdir/$PREFIX/lib/
 
 # Ensure we prefer the bundled libs also when calling dlopen, cf.: https://github.com/KDAB/hotspot/issues/89
 rm ./appdir/AppRun
