@@ -47,6 +47,7 @@ ENV PATH="/opt/bin:/opt/qt515/bin:${PATH}" \
 FROM hotspot_appimage_intermediate
 
 ARG DISABLE_RUSTC_DEMANGLE
+ARG DISABLE_D_DEMANGLE
 
 RUN git clone https://github.com/KDAB/KDDockWidgets ; cd KDDockWidgets ; mkdir build ; cd build ; cmake -DCMAKE_INSTALL_PREFIX=/usr/ .. ; make ; make install
 
@@ -57,6 +58,7 @@ WORKDIR /opt/hotspot
 
 RUN tar -C / -xvf scripts/elfutils/elfutils.build.tar.bz2
 RUN if [ -z "$DISABLE_RUSTC_DEMANGLE" ]; then tar -C / -xvf scripts/rustc-demangle/rustc_demangle.build.tar.bz2; fi
+RUN if [ -z "$DISABLE_D_DEMANGLE" ]; then tar -C /opt/lib/ -xvf scripts/d-demangle/d-demangle.tar.gz ; fi
 
 ADD . /opt/hotspot
 

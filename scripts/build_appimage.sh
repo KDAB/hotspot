@@ -39,6 +39,11 @@ if [ -e "$PREFIX/lib/librustc_demangle.so" ]; then
     cp "$PREFIX/lib/librustc_demangle.so" "appdir/$PREFIX/lib/"
 fi
 
+if [ -e "$PREFIX/lib/libd_demangle.so" ]; then
+    echo "D ENABLED"
+    cp "$PREFIX/lib/libd_demangle.so" "appdir/$PREFIX/lib/"
+fi
+
 # FIXME: Do in CMakeLists.txt
 mkdir -p appdir/$PREFIX/share/applications/
 cp ../hotspot.desktop appdir/$PREFIX/share/applications/
