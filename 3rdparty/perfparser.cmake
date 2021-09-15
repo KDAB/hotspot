@@ -21,6 +21,7 @@ add_executable(hotspot-perfparser
     perfparser/app/perfaddresscache.cpp
     perfparser/app/perftracingdata.cpp
     perfparser/app/perfdwarfdiecache.cpp
+    perfparser/app/demangler.cpp
 )
 
 target_link_libraries(hotspot-perfparser
@@ -62,6 +63,7 @@ ecm_add_test(
     perfparser/app/perfelfmap.cpp
     perfparser/app/perfdwarfdiecache.cpp
     perfparser/app/perfaddresscache.cpp
+    perfparser/app/demangler.cpp
     LINK_LIBRARIES
         Qt5::Core
         Qt5::Network
@@ -89,6 +91,7 @@ ecm_add_test(
     perfparser/app/perftracingdata.cpp
     perfparser/app/perfunwind.cpp
     perfparser/app/perfdwarfdiecache.cpp
+    perfparser/app/demangler.cpp
     LINK_LIBRARIES
         Qt5::Core
         Qt5::Network

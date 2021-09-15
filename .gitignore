@@ -4,3 +4,4 @@ build*/
 .kdev4
 elfutils.build.tar.bz2
 rustc_demangle.build.tar.bz2
+d-demangle.tar.gz
