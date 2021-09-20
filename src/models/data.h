@@ -757,12 +757,14 @@ struct FilterAction
     QVector<quint32> excludeCpuIds;
     QSet<Data::Symbol> includeSymbols;
     QSet<Data::Symbol> excludeSymbols;
+    QSet<QString> includeBinaries;
+    QSet<QString> excludeBinaries;
 
     bool isValid() const
     {
         return time.isValid() || processId != INVALID_PID || threadId != INVALID_PID || cpuId != INVALID_CPU_ID
             || !excludeProcessIds.isEmpty() || !excludeThreadIds.isEmpty() || !excludeCpuIds.isEmpty()
-            || !includeSymbols.isEmpty() || !excludeSymbols.isEmpty();
+            || !includeSymbols.isEmpty() || !excludeSymbols.isEmpty() || !includeBinaries.isEmpty() || !excludeBinaries.isEmpty();
     }
 };
 

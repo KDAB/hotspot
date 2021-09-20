@@ -1512,7 +1512,9 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         const bool excludeByCpu = !filter.excludeCpuIds.isEmpty();
         const bool includeBySymbol = !filter.includeSymbols.isEmpty();
         const bool excludeBySymbol = !filter.excludeSymbols.isEmpty();
-        const bool filterByStack = includeBySymbol || excludeBySymbol;
+        const bool includeByBinary = !filter.includeBinaries.isEmpty();
+        const bool excludeByBinary = !filter.excludeBinaries.isEmpty();
+        const bool filterByStack = includeBySymbol || excludeBySymbol || includeByBinary || excludeByBinary;
 
         if (!filter.isValid()) {
             bottomUp = m_bottomUpResults;
@@ -1537,22 +1539,29 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                 // TODO: parallelize
                 for (qint32 stackId = 0, c = m_events.stacks.size(); stackId < c; ++stackId) {
                     // if empty, then all include filters are matched
-                    auto included = filter.includeSymbols;
+                    auto includedSymbols = filter.includeSymbols;
+                    auto includedBinaries = filter.includeBinaries;
                     // if false, then none of the exclude filters matched
                     bool excluded = false;
                     m_bottomUpResults.foreachFrame(m_events.stacks.at(stackId),
-                                                   [&included, &excluded, &filter](const Data::Symbol& symbol,
+                                                   [&includedSymbols, &includedBinaries, &excluded, &filter](const Data::Symbol& symbol,
                                                                                    const Data::Location& /*location*/) {
                                                        excluded = filter.excludeSymbols.contains(symbol);
                                                        if (excluded) {
                                                            return false;
                                                        }
-                                                       included.remove(symbol);
+                                                       includedSymbols.remove(symbol);
+
+                                                       excluded = filter.excludeBinaries.contains(symbol.binary);
+                                                       if (excluded) {
+                                                           return false;
+                                                       }
+                                                       includedBinaries.remove(symbol.binary);
                                                        // only stop when we included everything and no exclude filter is
                                                        // set
-                                                       return !included.isEmpty() || !filter.excludeSymbols.isEmpty();
+                                                       return !includedSymbols.isEmpty() || !filter.excludeSymbols.isEmpty() || includedBinaries.isEmpty() || !filter.excludeBinaries.isEmpty();
                                                    });
-                    filterStacks[stackId] = !excluded && included.isEmpty();
+                    filterStacks[stackId] = !excluded && includedSymbols.isEmpty() && includedBinaries.isEmpty();
                 }
             }
 

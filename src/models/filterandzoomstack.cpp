@@ -72,6 +72,22 @@ FilterAndZoomStack::FilterAndZoomStack(QObject* parent)
         filterOutBySymbol(data.value<Data::Symbol>());
     });
 
+    m_actions.filterInByBinary =
+        new QAction(QIcon::fromTheme(QStringLiteral("view-filter")), tr("Filter In By Binary"), this);
+    connect(m_actions.filterInByBinary, &QAction::triggered, this, [this]() {
+        const auto data = m_actions.filterInByBinary->data();
+        Q_ASSERT(data.canConvert<QString>());
+        filterInByBinary(data.value<QString>());
+    });
+
+    m_actions.filterOutByBinary =
+        new QAction(QIcon::fromTheme(QStringLiteral("view-filter")), tr("Filter Out By Binary"), this);
+    connect(m_actions.filterOutByBinary, &QAction::triggered, this, [this]() {
+        const auto data = m_actions.filterInByBinary->data();
+        Q_ASSERT(data.canConvert<QString>());
+        filterOutByBinary(data.value<QString>());
+    });
+
     connect(this, &FilterAndZoomStack::filterChanged, this, &FilterAndZoomStack::updateActions);
     connect(this, &FilterAndZoomStack::zoomChanged, this, &FilterAndZoomStack::updateActions);
     updateActions();
@@ -162,6 +178,20 @@ void FilterAndZoomStack::filterOutBySymbol(const Data::Symbol& symbol)
 {
     Data::FilterAction filter;
     filter.excludeSymbols.insert(symbol);
+    applyFilter(filter);
+}
+
+void FilterAndZoomStack::filterInByBinary(const QString& binary)
+{
+    Data::FilterAction filter;
+    filter.includeBinaries.insert(binary);
+    applyFilter(filter);
+}
+
+void FilterAndZoomStack::filterOutByBinary(const QString& binary)
+{
+    Data::FilterAction filter;
+    filter.excludeBinaries.insert(binary);
     applyFilter(filter);
 }
 

@@ -88,6 +88,13 @@ void addFilterActions(QMenu* menu, const Data::Symbol& symbol, FilterAndZoomStac
         menu->addAction(filterActions.filterInBySymbol);
         menu->addAction(filterActions.filterOutBySymbol);
         menu->addSeparator();
+
+        filterActions.filterInByBinary->setData(QVariant::fromValue(symbol.binary));
+        filterActions.filterOutByBinary->setData(filterActions.filterInByBinary->data());
+
+        menu->addAction(filterActions.filterInByBinary);
+        menu->addAction(filterActions.filterOutByBinary);
+        menu->addSeparator();
     }
 
     menu->addAction(filterStack->actions().filterOut);
