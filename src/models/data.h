@@ -760,6 +760,17 @@ struct EventResults
     }
 };
 
+struct Tracepoint
+{
+    quint64 time = 0;
+    QString name;
+};
+
+struct TracepointResults
+{
+    QVector<Tracepoint> tracepoints;
+};
+
 struct FilterAction
 {
     TimeRange time;
@@ -846,6 +857,12 @@ Q_DECLARE_TYPEINFO(Data::CostSummary, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::EventResults)
 Q_DECLARE_TYPEINFO(Data::EventResults, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::Tracepoint)
+Q_DECLARE_TYPEINFO(Data::Tracepoint, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::TracepointResults)
+Q_DECLARE_TYPEINFO(Data::TracepointResults, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::TimeRange)
 Q_DECLARE_TYPEINFO(Data::TimeRange, Q_MOVABLE_TYPE);

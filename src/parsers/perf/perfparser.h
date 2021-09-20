@@ -73,6 +73,7 @@ signals:
     void topDownDataAvailable(const Data::TopDownResults& data);
     void perLibraryDataAvailable(const Data::PerLibraryResults& data);
     void callerCalleeDataAvailable(const Data::CallerCalleeResults& data);
+    void tracepointDataAvailable(const Data::TracepointResults& data);
     void eventsAvailable(const Data::EventResults& events);
     void parsingFinished();
     void parsingFailed(const QString& errorMessage);
@@ -90,6 +91,7 @@ private:
     QStringList m_parserArgs;
     Data::BottomUpResults m_bottomUpResults;
     Data::CallerCalleeResults m_callerCalleeResults;
+    Data::TracepointResults m_tracepointResults;
     Data::EventResults m_events;
     std::atomic<bool> m_isParsing;
     std::atomic<bool> m_stopRequested;
