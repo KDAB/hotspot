@@ -1007,6 +1007,14 @@ public:
             event.cpuId = sample.cpu;
             thread->events.push_back(event);
             cpu.events.push_back(event);
+
+            // see perfattributes.h
+            if (attributes[event.type].type == 2) {
+                Data::Tracepoint tracepoint;
+                tracepoint.time = event.time;
+                tracepoint.name = strings[attributes[event.type].name.id];
+                tracepointResult.tracepoints.push_back(tracepoint);
+            }
         }
 
         addSampleToBottomUp(sample);
@@ -1271,6 +1279,7 @@ public:
     Data::PerLibraryResults perLibraryResult;
     Data::CallerCalleeResults callerCalleeResult;
     Data::EventResults eventResult;
+    Data::TracepointResults tracepointResult;
     QHash<qint32, QHash<qint32, QString>> commands;
     QScopedPointer<QTextStream> perfScriptOutput;
     QHash<qint32, SymbolCount> numSymbolsByModule;
@@ -1314,6 +1323,11 @@ PerfParser::PerfParser(QObject* parent)
     connect(this, &PerfParser::eventsAvailable, this, [this](const Data::EventResults& data) {
         if (m_events.threads.isEmpty()) {
             m_events = data;
+        }
+    });
+    connect(this, &PerfParser::tracepointDataAvailable, this, [this](const Data::TracepointResults& data) {
+        if (m_tracepointResults.tracepoints.isEmpty()) {
+            m_tracepointResults = data;
         }
     });
     connect(this, &PerfParser::parsingStarted, this, [this]() {
@@ -1383,6 +1397,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
     m_parserArgs = parserArgs;
     m_bottomUpResults = {};
     m_callerCalleeResults = {};
+    m_tracepointResults = {};
     m_events = {};
 
     emit parsingStarted();
@@ -1399,6 +1414,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
             emit perLibraryDataAvailable(d.perLibraryResult);
             emit summaryDataAvailable(d.summaryResult);
             emit callerCalleeDataAvailable(d.callerCalleeResult);
+            emit tracepointDataAvailable(d.tracepointResult);
             emit eventsAvailable(d.eventResult);
             emit parsingFinished();
 
@@ -1526,6 +1542,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         Data::BottomUpResults bottomUp;
         Data::EventResults events = m_events;
         Data::CallerCalleeResults callerCallee;
+        Data::TracepointResults tracepointResults = m_tracepointResults;
         const bool filterByTime = filter.time.isValid();
         const bool filterByCpu = filter.cpuId != std::numeric_limits<quint32>::max();
         const bool excludeByCpu = !filter.excludeCpuIds.isEmpty();
@@ -1618,6 +1635,18 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                         });
                     thread.events.erase(it, thread.events.end());
                 }
+
+                if (filterByTime) {
+                    auto it = std::remove_if(tracepointResults.tracepoints.begin(), tracepointResults.tracepoints.end(),
+                                             [filter, filterByTime](const Data::Tracepoint& tracepoint) {
+                                                 if (filterByTime && !filter.time.contains(tracepoint.time)) {
+                                                     return true;
+                                                 }
+                                                 return false;
+                                             });
+                    tracepointResults.tracepoints.erase(it, tracepointResults.tracepoints.end());
+                }
+
                 if (m_stopRequested) {
                     emit parsingFailed(tr("Parsing stopped."));
                     return;
@@ -1680,6 +1709,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         emit topDownDataAvailable(topDown);
         emit perLibraryDataAvailable(perLibrary);
         emit callerCalleeDataAvailable(callerCallee);
+        emit tracepointDataAvailable(tracepointResults);
         emit eventsAvailable(events);
         emit parsingFinished();
     });

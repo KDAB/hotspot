@@ -108,6 +108,7 @@ int main(int argc, char** argv)
     qRegisterMetaType<Data::CallerCalleeResults>();
     qRegisterMetaType<Data::EventResults>();
     qRegisterMetaType<Data::PerLibraryResults>();
+    qRegisterMetaType<Data::TracepointResults>();
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("Linux perf GUI for performance analysis."));
