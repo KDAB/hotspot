@@ -54,6 +54,7 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
     ui->parserErrorsBox->setVisible(false);
 
     auto bottomUpCostModel = new BottomUpModel(this);
+    auto perLibraryModel = new PerLibraryModel(this);
 
     auto topHotspotsProxy = new TopProxy(this);
     topHotspotsProxy->setSourceModel(bottomUpCostModel);
@@ -64,10 +65,27 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
     ResultsUtil::setupHeaderView(ui->topHotspotsTableView);
     ResultsUtil::setupContextMenu(ui->topHotspotsTableView, bottomUpCostModel, filterStack, this);
 
+    auto topLibraryProxy = new TopProxy(this);
+    topLibraryProxy->setSourceModel(perLibraryModel);
+    topLibraryProxy->setCostColumn(PerLibraryModel::InitialSortColumn);
+    topLibraryProxy->setNumBaseColumns(PerLibraryModel::NUM_BASE_COLUMNS);
+
+    ui->topLibraryTreeView->setSortingEnabled(false);
+    ui->topLibraryTreeView->setModel(topLibraryProxy);
+    ResultsUtil::setupCostDelegate<PerLibraryModel>(perLibraryModel, ui->topLibraryTreeView);
+    ResultsUtil::setupHeaderView(ui->topLibraryTreeView);
+    ResultsUtil::setupContextMenu(ui->topLibraryTreeView, perLibraryModel, filterStack, this);
+
     connect(ui->eventSourceComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             [topHotspotsProxy, this]() {
                 topHotspotsProxy->setCostColumn(ui->eventSourceComboBox->currentData().toInt()
                                                 + BottomUpModel::NUM_BASE_COLUMNS);
+            });
+
+    connect(ui->eventSourceComboBox_2, qOverload<int>(&QComboBox::currentIndexChanged), this,
+            [topLibraryProxy, this]() {
+                topLibraryProxy->setCostColumn(ui->eventSourceComboBox_2->currentData().toInt()
+                                               + PerLibraryModel::NUM_BASE_COLUMNS);
             });
 
     connect(parser, &PerfParser::bottomUpDataAvailable, this,
@@ -75,6 +93,14 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
                 bottomUpCostModel->setData(data);
                 ResultsUtil::hideEmptyColumns(data.costs, ui->topHotspotsTableView, BottomUpModel::NUM_BASE_COLUMNS);
                 ResultsUtil::fillEventSourceComboBox(ui->eventSourceComboBox, data.costs,
+                                                     tr("Show top hotspots for %1 events."));
+            });
+
+    connect(parser, &PerfParser::perLibraryDataAvailable, this,
+            [this, perLibraryModel](const Data::PerLibraryResults& data) {
+                perLibraryModel->setData(data);
+                ResultsUtil::hideEmptyColumns(data.costs, ui->topLibraryTreeView, PerLibraryModel::NUM_BASE_COLUMNS);
+                ResultsUtil::fillEventSourceComboBox(ui->eventSourceComboBox_2, data.costs,
                                                      tr("Show top hotspots for %1 events."));
             });
 

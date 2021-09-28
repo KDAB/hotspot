@@ -39,6 +39,7 @@ public:
     ~TopProxy() override;
 
     void setCostColumn(int costColumn);
+    void setNumBaseColumns(int numBaseColumns);
 
     bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
     bool filterAcceptsColumn(int source_column, const QModelIndex& source_parent) const override;
@@ -47,6 +48,7 @@ public:
 
 private:
     int m_costColumn;
+    int m_numBaseColumns;
 };
 
 #endif // TOPPROXY_H

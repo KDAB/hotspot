@@ -825,6 +825,7 @@ public:
         summaryResult.processCount = uniqueProcess.size();
 
         buildTopDownResult();
+        buildPerLibraryResult();
         buildCallerCalleeResult();
 
         for (auto& thread : eventResult.threads) {
@@ -1072,6 +1073,11 @@ public:
         topDownResult = Data::TopDownResults::fromBottomUp(bottomUpResult);
     }
 
+    void buildPerLibraryResult()
+    {
+        perLibraryResult = Data::PerLibraryResults::fromTopDown(topDownResult);
+    }
+
     void buildCallerCalleeResult()
     {
         Data::callerCalleesFromBottomUpData(bottomUpResult, &callerCalleeResult);
@@ -1262,6 +1268,7 @@ public:
     QSet<quint32> uniqueProcess;
     Data::BottomUpResults bottomUpResult;
     Data::TopDownResults topDownResult;
+    Data::PerLibraryResults perLibraryResult;
     Data::CallerCalleeResults callerCalleeResult;
     Data::EventResults eventResult;
     QHash<qint32, QHash<qint32, QString>> commands;
@@ -1389,6 +1396,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
             d.finalize();
             emit bottomUpDataAvailable(d.bottomUpResult);
             emit topDownDataAvailable(d.topDownResult);
+            emit perLibraryDataAvailable(d.perLibraryResult);
             emit summaryDataAvailable(d.summaryResult);
             emit callerCalleeDataAvailable(d.callerCalleeResult);
             emit eventsAvailable(d.eventResult);
@@ -1661,6 +1669,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         }
 
         const auto topDown = Data::TopDownResults::fromBottomUp(bottomUp);
+        const auto perLibrary = Data::PerLibraryResults::fromTopDown(topDown);
 
         if (m_stopRequested) {
             emit parsingFailed(tr("Parsing stopped."));
@@ -1669,6 +1678,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
 
         emit bottomUpDataAvailable(bottomUp);
         emit topDownDataAvailable(topDown);
+        emit perLibraryDataAvailable(perLibrary);
         emit callerCalleeDataAvailable(callerCallee);
         emit eventsAvailable(events);
         emit parsingFinished();

@@ -71,6 +71,7 @@ signals:
     void summaryDataAvailable(const Data::Summary& data);
     void bottomUpDataAvailable(const Data::BottomUpResults& data);
     void topDownDataAvailable(const Data::TopDownResults& data);
+    void perLibraryDataAvailable(const Data::PerLibraryResults& data);
     void callerCalleeDataAvailable(const Data::CallerCalleeResults& data);
     void eventsAvailable(const Data::EventResults& events);
     void parsingFinished();
