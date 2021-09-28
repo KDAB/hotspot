@@ -469,6 +469,19 @@ struct TopDownResults
     static TopDownResults fromBottomUp(const Data::BottomUpResults& bottomUpData);
 };
 
+struct PerLibrary : SymbolTree<PerLibrary>
+{
+    quint32 id = 0;
+};
+
+struct PerLibraryResults
+{
+    PerLibrary root;
+    Costs costs;
+
+    static PerLibraryResults fromTopDown(const TopDownResults& topDownData);
+};
+
 using SymbolCostMap = QHash<Symbol, ItemCost>;
 using CalleeMap = SymbolCostMap;
 using CallerMap = SymbolCostMap;
@@ -809,6 +822,9 @@ Q_DECLARE_TYPEINFO(Data::BottomUpResults, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::TopDownResults)
 Q_DECLARE_TYPEINFO(Data::TopDownResults, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::PerLibraryResults)
+Q_DECLARE_TYPEINFO(Data::PerLibraryResults, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::CallerCalleeResults)
 Q_DECLARE_TYPEINFO(Data::CallerCalleeResults, Q_MOVABLE_TYPE);

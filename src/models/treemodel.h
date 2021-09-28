@@ -322,3 +322,28 @@ public:
     int numColumns() const final override;
     int selfCostColumn(int cost) const;
 };
+
+class PerLibraryModel : public CostTreeModel<Data::PerLibraryResults, PerLibraryModel>
+{
+    Q_OBJECT
+public:
+    explicit PerLibraryModel(QObject* parent = nullptr)
+        : CostTreeModel(parent)
+    {
+    }
+    ~PerLibraryModel() = default;
+
+    enum Columns
+    {
+        Binary = 0,
+    };
+    enum
+    {
+        NUM_BASE_COLUMNS = Binary + 1,
+        InitialSortColumn = Binary + 1 // the first cost column
+    };
+
+    QVariant headerColumnData(int column, int role) const final override;
+    QVariant rowData(const Data::PerLibrary* row, int column, int role) const final override;
+    int numColumns() const final override;
+};

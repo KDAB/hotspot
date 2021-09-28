@@ -272,6 +272,29 @@ QString prettifySymbol(const QStringRef& str)
 
     return result;
 }
+
+void buildPerLibrary(const TopDown* node, PerLibraryResults& results, QHash<QString, int>& binaryToResultIndex,
+                     const Costs& costs)
+{
+    for (const auto& child : node->children) {
+        const auto binary = child.symbol.binary;
+
+        auto resultIndexIt = binaryToResultIndex.find(binary);
+        if (resultIndexIt == binaryToResultIndex.end()) {
+            resultIndexIt = binaryToResultIndex.insert(binary, binaryToResultIndex.size());
+
+            PerLibrary library;
+            library.id = *resultIndexIt;
+            library.symbol = Symbol(binary);
+            results.root.children.push_back(library);
+        }
+
+        const auto cost = costs.itemCost(child.id);
+        results.costs.add(*resultIndexIt, cost);
+
+        buildPerLibrary(&child, results, binaryToResultIndex, costs);
+    }
+}
 }
 
 QString Data::prettifySymbol(const QString& name)
@@ -289,6 +312,19 @@ TopDownResults TopDownResults::fromBottomUp(const BottomUpResults& bottomUpData)
     buildTopDownResult(bottomUpData.root, bottomUpData.costs, &results.root, &results.inclusiveCosts,
                        &results.selfCosts, &maxId);
     TopDown::initializeParents(&results.root);
+    return results;
+}
+
+PerLibraryResults PerLibraryResults::fromTopDown(const TopDownResults& topDownData)
+{
+    PerLibraryResults results;
+    QHash<QString, int> binaryToResultIndex;
+    results.costs.initializeCostsFrom(topDownData.selfCosts);
+
+    buildPerLibrary(&topDownData.root, results, binaryToResultIndex, topDownData.selfCosts);
+
+    PerLibrary::initializeParents(&results.root);
+
     return results;
 }
 

@@ -224,3 +224,62 @@ int TopDownModel::selfCostColumn(int cost) const
     Q_ASSERT(cost >= 0 && cost < m_results.selfCosts.numTypes());
     return NUM_BASE_COLUMNS + m_results.inclusiveCosts.numTypes() + cost;
 }
+
+QVariant PerLibraryModel::headerColumnData(int column, int role) const
+{
+    if (role == Qt::DisplayRole) {
+        switch (column) {
+        case Binary:
+            return tr("Binary");
+        }
+        column -= NUM_BASE_COLUMNS;
+        if (column < m_results.costs.numTypes()) {
+            return m_results.costs.typeName(column);
+        }
+
+        column -= m_results.costs.numTypes();
+        return m_results.costs.typeName(column);
+    } else {
+        return {};
+    }
+}
+
+QVariant PerLibraryModel::rowData(const Data::PerLibrary* row, int column, int role) const
+{
+    if (role == Qt::DisplayRole || role == SortRole) {
+        switch (column) {
+        case Binary:
+            return Util::formatSymbol(row->symbol);
+        }
+
+        column -= NUM_BASE_COLUMNS;
+        if (column < m_results.costs.numTypes()) {
+            if (role == SortRole) {
+                return m_results.costs.cost(column, row->id);
+            }
+            return Util::formatCostRelative(m_results.costs.cost(column, row->id), m_results.costs.totalCost(column),
+                                            true);
+        }
+
+        column -= m_results.costs.numTypes();
+        if (role == SortRole) {
+            return m_results.costs.cost(column, row->id);
+        }
+        return Util::formatCostRelative(m_results.costs.cost(column, row->id), m_results.costs.totalCost(column), true);
+    } else if (role == TotalCostRole && column >= NUM_BASE_COLUMNS) {
+        column -= NUM_BASE_COLUMNS;
+        if (column < m_results.costs.numTypes()) {
+            return m_results.costs.totalCost(column);
+        }
+
+        column -= m_results.costs.numTypes();
+        return m_results.costs.totalCost(column);
+    } else {
+        return {};
+    }
+}
+
+int PerLibraryModel::numColumns() const
+{
+    return NUM_BASE_COLUMNS + m_results.costs.numTypes();
+}
