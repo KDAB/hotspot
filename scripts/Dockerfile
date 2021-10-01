@@ -50,7 +50,7 @@ ARG DISABLE_RUSTC_DEMANGLE
 
 RUN git clone https://github.com/KDAB/KDDockWidgets ; cd KDDockWidgets ; mkdir build ; cd build ; cmake -DCMAKE_INSTALL_PREFIX=/usr/ .. ; make ; make install
 
-RUN apt-get install -y libphonon4qt5-dev
+RUN apt-get update && apt-get install -y libphonon4qt5-dev
 
 ADD ./scripts/ /opt/hotspot/scripts/
 WORKDIR /opt/hotspot
