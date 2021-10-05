@@ -35,6 +35,7 @@
 #include "hotspot-config.h"
 #include "mainwindow.h"
 #include "models/data.h"
+#include "settings.h"
 #include "util.h"
 
 #include <ThreadWeaver/ThreadWeaver>
@@ -157,30 +158,31 @@ int main(int argc, char** argv)
 
     ThreadWeaver::Queue::instance()->setMaximumNumberOfThreads(QThread::idealThreadCount());
 
-    auto applyCliArgs = [&](MainWindow* window) {
+    auto applyCliArgs = [&](Settings* settings) {
         if (parser.isSet(sysroot)) {
-            window->setSysroot(parser.value(sysroot));
+            settings->setSysroot(parser.value(sysroot));
         }
         if (parser.isSet(kallsyms)) {
-            window->setKallsyms(parser.value(kallsyms));
+            settings->setKallsyms(parser.value(kallsyms));
         }
         if (parser.isSet(debugPaths)) {
-            window->setDebugPaths(parser.value(debugPaths));
+            settings->setDebugPaths(parser.value(debugPaths));
         }
         if (parser.isSet(extraLibPaths)) {
-            window->setExtraLibPaths(parser.value(extraLibPaths));
+            settings->setExtraLibPaths(parser.value(extraLibPaths));
         }
         if (parser.isSet(appPath)) {
-            window->setAppPath(parser.value(appPath));
+            settings->setAppPath(parser.value(appPath));
         }
         if (parser.isSet(arch)) {
-            window->setArch(parser.value(arch));
+            settings->setArch(parser.value(arch));
         }
     };
 
+    const auto settings = Settings::instance();
     for (const auto& file : parser.positionalArguments()) {
         auto window = new MainWindow;
-        applyCliArgs(window);
+        applyCliArgs(settings);
         window->openFile(file);
         window->show();
     }
@@ -188,7 +190,7 @@ int main(int argc, char** argv)
     // show at least one mainwindow
     if (parser.positionalArguments().isEmpty()) {
         auto window = new MainWindow;
-        applyCliArgs(window);
+        applyCliArgs(Settings::instance());
 
         // open perf.data in current CWD, if it exists
         // this brings hotspot closer to the behavior of "perf report"

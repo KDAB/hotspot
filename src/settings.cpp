@@ -78,3 +78,45 @@ void Settings::setDebuginfodUrls(const QStringList& urls)
         emit debuginfodUrlsChanged();
     }
 }
+
+void Settings::setSysroot(const QString& path)
+{
+    m_sysroot = path.trimmed();
+    emit sysrootChanged(m_sysroot);
+}
+
+void Settings::setKallsyms(const QString& path)
+{
+    m_kallsyms = path;
+    emit kallsymsChanged(m_kallsyms);
+}
+
+void Settings::setDebugPaths(const QString& paths)
+{
+    m_debugPaths = paths;
+    emit debugPathsChanged(m_debugPaths);
+}
+
+void Settings::setExtraLibPaths(const QString& paths)
+{
+    m_extraLibPaths = paths;
+    emit extraLibPathsChanged(m_extraLibPaths);
+}
+
+void Settings::setAppPath(const QString& path)
+{
+    m_appPath = path;
+    emit appPathChanged(m_appPath);
+}
+
+void Settings::setArch(const QString& arch)
+{
+    m_arch = arch;
+    emit archChanged(m_arch);
+}
+
+void Settings::setObjdump(const QString& objdump)
+{
+    m_objdump = objdump;
+    emit objdumpChanged(m_objdump);
+}

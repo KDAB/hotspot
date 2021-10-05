@@ -56,14 +56,6 @@ public:
     ~MainWindow();
 
 public slots:
-    void setSysroot(const QString& path);
-    void setKallsyms(const QString& path);
-    void setDebugPaths(const QString& paths);
-    void setExtraLibPaths(const QString& paths);
-    void setAppPath(const QString& path);
-    void setArch(const QString& arch);
-    void setObjdump(const QString& objdump);
-
     void clear();
     void openFile(const QString& path);
     void openFile(const QUrl& url);
@@ -83,13 +75,6 @@ public slots:
 
 signals:
     void openFileError(const QString& errorMessage);
-    void sysrootChanged(const QString& path);
-    void kallsymsChanged(const QString& path);
-    void debugPathsChanged(const QString& paths);
-    void extraLibPathsChanged(const QString& paths);
-    void appPathChanged(const QString& path);
-    void archChanged(const QString& arch);
-    void objdumpChanged(const QString& objdump);
 
 private:
     void clear(bool isReload);
@@ -106,13 +91,6 @@ private:
     ResultsPage* m_resultsPage;
     SettingsDialog* m_settingsDialog;
 
-    QString m_sysroot;
-    QString m_kallsyms;
-    QString m_debugPaths;
-    QString m_extraLibPaths;
-    QString m_appPath;
-    QString m_arch;
-    QString m_objdump;
     QString m_lastUsedSettings;
     KRecentFilesAction* m_recentFilesAction = nullptr;
     QAction* m_reloadAction = nullptr;

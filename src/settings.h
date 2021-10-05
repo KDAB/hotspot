@@ -76,6 +76,41 @@ public:
         return m_debuginfodUrls;
     }
 
+    QString sysroot() const
+    {
+        return m_sysroot;
+    }
+
+    QString kallsyms() const
+    {
+        return m_kallsyms;
+    }
+
+    QString debugPaths() const
+    {
+        return m_debugPaths;
+    }
+
+    QString extraLibPaths() const
+    {
+        return m_extraLibPaths;
+    }
+
+    QString appPath() const
+    {
+        return m_appPath;
+    }
+
+    QString arch() const
+    {
+        return m_arch;
+    }
+
+    QString objdump() const
+    {
+        return m_objdump;
+    }
+
 signals:
     void prettifySymbolsChanged(bool);
     void collapseTemplatesChanged(bool);
@@ -83,6 +118,13 @@ signals:
     void colorSchemeChanged(ColorScheme);
     void pathsChanged();
     void debuginfodUrlsChanged();
+    void sysrootChanged(const QString& path);
+    void kallsymsChanged(const QString& path);
+    void debugPathsChanged(const QString& paths);
+    void extraLibPathsChanged(const QString& paths);
+    void appPathChanged(const QString& path);
+    void archChanged(const QString& arch);
+    void objdumpChanged(const QString& objdump);
 
 public slots:
     void setPrettifySymbols(bool prettifySymbols);
@@ -91,6 +133,13 @@ public slots:
     void setColorScheme(ColorScheme scheme);
     void setPaths(const QStringList& userPaths, const QStringList& systemPaths);
     void setDebuginfodUrls(const QStringList& urls);
+    void setSysroot(const QString& path);
+    void setKallsyms(const QString& path);
+    void setDebugPaths(const QString& paths);
+    void setExtraLibPaths(const QString& paths);
+    void setAppPath(const QString& path);
+    void setArch(const QString& arch);
+    void setObjdump(const QString& objdump);
 
 private:
     Settings() = default;
@@ -103,4 +152,12 @@ private:
     QStringList m_userPaths;
     QStringList m_systemPaths;
     QStringList m_debuginfodUrls;
+
+    QString m_sysroot;
+    QString m_kallsyms;
+    QString m_debugPaths;
+    QString m_extraLibPaths;
+    QString m_appPath;
+    QString m_arch;
+    QString m_objdump;
 };

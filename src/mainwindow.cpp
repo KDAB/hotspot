@@ -127,19 +127,21 @@ MainWindow::MainWindow(QWidget* parent)
     layout->addWidget(m_pageStack);
     centralWidget()->setLayout(layout);
 
-    connect(m_settingsDialog, &QDialog::accepted, this, [this]() {
-        setSysroot(m_settingsDialog->sysroot());
-        setAppPath(m_settingsDialog->appPath());
-        setExtraLibPaths(m_settingsDialog->extraLibPaths());
-        setDebugPaths(m_settingsDialog->debugPaths());
-        setKallsyms(m_settingsDialog->kallsyms());
-        setArch(m_settingsDialog->arch());
-        setObjdump(m_settingsDialog->objdump());
+    auto settings = Settings::instance();
+
+    connect(m_settingsDialog, &QDialog::accepted, this, [this, settings]() {
+        settings->setSysroot(m_settingsDialog->sysroot());
+        settings->setAppPath(m_settingsDialog->appPath());
+        settings->setExtraLibPaths(m_settingsDialog->extraLibPaths());
+        settings->setDebugPaths(m_settingsDialog->debugPaths());
+        settings->setKallsyms(m_settingsDialog->kallsyms());
+        settings->setArch(m_settingsDialog->arch());
+        settings->setObjdump(m_settingsDialog->objdump());
     });
 
-    connect(this, &MainWindow::sysrootChanged, m_resultsPage, &ResultsPage::setSysroot);
-    connect(this, &MainWindow::appPathChanged, m_resultsPage, &ResultsPage::setAppPath);
-    connect(this, &MainWindow::objdumpChanged, m_resultsPage, &ResultsPage::setObjdump);
+    connect(settings, &Settings::sysrootChanged, m_resultsPage, &ResultsPage::setSysroot);
+    connect(settings, &Settings::appPathChanged, m_resultsPage, &ResultsPage::setAppPath);
+    connect(settings, &Settings::objdumpChanged, m_resultsPage, &ResultsPage::setObjdump);
     connect(m_startPage, &StartPage::pathSettingsButtonClicked, this, &MainWindow::openSettingsDialog);
 
     connect(m_startPage, &StartPage::openFileButtonClicked, this, &MainWindow::onOpenFileButtonClicked);
@@ -292,13 +294,13 @@ MainWindow::MainWindow(QWidget* parent)
     m_lastUsedSettings = m_config->group("PerfPaths").readEntry("lastUsed");
     if (!m_lastUsedSettings.isEmpty()) {
         auto currentConfig = m_config->group("PerfPaths").group(m_lastUsedSettings);
-        setSysroot(currentConfig.readEntry("sysroot", ""));
-        setAppPath(currentConfig.readEntry("appPath", ""));
-        setExtraLibPaths(currentConfig.readEntry("extraLibPaths", ""));
-        setDebugPaths(currentConfig.readEntry("debugPaths", ""));
-        setKallsyms(currentConfig.readEntry("kallsyms", ""));
-        setArch(currentConfig.readEntry("arch", ""));
-        setObjdump(currentConfig.readEntry("objdump", ""));
+        settings->setSysroot(currentConfig.readEntry("sysroot", ""));
+        settings->setAppPath(currentConfig.readEntry("appPath", ""));
+        settings->setExtraLibPaths(currentConfig.readEntry("extraLibPaths", ""));
+        settings->setDebugPaths(currentConfig.readEntry("debugPaths", ""));
+        settings->setKallsyms(currentConfig.readEntry("kallsyms", ""));
+        settings->setArch(currentConfig.readEntry("arch", ""));
+        settings->setObjdump(currentConfig.readEntry("objdump", ""));
     }
 }
 
@@ -314,48 +316,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
     m_parser->stop();
     QMainWindow::closeEvent(event);
-}
-
-void MainWindow::setSysroot(const QString& path)
-{
-    m_sysroot = path.trimmed();
-    emit sysrootChanged(m_sysroot);
-}
-
-void MainWindow::setKallsyms(const QString& path)
-{
-    m_kallsyms = path;
-    emit kallsymsChanged(m_kallsyms);
-}
-
-void MainWindow::setDebugPaths(const QString& paths)
-{
-    m_debugPaths = paths;
-    emit debugPathsChanged(m_debugPaths);
-}
-
-void MainWindow::setExtraLibPaths(const QString& paths)
-{
-    m_extraLibPaths = paths;
-    emit extraLibPathsChanged(m_extraLibPaths);
-}
-
-void MainWindow::setAppPath(const QString& path)
-{
-    m_appPath = path;
-    emit appPathChanged(m_appPath);
-}
-
-void MainWindow::setArch(const QString& arch)
-{
-    m_arch = arch;
-    emit archChanged(m_arch);
-}
-
-void MainWindow::setObjdump(const QString& objdump)
-{
-    m_objdump = objdump;
-    emit objdumpChanged(m_objdump);
 }
 
 void MainWindow::onOpenFileButtonClicked()
@@ -414,7 +374,9 @@ void MainWindow::openFile(const QString& path, bool isReload)
     m_pageStack->setCurrentWidget(m_startPage);
 
     // TODO: support input files of different types via plugins
-    m_parser->startParseFile(path, m_sysroot, m_kallsyms, m_debugPaths, m_extraLibPaths, m_appPath, m_arch);
+    auto settings = Settings::instance();
+    m_parser->startParseFile(path, settings->sysroot(), settings->kallsyms(), settings->debugPaths(),
+                             settings->extraLibPaths(), settings->appPath(), settings->arch());
     m_reloadAction->setData(path);
     m_exportAction->setData(QUrl::fromLocalFile(file.absoluteFilePath() + QLatin1String(".perfparser")));
 
