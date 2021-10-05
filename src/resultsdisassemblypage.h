@@ -47,7 +47,7 @@ class QTreeView;
 class QStandardItemModel;
 class QTemporaryFile;
 class CostDelegate;
-class DisassemblyOutput;
+struct DisassemblyOutput;
 class DisassemblyModel;
 
 class ResultsDisassemblyPage : public QWidget
