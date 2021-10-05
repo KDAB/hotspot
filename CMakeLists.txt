@@ -1,9 +1,5 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.3)
 project(hotspot VERSION 1.3.80 LANGUAGES CXX C)
-
-if (POLICY CMP0063)
-    cmake_policy (SET CMP0063 NEW)
-endif (POLICY CMP0063)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/perfparser/cmake/
