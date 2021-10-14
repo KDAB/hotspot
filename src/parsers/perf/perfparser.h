@@ -34,6 +34,7 @@
 #include <models/data.h>
 
 class QUrl;
+class QTemporaryFile;
 
 // TODO: create a parser interface
 class PerfParser : public QObject
@@ -81,6 +82,8 @@ signals:
     void exportFinished(const QUrl& url);
 
 private:
+    QString decompressIfNeeded(const QString& path);
+
     // only set once after the initial startParseFile finished
     QStringList m_parserArgs;
     Data::BottomUpResults m_bottomUpResults;
@@ -88,4 +91,5 @@ private:
     Data::EventResults m_events;
     std::atomic<bool> m_isParsing;
     std::atomic<bool> m_stopRequested;
+    std::unique_ptr<QTemporaryFile> m_decompressed;
 };

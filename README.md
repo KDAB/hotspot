@@ -114,6 +114,7 @@ As of now, you will need the following dependencies to build this project:
   - notifications
   - iconthemes
   - parts
+  - archive (optional)
   - kauth (optional)
 - [KDDockWidgets](https://github.com/KDAB/KDDockWidgets)
   - this library is not yet packaged on most distributions, you'll have to compile it yourself from source
