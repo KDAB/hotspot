@@ -24,6 +24,11 @@ if (KF5Auth_FOUND)
     target_link_libraries(tst_perfparser KF5::Auth)
 endif (KF5Auth_FOUND)
 
+if (KF5Archive_FOUND)
+    target_link_libraries(tst_perfparser
+        KF5::Archive)
+endif(KF5Archive_FOUND)
+
 set_target_properties(tst_perfparser
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
@@ -42,6 +47,12 @@ target_link_libraries(dump_perf_data
     KF5::ThreadWeaver
     KF5::KIOCore
 )
+
+if (KF5Archive_FOUND)
+    target_link_libraries(dump_perf_data
+        KF5::Archive)
+endif(KF5Archive_FOUND)
+
 set_target_properties(dump_perf_data
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"

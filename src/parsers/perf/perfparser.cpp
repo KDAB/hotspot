@@ -50,6 +50,10 @@
 
 #include "settings.h"
 
+#if KF5Archive_FOUND
+#include <KArchive/KCompressionDevice>
+#endif
+
 Q_LOGGING_CATEGORY(LOG_PERFPARSER, "hotspot.perfparser", QtWarningMsg)
 
 namespace {
@@ -1309,8 +1313,14 @@ PerfParser::PerfParser(QObject* parent)
         m_isParsing = true;
         m_stopRequested = false;
     });
-    connect(this, &PerfParser::parsingFailed, this, [this]() { m_isParsing = false; });
-    connect(this, &PerfParser::parsingFinished, this, [this]() { m_isParsing = false; });
+
+    auto parsingStopped = [this] {
+        m_isParsing = false;
+        m_decompressed.reset();
+    };
+
+    connect(this, &PerfParser::parsingFailed, this, parsingStopped);
+    connect(this, &PerfParser::parsingFinished, this, parsingStopped);
 }
 
 PerfParser::~PerfParser() = default;
@@ -1341,7 +1351,8 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
         return;
     }
 
-    QStringList parserArgs = {QStringLiteral("--input"), path, QStringLiteral("--max-frames"), QStringLiteral("1024")};
+    QStringList parserArgs = {QStringLiteral("--input"), decompressIfNeeded(path), QStringLiteral("--max-frames"),
+                              QStringLiteral("1024")};
     if (!sysroot.isEmpty()) {
         parserArgs += {QStringLiteral("--sysroot"), sysroot};
     }
@@ -1720,6 +1731,39 @@ void PerfParser::exportResults(const QUrl& url)
             job->start();
         });
     });
+}
+
+QString PerfParser::decompressIfNeeded(const QString& path)
+{
+#if KF5Archive_FOUND
+    m_decompressed = std::make_unique<QTemporaryFile>(this);
+
+    KCompressionDevice compressedFile(path);
+
+    if (compressedFile.compressionType() == KCompressionDevice::None) {
+        return path;
+    }
+
+    if (compressedFile.open(QIODevice::ReadOnly)) {
+        m_decompressed->open();
+
+        const int chunkSize = 1024 * 100;
+
+        QByteArray buffer;
+        buffer.resize(chunkSize);
+
+        while (!compressedFile.atEnd()) {
+            int size = compressedFile.read(buffer.data(), buffer.size());
+            m_decompressed->write(buffer.data(), size);
+        }
+        m_decompressed->flush();
+
+        compressedFile.close();
+        return m_decompressed->fileName();
+    }
+#endif
+    // fallback
+    return path;
 }
 
 #include "perfparser.moc"

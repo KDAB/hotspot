@@ -102,6 +102,11 @@ target_link_libraries(hotspot
     KDAB::kddockwidgets
 )
 
+if (KF5Archive_FOUND)
+    target_link_libraries(hotspot
+        KF5::Archive)
+endif(KF5Archive_FOUND)
+
 set_target_properties(hotspot
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
