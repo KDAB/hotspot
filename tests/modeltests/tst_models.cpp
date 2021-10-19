@@ -629,6 +629,48 @@ private slots:
 
         QCOMPARE(Data::Symbol(symbol).prettySymbol, prettySymbol);
     }
+
+    void testCollapseTemplates_data()
+    {
+        QTest::addColumn<QString>("original");
+        QTest::addColumn<QString>("collapsed");
+
+        QTest::addRow("operator<") << "Foo<Bar> operator< (Asdf<Xyz>);"
+                                   << "Foo<...> operator< (Asdf<...>);";
+        QTest::addRow("operator>") << "Foo<Bar> operator> (Asdf<Xyz>);"
+                                   << "Foo<...> operator> (Asdf<...>);";
+        QTest::addRow("operator<<") << "Foo<Bar> operator<< (Asdf<Xyz>);"
+                                    << "Foo<...> operator<< (Asdf<...>);";
+        QTest::addRow("operator>>") << "Foo<Bar> operator>> (Asdf<Xyz>);"
+                                    << "Foo<...> operator>> (Asdf<...>);";
+
+        QTest::addRow("operator <") << "Foo<Bar> operator < (Asdf<Xyz>);"
+                                    << "Foo<...> operator < (Asdf<...>);";
+        QTest::addRow("operator   >") << "Foo<Bar> operator   > (Asdf<Xyz>);"
+                                      << "Foo<...> operator   > (Asdf<...>);";
+        QTest::addRow("operator <<") << "Foo<Bar> operator << (Asdf<Xyz>);"
+                                     << "Foo<...> operator << (Asdf<...>);";
+        QTest::addRow("operator   >>") << "Foo<Bar> operator   >> (Asdf<Xyz>);"
+                                       << "Foo<...> operator   >> (Asdf<...>);";
+
+        QTest::addRow("operator< 2") << "Foo<Bar<Xyz>> operator< (Asdf<Xyz>);"
+                                     << "Foo<...> operator< (Asdf<...>);";
+        QTest::addRow("operator> 2") << "Foo<Bar<Xyz>> operator> (Asdf<Xyz>);"
+                                     << "Foo<...> operator> (Asdf<...>);";
+        QTest::addRow("operator<< 2") << "Foo<Bar<Xyz>> operator<< (Asdf<Xyz>);"
+                                      << "Foo<...> operator<< (Asdf<...>);";
+        QTest::addRow("operator>> 2") << "Foo<Bar<Xyz>> operator>> (Asdf<Xyz>);"
+                                      << "Foo<...> operator>> (Asdf<...>);";
+    }
+
+    void testCollapseTemplates()
+    {
+        QString collapseTemplate(const QString& str, int level);
+        QFETCH(QString, original);
+        QFETCH(QString, collapsed);
+
+        QCOMPARE(collapseTemplate(original, 1), collapsed);
+    }
 };
 
 QTEST_GUILESS_MAIN(TestModels);

@@ -41,16 +41,34 @@
 #include "data.h"
 #include "settings.h"
 
-static QString collapseTemplate(const QString& str, int level)
+QString collapseTemplate(const QString& str, int level)
 {
+
     if (str.indexOf(QLatin1Char('<')) == -1) {
         return str;
     }
 
+    auto isSpaceOrAngleBracket = [](QChar c) {
+        if (c == QLatin1Char(' ')) {
+            return true;
+        }
+        if (c == QLatin1Char('<')) {
+            return true;
+        }
+        if (c == QLatin1Char('>')) {
+            return true;
+        }
+
+        return false;
+    };
+
     QString output;
     output.reserve(str.size());
+    const auto operatorKeyword = QLatin1String("operator");
+    const int size = str.size();
     int depth = 0;
-    for (auto c : str) {
+    for (int i = 0; i < size; i++) {
+        const auto c = str[i];
         if (c == QLatin1Char('<')) {
             depth++;
             if (depth == level) {
@@ -58,7 +76,19 @@ static QString collapseTemplate(const QString& str, int level)
             }
         } else if (c == QLatin1Char('>')) {
             depth--;
+        } else if (c == QLatin1Char('o') && str.midRef(i, operatorKeyword.size()) == operatorKeyword) {
+            i += operatorKeyword.size();
+            output.append(operatorKeyword);
+            int j = i;
+            for (; j < size && isSpaceOrAngleBracket(str[j]); j++) {
+                output.append(str[j]);
+            }
+            // str[j] now points to a char that is not a space or angle bracket
+            // -> need to rewind back
+            i = j - 1;
+            continue;
         }
+
         if (depth < level) {
             output.append(c);
         }
