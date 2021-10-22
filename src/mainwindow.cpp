@@ -175,18 +175,23 @@ MainWindow::MainWindow(QWidget* parent)
     recordDataAction->setShortcut(Qt::CTRL + Qt::Key_R);
     ui->fileMenu->addAction(recordDataAction);
     connect(recordDataAction, &QAction::triggered, this, &MainWindow::onRecordButtonClicked);
+    ui->fileMenu->addSeparator();
 
     connect(m_resultsPage, &ResultsPage::navigateToCode, this, &MainWindow::navigateToCode);
     ui->fileMenu->addAction(KStandardAction::open(this, SLOT(onOpenFileButtonClicked()), this));
     m_recentFilesAction = KStandardAction::openRecent(this, SLOT(openFile(QUrl)), this);
     m_recentFilesAction->loadEntries(m_config->group("RecentFiles"));
     ui->fileMenu->addAction(m_recentFilesAction);
+    ui->fileMenu->addSeparator();
     m_reloadAction = KStandardAction::redisplay(this, SLOT(reload()), this);
     m_reloadAction->setText(tr("Reload"));
     ui->fileMenu->addAction(m_reloadAction);
+    ui->fileMenu->addSeparator();
     m_exportAction = KStandardAction::saveAs(this, SLOT(saveAs()), this);
     ui->fileMenu->addAction(m_exportAction);
+    ui->fileMenu->addSeparator();
     ui->fileMenu->addAction(KStandardAction::close(this, SLOT(clear()), this));
+    ui->fileMenu->addSeparator();
     ui->fileMenu->addAction(KStandardAction::quit(this, SLOT(close()), this));
     connect(ui->actionAbout_Qt, &QAction::triggered, qApp, &QApplication::aboutQt);
     connect(ui->actionAbout_KDAB, &QAction::triggered, this, &MainWindow::aboutKDAB);
@@ -553,7 +558,8 @@ void MainWindow::setupCodeNavigationMenu()
     QObject::connect(group, &QActionGroup::triggered, this, &MainWindow::setCodeNavigationIDE);
 
     configAction->setMenu(menu);
-    ui->settingsMenu->addMenu(menu);
+    ui->settingsMenu->insertMenu(ui->settingsAction, menu);
+    ui->settingsMenu->insertSeparator(ui->settingsAction);
 }
 
 void MainWindow::setCodeNavigationIDE(QAction* action)
