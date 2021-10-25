@@ -1,10 +1,10 @@
 /*
-  hotspot-config.h
+  frequencypage.h
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2016-2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
-  Author: Milian Wolff <milian.wolff@kdab.com>
+  Copyright (C) 2021 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Author: Lieven Hey <lieven.hey@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
   accordance with Hotspot Commercial License Agreement provided with the Software.
@@ -25,25 +25,26 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef HOTSPOT_CONFIG_H
-#define HOTSPOT_CONFIG_H
+#pragma once
 
-#define HOTSPOT_VERSION_STRING "@HOTSPOT_VERSION_STRING@"
-#define HOTSPOT_VERSION_MAJOR @hotspot_VERSION_MAJOR@
-#define HOTSPOT_VERSION_MINOR @hotspot_VERSION_MINOR@
-#define HOTSPOT_VERSION_PATCH @hotspot_VERSION_PATCH@
-#define HOTSPOT_VERSION ((hotspot_VERSION_MAJOR<<16)|(hotspot_VERSION_MINOR<<8)|(hotspot_VERSION_PATCH))
+#include <QWidget>
 
-#define HOTSPOT_LIBEXEC_REL_PATH "@LIBEXEC_REL_PATH@"
+class FrequencyModel;
 
-#cmakedefine01 APPIMAGE_BUILD
+namespace KChart {
+class Chart;
+}
 
-#cmakedefine01 Zstd_FOUND
+class PerfParser;
 
-#cmakedefine01 KF5Auth_FOUND
+class FrequencyPage : public QWidget
+{
+    Q_OBJECT
+public:
+    FrequencyPage(PerfParser* parser, QWidget* parent = nullptr);
+    ~FrequencyPage();
 
-#cmakedefine01 KF5Archive_FOUND
-
-#cmakedefine01 KChart_FOUND
-
-#endif // HOTSPOT_CONFIG_H
+private:
+    KChart::Chart* m_widget;
+    FrequencyModel* m_model;
+};

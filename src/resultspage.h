@@ -55,6 +55,7 @@ class ResultsDisassemblyPage;
 class FilterAndZoomStack;
 class TimeLineWidget;
 class CostContextMenu;
+class FrequencyPage;
 
 class ResultsPage : public QWidget
 {
@@ -106,6 +107,8 @@ private:
     ResultsDisassemblyPage* m_resultsDisassemblyPage;
     KDDockWidgets::DockWidget* m_timeLineDock;
     TimeLineWidget* m_timeLineWidget;
+    FrequencyPage* m_frequencyPage = nullptr;
+    KDDockWidgets::DockWidget* m_frequencyDock = nullptr;
     QWidget* m_filterBusyIndicator = nullptr;
     bool m_timelineVisible;
 };

@@ -69,7 +69,7 @@ int main(int argc, char** argv)
         });
         QObject::connect(parser, &PerfParser::summaryDataAvailable, parser, [arg](const Data::Summary& data) {
             qDebug() << "summary for" << arg;
-            qDebug() << "runtime:" << Util::formatTimeString(data.applicationRunningTime);
+            qDebug() << "runtime:" << Util::formatTimeString(data.applicationTime.delta());
             qDebug() << "on-CPU:" << Util::formatTimeString(data.onCpuTime);
             qDebug() << "off-CPU:" << Util::formatTimeString(data.offCpuTime);
         });

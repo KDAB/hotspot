@@ -55,6 +55,11 @@
 #include <QProgressBar>
 #include <QTimer>
 
+#include "hotspot-config.h"
+#if KChart_FOUND
+#include "frequencypage.h"
+#endif
+
 ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsPage)
@@ -71,6 +76,9 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     , m_resultsCallerCalleePage(new ResultsCallerCalleePage(m_filterAndZoomStack, parser, m_costContextMenu, this))
     , m_resultsDisassemblyPage(new ResultsDisassemblyPage(this))
     , m_timeLineWidget(new TimeLineWidget(parser, m_filterMenu, m_filterAndZoomStack, this))
+#if KChart_FOUND
+    , m_frequencyPage(new FrequencyPage(parser, this))
+#endif
     , m_timelineVisible(true)
 {
     m_exportMenu->setIcon(QIcon::fromTheme(QStringLiteral("document-export")));
@@ -115,6 +123,10 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     m_summaryPageDock->addDockWidgetAsTab(m_disassemblyDock, KDDockWidgets::InitialVisibilityOption::StartHidden);
     m_disassemblyDock->toggleAction()->setEnabled(false);
     m_summaryPageDock->setAsCurrentTab();
+#if KChart_FOUND
+    m_frequencyDock = dockify(m_frequencyPage, QStringLiteral("frequency"), tr("Fr&equency"), tr("Ctrl+E"));
+    m_summaryPageDock->addDockWidgetAsTab(m_frequencyDock);
+#endif
 
     m_timeLineDock = dockify(m_timeLineWidget, QStringLiteral("timeLine"), tr("&Time Line"), tr("Ctrl+T"));
     m_contents->addDockWidget(m_timeLineDock, KDDockWidgets::Location_OnBottom);

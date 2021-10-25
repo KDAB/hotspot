@@ -121,7 +121,7 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
             stream << "<qt><table>"
                    << formatSummaryText(tr("Command"),
                                         QLatin1String("<tt>") + data.command.toHtmlEscaped() + QLatin1String("</tt>"))
-                   << formatSummaryText(tr("Run Time"), Util::formatTimeString(data.applicationRunningTime));
+                   << formatSummaryText(tr("Run Time"), Util::formatTimeString(data.applicationTime.delta()));
             if (data.offCpuTime > 0 || data.onCpuTime > 0) {
                 stream << formatSummaryText(indent + tr("On CPU Time"), Util::formatTimeString(data.onCpuTime))
                        << formatSummaryText(indent + tr("Off CPU Time"), Util::formatTimeString(data.offCpuTime));
@@ -129,16 +129,16 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
             stream << formatSummaryText(tr("Processes"), QString::number(data.processCount))
                    << formatSummaryText(tr("Threads"), QString::number(data.threadCount));
             if (data.offCpuTime > 0 || data.onCpuTime > 0) {
-                stream << formatSummaryText(indent + tr("Avg. Running"),
-                                            Util::formatCostRelative(data.onCpuTime, data.applicationRunningTime * 100))
-                       << formatSummaryText(
-                              indent + tr("Avg. Sleeping"),
-                              Util::formatCostRelative(data.offCpuTime, data.applicationRunningTime * 100));
+                stream
+                    << formatSummaryText(indent + tr("Avg. Running"),
+                                         Util::formatCostRelative(data.onCpuTime, data.applicationTime.delta() * 100))
+                    << formatSummaryText(indent + tr("Avg. Sleeping"),
+                                         Util::formatCostRelative(data.offCpuTime, data.applicationTime.delta() * 100));
             }
             stream << formatSummaryText(
                 tr("Total Samples"),
                 tr("%1 (%4)").arg(QString::number(data.sampleCount),
-                                  Util::formatFrequency(data.sampleCount, data.applicationRunningTime)));
+                                  Util::formatFrequency(data.sampleCount, data.applicationTime.delta())));
             for (const auto& costSummary : data.costs) {
                 if (!costSummary.sampleCount) {
                     continue;
@@ -152,8 +152,8 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
                     tr("%1 (%2 samples, %3% of total, %4)")
                         .arg(Util::formatCost(costSummary.totalPeriod), Util::formatCost(costSummary.sampleCount),
                              Util::formatCostRelative(costSummary.sampleCount, data.sampleCount),
-                             Util::formatFrequency(costSummary.sampleCount, data.applicationRunningTime)));
-                if ((costSummary.sampleCount * 1E9 / data.applicationRunningTime) < 100) {
+                             Util::formatFrequency(costSummary.sampleCount, data.applicationTime.delta())));
+                if ((costSummary.sampleCount * 1E9 / data.applicationTime.delta()) < 100) {
                     stream << formatSummaryText(indent + tr("<b>WARNING</b>"), tr("Sampling frequency below 100Hz"));
                 }
             }
