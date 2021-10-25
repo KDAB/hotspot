@@ -1,0 +1,40 @@
+FROM ubuntu:20.04 as hotspot_ubuntu_intermediate
+
+# install dependencies
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get -y upgrade && \
+    apt-get install -y software-properties-common build-essential curl git wget \
+        autotools-dev autoconf libtool liblzma-dev libz-dev gettext cmake
+
+RUN add-apt-repository ppa:beineri/opt-qt-5.15.2-focal -y && \
+    apt-get update && \
+    apt-get install -y qt515base qt515svg qt515x11extras cmake libdwarf-dev mesa-common-dev \
+        libboost-iostreams-dev libboost-program-options-dev libboost-system-dev libboost-filesystem-dev
+
+ENV PATH="/opt/bin:/opt/qt515/bin:${PATH}" \
+    PKG_CONFIG_PATH="/opt/qt515/lib/pkgconfig:${PKG_CONFIG_PATH}" \
+    LD_LIBRARY_PATH="/opt/qt515/lib:/opt/qt515/lib/x86_64-linux-gnu"
+
+WORKDIR /opt
+
+FROM hotspot_ubuntu_intermediate
+
+ARG DISABLE_RUSTC_DEMANGLE
+ARG DISABLE_D_DEMANGLE
+
+# install build dependencies
+
+RUN git clone https://github.com/KDAB/KDDockWidgets && cd KDDockWidgets && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr/ .. && make && make install
+
+RUN add-apt-repository ppa:kubuntu-ppa/backports && \
+    apt-get update && \
+    apt-get install -y libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev \
+    libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libkf5kio-dev libkf5parts-dev \
+    libkf5solid-dev libkf5windowsystem-dev libkf5notifications-dev libkf5iconthemes-dev libelf-dev \
+    libdw-dev extra-cmake-modules gettext libqt5svg5-dev
+
+ADD . /opt/hotspot/
+    
+RUN cd hotspot && mkdir build && cd build && cmake .. && make
