@@ -75,6 +75,7 @@ find_package(KF5 COMPONENTS
 
 find_package(KF5Archive CONFIG)
 find_package(KF5Auth CONFIG)
+find_package(KChart CONFIG)
 find_package(KDDockWidgets CONFIG)
 set_package_properties(KDDockWidgets PROPERTIES
     PURPOSE "KDDockWidgets is a Qt dock widget library written by KDAB, suitable for replacing QDockWidget and implementing

@@ -482,6 +482,28 @@ struct PerLibraryResults
     static PerLibraryResults fromTopDown(const TopDownResults& topDownData);
 };
 
+struct FrequencyData
+{
+    quint64 time;
+    qreal cost;
+};
+
+struct PerCostFrequencyData
+{
+    QString costName;
+    QVector<FrequencyData> values;
+};
+
+struct PerCoreFrequencyData
+{
+    QVector<PerCostFrequencyData> costs;
+};
+
+struct FrequencyResults
+{
+    QVector<PerCoreFrequencyData> cores;
+};
+
 using SymbolCostMap = QHash<Symbol, ItemCost>;
 using CalleeMap = SymbolCostMap;
 using CallerMap = SymbolCostMap;
@@ -713,7 +735,7 @@ QDebug operator<<(QDebug stream, const CostSummary& symbol);
 
 struct Summary
 {
-    quint64 applicationRunningTime = 0;
+    TimeRange applicationTime;
     quint32 threadCount = 0;
     quint32 processCount = 0;
     QString command;
@@ -842,6 +864,18 @@ Q_DECLARE_TYPEINFO(Data::CallerCalleeResults, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::Event)
 Q_DECLARE_TYPEINFO(Data::Event, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::FrequencyData)
+Q_DECLARE_TYPEINFO(Data::FrequencyData, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::PerCostFrequencyData)
+Q_DECLARE_TYPEINFO(Data::PerCostFrequencyData, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::PerCoreFrequencyData)
+Q_DECLARE_TYPEINFO(Data::PerCoreFrequencyData, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::FrequencyResults)
+Q_DECLARE_TYPEINFO(Data::FrequencyResults, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::ThreadEvents)
 Q_DECLARE_TYPEINFO(Data::ThreadEvents, Q_MOVABLE_TYPE);

@@ -454,7 +454,7 @@ private slots:
 
         QVERIFY(m_summaryData.offCpuTime > 1E9); // it should sleep at least 1s in total
         QVERIFY(m_summaryData.onCpuTime > 0); // there's some CPU time, but not sure how much
-        QCOMPARE(m_summaryData.applicationRunningTime, m_summaryData.offCpuTime + m_summaryData.onCpuTime);
+        QCOMPARE(m_summaryData.applicationTime.delta(), m_summaryData.offCpuTime + m_summaryData.onCpuTime);
     }
 
     void testThreadNames()
@@ -473,9 +473,9 @@ private slots:
         }
 
         // in total, there should only be about 1s runtime
-        QVERIFY(m_summaryData.applicationRunningTime > 1E9);
+        QVERIFY(m_summaryData.applicationTime.delta() > 1E9);
         // and it should be less than the total sleep time
-        QVERIFY(m_summaryData.applicationRunningTime < m_summaryData.offCpuTime);
+        QVERIFY(m_summaryData.applicationTime.delta() < m_summaryData.offCpuTime);
         // which is about 2s since the main thread sleeps most of the time, and every one of the others, too
         QVERIFY(m_summaryData.offCpuTime > 2E9);
         // there's some CPU time, but not sure how much
@@ -732,7 +732,7 @@ private:
         m_summaryData = qvariant_cast<Data::Summary>(summaryDataArgs.at(0));
         COMPARE_OR_THROW(m_perfCommand, m_summaryData.command);
         VERIFY_OR_THROW(m_summaryData.sampleCount > 0);
-        VERIFY_OR_THROW(m_summaryData.applicationRunningTime > 0);
+        VERIFY_OR_THROW(m_summaryData.applicationTime.delta() > 0);
         VERIFY_OR_THROW(m_summaryData.cpusAvailable > 0);
         COMPARE_OR_THROW(m_summaryData.processCount, quint32(1)); // for now we always have a single process
         VERIFY_OR_THROW(m_summaryData.threadCount > 0); // and at least one thread
@@ -742,7 +742,7 @@ private:
 
         if (checkFrequency) {
             // Verify the sample frequency is acceptable, greater than 500Hz
-            double frequency = (1E9 * m_summaryData.sampleCount) / m_summaryData.applicationRunningTime;
+            double frequency = (1E9 * m_summaryData.sampleCount) / m_summaryData.applicationTime.delta();
             VERIFY_OR_THROW2(frequency > 500, qPrintable("Low Frequency: " + QString::number(frequency)));
         }
 

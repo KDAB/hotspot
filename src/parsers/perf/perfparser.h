@@ -74,6 +74,7 @@ signals:
     void perLibraryDataAvailable(const Data::PerLibraryResults& data);
     void callerCalleeDataAvailable(const Data::CallerCalleeResults& data);
     void tracepointDataAvailable(const Data::TracepointResults& data);
+    void frequencyDataAvailable(const Data::FrequencyResults& data);
     void eventsAvailable(const Data::EventResults& events);
     void parsingFinished();
     void parsingFailed(const QString& errorMessage);
@@ -93,6 +94,7 @@ private:
     Data::CallerCalleeResults m_callerCalleeResults;
     Data::TracepointResults m_tracepointResults;
     Data::EventResults m_events;
+    Data::FrequencyResults m_frequencyResults;
     std::atomic<bool> m_isParsing;
     std::atomic<bool> m_stopRequested;
     std::unique_ptr<QTemporaryFile> m_decompressed;

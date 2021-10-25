@@ -131,6 +131,26 @@
                 "placeholders": [
                     {
                         "isFloatingWindow": false,
+                        "itemIndex": 0,
+                        "mainWindowUniqueName": "results"
+                    }
+                ],
+                "tabIndex": 5,
+                "wasFloating": false
+            },
+            "uniqueName": "frequency"
+        },
+        {
+            "lastPosition": {
+                "lastFloatingGeometry": {
+                    "height": 0,
+                    "width": 0,
+                    "x": 0,
+                    "y": 0
+                },
+                "placeholders": [
+                    {
+                        "isFloatingWindow": false,
                         "itemIndex": 1,
                         "mainWindowUniqueName": "results"
                     }
@@ -166,7 +186,8 @@
                             "bottomUp",
                             "topDown",
                             "flameGraph",
-                            "callerCallee"
+                            "callerCallee",
+                            "frequency"
                         ],
                         "geometry": {
                             "height": 489,

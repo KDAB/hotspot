@@ -34,6 +34,7 @@
 #include <QFileInfo>
 #include <QLoggingCategory>
 #include <QProcess>
+#include <QScopeGuard>
 #include <QTemporaryFile>
 #include <QTimer>
 #include <QUrl>
@@ -830,7 +831,7 @@ public:
     {
         Data::BottomUp::initializeParents(&bottomUpResult.root);
 
-        summaryResult.applicationRunningTime = applicationTime.delta();
+        summaryResult.applicationTime = applicationTime;
         summaryResult.threadCount = uniqueThreads.size();
         summaryResult.processCount = uniqueProcess.size();
 
@@ -997,8 +998,36 @@ public:
         return id - 1;
     }
 
+    void addSampleToFrequencyData(const Sample& sample)
+    {
+        auto& lastTime = m_lastSampleTimePerCore[sample.cpu];
+        auto updateTime = qScopeGuard([&]() { lastTime = sample.time; });
+        if (!lastTime) {
+            return;
+        }
+
+        if (frequencyResult.cores.size() <= sample.cpu) {
+            frequencyResult.cores.resize(sample.cpu + 1);
+        }
+
+        auto& core = frequencyResult.cores[sample.cpu];
+        for (const auto& cost : sample.costs) {
+            if (core.costs.size() <= cost.attributeId) {
+                core.costs.resize(cost.attributeId + 1);
+                core.costs[cost.attributeId].costName = strings.at(attributes[cost.attributeId].name.id);
+            }
+
+            auto& costs = core.costs[cost.attributeId];
+
+            auto frequency = static_cast<double>(cost.cost) / (sample.time - lastTime);
+            costs.values.push_back({sample.time, frequency});
+        }
+    }
+
     void addSample(const Sample& sample)
     {
+        addSampleToFrequencyData(sample);
+
         auto* thread = eventResult.findThread(sample.pid, sample.tid);
         if (!thread) {
             thread = addThread(sample);
@@ -1293,6 +1322,7 @@ public:
     Data::CallerCalleeResults callerCalleeResult;
     Data::EventResults eventResult;
     Data::TracepointResults tracepointResult;
+    Data::FrequencyResults frequencyResult;
     QHash<qint32, QHash<qint32, QString>> commands;
     QScopedPointer<QTextStream> perfScriptOutput;
     QHash<qint32, SymbolCount> numSymbolsByModule;
@@ -1303,6 +1333,7 @@ public:
     QHash<int, qint32> attributeNameToCostIds;
     qint32 m_nextCostId = 0;
     qint32 m_schedSwitchCostId = -1;
+    QHash<quint32, quint64> m_lastSampleTimePerCore;
 
     // samples recorded without --call-graph have only one frame
     int m_numSamplesWithMoreThanOneFrame = 0;
@@ -1331,6 +1362,11 @@ PerfParser::PerfParser(QObject* parent)
     connect(this, &PerfParser::callerCalleeDataAvailable, this, [this](const Data::CallerCalleeResults& data) {
         if (m_callerCalleeResults.entries.isEmpty()) {
             m_callerCalleeResults = data;
+        }
+    });
+    connect(this, &PerfParser::frequencyDataAvailable, this, [this](const Data::FrequencyResults& data) {
+        if (m_frequencyResults.cores.isEmpty()) {
+            m_frequencyResults = data;
         }
     });
     connect(this, &PerfParser::eventsAvailable, this, [this](const Data::EventResults& data) {
@@ -1412,6 +1448,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
     m_callerCalleeResults = {};
     m_tracepointResults = {};
     m_events = {};
+    m_frequencyResults = {};
 
     emit parsingStarted();
     using namespace ThreadWeaver;
@@ -1429,6 +1466,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
             emit callerCalleeDataAvailable(d.callerCalleeResult);
             emit tracepointDataAvailable(d.tracepointResult);
             emit eventsAvailable(d.eventResult);
+            emit frequencyDataAvailable(d.frequencyResult);
             emit parsingFinished();
 
             if (d.m_numSamplesWithMoreThanOneFrame == 0) {
@@ -1556,6 +1594,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         Data::EventResults events = m_events;
         Data::CallerCalleeResults callerCallee;
         Data::TracepointResults tracepointResults = m_tracepointResults;
+        auto frequencyResults = m_frequencyResults;
         const bool filterByTime = filter.time.isValid();
         const bool filterByCpu = filter.cpuId != std::numeric_limits<quint32>::max();
         const bool excludeByCpu = !filter.excludeCpuIds.isEmpty();
@@ -1647,6 +1686,22 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                             return false;
                         });
                     thread.events.erase(it, thread.events.end());
+
+                    if (filterByTime) {
+                        for (auto& core : frequencyResults.cores) {
+                            for (auto& costType : core.costs) {
+
+                                auto frequencyIt = std::remove_if(costType.values.begin(), costType.values.end(),
+                                                                  [filter](const Data::FrequencyData& point) {
+                                                                      if (!filter.time.contains(point.time)) {
+                                                                          return true;
+                                                                      }
+                                                                      return false;
+                                                                  });
+                                costType.values.erase(frequencyIt, costType.values.end());
+                            }
+                        }
+                    }
                 }
 
                 if (filterByTime) {
@@ -1722,6 +1777,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         emit topDownDataAvailable(topDown);
         emit perLibraryDataAvailable(perLibrary);
         emit callerCalleeDataAvailable(callerCallee);
+        emit frequencyDataAvailable(frequencyResults);
         emit tracepointDataAvailable(tracepointResults);
         emit eventsAvailable(events);
         emit parsingFinished();
