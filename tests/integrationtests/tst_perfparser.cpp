@@ -41,6 +41,7 @@
 #include "util.h"
 
 #include "../testutils.h"
+#include <hotspot-config.h>
 
 #include <exception>
 
@@ -613,6 +614,43 @@ private slots:
             qDebug() << "skipping extended off-CPU profiling check";
         }
     }
+
+#if KF5Archive_FOUND
+    void testDecompression_data()
+    {
+        QTest::addColumn<QByteArray>("content");
+        QTest::addColumn<QString>("filename");
+
+        QTest::newRow("plain") << QByteArrayLiteral("Hello World\n") << QStringLiteral("XXXXXX");
+        QTest::newRow("gzip") << QByteArray::fromBase64(
+            QByteArrayLiteral("H4sIAAAAAAAAA/NIzcnJVwjPL8pJ4QIA4+WVsAwAAAA="))
+                              << QStringLiteral("XXXXXX.gz");
+        QTest::newRow("bzip2") << QByteArray::fromBase64(
+            QByteArrayLiteral("QlpoOTFBWSZTWdhyAS8AAAFXgAAQQAAAQACABgSQACAAIgaG1CDJiMdp6Cgfi7kinChIbDkAl4A="))
+                               << QStringLiteral("XXXXXX.bz2");
+        QTest::newRow("xz") << QByteArray::fromBase64(QByteArrayLiteral(
+            "/Td6WFoAAATm1rRGAgAhARYAAAB0L+WjAQALSGVsbG8gV29ybGQKACLgdT/V7Tg+AAEkDKYY2NgftvN9AQAAAAAEWVo="))
+                            << QStringLiteral("XXXXXX.xz");
+    }
+
+    void testDecompression()
+    {
+        QFETCH(QByteArray, content);
+        QFETCH(QString, filename);
+
+        QTemporaryFile compressed;
+        compressed.setFileTemplate(filename);
+        compressed.open();
+        compressed.write(content);
+        compressed.close();
+
+        PerfParser parser;
+        QFile decompressed(parser.decompressIfNeeded(compressed.fileName()));
+        decompressed.open(QIODevice::ReadOnly);
+
+        QCOMPARE(decompressed.readAll(), QByteArrayLiteral("Hello World\n"));
+    }
+#endif
 
 private:
     Data::Summary m_summaryData;

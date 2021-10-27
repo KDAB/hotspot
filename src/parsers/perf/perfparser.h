@@ -82,6 +82,7 @@ signals:
     void exportFinished(const QUrl& url);
 
 private:
+    friend class TestPerfParser;
     QString decompressIfNeeded(const QString& path);
 
     // only set once after the initial startParseFile finished
