@@ -373,7 +373,7 @@ Compared to `perf report`, hotspot misses a lot of features. Some of these are p
 in the future. Others may potentially never get implemented. But be aware that the following features
 are _not_ available in hotspot currently:
 
-- annotate: the caller/callee view shows cost attributed to individual source lines. But a proper annotation view like `perf annotate`, esp. on the instruction level, is currently missing.
+- annotate: the caller/callee view shows cost attributed to individual source lines. But a proper annotation view like `perf annotate` on the source level, is currently missing. To reach the annotation view on the instruction level use Disassembly feature.
 - the columns in the tables are currently hardcoded, while potentially a user may want to change this to show e.g. cost per-process or thread and so forth
 - many of the more advanced features, such as `--itrace`, `--mem-mode`, `--branch-stack` and `--branch-history`, are unsupported
 
