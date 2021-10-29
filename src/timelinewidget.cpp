@@ -133,7 +133,7 @@ void TimeLineWidget::selectSymbol(const Data::Symbol& symbol)
     scheduleJob(m_timeLineDelegate, m_currentSelectStackJobId,
                 [stacks, bottomUpResults, symbol](auto timeLineDelegate, auto jobCancelled) {
                     const auto numStacks = stacks.size();
-                    QVector<qint32> selectedStacks;
+                    QSet<qint32> selectedStacks;
                     selectedStacks.reserve(numStacks);
                     for (int i = 0; i < numStacks; ++i) {
                         if (jobCancelled())
@@ -147,7 +147,7 @@ void TimeLineWidget::selectSymbol(const Data::Symbol& symbol)
                             return !symbolFound;
                         });
                         if (symbolFound)
-                            selectedStacks.append(i);
+                            selectedStacks.insert(i);
                     }
 
                     QMetaObject::invokeMethod(

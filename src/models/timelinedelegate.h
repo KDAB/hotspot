@@ -29,7 +29,7 @@
 
 #include <QScopedPointer>
 #include <QStyledItemDelegate>
-#include <QVector>
+#include <QSet>
 
 #include "data.h"
 
@@ -78,7 +78,7 @@ public:
                    const QModelIndex& index) override;
 
     void setEventType(int type);
-    void setSelectedStacks(const QVector<qint32>& selectedStacks);
+    void setSelectedStacks(const QSet<qint32>& selectedStacks);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
@@ -90,6 +90,6 @@ private:
     FilterAndZoomStack* m_filterAndZoomStack = nullptr;
     QAbstractItemView* m_view = nullptr;
     Data::TimeRange m_timeSlice;
-    QVector<qint32> m_selectedStacks;
+    QSet<qint32> m_selectedStacks;
     int m_eventType = 0;
 };

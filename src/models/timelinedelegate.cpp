@@ -511,7 +511,7 @@ void TimeLineDelegate::setEventType(int type)
     updateView();
 }
 
-void TimeLineDelegate::setSelectedStacks(const QVector<qint32>& selectedStacks)
+void TimeLineDelegate::setSelectedStacks(const QSet<qint32>& selectedStacks)
 {
     m_selectedStacks = selectedStacks;
     updateView();
