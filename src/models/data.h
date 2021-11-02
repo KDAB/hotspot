@@ -90,7 +90,7 @@ QDebug operator<<(QDebug stream, const Symbol& symbol);
 
 inline bool operator==(const Symbol& lhs, const Symbol& rhs)
 {
-    return std::tie(lhs.symbol, lhs.binary, lhs.path) == std::tie(rhs.symbol, rhs.binary, rhs.path);
+    return std::tie(lhs.symbol, lhs.binary, lhs.path, lhs.relAddr) == std::tie(rhs.symbol, rhs.binary, rhs.path, rhs.relAddr);
 }
 
 inline bool operator!=(const Symbol& lhs, const Symbol& rhs)
@@ -104,6 +104,7 @@ inline uint qHash(const Symbol& symbol, uint seed = 0)
     seed = hash(seed, symbol.symbol);
     seed = hash(seed, symbol.binary);
     seed = hash(seed, symbol.path);
+    seed = hash(seed, symbol.relAddr);
     return seed;
 }
 
