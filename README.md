@@ -329,6 +329,12 @@ just open that file directly in place of the original `perf.data` file.
 of hotspot can only be read back in by the same version. This problem will be
 resolved in the future, as time permits.
 
+### tracepoints
+
+hotspot currently only shows the name of the tracepoints in the timeline.
+
+![hotspot tracepoints](screenshots/tracepoints.png?raw=true hotspot tracepoints)
+
 ## Known Issues
 
 If anything breaks in the above and the output is less usable than `perf report`, please [report an issue on GitHub](https://github.com/KDAB/hotspot/issues).
