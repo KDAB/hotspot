@@ -47,4 +47,7 @@ public:
 private:
     KChart::Chart* m_widget;
     FrequencyModel* m_model;
+
+protected:
+    void changeEvent(QEvent *) override;
 };
