@@ -48,6 +48,7 @@ set(hotspot_SRCS
     perfoutputwidget.cpp
     perfoutputwidgettext.cpp
     perfoutputwidgetkonsole.cpp
+    kpart_loader.h
 
     # ui files:
     mainwindow.ui

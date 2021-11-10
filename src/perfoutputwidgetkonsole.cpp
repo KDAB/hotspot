@@ -33,9 +33,13 @@
 #include <QTemporaryFile>
 #include <QVBoxLayout>
 
+#include <KParts/PartLoader>
 #include <KParts/ReadOnlyPart>
 #include <KParts/kde_terminal_interface.h>
 #include <KService>
+
+#include "kpart_loader.h"
+#include <KPluginLoader>
 
 namespace {
 QString findTail()
@@ -47,12 +51,9 @@ QString findTail()
 
 KParts::ReadOnlyPart* createPart()
 {
-    KService::Ptr service = KService::serviceByDesktopName(QStringLiteral("konsolepart"));
-
-    if (!service) {
-        return nullptr;
-    }
-    return service->createInstance<KParts::ReadOnlyPart>();
+    KPluginMetaData metaData = KPluginMetaData(QStringLiteral("konsolepart"));
+    auto part = instantiatePart<KParts::ReadOnlyPart>(metaData);
+    return part.plugin;
 }
 }
 
