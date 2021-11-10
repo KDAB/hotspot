@@ -128,9 +128,38 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
     m_widget->addLegend(legend);
     legend->setTitleText(tr("Legend"));
     legend->setTitleTextAttributes(textAttributes);
+    legend->setTextAttributes(textAttributes);
     legend->setPosition(KChart::Position::East);
 
     m_widget->show();
 }
 
 FrequencyPage::~FrequencyPage() = default;
+
+void FrequencyPage::changeEvent(QEvent *event)
+{
+    if (event->type() == QEvent::PaletteChange) {
+        const auto colorScheme = KColorScheme(QPalette::Active);
+        KChart::TextAttributes textAttributes;
+        textAttributes.setPen(QPen(colorScheme.foreground().color()));
+
+        const auto diagram = qobject_cast<KChart::CartesianCoordinatePlane*>(m_widget->coordinatePlane())->diagram();
+
+        if (!diagram) {
+            return;
+        }
+
+        const auto axes = qobject_cast<KChart::AbstractCartesianDiagram*>(diagram)->axes();
+
+        for (const auto& axis : axes) {
+            axis->setTitleTextAttributes(textAttributes);
+            axis->setTextAttributes(textAttributes);
+        }
+
+        m_widget->legend()->setTextAttributes(textAttributes);
+        m_widget->legend()->setTitleTextAttributes(textAttributes);
+    }
+}
+
+
+#include "frequencypage.moc"
