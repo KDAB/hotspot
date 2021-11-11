@@ -30,6 +30,7 @@
 
 #include "parsers/perf/perfparser.h"
 
+#include "costcontextmenu.h"
 #include "dockwidgetsetup.h"
 #include "resultsbottomuppage.h"
 #include "resultscallercalleepage.h"
@@ -59,13 +60,15 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     , ui(new Ui::ResultsPage)
     , m_contents(createDockingArea(QStringLiteral("results"), this))
     , m_filterAndZoomStack(new FilterAndZoomStack(this))
+    , m_costContextMenu(new CostContextMenu(this))
     , m_filterMenu(new QMenu(this))
     , m_exportMenu(new QMenu(tr("Export"), this))
-    , m_resultsSummaryPage(new ResultsSummaryPage(m_filterAndZoomStack, parser, this))
-    , m_resultsBottomUpPage(new ResultsBottomUpPage(m_filterAndZoomStack, parser, m_exportMenu, this))
-    , m_resultsTopDownPage(new ResultsTopDownPage(m_filterAndZoomStack, parser, this))
+    , m_resultsSummaryPage(new ResultsSummaryPage(m_filterAndZoomStack, parser, m_costContextMenu, this))
+    , m_resultsBottomUpPage(
+          new ResultsBottomUpPage(m_filterAndZoomStack, parser, m_costContextMenu, m_exportMenu, this))
+    , m_resultsTopDownPage(new ResultsTopDownPage(m_filterAndZoomStack, parser, m_costContextMenu, this))
     , m_resultsFlameGraphPage(new ResultsFlameGraphPage(m_filterAndZoomStack, parser, m_exportMenu, this))
-    , m_resultsCallerCalleePage(new ResultsCallerCalleePage(m_filterAndZoomStack, parser, this))
+    , m_resultsCallerCalleePage(new ResultsCallerCalleePage(m_filterAndZoomStack, parser, m_costContextMenu, this))
     , m_resultsDisassemblyPage(new ResultsDisassemblyPage(this))
     , m_timeLineWidget(new TimeLineWidget(parser, m_filterMenu, m_filterAndZoomStack, this))
     , m_timelineVisible(true)

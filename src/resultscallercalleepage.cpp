@@ -34,6 +34,7 @@
 #include <QMenu>
 #include <QSortFilterProxyModel>
 
+#include "costcontextmenu.h"
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
 
@@ -46,14 +47,14 @@
 
 namespace {
 template<typename Model>
-Model* setupModelAndProxyForView(QTreeView* view)
+Model* setupModelAndProxyForView(QTreeView* view, CostContextMenu* contextMenu)
 {
     auto model = new Model(view);
     auto proxy = new CallerCalleeProxy<Model>(model);
     proxy->setSourceModel(model);
     proxy->setSortRole(Model::SortRole);
     view->setModel(proxy);
-    ResultsUtil::setupHeaderView(view);
+    ResultsUtil::setupHeaderView(view, contextMenu);
     ResultsUtil::setupCostDelegate(model, view);
     view->sortByColumn(Model::InitialSortColumn, Qt::DescendingOrder);
 
@@ -71,7 +72,8 @@ void connectCallerOrCalleeModel(QTreeView* view, CallerCalleeModel* callerCallee
 }
 }
 
-ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent)
+ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack, PerfParser* parser,
+                                                 CostContextMenu* contextMenu, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsCallerCalleePage)
 {
@@ -84,10 +86,10 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
     ResultsUtil::connectFilter(ui->callerCalleeFilter, m_callerCalleeProxy);
     ui->callerCalleeTableView->setSortingEnabled(true);
     ui->callerCalleeTableView->setModel(m_callerCalleeProxy);
-    ResultsUtil::setupContextMenu(ui->callerCalleeTableView, m_callerCalleeCostModel, filterStack, this,
+    ResultsUtil::setupContextMenu(ui->callerCalleeTableView, contextMenu, m_callerCalleeCostModel, filterStack, this,
                                   {ResultsUtil::CallbackAction::OpenEditor, ResultsUtil::CallbackAction::SelectSymbol,
                                    ResultsUtil::CallbackAction::ViewDisassembly});
-    ResultsUtil::setupHeaderView(ui->callerCalleeTableView);
+    ResultsUtil::setupHeaderView(ui->callerCalleeTableView, contextMenu);
     ResultsUtil::setupCostDelegate(m_callerCalleeCostModel, ui->callerCalleeTableView);
 
     connect(parser, &PerfParser::callerCalleeDataAvailable, this, [this](const Data::CallerCalleeResults& data) {
@@ -104,9 +106,9 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
         ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->sourceMapView, SourceMapModel::NUM_BASE_COLUMNS);
     });
 
-    auto calleesModel = setupModelAndProxyForView<CalleeModel>(ui->calleesView);
-    auto callersModel = setupModelAndProxyForView<CallerModel>(ui->callersView);
-    auto sourceMapModel = setupModelAndProxyForView<SourceMapModel>(ui->sourceMapView);
+    auto calleesModel = setupModelAndProxyForView<CalleeModel>(ui->calleesView, contextMenu);
+    auto callersModel = setupModelAndProxyForView<CallerModel>(ui->callersView, contextMenu);
+    auto sourceMapModel = setupModelAndProxyForView<SourceMapModel>(ui->sourceMapView, contextMenu);
 
     auto selectCallerCaleeeIndex = [calleesModel, callersModel, sourceMapModel, this](const QModelIndex& index) {
         const auto costs = index.data(CallerCalleeModel::SelfCostsRole).value<Data::Costs>();
@@ -122,10 +124,10 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
     };
     connectCallerOrCalleeModel<CalleeModel>(ui->calleesView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
     connectCallerOrCalleeModel<CallerModel>(ui->callersView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
-    ResultsUtil::setupContextMenu(ui->calleesView, calleesModel, filterStack, this,
+    ResultsUtil::setupContextMenu(ui->calleesView, contextMenu, calleesModel, filterStack, this,
                                   {ResultsUtil::CallbackAction::OpenEditor, ResultsUtil::CallbackAction::SelectSymbol,
                                    ResultsUtil::CallbackAction::ViewDisassembly});
-    ResultsUtil::setupContextMenu(ui->callersView, callersModel, filterStack, this,
+    ResultsUtil::setupContextMenu(ui->callersView, contextMenu, callersModel, filterStack, this,
                                   {ResultsUtil::CallbackAction::OpenEditor, ResultsUtil::CallbackAction::SelectSymbol,
                                    ResultsUtil::CallbackAction::ViewDisassembly});
 

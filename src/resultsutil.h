@@ -46,21 +46,23 @@ struct Symbol;
 }
 
 class FilterAndZoomStack;
+class CostContextMenu;
 
 namespace ResultsUtil {
-void setupHeaderView(QTreeView* view);
+void setupHeaderView(QTreeView* view, CostContextMenu* contextMenu);
 
 void connectFilter(QLineEdit* filter, QSortFilterProxyModel* proxy);
 
-void setupTreeView(QTreeView* view, QLineEdit* filter, QSortFilterProxyModel* model, int initialSortColumn,
-                   int sortRole);
+void setupTreeView(QTreeView* view, CostContextMenu* contextMenu, QLineEdit* filter, QSortFilterProxyModel* model,
+                   int initialSortColumn, int sortRole);
 
 template<typename Model>
-void setupTreeView(QTreeView* view, QLineEdit* filter, Model* model)
+void setupTreeView(QTreeView* view, CostContextMenu* costContextMenu, QLineEdit* filter, Model* model)
 {
     auto* proxy = new CostProxy<Model>(view);
     proxy->setSourceModel(model);
-    setupTreeView(view, filter, qobject_cast<QSortFilterProxyModel*>(proxy), Model::InitialSortColumn, Model::SortRole);
+    setupTreeView(view, costContextMenu, filter, qobject_cast<QSortFilterProxyModel*>(proxy), Model::InitialSortColumn,
+                  Model::SortRole);
 }
 
 void setupCostDelegate(QAbstractItemModel* model, QTreeView* view, int sortRole, int totalCostRole, int numBaseColumns);
@@ -82,15 +84,17 @@ enum class CallbackAction
 };
 Q_DECLARE_FLAGS(CallbackActions, CallbackAction)
 
-void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filterStack, CallbackActions actions,
+void setupContextMenu(QTreeView* view, CostContextMenu* costContextMenu, int symbolRole,
+                      FilterAndZoomStack* filterStack, CallbackActions actions,
                       std::function<void(CallbackAction action, const Data::Symbol&)> callback);
 
 template<typename Model, typename Context>
-void setupContextMenu(QTreeView* view, Model* /*model*/, FilterAndZoomStack* filterStack, Context* context,
+void setupContextMenu(QTreeView* view, CostContextMenu* costContextMenu, Model* /*model*/,
+                      FilterAndZoomStack* filterStack, Context* context,
                       CallbackActions actions = {CallbackAction::ViewCallerCallee, CallbackAction::OpenEditor,
                                                  CallbackAction::SelectSymbol, CallbackAction::ViewDisassembly})
 {
-    setupContextMenu(view, Model::SymbolRole, filterStack, actions,
+    setupContextMenu(view, costContextMenu, Model::SymbolRole, filterStack, actions,
                      [context](ResultsUtil::CallbackAction action, const Data::Symbol& symbol) {
                          switch (action) {
                          case ResultsUtil::CallbackAction::ViewCallerCallee:

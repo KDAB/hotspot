@@ -43,12 +43,13 @@
 #include "models/filterandzoomstack.h"
 
 #include "costheaderview.h"
+#include "costcontextmenu.h"
 
 namespace ResultsUtil {
 
-void setupHeaderView(QTreeView* view)
+void setupHeaderView(QTreeView* view, CostContextMenu* contextMenu)
 {
-    view->setHeader(new CostHeaderView(view));
+    view->setHeader(new CostHeaderView(contextMenu, view));
 }
 
 void connectFilter(QLineEdit* filter, QSortFilterProxyModel* proxy)
@@ -67,14 +68,14 @@ void connectFilter(QLineEdit* filter, QSortFilterProxyModel* proxy)
     QObject::connect(filter, &QLineEdit::textChanged, timer, [timer]() { timer->start(300); });
 }
 
-void setupTreeView(QTreeView* view, QLineEdit* filter, QSortFilterProxyModel* model, int initialSortColumn,
-                   int sortRole)
+void setupTreeView(QTreeView* view, CostContextMenu* contextMenu, QLineEdit* filter, QSortFilterProxyModel* model,
+                   int initialSortColumn, int sortRole)
 {
     model->setSortRole(sortRole);
     connectFilter(filter, model);
 
     view->setModel(model);
-    setupHeaderView(view);
+    setupHeaderView(view, contextMenu);
     view->sortByColumn(initialSortColumn, Qt::DescendingOrder);
 }
 
@@ -101,9 +102,14 @@ void addFilterActions(QMenu* menu, const Data::Symbol& symbol, FilterAndZoomStac
     menu->addAction(filterStack->actions().resetFilter);
 }
 
-void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filterStack, CallbackActions actions,
+void setupContextMenu(QTreeView* view, CostContextMenu* costContextMenu, int symbolRole,
+                      FilterAndZoomStack* filterStack, CallbackActions actions,
                       std::function<void(CallbackAction action, const Data::Symbol&)> callback)
 {
+    QObject::connect(costContextMenu, &CostContextMenu::hiddenColumnsChanged, view, [view, costContextMenu]{
+        costContextMenu->hideColumns(view);
+    });
+
     view->setContextMenuPolicy(Qt::CustomContextMenu);
     QObject::connect(view, &QTreeView::customContextMenuRequested, view, [=](const QPoint& point) {
         const auto index = view->indexAt(point);
@@ -127,6 +133,9 @@ void setupContextMenu(QTreeView* view, int symbolRole, FilterAndZoomStack* filte
                 QObject::connect(viewDisassembly, &QAction::triggered, &contextMenu,
                                  [symbol, callback]() { callback(CallbackAction::ViewDisassembly, symbol); });
             }
+            contextMenu.addSeparator();
+            costContextMenu->addToMenu(view->header(),
+                                       contextMenu.addMenu(QCoreApplication::translate("Util", "Visible Columns")));
             contextMenu.addSeparator();
         }
         addFilterActions(&contextMenu, symbol, filterStack);

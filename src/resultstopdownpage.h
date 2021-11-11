@@ -41,12 +41,14 @@ class QTreeView;
 
 class PerfParser;
 class FilterAndZoomStack;
+class CostContextMenu;
 
 class ResultsTopDownPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsTopDownPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent = nullptr);
+    explicit ResultsTopDownPage(FilterAndZoomStack* filterStack, PerfParser* parser, CostContextMenu* contextMenu,
+                                QWidget* parent = nullptr);
     ~ResultsTopDownPage();
 
     void clear();

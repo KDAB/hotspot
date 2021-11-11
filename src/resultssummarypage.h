@@ -39,12 +39,14 @@ class ResultsSummaryPage;
 
 class PerfParser;
 class FilterAndZoomStack;
+class CostContextMenu;
 
 class ResultsSummaryPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent = nullptr);
+    explicit ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfParser* parser, CostContextMenu* contextMenu,
+                                QWidget* parent = nullptr);
     ~ResultsSummaryPage();
 
 signals:

@@ -33,7 +33,9 @@
 #include <QPainter>
 #include <QScopedValueRollback>
 
-CostHeaderView::CostHeaderView(QWidget* parent)
+#include "costcontextmenu.h"
+
+CostHeaderView::CostHeaderView(CostContextMenu* contextMenu, QWidget* parent)
     : QHeaderView(Qt::Horizontal, parent)
 {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
@@ -77,7 +79,7 @@ CostHeaderView::CostHeaderView(QWidget* parent)
     });
 
     setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(this, &QHeaderView::customContextMenuRequested, this, [this](const QPoint& pos) {
+    connect(this, &QHeaderView::customContextMenuRequested, this, [this, contextMenu](const QPoint& pos) {
         const auto numSections = count();
 
         QMenu menu;
@@ -86,12 +88,7 @@ CostHeaderView::CostHeaderView(QWidget* parent)
 
         if (numSections > 1) {
             auto* subMenu = menu.addMenu(tr("Visible Columns"));
-            for (int i = 1; i < numSections; ++i) {
-                auto* action = subMenu->addAction(model()->headerData(i, Qt::Horizontal).toString());
-                action->setCheckable(true);
-                action->setChecked(!isSectionHidden(i));
-                connect(action, &QAction::toggled, this, [this, i](bool visible) { setSectionHidden(i, !visible); });
-            }
+            contextMenu->addToMenu(this, subMenu);
         }
 
         menu.exec(mapToGlobal(pos));
