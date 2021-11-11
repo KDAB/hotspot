@@ -74,17 +74,17 @@ void stackCollapsedExport(QFile& file, int type, const Data::BottomUpResults& re
 }
 }
 
-ResultsBottomUpPage::ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfParser* parser, QMenu* exportMenu,
-                                         QWidget* parent)
+ResultsBottomUpPage::ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfParser* parser,
+                                         CostContextMenu* contextMenu, QMenu* exportMenu, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsBottomUpPage)
 {
     ui->setupUi(this);
 
     auto bottomUpCostModel = new BottomUpModel(this);
-    ResultsUtil::setupTreeView(ui->bottomUpTreeView, ui->bottomUpSearch, bottomUpCostModel);
+    ResultsUtil::setupTreeView(ui->bottomUpTreeView, contextMenu, ui->bottomUpSearch, bottomUpCostModel);
     ResultsUtil::setupCostDelegate(bottomUpCostModel, ui->bottomUpTreeView);
-    ResultsUtil::setupContextMenu(ui->bottomUpTreeView, bottomUpCostModel, filterStack, this);
+    ResultsUtil::setupContextMenu(ui->bottomUpTreeView, contextMenu, bottomUpCostModel, filterStack, this);
 
     connect(
         parser, &PerfParser::bottomUpDataAvailable, this,

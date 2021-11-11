@@ -26,12 +26,13 @@
 */
 
 #include "mainwindow.h"
+#include "costcontextmenu.h"
 #include "recordpage.h"
 #include "resultspage.h"
 #include "settings.h"
+#include "settingsdialog.h"
 #include "startpage.h"
 #include "ui_mainwindow.h"
-#include "settingsdialog.h"
 #include "ui_settingsdialog.h"
 
 #include <QApplication>

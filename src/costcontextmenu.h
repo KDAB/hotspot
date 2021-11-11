@@ -1,10 +1,10 @@
 /*
-  costheaderview.h
+  costcontextmenu.h
 
   This file is part of Hotspot, the Qt GUI for performance analysis.
 
-  Copyright (C) 2020 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
-  Author: Milian Wolff <milian.wolff@kdab.com>
+  Copyright (C) 2021 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+  Author: Lieven Hey <lieven.hey@kdab.com>
 
   Licensees holding valid commercial KDAB Hotspot licenses may use this file in
   accordance with Hotspot Commercial License Agreement provided with the Software.
@@ -27,20 +27,26 @@
 
 #pragma once
 
-#include <QHeaderView>
+#include <QObject>
+#include <QSet>
 
-class CostContextMenu;
+class QTreeView;
+class QHeaderView;
+class QMenu;
 
-class CostHeaderView : public QHeaderView
+class CostContextMenu : public QObject
 {
     Q_OBJECT
 public:
-    explicit CostHeaderView(CostContextMenu* contextMenu, QWidget* parent = nullptr);
-    ~CostHeaderView();
+    explicit CostContextMenu(QObject* parent = nullptr);
+    ~CostContextMenu();
+
+    void addToMenu(QHeaderView* view, QMenu* menu);
+    void hideColumns(QTreeView* view);
+
+signals:
+    void hiddenColumnsChanged();
 
 private:
-    void resizeEvent(QResizeEvent* event) override;
-    void resizeColumns(bool reset);
-
-    bool m_isResizing = false;
+    QSet<QString> m_hiddenColumns;
 };

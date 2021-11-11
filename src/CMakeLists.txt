@@ -48,6 +48,7 @@ set(hotspot_SRCS
     perfoutputwidget.cpp
     perfoutputwidgettext.cpp
     perfoutputwidgetkonsole.cpp
+    costcontextmenu.cpp
 
     # ui files:
     mainwindow.ui

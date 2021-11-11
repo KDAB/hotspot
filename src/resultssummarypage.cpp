@@ -45,7 +45,8 @@
 #include "models/topproxy.h"
 #include "models/treemodel.h"
 
-ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfParser* parser, QWidget* parent)
+ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfParser* parser,
+                                       CostContextMenu* contextMenu, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsSummaryPage)
 {
@@ -62,8 +63,8 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
     ui->topHotspotsTableView->setSortingEnabled(false);
     ui->topHotspotsTableView->setModel(topHotspotsProxy);
     ResultsUtil::setupCostDelegate<BottomUpModel>(bottomUpCostModel, ui->topHotspotsTableView);
-    ResultsUtil::setupHeaderView(ui->topHotspotsTableView);
-    ResultsUtil::setupContextMenu(ui->topHotspotsTableView, bottomUpCostModel, filterStack, this);
+    ResultsUtil::setupHeaderView(ui->topHotspotsTableView, contextMenu);
+    ResultsUtil::setupContextMenu(ui->topHotspotsTableView, contextMenu, bottomUpCostModel, filterStack, this);
 
     auto topLibraryProxy = new TopProxy(this);
     topLibraryProxy->setSourceModel(perLibraryModel);

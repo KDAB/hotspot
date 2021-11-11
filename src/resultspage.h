@@ -54,6 +54,7 @@ class ResultsCallerCalleePage;
 class ResultsDisassemblyPage;
 class FilterAndZoomStack;
 class TimeLineWidget;
+class CostContextMenu;
 
 class ResultsPage : public QWidget
 {
@@ -88,6 +89,7 @@ private:
     QScopedPointer<Ui::ResultsPage> ui;
     KDDockWidgets::MainWindow* m_contents;
     FilterAndZoomStack* m_filterAndZoomStack;
+    CostContextMenu* m_costContextMenu;
     QMenu* m_filterMenu;
     QMenu* m_exportMenu;
     KDDockWidgets::DockWidget* m_summaryPageDock;
