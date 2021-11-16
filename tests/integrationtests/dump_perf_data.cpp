@@ -31,7 +31,7 @@ int main(int argc, char** argv)
     int runningParsers = 0;
     for (const auto& arg : args) {
         auto parser = new PerfParser(&app);
-        parser->startParseFile(arg, {}, {}, {}, {}, {}, {});
+        parser->startParseFile(arg);
         ++runningParsers;
         QObject::connect(parser, &PerfParser::parsingFinished, parser, [&runningParsers, &app]() {
             --runningParsers;

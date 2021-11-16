@@ -749,7 +749,7 @@ private:
         QSignalSpy callerCalleeDataSpy(&parser, &PerfParser::callerCalleeDataAvailable);
         QSignalSpy eventsDataSpy(&parser, &PerfParser::eventsAvailable);
 
-        parser.startParseFile(fileName, "", "", "", "", "", "");
+        parser.startParseFile(fileName);
 
         VERIFY_OR_THROW(parsingFinishedSpy.wait(6000));
 
