@@ -1386,9 +1386,7 @@ PerfParser::PerfParser(QObject* parent)
 
 PerfParser::~PerfParser() = default;
 
-void PerfParser::startParseFile(const QString& path, const QString& sysroot, const QString& kallsyms,
-                                const QString& debugPaths, const QString& extraLibPaths, const QString& appPath,
-                                const QString& arch)
+void PerfParser::startParseFile(const QString& path)
 {
     Q_ASSERT(!m_isParsing);
 
@@ -1412,29 +1410,39 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
         return;
     }
 
-    QStringList parserArgs = {QStringLiteral("--input"), decompressIfNeeded(path), QStringLiteral("--max-frames"),
-                              QStringLiteral("1024")};
-    if (!sysroot.isEmpty()) {
-        parserArgs += {QStringLiteral("--sysroot"), sysroot};
-    }
-    if (!kallsyms.isEmpty()) {
-        parserArgs += {QStringLiteral("--kallsyms"), kallsyms};
-    }
-    if (!debugPaths.isEmpty()) {
-        parserArgs += {QStringLiteral("--debug"), debugPaths};
-    }
-    if (!extraLibPaths.isEmpty()) {
-        parserArgs += {QStringLiteral("--extra"), extraLibPaths};
-    }
-    if (!appPath.isEmpty()) {
-        parserArgs += {QStringLiteral("--app"), appPath};
-    }
-    if (!arch.isEmpty()) {
-        parserArgs += {QStringLiteral("--arch"), arch};
-    }
+    auto parserArgs = [this](const QString& filename) {
+        const auto settings = Settings::instance();
+        QStringList parserArgs = {QStringLiteral("--input"), decompressIfNeeded(filename),
+                                  QStringLiteral("--max-frames"), QStringLiteral("1024")};
+        const auto sysroot = settings->sysroot();
+        if (!sysroot.isEmpty()) {
+            parserArgs += {QStringLiteral("--sysroot"), sysroot};
+        }
+        const auto kallsyms = settings->kallsyms();
+        if (!kallsyms.isEmpty()) {
+            parserArgs += {QStringLiteral("--kallsyms"), kallsyms};
+        }
+        const auto debugPaths = settings->debugPaths();
+        if (!debugPaths.isEmpty()) {
+            parserArgs += {QStringLiteral("--debug"), debugPaths};
+        }
+        const auto extraLibPaths = settings->extraLibPaths();
+        if (!extraLibPaths.isEmpty()) {
+            parserArgs += {QStringLiteral("--extra"), extraLibPaths};
+        }
+        const auto appPath = settings->appPath();
+        if (!appPath.isEmpty()) {
+            parserArgs += {QStringLiteral("--app"), appPath};
+        }
+        const auto arch = settings->arch();
+        if (!arch.isEmpty()) {
+            parserArgs += {QStringLiteral("--arch"), arch};
+        }
+        return parserArgs;
+    };
 
     // reset the data to ensure filtering will pick up the new data
-    m_parserArgs = parserArgs;
+    m_parserArgs = parserArgs(path);
     m_bottomUpResults = {};
     m_callerCalleeResults = {};
     m_tracepointResults = {};
@@ -1562,7 +1570,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
             emit parsingFailed(process.errorString());
         });
 
-        process.start(parserBinary, parserArgs);
+        process.start(parserBinary, m_parserArgs);
         if (!process.waitForStarted()) {
             emit parsingFailed(tr("Failed to start the hotspot-perfparser process"));
             return;

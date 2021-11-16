@@ -374,9 +374,7 @@ void MainWindow::openFile(const QString& path, bool isReload)
     m_pageStack->setCurrentWidget(m_startPage);
 
     // TODO: support input files of different types via plugins
-    auto settings = Settings::instance();
-    m_parser->startParseFile(path, settings->sysroot(), settings->kallsyms(), settings->debugPaths(),
-                             settings->extraLibPaths(), settings->appPath(), settings->arch());
+    m_parser->startParseFile(path);
     m_reloadAction->setData(path);
     m_exportAction->setData(QUrl::fromLocalFile(file.absoluteFilePath() + QLatin1String(".perfparser")));
 

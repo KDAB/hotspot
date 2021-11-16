@@ -376,12 +376,12 @@ FrameGraphicsItem* findItemBySymbol(const QList<QGraphicsItem*>& items, const Da
  */
 template<typename Tree>
 void toGraphicsItems(const Data::Costs& costs, int type, const QVector<Tree>& data, FrameGraphicsItem* parent,
-                     const double costThreshold, bool collapseRecursion)
+                     const double costThreshold, const Settings::ColorScheme& colorScheme, bool collapseRecursion)
 {
     foreach (const auto& row, data) {
         if (collapseRecursion && !row.symbol.symbol.isEmpty() && row.symbol == parent->symbol()) {
             if (costs.cost(type, row.id) > costThreshold) {
-                toGraphicsItems(costs, type, row.children, parent, costThreshold, collapseRecursion);
+                toGraphicsItems(costs, type, row.children, parent, costThreshold, colorScheme, collapseRecursion);
             }
             continue;
         }
@@ -389,19 +389,19 @@ void toGraphicsItems(const Data::Costs& costs, int type, const QVector<Tree>& da
         if (!item) {
             item = new FrameGraphicsItem(costs.cost(type, row.id), costs.unit(type), row.symbol, parent);
             item->setPen(parent->pen());
-            item->setBrush(brush(row.symbol, Settings::instance()->colorScheme()));
+            item->setBrush(brush(row.symbol, colorScheme));
         } else {
             item->setCost(item->cost() + costs.cost(type, row.id));
         }
         if (item->cost() > costThreshold) {
-            toGraphicsItems(costs, type, row.children, item, costThreshold, collapseRecursion);
+            toGraphicsItems(costs, type, row.children, item, costThreshold, colorScheme, collapseRecursion);
         }
     }
 }
 
 template<typename Tree>
 FrameGraphicsItem* parseData(const Data::Costs& costs, int type, const QVector<Tree>& topDownData, double costThreshold,
-                             bool collapseRecursion)
+                             const Settings::ColorScheme& colorScheme, bool collapseRecursion)
 {
     const auto totalCost = costs.totalCost(type);
 
@@ -413,7 +413,7 @@ FrameGraphicsItem* parseData(const Data::Costs& costs, int type, const QVector<T
     rootItem->setBrush(scheme.background());
     rootItem->setPen(pen);
     toGraphicsItems(costs, type, topDownData, rootItem, static_cast<double>(totalCost) * costThreshold / 100.,
-                    collapseRecursion);
+                    colorScheme, collapseRecursion);
     return rootItem;
 }
 
@@ -796,16 +796,19 @@ void FlameGraph::showData()
     bool collapseRecursion = m_collapseRecursion;
     auto type = m_costSource->currentData().value<int>();
     auto threshold = m_costThreshold;
-    stream() << make_job([showBottomUpData, bottomUpData, topDownData, type, threshold, collapseRecursion, this]() {
-        FrameGraphicsItem* parsedData = nullptr;
-        if (showBottomUpData) {
-            parsedData = parseData(bottomUpData.costs, type, bottomUpData.root.children, threshold, collapseRecursion);
-        } else {
-            parsedData =
-                parseData(topDownData.inclusiveCosts, type, topDownData.root.children, threshold, collapseRecursion);
-        }
-        QMetaObject::invokeMethod(this, "setData", Qt::QueuedConnection, Q_ARG(FrameGraphicsItem*, parsedData));
-    });
+    const auto colorScheme = Settings::instance()->colorScheme();
+    stream() << make_job(
+        [showBottomUpData, bottomUpData, topDownData, type, threshold, colorScheme, collapseRecursion, this]() {
+            FrameGraphicsItem* parsedData = nullptr;
+            if (showBottomUpData) {
+                parsedData = parseData(bottomUpData.costs, type, bottomUpData.root.children, threshold, colorScheme,
+                                       collapseRecursion);
+            } else {
+                parsedData = parseData(topDownData.inclusiveCosts, type, topDownData.root.children, threshold,
+                                       colorScheme, collapseRecursion);
+            }
+            QMetaObject::invokeMethod(this, "setData", Qt::QueuedConnection, Q_ARG(FrameGraphicsItem*, parsedData));
+        });
     updateNavigationActions();
 }
 

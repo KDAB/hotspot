@@ -98,7 +98,7 @@ private:
         QSignalSpy parsingFinishedSpy(&parser, &PerfParser::parsingFinished);
         QSignalSpy parsingFailedSpy(&parser, &PerfParser::parsingFailed);
 
-        parser.startParseFile(filename, "", "", "", "", "", "");
+        parser.startParseFile(filename);
 
         VERIFY_OR_THROW(parsingFinishedSpy.wait(6000));
         COMPARE_OR_THROW(parsingFailedSpy.count(), 0);
