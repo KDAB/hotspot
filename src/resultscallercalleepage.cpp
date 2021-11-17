@@ -178,7 +178,6 @@ ResultsCallerCalleePage::toSourceMapLocation(const QString& location, const Data
 
 ResultsCallerCalleePage::SourceMapLocation ResultsCallerCalleePage::toSourceMapLocation(const QModelIndex& index) const
 {
-    Q_ASSERT(qobject_cast<const SourceMapModel*>(index.model()));
     const auto location = index.data(SourceMapModel::LocationRole).toString();
     const auto symbol =
         ui->callerCalleeTableView->currentIndex().data(CallerCalleeModel::SymbolRole).value<Data::Symbol>();
