@@ -99,7 +99,7 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
 
     connect(m_parser, &PerfParser::bottomUpDataAvailable, this, [this](const Data::BottomUpResults& data) {
         ResultsUtil::fillEventSourceComboBox(ui->timeLineEventSource, data.costs,
-                                             ki18n("Show timeline for %1 events."));
+                                             tr("Show timeline for %1 events."));
     });
 
     connect(m_parser, &PerfParser::eventsAvailable, this, [this, eventModel](const Data::EventResults& data) {

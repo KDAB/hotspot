@@ -75,7 +75,7 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
                 bottomUpCostModel->setData(data);
                 ResultsUtil::hideEmptyColumns(data.costs, ui->topHotspotsTableView, BottomUpModel::NUM_BASE_COLUMNS);
                 ResultsUtil::fillEventSourceComboBox(ui->eventSourceComboBox, data.costs,
-                                                     ki18n("Show top hotspots for %1 events."));
+                                                     tr("Show top hotspots for %1 events."));
             });
 
     auto parserErrorsModel = new QStringListModel(this);

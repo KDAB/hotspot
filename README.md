@@ -133,7 +133,7 @@ apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev \
 ### On Fedora
 ```
 dnf install cmake gcc glibc-static gcc-c++ libstdc++-static qt5-qtbase qt5-qtbase-devel qt5-qtsvg-devel \
-    extra-cmake-modules elfutils-devel kf5-threadweaver-devel kf5-ki18n-devel \
+    extra-cmake-modules elfutils-devel kf5-threadweaver-devel \
     kf5-kconfigwidgets-devel kf5-kitemviews-devel kf5-kitemmodels-devel \
     kf5-kio-devel kf5-solid-devel kf5-kwindowsystem-devel kf5-kiconthemes-devel \
     kf5-knotifications-devel kf5-kparts-devel
@@ -142,14 +142,14 @@ dnf install cmake gcc glibc-static gcc-c++ libstdc++-static qt5-qtbase qt5-qtbas
 ### Arch Linux
 ```
 pacman -Syu
-pacman -S cmake gcc extra-cmake-modules threadweaver ki18n kconfigwidgets knotifications \
+pacman -S cmake gcc extra-cmake-modules threadweaver kconfigwidgets knotifications \
     kiconthemes kitemviews kitemmodels kwindowsystem kio kparts solid libelf gettext qt5-base
 ```
 
 ### OpenSUSE
 
 ```
-zypper in cmake gcc-c++ extra-cmake-modules threadweaver-devel ki18n-devel kio-devel \
+zypper in cmake gcc-c++ extra-cmake-modules threadweaver-devel kio-devel \
     solid-devel kcoreaddons-devel threadweaver-devel kconfigwidgets-devel \
     kitemmodels-devel kitemviews-devel kwindowsystem-devel kparts-devel \
     libqt5-qtbase-devel libqt5-qtsvg-devel libelf-devel libdw-devel gettext glibc-devel-static \

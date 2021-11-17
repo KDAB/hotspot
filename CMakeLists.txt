@@ -53,7 +53,6 @@ set_package_properties(LibRustcDemangle PROPERTIES
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
 find_package(KF5 COMPONENTS
     ThreadWeaver
-    I18n
     ConfigWidgets
     CoreAddons
     ItemViews

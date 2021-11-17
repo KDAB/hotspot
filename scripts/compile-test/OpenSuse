@@ -1,0 +1,26 @@
+FROM opensuse/tumbleweed:latest as hotspot_opensuse_intermediate
+
+# install dependencies
+
+RUN zypper --non-interactive in git libqt5-qtx11extras-devel libQt5Widgets5-devel
+
+WORKDIR /opt
+
+FROM hotspot_opensuse_intermediate
+
+ARG DISABLE_RUSTC_DEMANGLE
+ARG DISABLE_D_DEMANGLE
+
+# install build dependencies
+
+RUN git clone https://github.com/KDAB/KDDockWidgets && cd KDDockWidgets && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr/ .. && make && make install
+
+COPY ../../* hotspot/
+
+RUN zypper --non-interactive in cmake gcc-c++ extra-cmake-modules threadweaver-devel kio-devel \
+    solid-devel kcoreaddons-devel threadweaver-devel kconfigwidgets-devel \
+    kitemmodels-devel kitemviews-devel kwindowsystem-devel kparts-devel \
+    libqt5-qtbase-devel libqt5-qtsvg-devel libelf-devel libdw-devel gettext glibc-devel-static \
+    knotifications-devel kiconthemes-devel libzstd-devel binutils
+
+RUN cd hotspot && git submodule update --init --recursive && mkdir build && cd build && cmake .. && make
