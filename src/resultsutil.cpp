@@ -36,8 +36,6 @@
 #include <QTimer>
 #include <QTreeView>
 
-#include <KLocalizedString>
-
 #include "models/costdelegate.h"
 #include "models/data.h"
 #include "models/filterandzoomstack.h"
@@ -165,7 +163,7 @@ void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColu
     }
 }
 
-void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs, const KLocalizedString& tooltipTemplate)
+void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs, const QString& tooltipTemplate)
 {
     // restore selection if possible
     const auto oldData = combo->currentData();
@@ -177,7 +175,7 @@ void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs, const K
         }
         const auto& typeName = costs.typeName(i);
         combo->addItem(typeName, QVariant::fromValue(i));
-        combo->setItemData(i, tooltipTemplate.subs(typeName).toString(), Qt::ToolTipRole);
+        combo->setItemData(i, tooltipTemplate.arg(typeName), Qt::ToolTipRole);
     }
 
     const auto index = combo->findData(oldData);

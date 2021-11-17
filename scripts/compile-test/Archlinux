@@ -2,7 +2,7 @@ FROM archlinux:latest as hotspot_archlinux_intermediate
 
 # install dependencies
 
-RUN pacman -Syu --noconfirm git make qt5-x11extras cmake
+RUN pacman -Syu --noconfirm git make qt5-x11extras cmake gcc
 
 WORKDIR /opt
 
@@ -15,7 +15,7 @@ ARG DISABLE_D_DEMANGLE
 
 RUN git clone https://github.com/KDAB/KDDockWidgets && cd KDDockWidgets && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr/ .. && make && make install
 
-RUN pacman -Sy --noconfirm gcc extra-cmake-modules threadweaver ki18n kconfigwidgets knotifications \
+RUN pacman -Sy --noconfirm gcc extra-cmake-modules threadweaver kconfigwidgets knotifications \
     kiconthemes kitemviews kitemmodels kwindowsystem kio kparts solid libelf gettext qt5-base
 
 ADD . /opt/hotspot/
