@@ -25,12 +25,13 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "data.h"
 #include "disassemblyoutput.h"
-#include <QStandardPaths>
+#include "data.h"
 #include <QApplication>
-#include <QProcess>
 #include <QDebug>
+#include <QProcess>
+#include <QRegularExpression>
+#include <QStandardPaths>
 
 static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(const QByteArray &output)
 {
@@ -38,19 +39,35 @@ static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(const QByteArray
 
     QTextStream stream(output);
     QString asmLine;
+    // detect lines like:
+    // 4f616: 84 c0 test %al,%al
+    static const QRegularExpression disassemblyRegex(QStringLiteral("^    ([0-9a-f]{4,}):\t[0-9a-f ]{2,}"));
     while (stream.readLineInto(&asmLine))
     {
         if (asmLine.isEmpty() || asmLine.startsWith(QLatin1String("Disassembly")))
             continue;
 
-        const auto asmTokens = asmLine.splitRef(QLatin1Char(':'));
-        const auto addrLine = asmTokens.value(0).trimmed();
-
-        bool ok = false;
-        const auto addr = addrLine.toULongLong(&ok, 16);
-        if (!ok) {
-            qWarning() << "unhandled asm line format:" << addrLine;
+        // skip lines like these: 0000000000001265 <main>:
+        const int colonIndex = asmLine.indexOf(QLatin1Char(':'));
+        const int angleBracketIndex = asmLine.indexOf(QLatin1Char('<'));
+        if (angleBracketIndex > 0 && colonIndex > angleBracketIndex) {
             continue;
+        }
+
+        // we don't care about the file name
+        if (asmLine.startsWith(QLatin1Char('/')) && asmLine.contains(QStringLiteral("file format"))) {
+            continue;
+        }
+
+        quint64 addr = 0;
+        const auto match = disassemblyRegex.match(asmLine);
+        if (match.hasMatch()) {
+            bool ok = false;
+            addr = match.capturedRef(1).toULongLong(&ok, 16);
+            if (!ok) {
+                qWarning() << "unhandled asm line format:" << asmLine;
+                continue;
+            }
         }
 
         disassemblyLines.push_back({addr, asmLine});
@@ -86,6 +103,7 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
     // Call objdump with arguments: addresses range and binary file
     auto toHex = [](quint64 addr) -> QString { return QLatin1String("0x") + QString::number(addr, 16); };
     const auto arguments = QStringList {QStringLiteral("-d"),
+                                        QStringLiteral("-S"),
                                         QStringLiteral("--start-address"),
                                         toHex(symbol.relAddr),
                                         QStringLiteral("--stop-address"),

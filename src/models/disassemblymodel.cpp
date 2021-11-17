@@ -86,6 +86,10 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
         if (index.column() == DisassemblyColumn)
             return data.disassembly;
 
+        if (data.addr == 0) {
+            return {};
+        }
+
         auto results = m_results;
         auto entry = results.entry(m_data.symbol);
         auto it = entry.offsetMap.find(data.addr);
