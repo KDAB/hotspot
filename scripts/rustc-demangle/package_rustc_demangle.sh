@@ -9,5 +9,5 @@ if [ ! -d "$artifacts" ]; then
 fi
 
 sudo docker build -t package_rustc_demangle . || exit 1
-sudo docker run -v "$artifacts":/artifacts -it package_rustc_demangle
+sudo docker run -v "$artifacts":/artifacts package_rustc_demangle
 mv -v "$artifacts"/rustc_demangle.build.tar.bz2 .

@@ -39,6 +39,6 @@ echo "RUSTC DISABLED? $DISABLE_RUSTC_DEMANGLE"
 echo "D DISABLED? $DISABLE_D_DEMANGLE"
 
 sudo docker build --build-arg DISABLE_RUSTC_DEMANGLE="$DISABLE_RUSTC_DEMANGLE" -t hotspot_appimage -f scripts/Dockerfile . || exit 1
-sudo docker run -v "$artifacts":/artifacts -it hotspot_appimage
+sudo docker run -v "$artifacts":/artifacts hotspot_appimage
 mv "$artifacts"/hotspot-x86_64.AppImage hotspot-$(git describe)-x86_64.AppImage
 ls -latr hotspot-*.AppImage | tail -n 1

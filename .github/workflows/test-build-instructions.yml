@@ -5,15 +5,33 @@ on:
     branches: "**"
 
 jobs:
-  build:
+  test-ubuntu:
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: test build instructions on ubuntu
       run: docker build -f scripts/compile-test/Ubuntu .
+  
+  test-archlinux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: test build instructions on archlinux
       run: docker build -f scripts/compile-test/Archlinux .
+
+  test-fedora:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
     - name: test build instructions on fedora
-      run: docker build -f scripts/compile-test/Ubuntu .
+      run: docker build -f scripts/compile-test/Fedora .

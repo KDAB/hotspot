@@ -15,6 +15,6 @@ FROM package_rustc_demangle_intermediate
 WORKDIR /opt
 ADD . /opt/
 
-RUN curl -L https://github.com/alexcrichton/rustc-demangle/archive/master.zip -o rustc_demangle.zip && unzip rustc_demangle.zip
+RUN curl -L https://github.com/rust-lang/rustc-demangle/archive/refs/tags/0.1.21.zip -o rustc_demangle.zip && unzip rustc_demangle.zip
 ENV PATH="/root/.cargo/bin:${PATH}"
-CMD ./build_rustc_demangle.sh /opt /artifacts /opt/rustc-demangle-master
+CMD ./build_rustc_demangle.sh /opt /artifacts /opt/rustc-demangle-0.1.21

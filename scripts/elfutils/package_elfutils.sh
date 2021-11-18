@@ -9,5 +9,5 @@ if [ ! -d "$artifacts" ]; then
 fi
 
 sudo docker build -t package_elfutils . || exit 1
-sudo docker run -v "$artifacts":/artifacts -it package_elfutils
+sudo docker run -v "$artifacts":/artifacts package_elfutils
 mv -v "$artifacts"/elfutils.build.tar.bz2 .

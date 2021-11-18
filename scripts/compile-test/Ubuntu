@@ -36,5 +36,5 @@ RUN add-apt-repository ppa:kubuntu-ppa/backports && \
     libdw-dev extra-cmake-modules gettext libqt5svg5-dev
 
 ADD . /opt/hotspot/
-    
+
 RUN cd hotspot && mkdir build && cd build && cmake .. && make
