@@ -1,0 +1,19 @@
+name: test build instructions
+
+on:
+  push:
+    branches: "**"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: test build instructions on ubuntu
+      run: docker build -f scripts/compile-test/Ubuntu .
+    - name: test build instructions on archlinux
+      run: docker build -f scripts/compile-test/Archlinux .
+    - name: test build instructions on fedora
+      run: docker build -f scripts/compile-test/Ubuntu .
