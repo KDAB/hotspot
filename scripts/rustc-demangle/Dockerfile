@@ -1,5 +1,5 @@
 # trusty
-FROM ubuntu:14.04 as package_rustc_demangle_intermediate
+FROM ubuntu:18.04 as package_rustc_demangle_intermediate
 
 # install dependencies
 ARG DEBIAN_FRONTEND=noninteractive
