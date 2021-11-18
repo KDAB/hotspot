@@ -1,5 +1,5 @@
 # trusty
-FROM ubuntu:14.04 as package_elfutils_intermediate
+FROM ubuntu:16.04 as package_elfutils_intermediate
 
 # install dependencies
 ARG DEBIAN_FRONTEND=noninteractive
@@ -7,7 +7,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get -y upgrade && \
     apt-get install -y software-properties-common build-essential curl libcurl4-gnutls-dev \
-        autotools-dev autoconf libtool liblzma-dev libz-dev gettext libdwarf-dev
+        autotools-dev autoconf libtool liblzma-dev libz-dev gettext libdwarf-dev pkg-config
 
 FROM package_elfutils_intermediate
 
