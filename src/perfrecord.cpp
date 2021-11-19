@@ -178,7 +178,7 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfO
         auto job = action.execute();
 
 #if KAUTH_VERSION < QT_VERSION_CHECK(5, 80, 0)
-        connect(job, QOverload<KJob*, unsigned long>(&KAuth::ExecuteJob::percent), this,
+        connect(job, QOverload<KJob*, unsigned long>::of(&KAuth::ExecuteJob::percent), this,
 #else
         connect(job, &KAuth::ExecuteJob::percentChanged, this,
 #endif
