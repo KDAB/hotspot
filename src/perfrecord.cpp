@@ -47,6 +47,7 @@
 
 #if KF5Auth_FOUND
 #include <KAuth>
+#include <kauth_version.h>
 #endif
 
 PerfRecord::PerfRecord(QObject* parent)
@@ -176,7 +177,11 @@ void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfO
 
         auto job = action.execute();
 
+#if KAUTH_VERSION < QT_VERSION_CHECK(5, 80, 0)
+        connect(job, QOverload<KJob*, unsigned long>(&KAuth::ExecuteJob::percent), this,
+#else
         connect(job, &KAuth::ExecuteJob::percentChanged, this,
+#endif
                 [this, readTimer, readSlot](KJob*, unsigned long percent) {
                     if (percent == 1) { // stated
                         readTimer->start(250);
