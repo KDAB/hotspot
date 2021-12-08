@@ -1018,10 +1018,11 @@ public:
             thread->events.push_back(event);
             cpu.events.push_back(event);
 
-            if (attributes[event.type].type == static_cast<quint32>(AttributesDefinition::Type::Tracepoint)) {
+            const auto attribute = attributes.value(event.type);
+            if (attribute.type == static_cast<quint32>(AttributesDefinition::Type::Tracepoint)) {
                 Data::Tracepoint tracepoint;
                 tracepoint.time = event.time;
-                tracepoint.name = strings[attributes[event.type].name.id];
+                tracepoint.name = strings.value(attribute.name.id);
                 tracepointResult.tracepoints.push_back(tracepoint);
             }
         }
