@@ -1023,7 +1023,10 @@ public:
                 Data::Tracepoint tracepoint;
                 tracepoint.time = event.time;
                 tracepoint.name = strings.value(attribute.name.id);
-                tracepointResult.tracepoints.push_back(tracepoint);
+                if (tracepoint.name != QLatin1String("sched:sched_switch")) {
+                    // sched_switch events are handled separately already
+                    tracepointResult.tracepoints.push_back(tracepoint);
+                }
             }
         }
 

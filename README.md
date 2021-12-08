@@ -333,7 +333,7 @@ resolved in the future, as time permits.
 
 hotspot currently only shows the name of the tracepoints in the timeline.
 
-![hotspot tracepoints](screenshots/tracepoints.png?raw=true hotspot tracepoints)
+![hotspot tracepoints](screenshots/tracepoints.png?raw=true "hotspot tracepoints")
 
 ## Known Issues
 
