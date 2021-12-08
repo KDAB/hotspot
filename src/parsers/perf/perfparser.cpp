@@ -100,6 +100,16 @@ QDebug operator<<(QDebug stream, const StringId& stringId)
 
 struct AttributesDefinition
 {
+    // see perfattributes.h
+    enum class Type : quint32
+    {
+        Hardware = 0,
+        Software = 1,
+        Tracepoint = 2,
+        HardwareCache = 3,
+        Raw = 4,
+        Breakpoint = 5,
+    };
     qint32 id = 0;
     quint32 type = 0;
     quint64 config = 0;
@@ -1008,8 +1018,7 @@ public:
             thread->events.push_back(event);
             cpu.events.push_back(event);
 
-            // see perfattributes.h
-            if (attributes[event.type].type == 2) {
+            if (attributes[event.type].type == static_cast<quint32>(AttributesDefinition::Type::Tracepoint)) {
                 Data::Tracepoint tracepoint;
                 tracepoint.time = event.time;
                 tracepoint.name = strings[attributes[event.type].name.id];
