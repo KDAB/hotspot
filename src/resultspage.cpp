@@ -285,11 +285,14 @@ QMenu* ResultsPage::exportMenu() const
 
 QList<QAction*> ResultsPage::windowActions() const
 {
-    return {
+    auto ret = QList<QAction*>{
         m_summaryPageDock->toggleAction(), m_bottomUpDock->toggleAction(),     m_topDownDock->toggleAction(),
         m_flameGraphDock->toggleAction(),  m_callerCalleeDock->toggleAction(), m_disassemblyDock->toggleAction(),
-        m_timeLineDock->toggleAction(),
+        m_timeLineDock->toggleAction()
     };
+    if (m_frequencyDock)
+        ret.append(m_frequencyDock->toggleAction());
+    return ret;
 }
 
 void ResultsPage::resizeEvent(QResizeEvent* event)
