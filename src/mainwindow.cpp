@@ -292,6 +292,9 @@ MainWindow::MainWindow(QWidget* parent)
         serializer.restoreFromFile(QStringLiteral(":/default-dockwidget-layout.json"));
     }
 
+    const auto restored = serializer.restoredDockWidgets();
+    m_resultsPage->initDockWidgets(restored);
+
     m_lastUsedSettings = m_config->group("PerfPaths").readEntry("lastUsed");
     if (!m_lastUsedSettings.isEmpty()) {
         auto currentConfig = m_config->group("PerfPaths").group(m_lastUsedSettings);

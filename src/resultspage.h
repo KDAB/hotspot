@@ -43,6 +43,7 @@ struct Symbol;
 namespace KDDockWidgets {
 class MainWindow;
 class DockWidget;
+class DockWidgetBase;
 }
 
 class PerfParser;
@@ -69,6 +70,8 @@ public:
     QMenu* filterMenu() const;
     QMenu* exportMenu() const;
     QList<QAction*> windowActions() const;
+
+    void initDockWidgets(const QVector<KDDockWidgets::DockWidgetBase*>& restored);
 
 public slots:
     void setSysroot(const QString& path);

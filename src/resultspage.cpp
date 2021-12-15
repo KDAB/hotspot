@@ -315,3 +315,20 @@ void ResultsPage::showError(const QString& message)
     ui->errorWidget->animatedShow();
     QTimer::singleShot(5000, ui->errorWidget, &KMessageWidget::animatedHide);
 }
+
+void ResultsPage::initDockWidgets(const QVector<KDDockWidgets::DockWidgetBase*>& restored)
+{
+    Q_ASSERT(restored.contains(m_summaryPageDock));
+
+    const auto docks = {m_bottomUpDock, m_topDownDock,     m_flameGraphDock, m_callerCalleeDock,
+                        m_timeLineDock, m_disassemblyDock, m_frequencyDock};
+    for (auto dock : docks) {
+        if (!dock || restored.contains(dock))
+            continue;
+
+        auto initialOption = KDDockWidgets::InitialOption {};
+        if (dock == m_disassemblyDock)
+            initialOption = KDDockWidgets::InitialVisibilityOption::StartHidden;
+        m_summaryPageDock->addDockWidgetAsTab(dock, initialOption);
+    }
+}
