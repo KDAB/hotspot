@@ -83,6 +83,9 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
 
     const auto colorScheme = KColorScheme(QPalette::Active);
     KChart::TextAttributes textAttributes;
+    auto fontSize = textAttributes.fontSize();
+    fontSize.setAbsoluteValue(font().pointSizeF() - 2);
+    textAttributes.setFontSize(fontSize);
     textAttributes.setPen(QPen(colorScheme.foreground().color()));
 
     auto xAxis = new TimeAxis(plotter);
