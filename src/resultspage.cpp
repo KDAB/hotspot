@@ -76,7 +76,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     , m_resultsCallerCalleePage(new ResultsCallerCalleePage(m_filterAndZoomStack, parser, m_costContextMenu, this))
     , m_resultsDisassemblyPage(new ResultsDisassemblyPage(this))
     , m_timeLineWidget(new TimeLineWidget(parser, m_filterMenu, m_filterAndZoomStack, this))
-#if KChart_FOUND
+#if KChart_FOUND && false // disabled for now as KDChart is too slow for our needs
     , m_frequencyPage(new FrequencyPage(parser, this))
 #endif
     , m_timelineVisible(true)
@@ -123,10 +123,10 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     m_summaryPageDock->addDockWidgetAsTab(m_disassemblyDock, KDDockWidgets::InitialVisibilityOption::StartHidden);
     m_disassemblyDock->toggleAction()->setEnabled(false);
     m_summaryPageDock->setAsCurrentTab();
-#if KChart_FOUND
-    m_frequencyDock = dockify(m_frequencyPage, QStringLiteral("frequency"), tr("Fr&equency"), tr("Ctrl+E"));
-    m_summaryPageDock->addDockWidgetAsTab(m_frequencyDock);
-#endif
+    if (m_frequencyPage) {
+        m_frequencyDock = dockify(m_frequencyPage, QStringLiteral("frequency"), tr("Fr&equency"), tr("Ctrl+E"));
+        m_summaryPageDock->addDockWidgetAsTab(m_frequencyDock);
+    }
 
     m_timeLineDock = dockify(m_timeLineWidget, QStringLiteral("timeLine"), tr("&Time Line"), tr("Ctrl+T"));
     m_contents->addDockWidget(m_timeLineDock, KDDockWidgets::Location_OnBottom);
