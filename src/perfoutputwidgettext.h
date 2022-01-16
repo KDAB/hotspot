@@ -6,8 +6,7 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
-#ifndef PERFOUTPUTWIDGETTEXT_H
-#define PERFOUTPUTWIDGETTEXT_H
+#pragma once
 
 #include "perfoutputwidget.h"
 #include <QWidget>
@@ -32,5 +31,3 @@ private:
     QTextEdit* m_perfOutputTextEdit = nullptr;
     QLineEdit* m_perfInputEdit = nullptr;
 };
-
-#endif // PERFOUTPUTWIDGETTEXT_H

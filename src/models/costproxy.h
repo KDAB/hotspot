@@ -6,8 +6,7 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
-#ifndef COSTPROXY_H
-#define COSTPROXY_H
+#pragma once
 
 #include <QSortFilterProxyModel>
 
@@ -43,5 +42,3 @@ protected:
         return CallerCalleeProxyDetail::match(this, item->symbol);
     }
 };
-
-#endif // COSTPROXY_H

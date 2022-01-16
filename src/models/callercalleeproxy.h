@@ -6,8 +6,7 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
-#ifndef CALLERCALLEEPROXY_H
-#define CALLERCALLEEPROXY_H
+#pragma once
 
 #include <QSortFilterProxyModel>
 
@@ -46,5 +45,3 @@ protected:
 
 private:
 };
-
-#endif // CALLERCALLEEPROXY_H

@@ -5,8 +5,7 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
-#ifndef HOTSPOT_CONFIG_H
-#define HOTSPOT_CONFIG_H
+#pragma once
 
 #define HOTSPOT_VERSION_STRING "@HOTSPOT_VERSION_STRING@"
 #define HOTSPOT_VERSION_MAJOR @hotspot_VERSION_MAJOR@
@@ -25,5 +24,3 @@
 #cmakedefine01 KF5Archive_FOUND
 
 #cmakedefine01 KChart_FOUND
-
-#endif // HOTSPOT_CONFIG_H

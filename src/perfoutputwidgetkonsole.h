@@ -6,8 +6,7 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
-#ifndef PERFOUTPUTWIDGETKONSOLE_H
-#define PERFOUTPUTWIDGETKONSOLE_H
+#pragma once
 
 #include "perfoutputwidget.h"
 
@@ -43,5 +42,3 @@ private:
     static QString m_tailPath;
     QByteArray m_inputBuffer;
 };
-
-#endif // PERFOUTPUTWIDGETKONSOLE_H

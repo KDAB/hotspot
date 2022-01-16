@@ -6,8 +6,7 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
-#ifndef MULTICONFIGWIDGET_H
-#define MULTICONFIGWIDGET_H
+#pragma once
 
 #include <KConfigGroup>
 #include <QWidget>
@@ -41,5 +40,3 @@ private:
     QPushButton* m_copyButton = nullptr;
     QPushButton* m_removeButton = nullptr;
 };
-
-#endif // MULTICONFIGWIDGET_H

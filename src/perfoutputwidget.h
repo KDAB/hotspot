@@ -6,8 +6,7 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
-#ifndef PERFOUTPUTWIDGET_H
-#define PERFOUTPUTWIDGET_H
+#pragma once
 
 #include <QWidget>
 
@@ -26,5 +25,3 @@ public:
 signals:
     void sendInput(const QByteArray& input);
 };
-
-#endif // PERFOUTPUTWIDGET_H

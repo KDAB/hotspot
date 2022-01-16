@@ -5,8 +5,7 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
-#ifndef FLAMEGRAPH_H
-#define FLAMEGRAPH_H
+#pragma once
 
 #include <QVector>
 #include <QWidget>
@@ -93,5 +92,3 @@ private:
     static const constexpr double DEFAULT_COST_THRESHOLD = 0.1;
     double m_costThreshold = DEFAULT_COST_THRESHOLD;
 };
-
-#endif // FLAMEGRAPH_H

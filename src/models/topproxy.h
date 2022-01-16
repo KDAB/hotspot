@@ -5,8 +5,7 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
-#ifndef TOPPROXY_H
-#define TOPPROXY_H
+#pragma once
 
 #include <QSortFilterProxyModel>
 
@@ -30,5 +29,3 @@ private:
     int m_costColumn;
     int m_numBaseColumns;
 };
-
-#endif // TOPPROXY_H
