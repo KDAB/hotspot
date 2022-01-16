@@ -1,7 +1,7 @@
 CHECKSETS qt5,c++,foss
 
 #KDAB-specific checks
-EXTRA kdabcopyright,kdabcommercial
+EXTRA kdabcopyright
 
 #additional checks
 EXTRA defines,null

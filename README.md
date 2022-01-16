@@ -421,6 +421,5 @@ its integrated [CPU Usage Analyzer](http://doc.qt.io/qtcreator/creator-cpu-usage
 
 ## License
 
-Hotspot is dual-licensed under the GPL v2+ or under a commercial KDAB license.
-See [LICENSE.GPL.txt](LICENSE.GPL.txt), [LICENSE.txt](LICENSE.txt) and [LICENSE.US.txt](LICENSE.US.txt)
-for more information, or contact info@kdab.com if any conditions of this licensing are not clear to you.
+Hotspot is the GPL v2+. See [LICENSE.GPL.txt](LICENSE.GPL.txt) for more information, or contact
+info@kdab.com if any conditions of this licensing are not clear to you.
