@@ -986,7 +986,7 @@ public:
             return;
         }
 
-        if (frequencyResult.cores.size() <= sample.cpu) {
+        if (static_cast<quint32>(frequencyResult.cores.size()) <= sample.cpu) {
             frequencyResult.cores.resize(sample.cpu + 1);
         }
 
