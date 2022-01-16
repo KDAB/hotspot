@@ -10,13 +10,8 @@
 
 #include <QWidget>
 
-class FrequencyModel;
-
-namespace KChart {
-class Chart;
-}
-
 class PerfParser;
+class QCustomPlot;
 
 class FrequencyPage : public QWidget
 {
@@ -25,10 +20,11 @@ public:
     FrequencyPage(PerfParser* parser, QWidget* parent = nullptr);
     ~FrequencyPage();
 
-private:
-    KChart::Chart* m_widget;
-    FrequencyModel* m_model;
-
 protected:
-    void changeEvent(QEvent *) override;
+    void changeEvent(QEvent *event) override;
+
+private:
+    void updateColors();
+
+    QCustomPlot *m_plot = nullptr;
 };

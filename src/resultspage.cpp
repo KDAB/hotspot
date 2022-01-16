@@ -37,7 +37,7 @@
 #include <QTimer>
 
 #include "hotspot-config.h"
-#if KChart_FOUND
+#if QCustomPlot_FOUND
 #include "frequencypage.h"
 #endif
 
@@ -57,7 +57,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     , m_resultsCallerCalleePage(new ResultsCallerCalleePage(m_filterAndZoomStack, parser, m_costContextMenu, this))
     , m_resultsDisassemblyPage(new ResultsDisassemblyPage(this))
     , m_timeLineWidget(new TimeLineWidget(parser, m_filterMenu, m_filterAndZoomStack, this))
-#if KChart_FOUND && false // disabled for now as KDChart is too slow for our needs
+#if QCustomPlot_FOUND
     , m_frequencyPage(new FrequencyPage(parser, this))
 #endif
     , m_timelineVisible(true)

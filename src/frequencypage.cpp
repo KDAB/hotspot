@@ -8,114 +8,81 @@
 
 #include "frequencypage.h"
 
-#include <KChart/KChart>
-#include <KChart/KChartCartesianAxis>
-#include <KChart/KChartPlotter>
+#include <qcustomplot.h>
 #include <KColorScheme>
+#include <QDebug>
 
-#include "models/frequencymodel.h"
 #include "parsers/perf/perfparser.h"
 #include "util.h"
 
 namespace {
-class TimeAxis : public KChart::CartesianAxis
+struct PlotData
 {
-    Q_OBJECT
-public:
-    explicit TimeAxis(KChart::AbstractCartesianDiagram* diagram = nullptr)
-        : CartesianAxis(diagram)
-    {
-    }
-
-    const QString customizedLabel(const QString& label) const override
-    {
-        const auto time = label.toLongLong() - m_applicationStartTime;
-        return Util::formatTimeString(time);
-    }
-
-    void setApplicationStartTime(const quint64 applicationStartTime)
-    {
-        m_applicationStartTime = applicationStartTime;
-        update();
-    }
-
-private:
-    quint64 m_applicationStartTime = 0;
+    quint64 applicationStartTime = 0;
 };
 }
 
 FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
-    , m_widget(new KChart::Chart(this))
-    , m_model(new FrequencyModel(this))
+    , m_plot(new QCustomPlot(this))
 {
+    m_plot->axisRect()->setupFullAxesBox(true);
+
+    updateColors();
+
     auto layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(m_widget);
+    layout->addWidget(m_plot);
     setLayout(layout);
 
-    auto* plotter = new KChart::Plotter(this);
-
-    plotter->setModel(m_model);
-    m_widget->coordinatePlane()->replaceDiagram(plotter);
-    // use available area to 100%
-    qobject_cast<KChart::CartesianCoordinatePlane*>(m_widget->coordinatePlane())
-        ->setAutoAdjustHorizontalRangeToData(100);
-
-    const auto colorScheme = KColorScheme(QPalette::Active);
-    KChart::TextAttributes textAttributes;
-    auto fontSize = textAttributes.fontSize();
-    fontSize.setAbsoluteValue(font().pointSizeF() - 2);
-    textAttributes.setFontSize(fontSize);
-    textAttributes.setPen(QPen(colorScheme.foreground().color()));
-
-    auto xAxis = new TimeAxis(plotter);
-    xAxis->setTitleText(tr("Time in ns"));
-    xAxis->setTextAttributes(textAttributes);
-    xAxis->setTitleTextAttributes(textAttributes);
+    auto plotData = QSharedPointer<PlotData>::create();
 
     connect(parser, &PerfParser::summaryDataAvailable,
-            [xAxis](const Data::Summary data) { xAxis->setApplicationStartTime(data.applicationTime.start); });
+            [plotData](const Data::Summary data) { plotData->applicationStartTime = data.applicationTime.start; });
 
-    connect(parser, &PerfParser::frequencyDataAvailable, m_widget, [this, plotter](const Data::FrequencyResults& data) {
-        m_model->setResults(data);
-        qobject_cast<KChart::CartesianCoordinatePlane*>(m_widget->coordinatePlane())->adjustRangesToData();
+    connect(parser, &PerfParser::frequencyDataAvailable, this, [this, plotData](const Data::FrequencyResults& results) {
+        m_plot->clearGraphs();
 
-        // two colums are one dataset
-        for (int i = 0, c = m_model->columnCount() / 2; i < c; i++) {
-            auto attr = plotter->dataValueAttributes(i);
-            auto mattr = attr.markerAttributes();
-            mattr.setMarkerStyle(KChart::MarkerAttributes::Marker4Pixels);
-            mattr.setMarkerSize(QSizeF(8.0, 8.0));
-            mattr.setVisible(true);
-            attr.setMarkerAttributes(mattr);
-            auto textAttr = attr.textAttributes();
-            textAttr.setVisible(false);
-            attr.setTextAttributes(textAttr);
-            attr.setVisible(true);
-            plotter->setDataValueAttributes(i, attr);
-            plotter->setPen(i, Qt::NoPen);
+        // TODO: don't show all costs, add combo box to select one
+        const auto numCores = results.cores.size();
+        quint32 core = 0;
+        for (const auto &coreData : results.cores) {
+            for (const auto &costData : coreData.costs) {
+                auto graph = m_plot->addGraph();
+                graph->setLayer(QStringLiteral("main"));
+                graph->setLineStyle(QCPGraph::lsNone);
+
+                auto color = QColor::fromHsv(static_cast<int>(255. * (core / (numCores - 1.))), 255, 255, 150);
+                graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssSquare, color, color, 4));
+                graph->setAdaptiveSampling(false);
+                graph->setName(tr("%1 (CPU #%2)").arg(costData.costName, QString::number(core)));
+                graph->addToLegend();
+                graph->setVisible(true);
+
+                const auto numValues = costData.values.size();
+                QVector<double> times(numValues);
+                QVector<double> costs(numValues);
+                for (int i = 0; i < numValues; ++i) {
+                    const auto value = costData.values[i];
+                    const auto time = 1E-6 * static_cast<double>(value.time - plotData->applicationStartTime);
+                    times[i] = time;
+                    costs[i] = value.cost;
+                }
+                graph->setData(times, costs, true);
+            }
+
+            ++core;
         }
+        m_plot->xAxis->rescale();
+        m_plot->yAxis->rescale();
+        m_plot->yAxis->setRangeLower(0.);
+        m_plot->replot(QCustomPlot::rpQueuedRefresh);
     });
 
-    auto yAxis = new KChart::CartesianAxis(plotter);
-    yAxis->setTitleText(tr("Frequency in GHz"));
-    yAxis->setTextAttributes(textAttributes);
-    yAxis->setTitleTextAttributes(textAttributes);
-
-    xAxis->setPosition(KChart::CartesianAxis::Bottom);
-    yAxis->setPosition(KChart::CartesianAxis::Left);
-    plotter->addAxis(xAxis);
-    plotter->addAxis(yAxis);
-
-    auto legend = new KChart::Legend(plotter, m_widget);
-    m_widget->addLegend(legend);
-    legend->setTitleText(tr("Legend"));
-    legend->setTitleTextAttributes(textAttributes);
-    legend->setTextAttributes(textAttributes);
-    legend->setPosition(KChart::Position::East);
-
-    m_widget->show();
+    // TODO: better time axis, QCPAxisTickerTime doesn't do what we want
+    m_plot->xAxis->setLabel(tr("Time [ms]"));
+    m_plot->yAxis->setLabel(tr("Frequency [GHz]"));
+    m_plot->legend->setVisible(true);
 }
 
 FrequencyPage::~FrequencyPage() = default;
@@ -123,27 +90,28 @@ FrequencyPage::~FrequencyPage() = default;
 void FrequencyPage::changeEvent(QEvent *event)
 {
     if (event->type() == QEvent::PaletteChange) {
-        const auto colorScheme = KColorScheme(QPalette::Active);
-        KChart::TextAttributes textAttributes;
-        textAttributes.setPen(QPen(colorScheme.foreground().color()));
-
-        const auto diagram = qobject_cast<KChart::CartesianCoordinatePlane*>(m_widget->coordinatePlane())->diagram();
-
-        if (!diagram) {
-            return;
-        }
-
-        const auto axes = qobject_cast<KChart::AbstractCartesianDiagram*>(diagram)->axes();
-
-        for (const auto& axis : axes) {
-            axis->setTitleTextAttributes(textAttributes);
-            axis->setTextAttributes(textAttributes);
-        }
-
-        m_widget->legend()->setTextAttributes(textAttributes);
-        m_widget->legend()->setTitleTextAttributes(textAttributes);
+        updateColors();
     }
 }
 
+void FrequencyPage::updateColors()
+{
+    const auto colorScheme = KColorScheme(QPalette::Active);
 
-#include "frequencypage.moc"
+    const auto foreground = QPen(colorScheme.foreground().color());
+    const auto background = colorScheme.background();
+
+    for (auto *axis : {m_plot->xAxis, m_plot->yAxis, m_plot->xAxis2, m_plot->yAxis2}) {
+        axis->setLabelColor(foreground.color());
+        axis->setTickLabelColor(foreground.color());
+        axis->setTickPen(foreground);
+        axis->setBasePen(foreground);
+        axis->setSubTickPen(foreground);
+    }
+
+    m_plot->legend->setBorderPen(foreground);
+    m_plot->legend->setTextColor(foreground.color());
+    m_plot->legend->setBrush(background);
+
+    m_plot->setBackground(background);
+}

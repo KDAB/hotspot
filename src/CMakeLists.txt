@@ -76,9 +76,9 @@ ecm_add_app_icon(hotspot_SRCS ICONS
     ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/512-hotspot_app_icon.png
 )
 
-if (KChart_FOUND)
+if (QCustomPlot_FOUND)
     set(hotspot_SRCS ${hotspot_SRCS} frequencypage.cpp)
-endif(KChart_FOUND)
+endif()
 
 add_executable(hotspot
     ${hotspot_SRCS}
@@ -111,10 +111,10 @@ if (KF5Archive_FOUND)
         KF5::Archive)
 endif(KF5Archive_FOUND)
 
-if (KChart_FOUND)
+if (QCustomPlot_FOUND)
     target_link_libraries(hotspot
-        KChart)
-endif(KChart_FOUND)
+        QCustomPlot::QCustomPlot)
+endif(QCustomPlot_FOUND)
 
 set_target_properties(hotspot
     PROPERTIES
