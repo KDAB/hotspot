@@ -63,9 +63,9 @@ set(hotspot_SRCS
     resultscallercalleepage.ui
     resultsdisassemblypage.ui
     timelinewidget.ui
-    settingsdialog.ui
-    flamegraphsettings.ui
-    debuginfoddialog.ui
+    unwindsettingspage.ui
+    flamegraphsettingspage.ui
+    debuginfodpage.ui
     callgraphwidget.ui
     callgraphsettings.ui
 

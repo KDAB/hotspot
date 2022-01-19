@@ -13,9 +13,9 @@
 #include <memory>
 
 namespace Ui {
-class SettingsDialog;
-class FlamegraphSettings;
-class DebuginfodDialog;
+class UnwindSettingsPage;
+class FlamegraphSettingsPage;
+class DebuginfodPage;
 class CallgraphSettings;
 }
 
@@ -45,9 +45,9 @@ private:
     void addDebuginfodPage();
     void addCallgraphPage();
 
-    std::unique_ptr<Ui::SettingsDialog> unwindPage;
-    std::unique_ptr<Ui::FlamegraphSettings> flamegraphPage;
-    std::unique_ptr<Ui::DebuginfodDialog> debuginfodPage;
+    std::unique_ptr<Ui::UnwindSettingsPage> unwindPage;
+    std::unique_ptr<Ui::FlamegraphSettingsPage> flamegraphPage;
+    std::unique_ptr<Ui::DebuginfodPage> debuginfodPage;
     std::unique_ptr<Ui::CallgraphSettings> callgraphSettings;
     MultiConfigWidget* m_configs;
 };

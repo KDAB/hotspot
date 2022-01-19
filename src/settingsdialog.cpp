@@ -7,15 +7,15 @@
 */
 
 #include "settingsdialog.h"
-#include "ui_debuginfoddialog.h"
-#include "ui_flamegraphsettings.h"
-#include "ui_settingsdialog.h"
+#include "ui_debuginfodpage.h"
+#include "ui_flamegraphsettingspage.h"
+#include "ui_unwindsettingspage.h"
 #include "ui_callgraphsettings.h"
 
 #include <KComboBox>
 #include <KUrlRequester>
-#include <kconfiggroup.h>
-#include <ksharedconfig.h>
+#include <KConfigGroup>
+#include <KSharedConfig>
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <settings.h>
@@ -34,9 +34,9 @@ KConfigGroup config()
 
 SettingsDialog::SettingsDialog(QWidget* parent)
     : KPageDialog(parent)
-    , unwindPage(new Ui::SettingsDialog)
-    , flamegraphPage(new Ui::FlamegraphSettings)
-    , debuginfodPage(new Ui::DebuginfodDialog)
+    , unwindPage(new Ui::UnwindSettingsPage)
+    , flamegraphPage(new Ui::FlamegraphSettingsPage)
+    , debuginfodPage(new Ui::DebuginfodPage)
 #if KGRAPHVIEWER_FOUND
     , callgraphSettings(new Ui::CallgraphSettings)
 #endif

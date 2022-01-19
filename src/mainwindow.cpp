@@ -14,7 +14,7 @@
 #include "settingsdialog.h"
 #include "startpage.h"
 #include "ui_mainwindow.h"
-#include "ui_settingsdialog.h"
+#include "ui_unwindsettingspage.h"
 
 #include <QApplication>
 #include <QFileDialog>
