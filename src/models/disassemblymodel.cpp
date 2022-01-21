@@ -22,6 +22,20 @@ void DisassemblyModel::clear()
     endResetModel();
 }
 
+QModelIndex DisassemblyModel::findIndexWithOffset(int offset)
+{
+    quint64 address = m_data.disassemblyLines[0].addr + offset;
+
+    const auto& found =
+        std::find_if(m_data.disassemblyLines.begin(), m_data.disassemblyLines.end(),
+                     [address](const DisassemblyOutput::DisassemblyLine& line) { return line.addr == address; });
+
+    if (found != m_data.disassemblyLines.end()) {
+        return index(std::distance(m_data.disassemblyLines.begin(), found), 0);
+    }
+    return {};
+}
+
 void DisassemblyModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
 {
     beginResetModel();
@@ -47,6 +61,14 @@ QVariant DisassemblyModel::headerData(int section, Qt::Orientation orientation, 
     if (section == DisassemblyColumn)
         return tr("Assembly");
 
+    if (section == LinkedFunctionName) {
+        return tr("Linked Function Name");
+    }
+
+    if (section == LinkedFunctionOffset) {
+        return tr("Linked Function Offset");
+    }
+
     if (section - COLUMN_COUNT <= m_numTypes)
         return m_results.selfCosts.typeName(section - COLUMN_COUNT);
 
@@ -66,6 +88,12 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
     if (role == Qt::DisplayRole || role == CostRole || role == TotalCostRole || role == Qt::ToolTipRole) {
         if (index.column() == DisassemblyColumn)
             return data.disassembly;
+
+        if (index.column() == LinkedFunctionName)
+            return data.linkedFunctionName;
+
+        if (index.column() == LinkedFunctionOffset)
+            return data.linkedFunctionOffset;
 
         if (data.addr == 0) {
             return {};

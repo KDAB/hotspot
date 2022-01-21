@@ -14,6 +14,39 @@
 #include <QRegularExpression>
 #include <QStandardPaths>
 
+namespace {
+DisassemblyOutput::LinkedFunction extractLinkedFunction(const QString& disassembly)
+{
+    DisassemblyOutput::LinkedFunction function = {};
+
+    const auto leftBracketIndex = disassembly.indexOf(QLatin1Char('<'));
+    const auto rightBracketIndex = disassembly.indexOf(QLatin1Char('>'));
+    if (leftBracketIndex != -1 && rightBracketIndex != -1) {
+        if (leftBracketIndex < rightBracketIndex) {
+            function.name = disassembly.mid(leftBracketIndex + 1, rightBracketIndex - leftBracketIndex - 1);
+
+            const auto atindex = function.name.indexOf(QLatin1Char('@'));
+            if (atindex > 0) {
+                function.name = function.name.left(atindex);
+            }
+
+            const auto plusIndex = function.name.indexOf(QLatin1Char('+'));
+            if (plusIndex > 0) {
+                bool ok;
+                // ignore 0x in offset
+                const auto& offsetStr = function.name.mid(plusIndex + 3);
+                function.name = function.name.left(plusIndex);
+                auto offset = offsetStr.toInt(&ok, 16);
+                if (ok) {
+                    function.offset = offset;
+                }
+            }
+        }
+    }
+    return function;
+}
+}
+
 static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(const QByteArray &output)
 {
     QVector<DisassemblyOutput::DisassemblyLine> disassemblyLines;
@@ -22,7 +55,7 @@ static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(const QByteArray
     QString asmLine;
     // detect lines like:
     // 4f616: 84 c0 test %al,%al
-    static const QRegularExpression disassemblyRegex(QStringLiteral("^    ([0-9a-f]{4,}):\t[0-9a-f ]{2,}"));
+    static const QRegularExpression disassemblyRegex(QStringLiteral("^[ ]+([0-9a-f]{4,}):\t[0-9a-f ]{2,}"));
     while (stream.readLineInto(&asmLine))
     {
         if (asmLine.isEmpty() || asmLine.startsWith(QLatin1String("Disassembly")))
@@ -51,7 +84,7 @@ static QVector<DisassemblyOutput::DisassemblyLine> objdumpParse(const QByteArray
             }
         }
 
-        disassemblyLines.push_back({addr, asmLine});
+        disassemblyLines.push_back({addr, asmLine, extractLinkedFunction(asmLine)});
     }
     return disassemblyLines;
 }
@@ -85,6 +118,7 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
     auto toHex = [](quint64 addr) -> QString { return QLatin1String("0x") + QString::number(addr, 16); };
     const auto arguments = QStringList {QStringLiteral("-d"),
                                         QStringLiteral("-S"),
+                                        QStringLiteral("-C"),
                                         QStringLiteral("--start-address"),
                                         toHex(symbol.relAddr),
                                         QStringLiteral("--stop-address"),

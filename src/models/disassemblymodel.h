@@ -23,6 +23,7 @@ public:
     void setResults(const Data::CallerCalleeResults& results);
 
     void clear();
+    QModelIndex findIndexWithOffset(int offset);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -33,6 +34,8 @@ public:
     enum Columns
     {
         DisassemblyColumn,
+        LinkedFunctionName,
+        LinkedFunctionOffset,
         COLUMN_COUNT
     };
 

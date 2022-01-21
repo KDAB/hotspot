@@ -28,6 +28,7 @@ class QTreeView;
 class QStandardItemModel;
 class QTemporaryFile;
 class CostDelegate;
+class DisassemblyDelegate;
 struct DisassemblyOutput;
 class DisassemblyModel;
 
@@ -65,4 +66,5 @@ private:
     Data::CallerCalleeResults m_callerCalleeResults;
     // Cost delegate
     CostDelegate* m_costDelegate;
+    DisassemblyDelegate* m_disassemblyDelegate;
 };
