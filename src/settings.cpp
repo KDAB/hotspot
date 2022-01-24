@@ -1,5 +1,4 @@
 /*
-/*
     SPDX-FileCopyrightText: Erik Johansson <erik@ejohansson.se>
     SPDX-FileCopyrightText: Milian Wolff <milian.wolff@kdab.com>
     SPDX-FileCopyrightText: 2016-2022 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
