@@ -7,15 +7,15 @@
 */
 
 #include "settingsdialog.h"
-#include "ui_debuginfoddialog.h"
-#include "ui_flamegraphsettings.h"
-#include "ui_settingsdialog.h"
-#include "ui_callgraphsettings.h"
+#include "ui_callgraphsettingspage.h"
+#include "ui_debuginfodpage.h"
+#include "ui_flamegraphsettingspage.h"
+#include "ui_unwindsettingspage.h"
 
 #include <KComboBox>
 #include <KUrlRequester>
-#include <kconfiggroup.h>
-#include <ksharedconfig.h>
+#include <KConfigGroup>
+#include <KSharedConfig>
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <settings.h>
@@ -34,11 +34,11 @@ KConfigGroup config()
 
 SettingsDialog::SettingsDialog(QWidget* parent)
     : KPageDialog(parent)
-    , unwindPage(new Ui::SettingsDialog)
-    , flamegraphPage(new Ui::FlamegraphSettings)
-    , debuginfodPage(new Ui::DebuginfodDialog)
+    , unwindPage(new Ui::UnwindSettingsPage)
+    , flamegraphPage(new Ui::FlamegraphSettingsPage)
+    , debuginfodPage(new Ui::DebuginfodPage)
 #if KGRAPHVIEWER_FOUND
-    , callgraphSettings(new Ui::CallgraphSettings)
+    , callgraphPage(new Ui::CallgraphSettingsPage)
 #endif
 {
     addPathSettingsPage();
@@ -272,20 +272,21 @@ void SettingsDialog::addCallgraphPage()
     item->setHeader(tr("Callgraph Settings"));
     item->setIcon(QIcon::fromTheme(QStringLiteral("preferences-system-windows-behavior")));
 
-    callgraphSettings->setupUi(page);
+    callgraphPage->setupUi(page);
 
     connect(Settings::instance(), &Settings::callgraphChanged, this, [this] {
         auto settings = Settings::instance();
-        callgraphSettings->parentSpinBox->setValue(settings->callgraphParentDepth());
-        callgraphSettings->childSpinBox->setValue(settings->callgraphChildDepth());
-        callgraphSettings->currentFunctionColor->setColor(settings->callgraphActiveColor());
-        callgraphSettings->functionColor->setColor(settings->callgraphColor());
+        callgraphPage->parentSpinBox->setValue(settings->callgraphParentDepth());
+        callgraphPage->childSpinBox->setValue(settings->callgraphChildDepth());
+        callgraphPage->currentFunctionColor->setColor(settings->callgraphActiveColor());
+        callgraphPage->functionColor->setColor(settings->callgraphColor());
     });
 
     connect(buttonBox(), &QDialogButtonBox::accepted, this, [this]{
         auto settings = Settings::instance();
-        settings->setCallgraphParentDepth(callgraphSettings->parentSpinBox->value());
-        settings->setCallgraphChildDepth(callgraphSettings->childSpinBox->value());
-        settings->setCallgraphColors(callgraphSettings->currentFunctionColor->color().name(), callgraphSettings->functionColor->color().name());
+        settings->setCallgraphParentDepth(callgraphPage->parentSpinBox->value());
+        settings->setCallgraphChildDepth(callgraphPage->childSpinBox->value());
+        settings->setCallgraphColors(callgraphPage->currentFunctionColor->color().name(),
+                                     callgraphPage->functionColor->color().name());
     });
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SettingsDialog</class>
- <widget class="QWidget" name="SettingsDialog">
+ <class>UnwindSettingsPage</class>
+ <widget class="QWidget" name="UnwindSettingsPage">
   <property name="modal" stdset="0">
    <bool>false</bool>
   </property>
