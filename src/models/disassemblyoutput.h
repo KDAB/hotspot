@@ -13,10 +13,17 @@
 
 struct DisassemblyOutput
 {
+    struct LinkedFunction
+    {
+        QString name;
+        int offset = 0; // offset from the entrypoint of the function
+    };
+
     struct DisassemblyLine
     {
         quint64 addr = 0;
         QString disassembly;
+        LinkedFunction linkedFunction;
     };
     QVector<DisassemblyLine> disassemblyLines;
 

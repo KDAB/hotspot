@@ -31,19 +31,39 @@
 
 #include "data.h"
 #include "models/costdelegate.h"
+#include "models/disassemblydelegate.h"
+#include "models/disassemblymodel.h"
 #include "models/hashmodel.h"
 #include "models/topproxy.h"
 #include "models/treemodel.h"
-#include "models/disassemblymodel.h"
 
 ResultsDisassemblyPage::ResultsDisassemblyPage(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsDisassemblyPage)
     , m_model(new DisassemblyModel(this))
     , m_costDelegate(new CostDelegate(DisassemblyModel::CostRole, DisassemblyModel::TotalCostRole, this))
+    , m_disassemblyDelegate(new DisassemblyDelegate(this))
 {
     ui->setupUi(this);
     ui->asmView->setModel(m_model);
+
+    connect(m_disassemblyDelegate, &DisassemblyDelegate::gotoFunction, this,
+            [this](const QString& functionName, int offset) {
+                if (m_curSymbol.symbol == functionName) {
+                    ui->asmView->scrollTo(m_model->findIndexWithOffset(offset),
+                                          QAbstractItemView::ScrollHint::PositionAtTop);
+                } else {
+                    const auto symbol = std::find_if(
+                        m_callerCalleeResults.entries.keyBegin(), m_callerCalleeResults.entries.keyEnd(),
+                        [functionName](const Data::Symbol& symbol) { return symbol.symbol == functionName; });
+
+                    if (symbol != m_callerCalleeResults.entries.keyEnd()) {
+                        setSymbol(*symbol);
+                        showDisassembly();
+                        emit jumpToCallerCallee(*symbol);
+                    }
+                }
+            });
 }
 
 ResultsDisassemblyPage::~ResultsDisassemblyPage() = default;
@@ -57,6 +77,9 @@ void ResultsDisassemblyPage::setupAsmViewModel()
 {
     ui->asmView->header()->setStretchLastSection(false);
     ui->asmView->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui->asmView->hideColumn(DisassemblyModel::LinkedFunctionName);
+    ui->asmView->hideColumn(DisassemblyModel::LinkedFunctionOffset);
+    ui->asmView->setItemDelegateForColumn(0, m_disassemblyDelegate);
     for (int col = 1; col < m_model->columnCount(); col++) {
         ui->asmView->setColumnWidth(col, 100);
         ui->asmView->header()->setSectionResizeMode(col, QHeaderView::Interactive);
