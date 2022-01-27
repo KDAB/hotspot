@@ -90,10 +90,10 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
             return data.disassembly;
 
         if (index.column() == LinkedFunctionName)
-            return data.linkedFunctionName;
+            return data.linkedFunction.name;
 
         if (index.column() == LinkedFunctionOffset)
-            return data.linkedFunctionOffset;
+            return data.linkedFunction.offset;
 
         if (data.addr == 0) {
             return {};
