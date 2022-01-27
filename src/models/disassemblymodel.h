@@ -47,5 +47,5 @@ public:
 private:
     DisassemblyOutput m_data;
     Data::CallerCalleeResults m_results;
-    int m_numTypes;
+    int m_numTypes = 0;
 };
