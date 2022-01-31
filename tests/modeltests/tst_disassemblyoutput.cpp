@@ -8,11 +8,12 @@
 
 #include <QDebug>
 #include <QObject>
-#include <QTest>
-#include <QStandardPaths>
 #include <QProcess>
+#include <QStandardPaths>
 #include <QString>
 #include <QStringList>
+#include <QTemporaryFile>
+#include <QTest>
 #include <QVector>
 
 #include <models/disassemblyoutput.h>
@@ -48,7 +49,6 @@ private slots:
         symbol.actualPath = actualBinaryFile;
 
         QVERIFY(!actualBinaryFile.isEmpty() && QFile::exists(actualBinaryFile));
-        const auto expectedOutputFile = actualBinaryFile + ".expected.txt";
         const auto actualOutputFile = actualBinaryFile + ".actual.txt";
 
         QFile actual(actualOutputFile);
@@ -67,6 +67,7 @@ private slots:
             QVERIFY(actual.open(QIODevice::ReadOnly | QIODevice::Text));
             actualText = QString::fromUtf8(actual.readAll());
         }
+        const auto expectedOutputFile = patch_expected_file(actualText, actualBinaryFile);
 
         QString expectedText;
         {
@@ -82,6 +83,25 @@ private slots:
             }
         }
         QCOMPARE(actualText, expectedText);
+    }
+
+    QString patch_expected_file(const QString& actualText, const QString& actualBinaryFile)
+    {
+        if (actualText.contains("jmpq")) {
+            return actualBinaryFile + ".expected.txt";
+        }
+
+        auto file = new QTemporaryFile(this);
+        file->open();
+
+        auto text = actualText;
+        text.replace("jmpq", "jmp");
+        text.replace("retq", "ret");
+        text.replace("callq", "call");
+
+        file->write(text.toUtf8());
+
+        return file->fileName();
     }
 };
 
