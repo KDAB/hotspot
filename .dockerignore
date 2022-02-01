@@ -2,5 +2,6 @@ build*/
 .git
 *.AppImage
 **/perf.data
+!3rdparty/perfparser/**/perf.data
 **/perf.data.old
 **/a.out
