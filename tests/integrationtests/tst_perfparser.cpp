@@ -165,6 +165,8 @@ private slots:
         qRegisterMetaType<Data::TopDown>();
         qRegisterMetaType<Data::CallerCalleeEntryMap>("Data::CallerCalleeEntryMap");
         qRegisterMetaType<Data::EventResults>();
+        qRegisterMetaType<Data::FrequencyResults>();
+        qRegisterMetaType<Data::TracepointResults>();
     }
 
     void init()
