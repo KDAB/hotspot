@@ -163,9 +163,9 @@ int main(int argc, char** argv)
     };
 
     const auto settings = Settings::instance();
+    applyCliArgs(settings);
     for (const auto& file : parser.positionalArguments()) {
         auto window = new MainWindow;
-        applyCliArgs(settings);
         window->openFile(file);
         window->show();
     }
