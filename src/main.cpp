@@ -9,6 +9,7 @@
 #include <QCommandLineParser>
 #include <QDebug>
 #include <QFile>
+#include <QFileInfo>
 #include <QProcessEnvironment>
 
 #include "dockwidgetsetup.h"
@@ -166,7 +167,12 @@ int main(int argc, char** argv)
     applyCliArgs(settings);
     for (const auto& file : parser.positionalArguments()) {
         auto window = new MainWindow;
-        window->openFile(file);
+        QFileInfo info(file);
+        if (info.isFile()) {
+            window->openFile(file);
+        } else if (info.isDir()) {
+            window->openFile(file + QStringLiteral("/perf.data"));
+        }
         window->show();
     }
 
