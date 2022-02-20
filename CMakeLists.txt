@@ -116,5 +116,5 @@ add_subdirectory(src)
 
 add_subdirectory(tests)
 
-install(FILES hotspot.desktop DESTINATION ${KDE_INSTALL_APPDIR})
+install(FILES com.kdab.hotspot.desktop DESTINATION ${KDE_INSTALL_APPDIR})
 install(FILES com.kdab.Hotspot.appdata.xml DESTINATION ${KDE_INSTALL_METAINFODIR})
