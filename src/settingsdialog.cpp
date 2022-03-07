@@ -11,6 +11,7 @@
 #include "ui_callgraphsettingspage.h"
 #include "ui_debuginfodpage.h"
 #include "ui_flamegraphsettingspage.h"
+#include "ui_tracepointtimemeasurementspage.h"
 #include "ui_unwindsettingspage.h"
 
 #include "multiconfigwidget.h"
@@ -28,9 +29,9 @@
 #include <hotspot-config.h>
 
 namespace {
-KConfigGroup config()
+KSharedConfig::Ptr config()
 {
-    return KSharedConfig::openConfig()->group("PerfPaths");
+    return KSharedConfig::openConfig();
 }
 }
 
@@ -42,6 +43,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
 #if KGraphViewerPart_FOUND
     , callgraphPage(new Ui::CallgraphSettingsPage)
 #endif
+    , tracepointPage(new Ui::TracepointsTimeMeasurementsPage)
 {
     addPathSettingsPage();
     addFlamegraphPage();
@@ -49,6 +51,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
 #if KGraphViewerPart_FOUND
     addCallgraphPage();
 #endif
+    addTracepointPage();
 }
 
 SettingsDialog::~SettingsDialog() = default;
@@ -172,11 +175,11 @@ void SettingsDialog::addPathSettingsPage()
         const auto arch = group.readEntry("arch");
         const auto objdump = group.readEntry("objdump");
         initSettings(sysroot, appPath, extraLibPaths, debugPaths, kallsyms, arch, objdump);
-        ::config().writeEntry("lastUsed", m_configs->currentConfig());
+        ::config()->group("PerfPaths").writeEntry("lastUsed", m_configs->currentConfig());
     };
 
     m_configs = new MultiConfigWidget(this);
-    m_configs->setConfig(config());
+    m_configs->setConfig(config()->group("PerfPaths"));
     m_configs->restoreCurrent();
 
     connect(m_configs, &MultiConfigWidget::saveConfig, this, saveFunction);
@@ -295,4 +298,38 @@ void SettingsDialog::addCallgraphPage()
         settings->setCallgraphColors(callgraphPage->currentFunctionColor->color().name(),
                                      callgraphPage->functionColor->color().name());
     });
+}
+
+void SettingsDialog::addTracepointPage()
+{
+    auto page = new QWidget(this);
+    auto item = addPage(page, tr("Tracepoints"));
+    item->setHeader(tr("Tracepoint Time Measurements"));
+    item->setIcon(QIcon::fromTheme(QStringLiteral("preferences-system-windows-behavior")));
+
+    tracepointPage->setupUi(page);
+
+    auto saveFunction = [this](KConfigGroup group) {
+        group.writeEntry("startRegex", tracepointPage->startRegexEdit->text());
+        group.writeEntry("endRegex", tracepointPage->endRegexEdit->text());
+        group.writeEntry("costName", tracepointPage->costNameEdit->text());
+    };
+
+    auto restoreFunction = [this](const KConfigGroup& group) {
+        tracepointPage->startRegexEdit->setText(group.readEntry("startRegex"));
+        tracepointPage->endRegexEdit->setText(group.readEntry("endRegex"));
+        tracepointPage->costNameEdit->setText(group.readEntry("costName"));
+    };
+
+    auto config = new MultiConfigWidget();
+
+    connect(config, &MultiConfigWidget::saveConfig, this, saveFunction);
+    connect(config, &MultiConfigWidget::restoreConfig, this, restoreFunction);
+
+    config->setConfig(::config()->group("TracepointsTimeMeasurements"));
+    config->restoreCurrent();
+
+    tracepointPage->layout->insertRow(0, tr("Name:"), config);
+
+    connect(this, &KPageDialog::accepted, this, [config] { config->updateCurrentConfig(); });
 }

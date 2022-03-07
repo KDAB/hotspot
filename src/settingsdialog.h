@@ -17,6 +17,7 @@ class UnwindSettingsPage;
 class FlamegraphSettingsPage;
 class DebuginfodPage;
 class CallgraphSettingsPage;
+class TracepointsTimeMeasurementsPage;
 }
 
 class MultiConfigWidget;
@@ -46,10 +47,12 @@ private:
     void addFlamegraphPage();
     void addDebuginfodPage();
     void addCallgraphPage();
+    void addTracepointPage();
 
     std::unique_ptr<Ui::UnwindSettingsPage> unwindPage;
     std::unique_ptr<Ui::FlamegraphSettingsPage> flamegraphPage;
     std::unique_ptr<Ui::DebuginfodPage> debuginfodPage;
     std::unique_ptr<Ui::CallgraphSettingsPage> callgraphPage;
+    std::unique_ptr<Ui::TracepointsTimeMeasurementsPage> tracepointPage;
     MultiConfigWidget* m_configs;
 };

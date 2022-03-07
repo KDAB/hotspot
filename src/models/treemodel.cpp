@@ -54,6 +54,10 @@ QVariant BottomUpModel::headerColumnData(int column, int role) const
                 "The name of the executable the symbol resides in. May be empty when debug information is missing.");
         }
 
+        if (m_results.costs.unit(column - NUM_BASE_COLUMNS) == Data::Costs::Unit::TracepointCost) {
+            return tr("The total time spend in %1.").arg(m_results.costs.typeName(column - NUM_BASE_COLUMNS));
+        }
+
         return tr("The symbol's inclusive cost of type \"%1\", i.e. the aggregated sample costs attributed to this "
                   "symbol, both directly and indirectly.")
             .arg(m_results.costs.typeName(column - NUM_BASE_COLUMNS));
@@ -136,6 +140,10 @@ QVariant TopDownModel::headerColumnData(int column, int role) const
         }
         column -= NUM_BASE_COLUMNS;
         if (column < m_results.inclusiveCosts.numTypes()) {
+            if (m_results.inclusiveCosts.unit(column) == Data::Costs::Unit::TracepointCost) {
+                return tr("The total time spend in %1.").arg(m_results.inclusiveCosts.typeName(column));
+            }
+
             return tr("The symbol's inclusive cost of type \"%1\", i.e. the aggregated sample costs attributed to this "
                       "symbol, "
                       "both directly and indirectly. This includes the costs of all functions called by this symbol "
@@ -145,6 +153,11 @@ QVariant TopDownModel::headerColumnData(int column, int role) const
         }
 
         column -= m_results.inclusiveCosts.numTypes();
+
+        if (m_results.selfCosts.unit(column) == Data::Costs::Unit::TracepointCost) {
+            return tr("The total time spend in %1.").arg(m_results.selfCosts.typeName(column));
+        }
+
         return tr("The symbol's self cost of type \"%1\", i.e. the aggregated sample costs directly attributed to this "
                   "symbol. "
                   "This excludes the costs of all functions called by this symbol.")

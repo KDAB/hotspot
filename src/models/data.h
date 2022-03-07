@@ -197,6 +197,14 @@ struct FrameLocation
     Data::Location location;
 };
 
+struct TracepointCost
+{
+    qint32 costId;
+    QVector<int> frames;
+    quint64 startTime;
+    quint64 stopTime;
+};
+
 using ItemCost = std::valarray<qint64>;
 
 QDebug operator<<(QDebug stream, const ItemCost& cost);
@@ -208,7 +216,8 @@ public:
     {
         Unknown,
         Tracepoint,
-        Time
+        Time,
+        TracepointCost
     };
 
     void increment(int type, quint32 id)
@@ -325,6 +334,7 @@ public:
         case Unit::Time:
             return Util::formatTimeString(cost);
         case Unit::Tracepoint:
+        case Unit::TracepointCost:
         case Unit::Unknown:
             break;
         }
@@ -479,6 +489,8 @@ struct BottomUpResults
             });
         return parent;
     }
+
+    void addTracepointCost(const TracepointCost& cost);
 
 private:
     quint32 maxBottomUpId = 0;
@@ -953,6 +965,9 @@ Q_DECLARE_TYPEINFO(Data::CostSummary, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::EventResults)
 Q_DECLARE_TYPEINFO(Data::EventResults, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::TracepointCost)
+Q_DECLARE_TYPEINFO(Data::TracepointCost, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::Tracepoint)
 Q_DECLARE_TYPEINFO(Data::Tracepoint, Q_MOVABLE_TYPE);

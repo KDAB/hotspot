@@ -598,10 +598,17 @@ QProcessEnvironment perfparserEnvironment(const QStringList& debuginfodUrls)
 
     return env;
 }
+
+struct TracePointWithExpectedName
+{
+    Data::Tracepoint tracepoint;
+    QString expectedName;
+};
 }
 
 Q_DECLARE_TYPEINFO(AttributesDefinition, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(SampleCost, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(TracePointWithExpectedName, Q_MOVABLE_TYPE);
 
 class PerfParserPrivate : public QObject
 {
@@ -863,6 +870,9 @@ public:
     {
         Data::BottomUp::initializeParents(&bottomUpResult.root);
 
+        for (auto it = tracepointCostIdLookup.begin(); it != tracepointCostIdLookup.end(); it++) {
+            bottomUpResult.costs.addTotalCost(it.value(), applicationTime.end - applicationTime.start);
+        }
         summaryResult.applicationTime = applicationTime;
         summaryResult.threadCount = uniqueThreads.size();
         summaryResult.processCount = uniqueProcess.size();
@@ -1063,6 +1073,35 @@ public:
         }
     }
 
+    void addTracepointToTracepointStack(QVector<TracePointWithExpectedName>& tracepointStack,
+                                        const Data::Tracepoint& tracepoint)
+    {
+        auto addToLookup = [this](const QString& name) {
+            for (const auto& parameters : tracepointParameters) {
+                auto stopName = name;
+                stopName.replace(parameters.startRegex, parameters.stopExpression);
+
+                if (stopName == name) {
+                    continue;
+                }
+
+                tracepointCostIdLookup[name] = addCostType(parameters.name, Data::Costs::Unit::TracepointCost);
+                return tracepointNameRegexCache.insert(name, stopName);
+            }
+            return tracepointNameRegexCache.end();
+        };
+
+        auto it = tracepointNameRegexCache.find(tracepoint.name);
+        if (it == tracepointNameRegexCache.end()) {
+            it = addToLookup(tracepoint.name);
+            if (it == tracepointNameRegexCache.end()) {
+                return;
+            }
+        }
+
+        tracepointStack.push_back({tracepoint, *it});
+    }
+
     void addSample(const Sample& sample)
     {
         addSampleToFrequencyData(sample);
@@ -1094,6 +1133,31 @@ public:
                 if (tracepoint.name != QLatin1String("sched:sched_switch")) {
                     // sched_switch events are handled separately already
                     tracepointResult.tracepoints.push_back(tracepoint);
+                }
+
+                auto& tracepoints = tracepointStack[sample.tid];
+                if (tracepoints.isEmpty()) {
+                    addTracepointToTracepointStack(tracepoints, tracepoint);
+                } else {
+                    const auto& lastTracepoint = tracepoints.constLast();
+                    if (tracepoint.name == lastTracepoint.expectedName) {
+                        const Data::TracepointCost cost = {tracepointCostIdLookup.value(lastTracepoint.tracepoint.name),
+                                                           sample.frames, lastTracepoint.tracepoint.time,
+                                                           tracepoint.time};
+
+                        bottomUpResult.addTracepointCost(cost);
+
+                        tracepoints.pop_back();
+                    } else if (lastTracepoint.tracepoint.name == tracepoint.name) {
+                        // we got the same tracepoint twice, but not the expected one
+                        // this happens if the file contains lost samples
+                        // in this case we simply remove the broken tracepoint and emit a warning
+                        tracepoints.pop_back();
+                        addTracepointToTracepointStack(tracepoints, tracepoint);
+                        droppedTracepoints = true;
+                    } else {
+                        addTracepointToTracepointStack(tracepoints, tracepoint);
+                    }
                 }
             }
         }
@@ -1375,6 +1439,10 @@ public:
     Data::EventResults eventResult;
     Data::TracepointResults tracepointResult;
     Data::FrequencyResults frequencyResult;
+    // maps TID to last tracepoint and expected close name
+    QHash<qint32, QVector<TracePointWithExpectedName>> tracepointStack;
+    QHash<QString, qint32> tracepointCostIdLookup;
+    QHash<QString, QString> tracepointNameRegexCache;
     QHash<qint32, QHash<qint32, QString>> commands;
     QScopedPointer<QTextStream> perfScriptOutput;
     QHash<qint32, SymbolCount> numSymbolsByModule;
@@ -1386,6 +1454,8 @@ public:
     qint32 m_nextCostId = 0;
     qint32 m_schedSwitchCostId = -1;
     QHash<quint32, quint64> m_lastSampleTimePerCore;
+    bool droppedTracepoints = false;
+    QVector<TracepointTimeMeasurementsParameters> tracepointParameters;
     Settings::CostAggregation costAggregation;
 
     // samples recorded without --call-graph have only one frame
@@ -1538,13 +1608,15 @@ void PerfParser::startParseFile(const QString& path)
     m_frequencyResults = {};
 
     auto debuginfodUrls = Settings::instance()->debuginfodUrls();
+    auto tracepointParameters = Settings::instance()->tracepointParameters();
     const auto costAggregation = Settings::instance()->costAggregation();
 
     emit parsingStarted();
     using namespace ThreadWeaver;
     stream() << make_job([path, parserBinary = m_parserBinary, parserArgs = m_parserArgs, debuginfodUrls,
-                          costAggregation, this]() {
+                          tracepointParameters, costAggregation, this]() {
         PerfParserPrivate d(costAggregation);
+        d.tracepointParameters = tracepointParameters;
         connect(&d, &PerfParserPrivate::progress, this, &PerfParser::progress);
         connect(&d, &PerfParserPrivate::debugInfoDownloadProgress, this, &PerfParser::debugInfoDownloadProgress);
         connect(this, &PerfParser::stopRequested, &d, &PerfParserPrivate::stop);
@@ -1566,6 +1638,9 @@ void PerfParser::startParseFile(const QString& path)
             if (d.m_numSamplesWithMoreThanOneFrame == 0) {
                 emit parserWarning(tr("Samples contained no call stack frames. Consider passing <code>--call-graph "
                                       "dwarf</code> to <code>perf record</code>."));
+            }
+            if (d.droppedTracepoints) {
+                emit parserWarning(tr("Encountered unexpected tracepoints. Derived cost may be inaccurate."));
             }
         };
 
