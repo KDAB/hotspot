@@ -95,5 +95,8 @@ void setupContextMenu(QTreeView* view, CostContextMenu* costContextMenu, Model* 
 
 void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns);
 
+void hideTracepointColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns,
+                           const QSet<QString>& tracepointCostNames);
+
 void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs, const QString& tooltipTemplate);
 }

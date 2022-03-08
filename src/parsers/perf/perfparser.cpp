@@ -1037,6 +1037,7 @@ public:
                 Data::Tracepoint tracepoint;
                 tracepoint.time = event.time;
                 tracepoint.name = strings.value(attribute.name.id);
+                tracepointCostNames.insert(tracepoint.name);
                 if (tracepoint.name != QLatin1String("sched:sched_switch")) {
                     // sched_switch events are handled separately already
                     tracepointResult.tracepoints.push_back(tracepoint);
@@ -1312,6 +1313,7 @@ public:
     QScopedPointer<QTextStream> perfScriptOutput;
     QHash<qint32, SymbolCount> numSymbolsByModule;
     QSet<QString> encounteredErrors;
+    QSet<QString> tracepointCostNames;
     QHash<QVector<qint32>, qint32> stacks;
     std::atomic<bool> stopRequested;
     QHash<qint32, qint32> attributeIdsToCostIds;
@@ -1446,6 +1448,7 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
 
         auto finalize = [&d, this]() {
             d.finalize();
+            m_tracepointCostNames = d.tracepointCostNames;
             emit bottomUpDataAvailable(d.bottomUpResult);
             emit topDownDataAvailable(d.topDownResult);
             emit perLibraryDataAvailable(d.perLibraryResult);
