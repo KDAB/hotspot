@@ -46,6 +46,11 @@ public:
         return m_events;
     }
 
+    QSet<QString> tracepointCostNames() const
+    {
+        return m_tracepointCostNames;
+    }
+
 signals:
     void parsingStarted();
     void summaryDataAvailable(const Data::Summary& data);
@@ -70,6 +75,7 @@ private:
 
     // only set once after the initial startParseFile finished
     QStringList m_parserArgs;
+    QSet<QString> m_tracepointCostNames;
     Data::BottomUpResults m_bottomUpResults;
     Data::CallerCalleeResults m_callerCalleeResults;
     Data::TracepointResults m_tracepointResults;
