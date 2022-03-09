@@ -21,6 +21,21 @@ struct PlotData
 {
     quint64 applicationStartTime = 0;
 };
+
+class TimeAxis : public QCPAxisTicker
+{
+public:
+    TimeAxis()
+        : QCPAxisTicker()
+    {
+    }
+
+protected:
+    QString getTickLabel(double tick, const QLocale& /*locale*/, QChar /*formatChar*/, int /*precision*/) override
+    {
+        return Util::formatTimeString(tick);
+    }
+};
 }
 
 FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
@@ -88,7 +103,7 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
                         QVector<double> costs(numValues);
                         for (int i = 0; i < numValues; ++i) {
                             const auto value = costData.values[i];
-                            const auto time = 1E-6 * static_cast<double>(value.time - plotData->applicationStartTime);
+                            const auto time = static_cast<double>(value.time - plotData->applicationStartTime);
                             times[i] = time;
                             costs[i] = value.cost;
                         }
@@ -103,8 +118,8 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
                 m_plot->replot(QCustomPlot::rpQueuedRefresh);
             });
 
-    // TODO: better time axis, QCPAxisTickerTime doesn't do what we want
-    m_plot->xAxis->setLabel(tr("Time [ms]"));
+    m_plot->xAxis->setLabel(tr("Time"));
+    m_plot->xAxis->setTicker(QSharedPointer<TimeAxis>(new TimeAxis()));
     m_plot->yAxis->setLabel(tr("Frequency [GHz]"));
     m_plot->legend->setVisible(true);
 }
