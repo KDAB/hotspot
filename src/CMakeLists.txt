@@ -68,6 +68,7 @@ set(hotspot_SRCS
     debuginfodpage.ui
     callgraphwidget.ui
     callgraphsettingspage.ui
+    frequencypage.ui
 
     # resources:
     resources.qrc

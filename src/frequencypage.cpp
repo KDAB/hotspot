@@ -13,6 +13,7 @@
 #include <QDebug>
 
 #include "parsers/perf/perfparser.h"
+#include "ui_frequencypage.h"
 #include "util.h"
 
 namespace {
@@ -25,59 +26,82 @@ struct PlotData
 FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , m_plot(new QCustomPlot(this))
+    , m_page(new Ui::FrequencyPage)
 {
     m_plot->axisRect()->setupFullAxesBox(true);
 
     updateColors();
 
-    auto layout = new QVBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(m_plot);
-    setLayout(layout);
+    m_page->setupUi(this);
+
+    m_page->layout->replaceWidget(m_page->plotWidget, m_plot);
 
     auto plotData = QSharedPointer<PlotData>::create();
 
     connect(parser, &PerfParser::summaryDataAvailable,
             [plotData](const Data::Summary data) { plotData->applicationStartTime = data.applicationTime.start; });
 
-    connect(parser, &PerfParser::frequencyDataAvailable, this, [this, plotData](const Data::FrequencyResults& results) {
-        m_plot->clearGraphs();
+    connect(parser, &PerfParser::frequencyDataAvailable, this, [this](const Data::FrequencyResults& results) {
+        m_results = results;
 
-        // TODO: don't show all costs, add combo box to select one
-        const auto numCores = results.cores.size();
-        quint32 core = 0;
-        for (const auto &coreData : results.cores) {
-            for (const auto &costData : coreData.costs) {
-                auto graph = m_plot->addGraph();
-                graph->setLayer(QStringLiteral("main"));
-                graph->setLineStyle(QCPGraph::lsNone);
+        m_page->costSelectionCombobox->clear();
+        m_page->costSelectionCombobox->addItem(tr("all"));
 
-                auto color = QColor::fromHsv(static_cast<int>(255. * (core / (numCores - 1.))), 255, 255, 150);
-                graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssSquare, color, color, 4));
-                graph->setAdaptiveSampling(false);
-                graph->setName(tr("%1 (CPU #%2)").arg(costData.costName, QString::number(core)));
-                graph->addToLegend();
-                graph->setVisible(true);
-
-                const auto numValues = costData.values.size();
-                QVector<double> times(numValues);
-                QVector<double> costs(numValues);
-                for (int i = 0; i < numValues; ++i) {
-                    const auto value = costData.values[i];
-                    const auto time = 1E-6 * static_cast<double>(value.time - plotData->applicationStartTime);
-                    times[i] = time;
-                    costs[i] = value.cost;
+        QSet<QString> costs;
+        for (const auto& coreData : m_results.cores) {
+            for (const auto& costData : coreData.costs) {
+                if (!costs.contains(costData.costName)) {
+                    costs.insert(costData.costName);
+                    m_page->costSelectionCombobox->addItem(costData.costName);
                 }
-                graph->setData(times, costs, true);
             }
-
-            ++core;
         }
-        m_plot->xAxis->rescale();
-        m_plot->yAxis->rescale();
-        m_plot->yAxis->setRangeLower(0.);
-        m_plot->replot(QCustomPlot::rpQueuedRefresh);
     });
+
+    connect(m_page->costSelectionCombobox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            [this, plotData](int index) {
+                m_plot->clearGraphs();
+                const auto numCores = m_results.cores.size();
+                quint32 core = 0;
+                for (const auto& coreData : m_results.cores) {
+                    for (const auto& costData : coreData.costs) {
+                        // index 0 means all
+                        if (index != 0) {
+                            if (costData.costName != m_page->costSelectionCombobox->currentText()) {
+                                continue;
+                            }
+                        }
+
+                        auto graph = m_plot->addGraph();
+                        graph->setLayer(QStringLiteral("main"));
+                        graph->setLineStyle(QCPGraph::lsNone);
+
+                        auto color = QColor::fromHsv(static_cast<int>(255. * (core / (numCores - 1.))), 255, 255, 150);
+                        graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssSquare, color, color, 4));
+                        graph->setAdaptiveSampling(false);
+                        graph->setName(QLatin1String("%1 (CPU #%2)").arg(costData.costName, QString::number(core)));
+                        graph->addToLegend();
+                        graph->setVisible(true);
+
+                        const auto numValues = costData.values.size();
+                        QVector<double> times(numValues);
+                        QVector<double> costs(numValues);
+                        for (int i = 0; i < numValues; ++i) {
+                            const auto value = costData.values[i];
+                            const auto time = 1E-6 * static_cast<double>(value.time - plotData->applicationStartTime);
+                            times[i] = time;
+                            costs[i] = value.cost;
+                        }
+                        graph->setData(times, costs, true);
+                    }
+
+                    ++core;
+                }
+                m_plot->xAxis->rescale();
+                m_plot->yAxis->rescale();
+                m_plot->yAxis->setRangeLower(0.);
+                m_plot->replot(QCustomPlot::rpQueuedRefresh);
+            });
 
     // TODO: better time axis, QCPAxisTickerTime doesn't do what we want
     m_plot->xAxis->setLabel(tr("Time [ms]"));
