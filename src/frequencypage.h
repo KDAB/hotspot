@@ -8,10 +8,15 @@
 
 #pragma once
 
+#include "data.h"
 #include <QWidget>
 
 class PerfParser;
 class QCustomPlot;
+
+namespace Ui {
+class FrequencyPage;
+}
 
 class FrequencyPage : public QWidget
 {
@@ -27,4 +32,6 @@ private:
     void updateColors();
 
     QCustomPlot *m_plot = nullptr;
+    QScopedPointer<Ui::FrequencyPage> m_page;
+    Data::FrequencyResults m_results;
 };
