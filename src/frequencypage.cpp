@@ -91,7 +91,8 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
                         graph->setLayer(QStringLiteral("main"));
                         graph->setLineStyle(QCPGraph::lsNone);
 
-                        auto color = QColor::fromHsv(static_cast<int>(255. * (core / (numCores - 1.))), 255, 255, 150);
+                        auto color = QColor::fromHsv(static_cast<int>(255. * (static_cast<float>(core) / numCores)),
+                                                     255, 255, 150);
                         graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssSquare, color, color, 4));
                         graph->setAdaptiveSampling(false);
                         graph->setName(QLatin1String("%1 (CPU #%2)").arg(costData.costName, QString::number(core)));
