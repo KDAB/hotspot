@@ -1633,6 +1633,23 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                 }
             }
 
+            if (filterByTime) {
+                auto it = std::remove_if(
+                    tracepointResults.tracepoints.begin(), tracepointResults.tracepoints.end(),
+                    [filter](const Data::Tracepoint& tracepoint) { return !filter.time.contains(tracepoint.time); });
+                tracepointResults.tracepoints.erase(it, tracepointResults.tracepoints.end());
+
+                for (auto& core : frequencyResults.cores) {
+                    for (auto& costType : core.costs) {
+
+                        auto frequencyIt = std::remove_if(
+                            costType.values.begin(), costType.values.end(),
+                            [filter](const Data::FrequencyData& point) { return !filter.time.contains(point.time); });
+                        costType.values.erase(frequencyIt, costType.values.end());
+                    }
+                }
+            }
+
             // remove events that lie outside the selected time span
             // TODO: parallelize
             for (auto& thread : events.threads) {
@@ -1666,33 +1683,6 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                             return false;
                         });
                     thread.events.erase(it, thread.events.end());
-
-                    if (filterByTime) {
-                        for (auto& core : frequencyResults.cores) {
-                            for (auto& costType : core.costs) {
-
-                                auto frequencyIt = std::remove_if(costType.values.begin(), costType.values.end(),
-                                                                  [filter](const Data::FrequencyData& point) {
-                                                                      if (!filter.time.contains(point.time)) {
-                                                                          return true;
-                                                                      }
-                                                                      return false;
-                                                                  });
-                                costType.values.erase(frequencyIt, costType.values.end());
-                            }
-                        }
-                    }
-                }
-
-                if (filterByTime) {
-                    auto it = std::remove_if(tracepointResults.tracepoints.begin(), tracepointResults.tracepoints.end(),
-                                             [filter, filterByTime](const Data::Tracepoint& tracepoint) {
-                                                 if (filterByTime && !filter.time.contains(tracepoint.time)) {
-                                                     return true;
-                                                 }
-                                                 return false;
-                                             });
-                    tracepointResults.tracepoints.erase(it, tracepointResults.tracepoints.end());
                 }
 
                 if (m_stopRequested) {
