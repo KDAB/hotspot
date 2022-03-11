@@ -16,6 +16,7 @@
 #include <QProcess>
 #include <QScopeGuard>
 #include <QTemporaryFile>
+#include <QThread>
 #include <QTimer>
 #include <QUrl>
 #include <QtEndian>
@@ -1570,6 +1571,9 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
     emit parsingStarted();
     using namespace ThreadWeaver;
     stream() << make_job([this, filter]() {
+        Queue queue(this);
+        queue.setMaximumNumberOfThreads(QThread::idealThreadCount());
+
         Data::BottomUpResults bottomUp;
         Data::EventResults events = m_events;
         Data::CallerCalleeResults callerCallee;
@@ -1604,33 +1608,50 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
             QVector<bool> filterStacks;
             if (filterByStack) {
                 filterStacks.resize(m_events.stacks.size());
-                // TODO: parallelize
-                for (qint32 stackId = 0, c = m_events.stacks.size(); stackId < c; ++stackId) {
-                    // if empty, then all include filters are matched
-                    auto includedSymbols = filter.includeSymbols;
-                    auto includedBinaries = filter.includeBinaries;
-                    // if false, then none of the exclude filters matched
-                    bool excluded = false;
-                    m_bottomUpResults.foreachFrame(m_events.stacks.at(stackId),
-                                                   [&includedSymbols, &includedBinaries, &excluded, &filter](const Data::Symbol& symbol,
-                                                                                   const Data::Location& /*location*/) {
-                                                       excluded = filter.excludeSymbols.contains(symbol);
-                                                       if (excluded) {
-                                                           return false;
-                                                       }
-                                                       includedSymbols.remove(symbol);
 
-                                                       excluded = filter.excludeBinaries.contains(symbol.binary);
-                                                       if (excluded) {
-                                                           return false;
-                                                       }
-                                                       includedBinaries.remove(symbol.binary);
-                                                       // only stop when we included everything and no exclude filter is
-                                                       // set
-                                                       return !includedSymbols.isEmpty() || !filter.excludeSymbols.isEmpty() || includedBinaries.isEmpty() || !filter.excludeBinaries.isEmpty();
-                                                   });
-                    filterStacks[stackId] = !excluded && includedSymbols.isEmpty() && includedBinaries.isEmpty();
+                const auto threadCount = queue.maximumNumberOfThreads();
+                const auto jobsPerThread = m_events.stacks.size() / threadCount;
+
+                auto filterStack = [&filter, &filterStacks, this](int start, int stop) {
+                    for (qint32 stackId = start, c = stop; stackId < c; ++stackId) {
+                        //  if empty, then all include filters are matched
+                        auto includedSymbols = filter.includeSymbols;
+                        auto includedBinaries = filter.includeBinaries;
+                        // if false, then none of the exclude filters matched
+                        bool excluded = false;
+                        m_bottomUpResults.foreachFrame(
+                            m_events.stacks.at(stackId),
+                            [&includedSymbols, &includedBinaries, &excluded,
+                             &filter](const Data::Symbol& symbol, const Data::Location& /*location*/) {
+                                excluded = filter.excludeSymbols.contains(symbol);
+                                if (excluded) {
+                                    return false;
+                                }
+                                includedSymbols.remove(symbol);
+
+                                excluded = filter.excludeBinaries.contains(symbol.binary);
+                                if (excluded) {
+                                    return false;
+                                }
+                                includedBinaries.remove(symbol.binary);
+
+                                // only stop when we included everything and no exclude filter is
+                                // set
+                                return !includedSymbols.isEmpty() || !filter.excludeSymbols.isEmpty()
+                                    || includedBinaries.isEmpty() || !filter.excludeBinaries.isEmpty();
+                            });
+                        filterStacks[stackId] = !excluded && includedSymbols.isEmpty() && includedBinaries.isEmpty();
+                    }
+                };
+
+                for (int i = 0; i < threadCount - 1; i++) {
+                    queue.stream() << make_job(
+                        [filterStack, i, jobsPerThread] { filterStack(i * jobsPerThread, (i + 1) * jobsPerThread); });
                 }
+
+                queue.stream() << make_job([filterStack, threadCount, jobsPerThread, this] {
+                    filterStack((threadCount - 1) * jobsPerThread, m_events.stacks.size());
+                });
             }
 
             if (filterByTime) {
@@ -1649,6 +1670,8 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                     }
                 }
             }
+
+            queue.finish();
 
             // remove events that lie outside the selected time span
             // TODO: parallelize
