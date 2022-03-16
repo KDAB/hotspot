@@ -566,9 +566,11 @@ class PerfParserPrivate : public QObject
 {
     Q_OBJECT
 public:
-    explicit PerfParserPrivate(QObject* parent = nullptr)
+    explicit PerfParserPrivate(QObject* parent = nullptr,
+                               Settings::CostAggregation costAggregation = Settings::CostAggregation::BySymbol)
         : QObject(parent)
         , stopRequested(false)
+        , costAggregation(costAggregation)
     {
         buffer.buffer().reserve(1024);
         buffer.open(QIODevice::ReadOnly);
@@ -1101,7 +1103,21 @@ public:
             }
         };
 
-        bottomUpResult.addEvent(type, sampleCost.cost, sample.frames, frameCallback);
+        switch (costAggregation) {
+        case Settings::CostAggregation::BySymbol:
+            bottomUpResult.addEvent(type, sampleCost.cost, sample.frames, frameCallback);
+            break;
+        case Settings::CostAggregation::ByThread:
+            bottomUpResult.addEvent(commands.value(sample.pid).value(sample.tid), type, sampleCost.cost, sample.frames);
+            break;
+        case Settings::CostAggregation::ByProcess:
+            bottomUpResult.addEvent(commands.value(sample.pid).value(sample.pid), type, sampleCost.cost, sample.frames);
+            break;
+        case Settings::CostAggregation::ByCPU:
+            bottomUpResult.addEvent({QLatin1String("CPU %1").arg(QString::number(sample.cpu))}, type, sampleCost.cost,
+                                    sample.frames);
+            break;
+        }
 
         if (perfScriptOutput) {
             *perfScriptOutput << "\n";
@@ -1325,6 +1341,7 @@ public:
     qint32 m_nextCostId = 0;
     qint32 m_schedSwitchCostId = -1;
     QHash<quint32, quint64> m_lastSampleTimePerCore;
+    Settings::CostAggregation costAggregation;
 
     // samples recorded without --call-graph have only one frame
     int m_numSamplesWithMoreThanOneFrame = 0;
@@ -1442,11 +1459,12 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
     m_frequencyResults = {};
 
     auto debuginfodUrls = Settings::instance()->debuginfodUrls();
+    const auto costAggregation = Settings::instance()->costAggregation();
 
     emit parsingStarted();
     using namespace ThreadWeaver;
-    stream() << make_job([path, parserBinary, parserArgs, debuginfodUrls, this]() {
-        PerfParserPrivate d;
+    stream() << make_job([path, parserBinary, parserArgs, debuginfodUrls, costAggregation, this]() {
+        PerfParserPrivate d(this, costAggregation);
         connect(&d, &PerfParserPrivate::progress, this, &PerfParser::progress);
         connect(this, &PerfParser::stopRequested, &d, &PerfParserPrivate::stop);
 

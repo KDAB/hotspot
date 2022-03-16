@@ -183,6 +183,8 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->settingsAction, &QAction::triggered, this, &MainWindow::openSettingsDialog);
     connect(ui->actionAbout_Hotspot, &QAction::triggered, this, &MainWindow::aboutHotspot);
 
+    connect(Settings::instance(), &Settings::costAggregationChanged, this, &MainWindow::reload);
+
     {
         auto config = m_config->group("Settings");
         auto settings = Settings::instance();

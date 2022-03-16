@@ -17,6 +17,7 @@
 
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
+#include "settings.h"
 
 #include "models/costdelegate.h"
 #include "models/hashmodel.h"
@@ -95,6 +96,25 @@ ResultsBottomUpPage::ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfPa
                 }
             }
         });
+
+    struct AggregationType
+    {
+        QString name;
+        Settings::CostAggregation aggregation;
+    };
+
+    for (const auto& aggregationType :
+         std::initializer_list<AggregationType> {{tr("Symbol"), Settings::CostAggregation::BySymbol},
+                                                 {tr("Thread"), Settings::CostAggregation::ByThread},
+                                                 {tr("Process"), Settings::CostAggregation::ByProcess},
+                                                 {tr("CPU"), Settings::CostAggregation::ByCPU}}) {
+        ui->costAggregationComboBox->addItem(aggregationType.name, QVariant::fromValue(aggregationType.aggregation));
+    }
+
+    connect(ui->costAggregationComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this, [this] {
+        const auto aggregation = ui->costAggregationComboBox->currentData().value<Settings::CostAggregation>();
+        Settings::instance()->setCostAggregation(aggregation);
+    });
 }
 
 ResultsBottomUpPage::~ResultsBottomUpPage() = default;
