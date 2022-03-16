@@ -405,8 +405,25 @@ struct BottomUpResults
         return parent;
     }
 
+    const BottomUp* addEvent(const Symbol& rootSymbol, int type, quint64 cost, const QVector<qint32>& frames)
+    {
+        auto parent = root.entryForSymbol(rootSymbol, &maxBottomUpId);
+
+        // propagate cost to rootSymbol
+        costs.add(type, parent->id, cost);
+        costs.addTotalCost(type, cost);
+        foreachFrame(frames,
+                     [this, type, cost, &parent](const Data::Symbol& symbol, const Data::Location& /*location*/) {
+                         parent = parent->entryForSymbol(symbol, &maxBottomUpId);
+                         costs.add(type, parent->id, cost);
+                         return true;
+                     });
+        return parent;
+    }
+
 private:
     quint32 maxBottomUpId = 0;
+    QHash<quint32, BottomUp*> tidToBottomUp;
 
     template<typename FrameCallback>
     bool handleFrame(qint32 locationId, FrameCallback frameCallback) const

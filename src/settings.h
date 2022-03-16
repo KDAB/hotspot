@@ -27,6 +27,15 @@ public:
     };
     Q_ENUM(ColorScheme);
 
+    enum class CostAggregation : int
+    {
+        BySymbol,
+        ByThread,
+        ByProcess,
+        ByCPU
+    };
+    Q_ENUM(CostAggregation);
+
     static Settings* instance();
 
     bool prettifySymbols() const
@@ -119,11 +128,17 @@ public:
         return m_callgraphColor;
     }
 
+    CostAggregation costAggregation() const
+    {
+        return m_costAggregation;
+    }
+
 signals:
     void prettifySymbolsChanged(bool);
     void collapseTemplatesChanged(bool);
     void collapseDepthChanged(int);
     void colorSchemeChanged(ColorScheme);
+    void costAggregationChanged(CostAggregation);
     void pathsChanged();
     void debuginfodUrlsChanged();
     void sysrootChanged(const QString& path);
@@ -152,6 +167,7 @@ public slots:
     void setCallgraphParentDepth(int parent);
     void setCallgraphChildDepth(int child);
     void setCallgraphColors(const QColor& active, const QColor& inactive);
+    void setCostAggregation(CostAggregation costAggregation);
 
 private:
     Settings() = default;
@@ -161,6 +177,7 @@ private:
     bool m_collapseTemplates = true;
     int m_collapseDepth = 1;
     ColorScheme m_colorScheme = ColorScheme::Default;
+    CostAggregation m_costAggregation = CostAggregation::BySymbol;
     QStringList m_userPaths;
     QStringList m_systemPaths;
     QStringList m_debuginfodUrls;
