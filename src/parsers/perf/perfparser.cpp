@@ -993,8 +993,12 @@ public:
         auto& core = frequencyResult.cores[sample.cpu];
         for (const auto& cost : sample.costs) {
             if (core.costs.size() <= cost.attributeId) {
+                int oldSize = core.costs.size();
                 core.costs.resize(cost.attributeId + 1);
-                core.costs[cost.attributeId].costName = strings.at(attributes[cost.attributeId].name.id);
+
+                for (int i = oldSize; i < core.costs.size(); i++) {
+                    core.costs[i].costName = strings.at(attributes[i].name.id);
+                }
             }
 
             auto& costs = core.costs[cost.attributeId];
