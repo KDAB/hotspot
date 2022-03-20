@@ -27,7 +27,9 @@
 #include <hotspot-config.h>
 
 #if KF5Auth_FOUND
-#include <KAuth>
+#include <KAuth/Action>
+#include <KAuth/ActionReply>
+#include <KAuth/ExecuteJob>
 #include <kauth_version.h>
 #endif
 
