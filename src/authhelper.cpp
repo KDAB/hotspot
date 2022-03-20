@@ -6,7 +6,9 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
-#include <KAuth>
+#include <KAuth/ActionReply>
+#include <KAuth/HelperSupport>
+
 #include <QCoreApplication>
 #include <QEventLoop>
 #include <QFile>
