@@ -99,8 +99,8 @@ include(ECMCoverageOption)
 include(ECMEnableSanitizers)
 
 file(RELATIVE_PATH LIBEXEC_REL_PATH
-   "${CMAKE_INSTALL_PREFIX}/${KDE_INSTALL_BINDIR}"
-   "${CMAKE_INSTALL_PREFIX}/${KDE_INSTALL_LIBEXECDIR}")
+   "${KDE_INSTALL_FULL_BINDIR}"
+   "${KDE_INSTALL_FULL_LIBEXECDIR}")
 
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/hotspot-config.h.cmake
