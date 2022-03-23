@@ -110,7 +110,9 @@ int main(int argc, char** argv)
 
     QCommandLineOption debugPaths(
         QLatin1String("debugPaths"),
-        QCoreApplication::translate("main", "Colon separated list of paths that contain debug information."),
+        QCoreApplication::translate("main",
+                                    "Colon separated list of paths that contain debug information. These paths are "
+                                    "relative to the executable and not to the current working directory."),
         QLatin1String("paths"));
     parser.addOption(debugPaths);
 
