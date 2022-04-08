@@ -159,6 +159,10 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
             return tr("%1 (#%2)").arg(process.name, QString::number(process.pid));
         else if (role == SortRole)
             return process.pid;
+        else if (role == ProcessIdRole || role == ThreadIdRole)
+            return process.pid;
+        else if (role == CpuIdRole)
+            return Data::INVALID_CPU_ID;
 
         if (role == Qt::ToolTipRole) {
             QString tooltip =

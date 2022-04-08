@@ -352,7 +352,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     const bool haveContextInfo = index.isValid() || isZoomed || isFiltered;
     const bool showContextMenu = isButtonRelease
         && ((isRightButtonEvent && haveContextInfo) || (isLeftButtonEvent && isTimeSpanSelected)) && index.isValid()
-        && !index.model()->rowCount(index); // when the index has children, don't show the context menu
+        && index.parent().isValid(); // don't show context menu on the top most categories (CPUs / Processes)
 
     const auto timeSlice = m_timeSlice.normalized();
 
