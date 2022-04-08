@@ -115,7 +115,7 @@ void FilterAndZoomStack::filterInByProcess(qint32 processId)
 void FilterAndZoomStack::filterOutByProcess(qint32 processId)
 {
     Data::FilterAction filter;
-    filter.excludeThreadIds.push_back(processId);
+    filter.excludeProcessIds.push_back(processId);
     applyFilter(filter);
 }
 
