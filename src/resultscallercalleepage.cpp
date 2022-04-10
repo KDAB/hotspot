@@ -96,13 +96,17 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
         ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->sourceMapView, SourceMapModel::NUM_BASE_COLUMNS);
 
 #if KGRAPHVIEWER_FOUND
-    m_callgraph->setResults(data);
+        if (m_callgraph) {
+            m_callgraph->setResults(data);
+        }
 #endif
     });
 
 #if KGRAPHVIEWER_FOUND
     m_callgraph = CallgraphWidget::createCallgraphWidget({}, this);
-    ui->callerCalleeLayout->addWidget(m_callgraph);
+    if (m_callgraph) {
+        ui->callerCalleeLayout->addWidget(m_callgraph);
+    }
 #endif
 
     auto calleesModel = setupModelAndProxyForView<CalleeModel>(ui->calleesView, contextMenu);
@@ -121,7 +125,9 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
             ui->callerCalleeTableView->setCurrentIndex(m_callerCalleeProxy->mapFromSource(index));
         }
 #if KGRAPHVIEWER_FOUND
-        m_callgraph->selectSymbol(index.data(CallerCalleeModel::SymbolRole).value<Data::Symbol>());
+        if (m_callgraph) {
+            m_callgraph->selectSymbol(index.data(CallerCalleeModel::SymbolRole).value<Data::Symbol>());
+        }
 #endif
     };
     connectCallerOrCalleeModel<CalleeModel>(ui->calleesView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
@@ -134,10 +140,13 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
                                    ResultsUtil::CallbackAction::ViewDisassembly});
 
 #if KGRAPHVIEWER_FOUND
-    connect(m_callgraph, &CallgraphWidget::clickedOn, this, [this, selectCallerCaleeeIndex](const Data::Symbol& symbol){
-        const auto index = m_callerCalleeCostModel->indexForKey(symbol);
-        selectCallerCaleeeIndex(index);
-    });
+    if (m_callgraph) {
+        connect(m_callgraph, &CallgraphWidget::clickedOn, this,
+                [this, selectCallerCaleeeIndex](const Data::Symbol& symbol) {
+                    const auto index = m_callerCalleeCostModel->indexForKey(symbol);
+                    selectCallerCaleeeIndex(index);
+                });
+    }
 #endif
 
     ui->sourceMapView->setContextMenuPolicy(Qt::CustomContextMenu);
