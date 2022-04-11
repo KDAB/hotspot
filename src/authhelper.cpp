@@ -6,13 +6,20 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
-#include <KAuth>
 #include <QCoreApplication>
 #include <QEventLoop>
 #include <QFile>
 #include <QObject>
 #include <QProcess>
 #include <QTimer>
+
+#include <kauth_version.h>
+#if KAUTH_VERSION >= QT_VERSION_CHECK(5, 92, 0)
+#include <KAuth/ActionReply>
+#include <KAuth/HelperSupport>
+#else
+#include <KAuth>
+#endif
 
 class AuthHelper : public QObject
 {

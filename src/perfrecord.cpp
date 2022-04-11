@@ -27,8 +27,15 @@
 #include <hotspot-config.h>
 
 #if KF5Auth_FOUND
-#include <KAuth>
 #include <kauth_version.h>
+
+#if KAUTH_VERSION >= QT_VERSION_CHECK(5, 92, 0)
+#include <KAuth/Action>
+#include <KAuth/ActionReply>
+#include <KAuth/ExecuteJob>
+#else
+#include <KAuth>
+#endif
 #endif
 
 PerfRecord::PerfRecord(QObject* parent)
