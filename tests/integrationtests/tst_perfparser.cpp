@@ -598,6 +598,54 @@ private slots:
         }
     }
 
+    void dump(const Data::BottomUp& bottomUp, QTextStream& stream, const QString& prefix)
+    {
+        stream << prefix << bottomUp.symbol.symbol << QLatin1Char('\n');
+
+        for (const auto& child : bottomUp.children) {
+            dump(child, stream, prefix + QLatin1Char('\t'));
+        }
+    }
+
+    void testCustomCostAggregation_data()
+    {
+        QTest::addColumn<Settings::CostAggregation>("aggregation");
+        QTest::addColumn<QString>("filename");
+
+        QTest::addRow("by symbol") << Settings::CostAggregation::BySymbol << "by_symbol.txt";
+        QTest::addRow("by cpu") << Settings::CostAggregation::ByCPU << "by_cpu.txt";
+        QTest::addRow("by process") << Settings::CostAggregation::ByProcess << "by_process.txt";
+        QTest::addRow("by thread") << Settings::CostAggregation::ByThread << "by_thread.txt";
+    }
+
+    void testCustomCostAggregation()
+    {
+        QFETCH(Settings::CostAggregation, aggregation);
+        QFETCH(QString, filename);
+
+        const auto actualBinaryFile = QFINDTESTDATA("custom_cost_aggregation_testfiles/" + filename);
+
+        Settings::instance()->setCostAggregation(aggregation);
+        m_perfCommand = "perf record --call-graph dwarf --sample-cpu --switch-events --event sched:sched_switch -c "
+                        "1000000 /tmp/cpp-threadnames";
+
+        QFile perfData(QFINDTESTDATA("custom_cost_aggregation_testfiles/custom_cost_aggregation.perfparser"));
+
+        try {
+            testPerfData({}, {}, perfData.fileName(), false);
+        } catch (...) {
+        }
+
+        QFile file(actualBinaryFile);
+        file.open(QIODevice::WriteOnly);
+
+        QString actual;
+        QTextStream stream(&actual);
+        dump(m_bottomUpData.root, stream, "");
+
+        Q_ASSERT(file.readAll() == actual);
+    }
+
 #if KF5Archive_FOUND
     void testDecompression_data()
     {
