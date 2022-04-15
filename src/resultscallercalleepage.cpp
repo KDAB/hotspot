@@ -99,6 +99,9 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
                 ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->callersView, CallerModel::NUM_BASE_COLUMNS);
                 ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->calleesView, CalleeModel::NUM_BASE_COLUMNS);
                 ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->sourceMapView, SourceMapModel::NUM_BASE_COLUMNS);
+                ResultsUtil::hideTracepointColumns(data.selfCosts, ui->sourceMapView,
+                                                   SourceMapModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes(),
+                                                   parser->tracepointCostNames());
 
 #if KGRAPHVIEWER_FOUND
                 if (m_callgraph) {
