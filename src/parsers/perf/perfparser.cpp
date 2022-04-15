@@ -1435,9 +1435,11 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
     m_events = {};
     m_frequencyResults = {};
 
+    auto debuginfodUrls = Settings::instance()->debuginfodUrls();
+
     emit parsingStarted();
     using namespace ThreadWeaver;
-    stream() << make_job([path, parserBinary, parserArgs, this]() {
+    stream() << make_job([path, parserBinary, parserArgs, debuginfodUrls, this]() {
         PerfParserPrivate d;
         connect(&d, &PerfParserPrivate::progress, this, &PerfParser::progress);
         connect(this, &PerfParser::stopRequested, &d, &PerfParserPrivate::stop);
@@ -1480,12 +1482,11 @@ void PerfParser::startParseFile(const QString& path, const QString& sysroot, con
         QProcess process;
         auto env = Util::appImageEnvironment();
 
-        const auto customUrls = Settings::instance()->debuginfodUrls();
-        if (!customUrls.isEmpty()) {
+        if (!debuginfodUrls.isEmpty()) {
             const auto envVar = QStringLiteral("DEBUGINFOD_URLS");
             const auto defaultUrls = env.value(envVar);
             const auto separator = QLatin1Char(' ');
-            env.insert(envVar, customUrls.join(separator) + separator + defaultUrls);
+            env.insert(envVar, debuginfodUrls.join(separator) + separator + defaultUrls);
         }
 
         process.setProcessEnvironment(env);
