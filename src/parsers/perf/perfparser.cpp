@@ -1161,7 +1161,9 @@ public:
             thread->offCpuTime += switchTime;
 
             if (eventResult.offCpuTimeCostId == -1) {
-                eventResult.offCpuTimeCostId = addCostType(PerfParser::tr("off-CPU Time"), Data::Costs::Unit::Time);
+                const auto label = PerfParser::tr("off-CPU Time");
+                eventResult.offCpuTimeCostId = addCostType(label, Data::Costs::Unit::Time);
+                tracepointCostNames.insert(label);
             }
 
             auto& totalCost = summaryResult.costs[eventResult.offCpuTimeCostId];
