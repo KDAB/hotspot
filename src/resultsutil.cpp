@@ -153,13 +153,16 @@ void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColu
     }
 }
 
-void hideTracepointColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns,
-                           const QSet<QString>& tracepointCostNames)
+void hideTracepointColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns)
 {
     for (int i = 0, c = costs.numTypes(); i < c; i++) {
-        const auto costName = costs.typeName(i);
-        if (tracepointCostNames.contains(costName)) {
+        const auto unit = costs.unit(i);
+        switch (unit) {
+        case Data::Costs::Unit::Time:
+        case Data::Costs::Unit::Tracepoint:
             view->hideColumn(numBaseColumns + i);
+        case Data::Costs::Unit::Unknown:
+            break;
         }
     }
 }

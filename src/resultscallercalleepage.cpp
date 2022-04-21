@@ -82,31 +82,28 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
     ResultsUtil::setupHeaderView(ui->callerCalleeTableView, contextMenu);
     ResultsUtil::setupCostDelegate(m_callerCalleeCostModel, ui->callerCalleeTableView);
 
-    connect(parser, &PerfParser::callerCalleeDataAvailable, this,
-            [this, parser](const Data::CallerCalleeResults& data) {
-                m_callerCalleeCostModel->setResults(data);
-                ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->callerCalleeTableView,
-                                              CallerCalleeModel::NUM_BASE_COLUMNS);
+    connect(parser, &PerfParser::callerCalleeDataAvailable, this, [this](const Data::CallerCalleeResults& data) {
+        m_callerCalleeCostModel->setResults(data);
+        ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->callerCalleeTableView,
+                                      CallerCalleeModel::NUM_BASE_COLUMNS);
 
-                ResultsUtil::hideEmptyColumns(data.selfCosts, ui->callerCalleeTableView,
-                                              CallerCalleeModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes());
-                ResultsUtil::hideTracepointColumns(data.selfCosts, ui->callerCalleeTableView,
-                                                   BottomUpModel::NUM_BASE_COLUMNS, parser->tracepointCostNames());
-                auto view = ui->callerCalleeTableView;
-                view->sortByColumn(CallerCalleeModel::InitialSortColumn, view->header()->sortIndicatorOrder());
-                view->setCurrentIndex(view->model()->index(0, 0, {}));
-                ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->callersView, CallerModel::NUM_BASE_COLUMNS);
-                ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->calleesView, CalleeModel::NUM_BASE_COLUMNS);
-                ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->sourceMapView, SourceMapModel::NUM_BASE_COLUMNS);
-                ResultsUtil::hideTracepointColumns(data.selfCosts, ui->sourceMapView, SourceMapModel::NUM_BASE_COLUMNS,
-                                                   parser->tracepointCostNames());
+        ResultsUtil::hideEmptyColumns(data.selfCosts, ui->callerCalleeTableView,
+                                      CallerCalleeModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes());
+        ResultsUtil::hideTracepointColumns(data.selfCosts, ui->callerCalleeTableView, BottomUpModel::NUM_BASE_COLUMNS);
+        auto view = ui->callerCalleeTableView;
+        view->sortByColumn(CallerCalleeModel::InitialSortColumn, view->header()->sortIndicatorOrder());
+        view->setCurrentIndex(view->model()->index(0, 0, {}));
+        ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->callersView, CallerModel::NUM_BASE_COLUMNS);
+        ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->calleesView, CalleeModel::NUM_BASE_COLUMNS);
+        ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->sourceMapView, SourceMapModel::NUM_BASE_COLUMNS);
+        ResultsUtil::hideTracepointColumns(data.selfCosts, ui->sourceMapView, SourceMapModel::NUM_BASE_COLUMNS);
 
 #if KGRAPHVIEWER_FOUND
-                if (m_callgraph) {
-                    m_callgraph->setResults(data);
-                }
+        if (m_callgraph) {
+            m_callgraph->setResults(data);
+        }
 #endif
-            });
+    });
 
 #if KGRAPHVIEWER_FOUND
     m_callgraph = CallgraphWidget::createCallgraphWidget({}, this);

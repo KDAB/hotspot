@@ -28,15 +28,14 @@ ResultsTopDownPage::ResultsTopDownPage(FilterAndZoomStack* filterStack, PerfPars
     ResultsUtil::setupContextMenu(ui->topDownTreeView, contextMenu, topDownCostModel, filterStack, this);
 
     connect(parser, &PerfParser::topDownDataAvailable, this,
-            [this, topDownCostModel, parser](const Data::TopDownResults& data) {
+            [this, topDownCostModel](const Data::TopDownResults& data) {
                 topDownCostModel->setData(data);
                 ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->topDownTreeView, TopDownModel::NUM_BASE_COLUMNS);
 
                 ResultsUtil::hideEmptyColumns(data.selfCosts, ui->topDownTreeView,
                                               TopDownModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes());
                 ResultsUtil::hideTracepointColumns(data.selfCosts, ui->topDownTreeView,
-                                                   TopDownModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes(),
-                                                   parser->tracepointCostNames());
+                                                   TopDownModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes());
 
                 // hide self cost columns for sched:sched_switch and off-CPU
                 // quasi all rows will have a cost of 0%, and only the leaves will show

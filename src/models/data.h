@@ -152,6 +152,7 @@ public:
     enum class Unit
     {
         Unknown,
+        Tracepoint,
         Time
     };
 
@@ -268,6 +269,7 @@ public:
         switch (unit) {
         case Unit::Time:
             return Util::formatTimeString(cost);
+        case Unit::Tracepoint:
         case Unit::Unknown:
             break;
         }
