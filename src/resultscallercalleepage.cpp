@@ -91,16 +91,14 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
                 ResultsUtil::hideEmptyColumns(data.selfCosts, ui->callerCalleeTableView,
                                               CallerCalleeModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes());
                 ResultsUtil::hideTracepointColumns(data.selfCosts, ui->callerCalleeTableView,
-                                                   BottomUpModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes(),
-                                                   parser->tracepointCostNames());
+                                                   BottomUpModel::NUM_BASE_COLUMNS, parser->tracepointCostNames());
                 auto view = ui->callerCalleeTableView;
                 view->sortByColumn(CallerCalleeModel::InitialSortColumn, view->header()->sortIndicatorOrder());
                 view->setCurrentIndex(view->model()->index(0, 0, {}));
                 ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->callersView, CallerModel::NUM_BASE_COLUMNS);
                 ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->calleesView, CalleeModel::NUM_BASE_COLUMNS);
                 ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->sourceMapView, SourceMapModel::NUM_BASE_COLUMNS);
-                ResultsUtil::hideTracepointColumns(data.selfCosts, ui->sourceMapView,
-                                                   SourceMapModel::NUM_BASE_COLUMNS + data.inclusiveCosts.numTypes(),
+                ResultsUtil::hideTracepointColumns(data.selfCosts, ui->sourceMapView, SourceMapModel::NUM_BASE_COLUMNS,
                                                    parser->tracepointCostNames());
 
 #if KGRAPHVIEWER_FOUND
