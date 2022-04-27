@@ -15,7 +15,6 @@
 
 #include <KColorScheme>
 #include <KParts/ReadOnlyPart>
-#include <KService>
 
 #include "callgraphgenerator.h"
 #include "hotspot-config.h"
@@ -24,6 +23,15 @@
 #include "ui_callgraphwidget.h"
 
 #include <kgraphviewer/kgraphviewer_interface.h>
+
+#include <kcoreaddons_version.h>
+
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 86, 0)
+#include <KPluginMetaData>
+#include <KPluginFactory>
+#else
+#include <KService>
+#endif
 
 CallgraphWidget::CallgraphWidget(Data::CallerCalleeResults results, KParts::ReadOnlyPart* view, KGraphViewer::KGraphViewerInterface* interface, QWidget* parent)
     : QWidget(parent)
@@ -62,6 +70,23 @@ CallgraphWidget::~CallgraphWidget() = default;
 
 CallgraphWidget *CallgraphWidget::createCallgraphWidget(const Data::CallerCalleeResults results, QWidget *parent)
 {
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 86, 0)
+    const KPluginMetaData md(QStringLiteral("kgraphviewerpart"));
+
+    const auto result = KPluginFactory::instantiatePlugin<KParts::ReadOnlyPart>(md, parent, {});
+
+    if (!result) {
+        return nullptr;
+    }
+
+    auto interface = qobject_cast<KGraphViewer::KGraphViewerInterface*>(result.plugin);
+    if (!interface) {
+        return nullptr;
+    }
+
+    return new CallgraphWidget(results, result.plugin, interface, parent);
+
+#else
     KService::Ptr service = KService::serviceByDesktopName(QStringLiteral("kgraphviewer_part"));
 
     if (!service) {
@@ -79,6 +104,7 @@ CallgraphWidget *CallgraphWidget::createCallgraphWidget(const Data::CallerCallee
     }
 
     return new CallgraphWidget(results, view, interface, parent);
+#endif
 }
 
 void CallgraphWidget::selectSymbol(const Data::Symbol& symbol)
