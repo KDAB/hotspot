@@ -1582,7 +1582,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
     emit parsingStarted();
     using namespace ThreadWeaver;
     stream() << make_job([this, filter]() {
-        Queue queue(this);
+        Queue queue;
         queue.setMaximumNumberOfThreads(QThread::idealThreadCount());
 
         Data::BottomUpResults bottomUp;
