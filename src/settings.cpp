@@ -6,13 +6,14 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
-#include <QDir>
+#include <QThread>
 
 #include "settings.h"
 
 Settings* Settings::instance()
 {
     static Settings settings;
+    Q_ASSERT(QThread::currentThread() == settings.thread());
     return &settings;
 }
 
