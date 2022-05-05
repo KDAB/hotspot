@@ -28,9 +28,6 @@ protected:
     {
         Q_UNUSED(source_row);
 
-        if (!parent.isValid())
-            return false;
-
         const auto* model = qobject_cast<Model*>(sourceModel());
         Q_ASSERT(model);
 
