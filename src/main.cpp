@@ -167,31 +167,53 @@ int main(int argc, char** argv)
 
     const auto settings = Settings::instance();
     applyCliArgs(settings);
-    for (const auto& file : parser.positionalArguments()) {
-        auto window = new MainWindow;
+
+    auto files = parser.positionalArguments();
+    auto arguments = app.arguments();
+    arguments.pop_front(); // pop executable
+
+    for (const auto& file : files) {
+        auto it = std::find(arguments.begin(), arguments.end(), file);
+        if (it != arguments.end()) {
+            arguments.erase(it);
+        }
+    }
+
+    while (files.size() > 1) {
+        // spawn new instances if we have more than one file argument
+        QProcess process;
+        process.setProgram(app.applicationFilePath());
+        const auto file = files.front();
+        files.pop_front();
+        auto args = arguments;
+        args.append(file);
+        process.setArguments(args);
+        if (!process.startDetached()) {
+            qWarning() << "failed to start new hotspot instance";
+        }
+    }
+
+    // we now only have at most one file
+    Q_ASSERT(files.size() <= 1);
+
+    auto window = new MainWindow;
+    if (!files.isEmpty()) {
+        const auto file = files.front();
         QFileInfo info(file);
         if (info.isFile()) {
             window->openFile(file);
         } else if (info.isDir()) {
             window->openFile(file + QStringLiteral("/perf.data"));
         }
-        window->show();
-    }
-
-    // show at least one mainwindow
-    if (parser.positionalArguments().isEmpty()) {
-        auto window = new MainWindow;
-        applyCliArgs(Settings::instance());
-
+    } else {
         // open perf.data in current CWD, if it exists
         // this brings hotspot closer to the behavior of "perf report"
         const auto perfDataFile = QStringLiteral("perf.data");
         if (QFile::exists(perfDataFile)) {
             window->openFile(perfDataFile);
         }
-
-        window->show();
     }
+    window->show();
 
     return app.exec();
 }
