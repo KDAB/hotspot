@@ -170,8 +170,6 @@ MainWindow::MainWindow(QWidget* parent)
     connect(openNewWindow, &QAction::triggered, this, [this] {
         const auto fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(),
                                                            tr("Data Files (perf*.data perf.data.*);;All Files (*)"));
-        QStringList arguments;
-
         QProcess process;
         process.setProgram(qApp->applicationFilePath());
         process.setArguments({fileName});
