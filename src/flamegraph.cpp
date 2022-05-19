@@ -764,7 +764,8 @@ void FlameGraph::saveSvg(const QString& fileName) const
         generator.setTitle(tr("Top Down FlameGraph"));
     const auto costType = m_bottomUpData.costs.typeName(m_costSource->currentData().value<int>());
     generator.setDescription(tr("Cost type: %1, cost threshold: %2\n%3")
-                                 .arg(costType, QString::number(m_costThreshold), m_displayLabel->text()));
+                                 .arg(costType, QString::number(m_costThreshold), m_displayLabel->text())
+                                 .toHtmlEscaped());
 
     const auto oldPen = m_rootItem->pen();
     const auto oldBrush = m_rootItem->brush();
