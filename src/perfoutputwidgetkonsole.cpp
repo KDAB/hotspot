@@ -8,6 +8,8 @@
 
 #include "perfoutputwidgetkonsole.h"
 
+#include "util.h"
+
 #include <QEvent>
 #include <QKeyEvent>
 #include <QStandardPaths>
@@ -16,15 +18,6 @@
 
 #include <KParts/ReadOnlyPart>
 #include <KParts/kde_terminal_interface.h>
-
-#include <kcoreaddons_version.h>
-
-#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 86, 0)
-#include <KPluginMetaData>
-#include <KPluginFactory>
-#else
-#include <KService>
-#endif
 
 namespace {
 QString findTail()
@@ -36,20 +29,7 @@ QString findTail()
 
 KParts::ReadOnlyPart* createPart()
 {
-#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 86, 0)
-    const KPluginMetaData md(QStringLiteral("konsolepart"));
-
-    const auto result = KPluginFactory::instantiatePlugin<KParts::ReadOnlyPart>(md, nullptr, {});
-
-    return result.plugin;
-#else
-    KService::Ptr service = KService::serviceByDesktopName(QStringLiteral("konsolepart"));
-
-    if (!service) {
-        return nullptr;
-    }
-    return service->createInstance<KParts::ReadOnlyPart>();
-#endif
+    return Util::createPart(QStringLiteral("konsolepart"));
 }
 }
 

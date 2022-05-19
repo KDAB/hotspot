@@ -16,6 +16,7 @@ ecm_add_test(
         KF5::CoreAddons
         KF5::WindowSystem
         KF5::KIOCore
+        KF5::Parts
     TEST_NAME
         tst_perfparser
 )
@@ -47,6 +48,7 @@ target_link_libraries(dump_perf_data
     Qt5::Test
     KF5::ThreadWeaver
     KF5::KIOCore
+    KF5::Parts
 )
 
 if (KF5Archive_FOUND)

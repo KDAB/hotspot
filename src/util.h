@@ -21,6 +21,10 @@ class Costs;
 using ItemCost = std::valarray<qint64>;
 }
 
+namespace KParts {
+class ReadOnlyPart;
+}
+
 namespace Util {
 
 /**
@@ -60,4 +64,6 @@ QString formatTooltip(const QString& location, const Data::LocationCost& cost, c
 // the process environment including the custom AppImage-specific LD_LIBRARY_PATH
 // this is initialized on the first call and cached internally afterwards
 QProcessEnvironment appImageEnvironment();
+
+KParts::ReadOnlyPart* createPart(const QString& pluginName);
 }

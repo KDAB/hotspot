@@ -21,6 +21,17 @@
 #include "data.h"
 #include "settings.h"
 
+#include <kcoreaddons_version.h>
+
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 86, 0)
+#include <KPluginFactory>
+#include <KPluginMetaData>
+#else
+#include <KService>
+#endif
+
+#include <KParts/ReadOnlyPart>
+
 QString collapseTemplate(const QString& str, int level)
 {
 
@@ -293,4 +304,22 @@ QProcessEnvironment Util::appImageEnvironment()
 {
     static const auto env = QProcessEnvironment::systemEnvironment();
     return env;
+}
+
+KParts::ReadOnlyPart* Util::createPart(const QString& pluginName)
+{
+#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 86, 0)
+    const KPluginMetaData md(pluginName);
+
+    const auto result = KPluginFactory::instantiatePlugin<KParts::ReadOnlyPart>(md, nullptr, {});
+
+    return result.plugin;
+#else
+    KService::Ptr service = KService::serviceByDesktopName(pluginName);
+
+    if (!service) {
+        return nullptr;
+    }
+    return service->createInstance<KParts::ReadOnlyPart>();
+#endif
 }

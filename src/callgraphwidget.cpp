@@ -11,6 +11,7 @@
 #include <QMouseEvent>
 #include <QSpinBox>
 #include <QTemporaryFile>
+#include <QTextStream>
 #include <QVBoxLayout>
 
 #include <KColorScheme>
@@ -21,17 +22,9 @@
 #include "models/callercalleemodel.h"
 #include "settings.h"
 #include "ui_callgraphwidget.h"
+#include "util.h"
 
 #include <kgraphviewer/kgraphviewer_interface.h>
-
-#include <kcoreaddons_version.h>
-
-#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 86, 0)
-#include <KPluginMetaData>
-#include <KPluginFactory>
-#else
-#include <KService>
-#endif
 
 CallgraphWidget::CallgraphWidget(Data::CallerCalleeResults results, KParts::ReadOnlyPart* view, KGraphViewer::KGraphViewerInterface* interface, QWidget* parent)
     : QWidget(parent)
@@ -70,41 +63,17 @@ CallgraphWidget::~CallgraphWidget() = default;
 
 CallgraphWidget *CallgraphWidget::createCallgraphWidget(const Data::CallerCalleeResults results, QWidget *parent)
 {
-#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 86, 0)
-    const KPluginMetaData md(QStringLiteral("kgraphviewerpart"));
-
-    const auto result = KPluginFactory::instantiatePlugin<KParts::ReadOnlyPart>(md, parent, {});
-
-    if (!result) {
+    auto part = Util::createPart(QStringLiteral("kgraphviewerpart"));
+    if (!part) {
         return nullptr;
     }
 
-    auto interface = qobject_cast<KGraphViewer::KGraphViewerInterface*>(result.plugin);
+    auto interface = qobject_cast<KGraphViewer::KGraphViewerInterface*>(part);
     if (!interface) {
         return nullptr;
     }
 
-    return new CallgraphWidget(results, result.plugin, interface, parent);
-
-#else
-    KService::Ptr service = KService::serviceByDesktopName(QStringLiteral("kgraphviewer_part"));
-
-    if (!service) {
-        return nullptr;
-    }
-
-    auto view = service->createInstance<KParts::ReadOnlyPart>(parent);
-    if (!view) {
-        return nullptr;
-    }
-
-    auto interface = qobject_cast<KGraphViewer::KGraphViewerInterface*>(view);
-    if (!interface) {
-        return nullptr;
-    }
-
-    return new CallgraphWidget(results, view, interface, parent);
-#endif
+    return new CallgraphWidget(results, part, interface, parent);
 }
 
 void CallgraphWidget::selectSymbol(const Data::Symbol& symbol)
