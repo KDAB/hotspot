@@ -26,7 +26,8 @@
 
 #include <kgraphviewer/kgraphviewer_interface.h>
 
-CallgraphWidget::CallgraphWidget(Data::CallerCalleeResults results, KParts::ReadOnlyPart* view, KGraphViewer::KGraphViewerInterface* interface, QWidget* parent)
+CallgraphWidget::CallgraphWidget(const Data::CallerCalleeResults& results, KParts::ReadOnlyPart* view,
+                                 KGraphViewer::KGraphViewerInterface* interface, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::CallgraphWidget)
     , m_graphFile(new QTemporaryFile(this))
@@ -61,7 +62,7 @@ CallgraphWidget::CallgraphWidget(Data::CallerCalleeResults results, KParts::Read
 
 CallgraphWidget::~CallgraphWidget() = default;
 
-CallgraphWidget *CallgraphWidget::createCallgraphWidget(const Data::CallerCalleeResults results, QWidget *parent)
+CallgraphWidget* CallgraphWidget::createCallgraphWidget(const Data::CallerCalleeResults& results, QWidget* parent)
 {
     auto part = Util::createPart(QStringLiteral("kgraphviewerpart"));
     if (!part) {
