@@ -27,34 +27,8 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QLineEdit" name="bottomUpSearch">
-     <property name="toolTip">
-      <string>Filter the call graph tree.</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QTreeView" name="bottomUpTreeView">
-     <property name="alternatingRowColors">
-      <bool>true</bool>
-     </property>
-     <property name="uniformRowHeights">
-      <bool>true</bool>
-     </property>
-     <property name="sortingEnabled">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QWidget" name="widget" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <property name="spacing">
-       <number>0</number>
-      </property>
-      <property name="leftMargin">
-       <number>0</number>
-      </property>
       <property name="topMargin">
        <number>0</number>
       </property>
@@ -68,6 +42,9 @@
        <widget class="QLabel" name="costAggregationLabel">
         <property name="text">
          <string>Aggregate cost by:</string>
+        </property>
+        <property name="buddy">
+         <cstring>costAggregationComboBox</cstring>
         </property>
        </widget>
       </item>
@@ -87,7 +64,27 @@
         </property>
        </spacer>
       </item>
+      <item>
+       <widget class="QLineEdit" name="bottomUpSearch">
+        <property name="toolTip">
+         <string>Filter the call graph tree.</string>
+        </property>
+       </widget>
+      </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTreeView" name="bottomUpTreeView">
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="uniformRowHeights">
+      <bool>true</bool>
+     </property>
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
   </layout>
