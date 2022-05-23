@@ -151,6 +151,7 @@ void CallgraphWidget::generateCallgraph(const Data::Symbol& symbol)
         return;
     }
 
+    m_graphview->closeUrl();
     m_graphFile->resize(0);
     m_currentSymbol = symbol;
 
