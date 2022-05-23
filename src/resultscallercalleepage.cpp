@@ -163,6 +163,8 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
                     selectCallerCaleeeIndex(current);
                 }
             });
+
+    ResultsUtil::setupResultsAggregation(ui->costAggregationComboBox);
 }
 
 ResultsCallerCalleePage::~ResultsCallerCalleePage() = default;

@@ -98,4 +98,6 @@ void hideEmptyColumns(const Data::Costs& costs, QTreeView* view, int numBaseColu
 void hideTracepointColumns(const Data::Costs& costs, QTreeView* view, int numBaseColumns);
 
 void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs, const QString& tooltipTemplate);
+
+void setupResultsAggregation(QComboBox* costAggregationComboBox);
 }

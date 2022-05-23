@@ -21,8 +21,9 @@
 #include "models/data.h"
 #include "models/filterandzoomstack.h"
 
-#include "costheaderview.h"
 #include "costcontextmenu.h"
+#include "costheaderview.h"
+#include "settings.h"
 
 namespace ResultsUtil {
 
@@ -186,5 +187,38 @@ void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs, const Q
     if (index != -1) {
         combo->setCurrentIndex(index);
     }
+}
+
+void setupResultsAggregation(QComboBox* costAggregationComboBox)
+{
+    struct AggregationType
+    {
+        QString name;
+        Settings::CostAggregation aggregation;
+    };
+
+    for (const auto& aggregationType : std::initializer_list<AggregationType> {
+             {QCoreApplication::translate("Util", "Symbol"), Settings::CostAggregation::BySymbol},
+             {QCoreApplication::translate("Util", "Thread"), Settings::CostAggregation::ByThread},
+             {QCoreApplication::translate("Util", "Process"), Settings::CostAggregation::ByProcess},
+             {QCoreApplication::translate("Util", "CPU"), Settings::CostAggregation::ByCPU}}) {
+        costAggregationComboBox->addItem(aggregationType.name, QVariant::fromValue(aggregationType.aggregation));
+    }
+
+    auto updateCostAggregation = [costAggregationComboBox](Settings::CostAggregation costAggregation) {
+        auto idx = costAggregationComboBox->findData(QVariant::fromValue(costAggregation));
+        Q_ASSERT(idx != -1);
+        costAggregationComboBox->setCurrentIndex(idx);
+    };
+    updateCostAggregation(Settings::instance()->costAggregation());
+    QObject::connect(Settings::instance(), &Settings::costAggregationChanged, costAggregationComboBox,
+                     updateCostAggregation);
+
+    QObject::connect(costAggregationComboBox, qOverload<int>(&QComboBox::currentIndexChanged), Settings::instance(),
+                     [costAggregationComboBox] {
+                         const auto aggregation =
+                             costAggregationComboBox->currentData().value<Settings::CostAggregation>();
+                         Settings::instance()->setCostAggregation(aggregation);
+                     });
 }
 }

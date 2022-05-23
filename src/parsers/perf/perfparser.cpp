@@ -1218,12 +1218,14 @@ public:
             break;
         case Settings::CostAggregation::ByThread: {
             auto thread = commands.value(pid).value(tid);
-            bottomUpResult.addEvent(thread.isEmpty() ? QString::number(tid) : thread, type, cost, frames, frameCallback);
+            bottomUpResult.addEvent(thread.isEmpty() ? QString::number(tid) : thread, type, cost, frames,
+                                    frameCallback);
             break;
         }
         case Settings::CostAggregation::ByProcess: {
             auto process = commands.value(pid).value(pid);
-            bottomUpResult.addEvent(process.isEmpty() ? QString::number(pid) : process, type, cost, frames, frameCallback);
+            bottomUpResult.addEvent(process.isEmpty() ? QString::number(pid) : process, type, cost, frames,
+                                    frameCallback);
             break;
         }
         case Settings::CostAggregation::ByCPU:

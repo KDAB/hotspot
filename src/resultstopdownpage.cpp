@@ -50,6 +50,8 @@ ResultsTopDownPage::ResultsTopDownPage(FilterAndZoomStack* filterStack, PerfPars
                     }
                 }
             });
+
+    ResultsUtil::setupResultsAggregation(ui->costAggregationComboBox);
 }
 
 ResultsTopDownPage::~ResultsTopDownPage() = default;

@@ -543,6 +543,11 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
                 showData();
             });
 
+    auto costAggregation = new QComboBox(this);
+    ResultsUtil::setupResultsAggregation(costAggregation);
+    auto costAggregationLabel = new QLabel(tr("Aggregate cost by:"));
+    costAggregationLabel->setBuddy(costAggregation);
+
     m_searchInput = new QLineEdit(this);
     m_searchInput->setPlaceholderText(i18n("Search..."));
     m_searchInput->setToolTip(i18n("<qt>Search the flame graph for a symbol.</qt>"));
@@ -552,12 +557,15 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
 
     auto controls = new QWidget(this);
     controls->setLayout(new QHBoxLayout);
+    controls->layout()->setContentsMargins(0, 0, 0, 0);
     controls->layout()->addWidget(m_backButton);
     controls->layout()->addWidget(m_forwardButton);
     controls->layout()->addWidget(m_costSource);
     controls->layout()->addWidget(bottomUpCheckbox);
     controls->layout()->addWidget(collapseRecursionCheckbox);
     controls->layout()->addWidget(costThreshold);
+    controls->layout()->addWidget(costAggregationLabel);
+    controls->layout()->addWidget(costAggregation);
     controls->layout()->addWidget(m_searchInput);
     controls->layout()->addWidget(m_colorSchemeLabel);
     controls->layout()->addWidget(m_colorSchemeSelector);
