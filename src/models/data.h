@@ -390,13 +390,13 @@ struct BottomUpResults
 
     // callback return type is ignored, all frames will be iterated over
     template<typename FrameCallback>
-    const BottomUp* addEvent(int type, quint64 cost, const QVector<qint32>& frames, FrameCallback frameCallback)
+    const BottomUp* addEvent(int type, quint64 cost, const QVector<qint32>& frames, const FrameCallback& frameCallback)
     {
         costs.addTotalCost(type, cost);
         auto parent = &root;
         foreachFrame(
             frames,
-            [this, type, cost, &parent, frameCallback](const Data::Symbol& symbol, const Data::Location& location) {
+            [this, type, cost, &parent, &frameCallback](const Data::Symbol& symbol, const Data::Location& location) {
                 parent = parent->entryForSymbol(symbol, &maxBottomUpId);
                 costs.add(type, parent->id, cost);
                 frameCallback(symbol, location);
@@ -405,19 +405,23 @@ struct BottomUpResults
         return parent;
     }
 
-    const BottomUp* addEvent(const Symbol& rootSymbol, int type, quint64 cost, const QVector<qint32>& frames)
+    template<typename FrameCallback>
+    const BottomUp* addEvent(const Symbol& rootSymbol, int type, quint64 cost, const QVector<qint32>& frames,
+                             const FrameCallback& frameCallback)
     {
         auto parent = root.entryForSymbol(rootSymbol, &maxBottomUpId);
 
         // propagate cost to rootSymbol
         costs.add(type, parent->id, cost);
         costs.addTotalCost(type, cost);
-        foreachFrame(frames,
-                     [this, type, cost, &parent](const Data::Symbol& symbol, const Data::Location& /*location*/) {
-                         parent = parent->entryForSymbol(symbol, &maxBottomUpId);
-                         costs.add(type, parent->id, cost);
-                         return true;
-                     });
+        foreachFrame(
+            frames,
+            [this, type, cost, &parent, &frameCallback](const Data::Symbol& symbol, const Data::Location& location) {
+                parent = parent->entryForSymbol(symbol, &maxBottomUpId);
+                costs.add(type, parent->id, cost);
+                frameCallback(symbol, location);
+                return true;
+            });
         return parent;
     }
 

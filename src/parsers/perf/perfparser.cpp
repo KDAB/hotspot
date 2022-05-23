@@ -1103,21 +1103,7 @@ public:
             }
         };
 
-        switch (costAggregation) {
-        case Settings::CostAggregation::BySymbol:
-            bottomUpResult.addEvent(type, sampleCost.cost, sample.frames, frameCallback);
-            break;
-        case Settings::CostAggregation::ByThread:
-            bottomUpResult.addEvent(commands.value(sample.pid).value(sample.tid), type, sampleCost.cost, sample.frames);
-            break;
-        case Settings::CostAggregation::ByProcess:
-            bottomUpResult.addEvent(commands.value(sample.pid).value(sample.pid), type, sampleCost.cost, sample.frames);
-            break;
-        case Settings::CostAggregation::ByCPU:
-            bottomUpResult.addEvent({QLatin1String("CPU %1").arg(QString::number(sample.cpu))}, type, sampleCost.cost,
-                                    sample.frames);
-            break;
-        }
+        addBottomUpResult(type, sampleCost.cost, sample.pid, sample.tid, sample.cpu, sample.frames, frameCallback);
 
         if (perfScriptOutput) {
             *perfScriptOutput << "\n";
@@ -1205,7 +1191,8 @@ public:
                     addCallerCalleeEvent(symbol, location, eventResult.offCpuTimeCostId, switchTime, &recursionGuard,
                                          &callerCalleeResult, bottomUpResult.costs.numTypes());
                 };
-                bottomUpResult.addEvent(eventResult.offCpuTimeCostId, switchTime, frames, frameCallback);
+                addBottomUpResult(eventResult.offCpuTimeCostId, switchTime, contextSwitch.pid, contextSwitch.tid,
+                                  contextSwitch.cpu, frames, frameCallback);
             }
 
             Data::Event event;
@@ -1219,6 +1206,31 @@ public:
 
         thread->lastSwitchTime = contextSwitch.time;
         thread->state = contextSwitch.switchOut ? Data::ThreadEvents::OffCpu : Data::ThreadEvents::OnCpu;
+    }
+
+    template<typename FrameCallback>
+    void addBottomUpResult(int type, quint64 cost, qint32 pid, qint32 tid, quint32 cpu, const QVector<qint32>& frames,
+                           const FrameCallback& frameCallback)
+    {
+        switch (costAggregation) {
+        case Settings::CostAggregation::BySymbol:
+            bottomUpResult.addEvent(type, cost, frames, frameCallback);
+            break;
+        case Settings::CostAggregation::ByThread: {
+            auto thread = commands.value(pid).value(tid);
+            bottomUpResult.addEvent(thread.isEmpty() ? QString::number(tid) : thread, type, cost, frames, frameCallback);
+            break;
+        }
+        case Settings::CostAggregation::ByProcess: {
+            auto process = commands.value(pid).value(pid);
+            bottomUpResult.addEvent(process.isEmpty() ? QString::number(pid) : process, type, cost, frames, frameCallback);
+            break;
+        }
+        case Settings::CostAggregation::ByCPU:
+            bottomUpResult.addEvent({QLatin1String("CPU %1").arg(QString::number(cpu))}, type, cost, frames,
+                                    frameCallback);
+            break;
+        }
     }
 
     void addLost(const LostDefinition& lost)
