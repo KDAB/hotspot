@@ -566,9 +566,8 @@ class PerfParserPrivate : public QObject
 {
     Q_OBJECT
 public:
-    explicit PerfParserPrivate(QObject* parent = nullptr,
-                               Settings::CostAggregation costAggregation = Settings::CostAggregation::BySymbol)
-        : QObject(parent)
+    explicit PerfParserPrivate(Settings::CostAggregation costAggregation = Settings::CostAggregation::BySymbol)
+        : QObject(nullptr)
         , stopRequested(false)
         , costAggregation(costAggregation)
     {
@@ -1486,7 +1485,7 @@ void PerfParser::startParseFile(const QString& path)
     emit parsingStarted();
     using namespace ThreadWeaver;
     stream() << make_job([path, parserBinary, debuginfodUrls, costAggregation, this]() {
-        PerfParserPrivate d(this, costAggregation);
+        PerfParserPrivate d(costAggregation);
         connect(&d, &PerfParserPrivate::progress, this, &PerfParser::progress);
         connect(this, &PerfParser::stopRequested, &d, &PerfParserPrivate::stop);
 
