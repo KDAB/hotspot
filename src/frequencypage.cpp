@@ -60,7 +60,6 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
         m_results = results;
 
         m_page->costSelectionCombobox->clear();
-        m_page->costSelectionCombobox->addItem(tr("all"));
 
         QSet<QString> costs;
         for (const auto& coreData : m_results.cores) {
@@ -74,17 +73,15 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
     });
 
     connect(m_page->costSelectionCombobox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-            [this, plotData](int index) {
+            [this, plotData]() {
                 m_plot->clearGraphs();
+                const auto selectedCost = m_page->costSelectionCombobox->currentText();
                 const auto numCores = m_results.cores.size();
                 quint32 core = 0;
                 for (const auto& coreData : m_results.cores) {
                     for (const auto& costData : coreData.costs) {
-                        // index 0 means all
-                        if (index != 0) {
-                            if (costData.costName != m_page->costSelectionCombobox->currentText()) {
-                                continue;
-                            }
+                        if (costData.costName != selectedCost) {
+                            continue;
                         }
 
                         auto graph = m_plot->addGraph();
