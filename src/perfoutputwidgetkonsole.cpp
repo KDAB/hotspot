@@ -111,6 +111,8 @@ void PerfOutputWidgetKonsole::addOutput(const QString& output)
 
 void PerfOutputWidgetKonsole::clear()
 {
+    m_inputBuffer.clear();
+
     if (m_konsolePart) {
         m_konsoleFile->deleteLater();
         m_konsolePart->deleteLater();
