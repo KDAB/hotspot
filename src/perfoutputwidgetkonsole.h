@@ -39,6 +39,5 @@ private:
     KParts::ReadOnlyPart* m_konsolePart = nullptr;
     QTemporaryFile* m_konsoleFile = nullptr;
     bool m_inputEnabled = false;
-    static QString m_tailPath;
     QByteArray m_inputBuffer;
 };

@@ -20,10 +20,9 @@
 #include <KParts/kde_terminal_interface.h>
 
 namespace {
-QString findTail()
+QString tailExe()
 {
-    const auto tail = QStandardPaths::findExecutable(QStringLiteral("tail"));
-
+    static const auto tail = QStandardPaths::findExecutable(QStringLiteral("tail"));
     return tail;
 }
 
@@ -32,8 +31,6 @@ KParts::ReadOnlyPart* createPart()
     return Util::createPart(QStringLiteral("konsolepart"));
 }
 }
-
-QString PerfOutputWidgetKonsole::m_tailPath;
 
 PerfOutputWidgetKonsole::PerfOutputWidgetKonsole(KParts::ReadOnlyPart* part, QWidget* parent)
     : PerfOutputWidget(parent)
@@ -49,8 +46,7 @@ PerfOutputWidgetKonsole::~PerfOutputWidgetKonsole() = default;
 
 PerfOutputWidgetKonsole* PerfOutputWidgetKonsole::create(QWidget* parent)
 {
-    m_tailPath = findTail();
-    if (m_tailPath.isEmpty()) {
+    if (tailExe().isEmpty()) {
         return nullptr;
     }
 
@@ -142,7 +138,7 @@ void PerfOutputWidgetKonsole::addPartToLayout()
     m_konsoleFile->open();
 
     const auto terminalInterface = qobject_cast<TerminalInterfaceV2*>(m_konsolePart);
-    terminalInterface->startProgram(m_tailPath, {m_tailPath, QStringLiteral("-f"), m_konsoleFile->fileName()});
+    terminalInterface->startProgram(tailExe(), {tailExe(), QStringLiteral("-f"), m_konsoleFile->fileName()});
 
     m_konsolePart->widget()->focusWidget()->installEventFilter(this);
 
