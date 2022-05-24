@@ -105,12 +105,21 @@ bool PerfOutputWidgetKonsole::eventFilter(QObject* watched, QEvent* event)
 
 void PerfOutputWidgetKonsole::addOutput(const QString& output)
 {
+    if (output.isEmpty()) {
+        return;
+    }
+
     m_konsoleFile->write(output.toUtf8());
     m_konsoleFile->flush();
+    m_needClear = true;
 }
 
 void PerfOutputWidgetKonsole::clear()
 {
+    if (!m_needClear) {
+        return;
+    }
+
     m_inputBuffer.clear();
 
     if (m_konsolePart) {
