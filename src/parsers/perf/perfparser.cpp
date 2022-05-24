@@ -1485,7 +1485,7 @@ void PerfParser::startParseFile(const QString& path)
 
     emit parsingStarted();
     using namespace ThreadWeaver;
-    stream() << make_job([path, parserBinary, parserArgs, debuginfodUrls, costAggregation, this]() {
+    stream() << make_job([path, parserBinary, debuginfodUrls, costAggregation, this]() {
         PerfParserPrivate d(this, costAggregation);
         connect(&d, &PerfParserPrivate::progress, this, &PerfParser::progress);
         connect(this, &PerfParser::stopRequested, &d, &PerfParserPrivate::stop);
