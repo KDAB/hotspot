@@ -31,7 +31,7 @@ QModelIndex DisassemblyModel::findIndexWithOffset(int offset)
                      [address](const DisassemblyOutput::DisassemblyLine& line) { return line.addr == address; });
 
     if (found != m_data.disassemblyLines.end()) {
-        return index(std::distance(m_data.disassemblyLines.begin(), found), 0);
+        return createIndex(std::distance(m_data.disassemblyLines.begin(), found), DisassemblyColumn);
     }
     return {};
 }
@@ -61,14 +61,6 @@ QVariant DisassemblyModel::headerData(int section, Qt::Orientation orientation, 
     if (section == DisassemblyColumn)
         return tr("Assembly");
 
-    if (section == LinkedFunctionName) {
-        return tr("Linked Function Name");
-    }
-
-    if (section == LinkedFunctionOffset) {
-        return tr("Linked Function Offset");
-    }
-
     if (section - COLUMN_COUNT <= m_numTypes)
         return m_results.selfCosts.typeName(section - COLUMN_COUNT);
 
@@ -88,12 +80,6 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
     if (role == Qt::DisplayRole || role == CostRole || role == TotalCostRole || role == Qt::ToolTipRole) {
         if (index.column() == DisassemblyColumn)
             return data.disassembly;
-
-        if (index.column() == LinkedFunctionName)
-            return data.linkedFunction.name;
-
-        if (index.column() == LinkedFunctionOffset)
-            return data.linkedFunction.offset;
 
         if (data.addr == 0) {
             return {};
@@ -123,7 +109,16 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
             else
                 return QString();
         }
+    } else if (role == DisassemblyModel::HighlightRole) {
+        return data.sourceCodeLine == m_highlightLine;
+    } else if (role == LinkedFunctionNameRole) {
+        return data.linkedFunction.name;
+    } else if (role == LinkedFunctionOffsetRole) {
+        return data.linkedFunction.offset;
+    } else if (role == RainbowLineNumberRole) {
+        return data.sourceCodeLine;
     }
+
     return {};
 }
 
@@ -135,4 +130,15 @@ int DisassemblyModel::columnCount(const QModelIndex& parent) const
 int DisassemblyModel::rowCount(const QModelIndex& parent) const
 {
     return parent.isValid() ? 0 : m_data.disassemblyLines.count();
+}
+
+void DisassemblyModel::updateHighlighting(int line)
+{
+    m_highlightLine = line;
+    emit dataChanged(createIndex(0, Columns::DisassemblyColumn), createIndex(rowCount(), Columns::DisassemblyColumn));
+}
+
+int DisassemblyModel::lineForIndex(const QModelIndex& index) const
+{
+    return m_data.disassemblyLines[index.row()].sourceCodeLine;
 }

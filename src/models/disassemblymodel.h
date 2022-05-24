@@ -31,11 +31,11 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
+    int lineForIndex(const QModelIndex& index) const;
+
     enum Columns
     {
         DisassemblyColumn,
-        LinkedFunctionName,
-        LinkedFunctionOffset,
         COLUMN_COUNT
     };
 
@@ -43,9 +43,18 @@ public:
     {
         CostRole = Qt::UserRole,
         TotalCostRole = Qt::UserRole + 1,
+        HighlightRole,
+        LinkedFunctionNameRole,
+        LinkedFunctionOffsetRole,
+        RainbowLineNumberRole,
     };
+
+public slots:
+    void updateHighlighting(int line);
+
 private:
     DisassemblyOutput m_data;
     Data::CallerCalleeResults m_results;
     int m_numTypes = 0;
+    int m_highlightLine = 0;
 };

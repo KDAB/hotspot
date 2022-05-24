@@ -1,490 +1,490 @@
-4294544  418790:	f3 0f 1e fa          	endbr64 
-4294548  418794:	55                   	push   %rbp
-4294549  418795:	53                   	push   %rbx
-4294550  418796:	48 83 ec 28          	sub    $0x28,%rsp
-4294554  41879a:	64 48 8b 04 25 28 00 	mov    %fs:0x28,%rax
-4294561  4187a1:	00 00 
-4294563  4187a3:	48 89 44 24 18       	mov    %rax,0x18(%rsp)
-4294568  4187a8:	31 c0                	xor    %eax,%eax
-4294570  4187aa:	c4 e1 f9 7e c0       	vmovq  %xmm0,%rax
-4294575  4187af:	c5 f8 ae 5c 24 08    	vstmxcsr 0x8(%rsp)
-4294581  4187b5:	8b 5c 24 08          	mov    0x8(%rsp),%ebx
-4294585  4187b9:	48 c1 f8 20          	sar    $0x20,%rax
-4294589  4187bd:	25 ff ff ff 7f       	and    $0x7fffffff,%eax
-4294594  4187c2:	89 da                	mov    %ebx,%edx
-4294596  4187c4:	80 e6 9f             	and    $0x9f,%dh
-4294599  4187c7:	89 54 24 10          	mov    %edx,0x10(%rsp)
-4294603  4187cb:	39 d3                	cmp    %edx,%ebx
-4294605  4187cd:	0f 85 ed 03 00 00    	jne    418bc0 <__cos_fma+0x430>
-4294611  4187d3:	c5 fb 10 0d c5 1b 08 	vmovsd 0x81bc5(%rip),%xmm1        # 49a3a0 <mp1+0x20>
-4294618  4187da:	00 
-4294619  4187db:	31 ed                	xor    %ebp,%ebp
-4294621  4187dd:	3d ff ff 3f 3e       	cmp    $0x3e3fffff,%eax
-4294626  4187e2:	0f 8e c9 00 00 00    	jle    4188b1 <__cos_fma+0x121>
-4294632  4187e8:	3d ff 5f eb 3f       	cmp    $0x3feb5fff,%eax
-4294637  4187ed:	0f 8f dd 00 00 00    	jg     4188d0 <__cos_fma+0x140>
-4294643  4187f3:	c5 f1 57 c9          	vxorpd %xmm1,%xmm1,%xmm1
-4294647  4187f7:	c5 fb 10 1d e9 1a 08 	vmovsd 0x81ae9(%rip),%xmm3        # 49a2e8 <not_available+0xdad>
-4294654  4187fe:	00 
-4294655  4187ff:	c5 fb 10 25 39 1b 08 	vmovsd 0x81b39(%rip),%xmm4        # 49a340 <hp1+0x50>
-4294662  418806:	00 
-4294663  418807:	48 8d 15 d2 5d 08 00 	lea    0x85dd2(%rip),%rdx        # 49e5e0 <__sincostab>
-4294670  41880e:	c5 fb c2 d1 05       	vcmpnltsd %xmm1,%xmm0,%xmm2
-4294675  418813:	c5 f9 54 05 a5 1c 08 	vandpd 0x81ca5(%rip),%xmm0,%xmm0        # 49a4c0 <conversion_rate+0xa8>
-4294682  41881a:	00 
-4294683  41881b:	c4 e3 61 4b d9 20    	vblendvpd %xmm2,%xmm1,%xmm3,%xmm3
-4294689  418821:	c5 fb 10 0d 0f 1b 08 	vmovsd 0x81b0f(%rip),%xmm1        # 49a338 <hp1+0x48>
-4294696  418828:	00 
-4294697  418829:	c5 fb 58 d1          	vaddsd %xmm1,%xmm0,%xmm2
-4294701  41882d:	c5 eb 5c c9          	vsubsd %xmm1,%xmm2,%xmm1
-4294705  418831:	c4 e1 f9 7e d0       	vmovq  %xmm2,%rax
-4294710  418836:	c1 e0 02             	shl    $0x2,%eax
-4294713  418839:	8d 48 02             	lea    0x2(%rax),%ecx
-4294716  41883c:	8d 70 01             	lea    0x1(%rax),%esi
-4294719  41883f:	c5 fb 5c c1          	vsubsd %xmm1,%xmm0,%xmm0
-4294723  418843:	48 63 c9             	movslq %ecx,%rcx
-4294726  418846:	48 63 f6             	movslq %esi,%rsi
-4294729  418849:	c5 fb 10 14 f2       	vmovsd (%rdx,%rsi,8),%xmm2
-4294734  41884e:	c5 fb 58 c3          	vaddsd %xmm3,%xmm0,%xmm0
-4294738  418852:	c5 fb 59 d8          	vmulsd %xmm0,%xmm0,%xmm3
-4294742  418856:	c4 e2 e1 a9 25 a1 1b 	vfmadd213sd 0x81ba1(%rip),%xmm3,%xmm4        # 49a400 <t576+0x30>
-4294749  41885d:	08 00 
-4294751  41885f:	c5 fb 59 cb          	vmulsd %xmm3,%xmm0,%xmm1
-4294755  418863:	c4 e2 f1 b9 c4       	vfmadd231sd %xmm4,%xmm1,%xmm0
-4294760  418868:	c5 fb 10 0d e0 1a 08 	vmovsd 0x81ae0(%rip),%xmm1        # 49a350 <hp1+0x60>
-4294767  41886f:	00 
-4294768  418870:	c4 e2 e1 a9 0d 8f 1b 	vfmadd213sd 0x81b8f(%rip),%xmm3,%xmm1        # 49a408 <t576+0x38>
-4294775  418877:	08 00 
-4294777  418879:	c4 e2 e1 a9 0d de 1a 	vfmadd213sd 0x81ade(%rip),%xmm3,%xmm1        # 49a360 <hp1+0x70>
-4294784  418880:	08 00 
-4294786  418882:	c5 e3 59 d9          	vmulsd %xmm1,%xmm3,%xmm3
-4294790  418886:	c5 fb 10 0c ca       	vmovsd (%rdx,%rcx,8),%xmm1
-4294795  41888b:	8d 48 03             	lea    0x3(%rax),%ecx
-4294798  41888e:	48 98                	cltq   
-4294800  418890:	48 63 c9             	movslq %ecx,%rcx
-4294803  418893:	c4 e2 f9 ad 14 ca    	vfnmadd213sd (%rdx,%rcx,8),%xmm0,%xmm2
-4294809  418899:	c4 e2 e9 9d d9       	vfnmadd132sd %xmm1,%xmm2,%xmm3
-4294814  41889e:	c4 e2 e1 9d 04 c2    	vfnmadd132sd (%rdx,%rax,8),%xmm3,%xmm0
-4294820  4188a4:	c5 f3 58 c8          	vaddsd %xmm0,%xmm1,%xmm1
-4294824  4188a8:	40 84 ed             	test   %bpl,%bpl
-4294827  4188ab:	0f 85 e7 02 00 00    	jne    418b98 <__cos_fma+0x408>
-4294833  4188b1:	48 8b 44 24 18       	mov    0x18(%rsp),%rax
-4294838  4188b6:	64 48 33 04 25 28 00 	xor    %fs:0x28,%rax
-4294845  4188bd:	00 00 
-4294847  4188bf:	0f 85 f3 06 00 00    	jne    418fb8 <__cos_fma+0x828>
-4294853  4188c5:	48 83 c4 28          	add    $0x28,%rsp
-4294857  4188c9:	c5 f9 28 c1          	vmovapd %xmm1,%xmm0
-4294861  4188cd:	5b                   	pop    %rbx
-4294862  4188ce:	5d                   	pop    %rbp
-4294863  4188cf:	c3                   	retq   
-4294864  4188d0:	3d fc 68 03 40       	cmp    $0x400368fc,%eax
-4294869  4188d5:	0f 8f 25 01 00 00    	jg     418a00 <__cos_fma+0x270>
-4294875  4188db:	c5 fa 7e 2d dd 1b 08 	vmovq  0x81bdd(%rip),%xmm5        # 49a4c0 <conversion_rate+0xa8>
-4294882  4188e2:	00 
-4294883  4188e3:	c5 fb 10 15 7d 1a 08 	vmovsd 0x81a7d(%rip),%xmm2        # 49a368 <hp0>
-4294890  4188ea:	00 
-4294891  4188eb:	c5 fb 10 1d 15 1a 08 	vmovsd 0x81a15(%rip),%xmm3        # 49a308 <hp1+0x18>
-4294898  4188f2:	00 
-4294899  4188f3:	c5 f9 54 c5          	vandpd %xmm5,%xmm0,%xmm0
-4294903  4188f7:	c5 eb 5c c0          	vsubsd %xmm0,%xmm2,%xmm0
-4294907  4188fb:	c5 fb 10 15 ed 19 08 	vmovsd 0x819ed(%rip),%xmm2        # 49a2f0 <hp1>
-4294914  418902:	00 
-4294915  418903:	c5 fb 58 ca          	vaddsd %xmm2,%xmm0,%xmm1
-4294919  418907:	c5 fb 5c c1          	vsubsd %xmm1,%xmm0,%xmm0
-4294923  41890b:	c5 fb 11 4c 24 08    	vmovsd %xmm1,0x8(%rsp)
-4294929  418911:	c5 fb 58 c2          	vaddsd %xmm2,%xmm0,%xmm0
-4294933  418915:	c5 f9 28 d1          	vmovapd %xmm1,%xmm2
-4294937  418919:	c5 e9 54 d5          	vandpd %xmm5,%xmm2,%xmm2
-4294941  41891d:	c5 f9 2f da          	vcomisd %xmm2,%xmm3
-4294945  418921:	c5 fb 11 44 24 10    	vmovsd %xmm0,0x10(%rsp)
-4294951  418927:	0f 87 93 04 00 00    	ja     418dc0 <__cos_fma+0x630>
-4294957  41892d:	c5 e1 57 db          	vxorpd %xmm3,%xmm3,%xmm3
-4294961  418931:	c5 fa 7e 35 97 1b 08 	vmovq  0x81b97(%rip),%xmm6        # 49a4d0 <conversion_rate+0xb8>
-4294968  418938:	00 
-4294969  418939:	c5 f9 2f d9          	vcomisd %xmm1,%xmm3
-4294973  41893d:	0f 83 bd 02 00 00    	jae    418c00 <__cos_fma+0x470>
-4294979  418943:	c5 fb 10 25 ed 19 08 	vmovsd 0x819ed(%rip),%xmm4        # 49a338 <hp1+0x48>
-4294986  41894a:	00 
-4294987  41894b:	c5 7b 10 05 ed 19 08 	vmovsd 0x819ed(%rip),%xmm8        # 49a340 <hp1+0x50>
-4294994  418952:	00 
-4294995  418953:	48 8d 15 86 5c 08 00 	lea    0x85c86(%rip),%rdx        # 49e5e0 <__sincostab>
-4295002  41895a:	c5 eb 58 dc          	vaddsd %xmm4,%xmm2,%xmm3
-4295006  41895e:	c5 e3 5c e4          	vsubsd %xmm4,%xmm3,%xmm4
-4295010  418962:	c4 e1 f9 7e d8       	vmovq  %xmm3,%rax
-4295015  418967:	c1 e0 02             	shl    $0x2,%eax
-4295018  41896a:	48 63 c8             	movslq %eax,%rcx
-4295021  41896d:	8d 70 03             	lea    0x3(%rax),%esi
-4295024  418970:	c5 eb 5c d4          	vsubsd %xmm4,%xmm2,%xmm2
-4295028  418974:	48 63 f6             	movslq %esi,%rsi
-4295031  418977:	c5 fb 10 1c f2       	vmovsd (%rdx,%rsi,8),%xmm3
-4295036  41897c:	c5 eb 59 fa          	vmulsd %xmm2,%xmm2,%xmm7
-4295040  418980:	c4 62 c1 a9 05 77 1a 	vfmadd213sd 0x81a77(%rip),%xmm7,%xmm8        # 49a400 <t576+0x30>
-4295047  418987:	08 00 
-4295049  418989:	c5 eb 59 e7          	vmulsd %xmm7,%xmm2,%xmm4
-4295053  41898d:	c4 c2 f9 99 e0       	vfmadd132sd %xmm8,%xmm0,%xmm4
-4295058  418992:	c5 7b 10 05 b6 19 08 	vmovsd 0x819b6(%rip),%xmm8        # 49a350 <hp1+0x60>
-4295065  418999:	00 
-4295066  41899a:	c4 62 c1 a9 05 65 1a 	vfmadd213sd 0x81a65(%rip),%xmm7,%xmm8        # 49a408 <t576+0x38>
-4295073  4189a1:	08 00 
-4295075  4189a3:	c4 62 c1 a9 05 b4 19 	vfmadd213sd 0x819b4(%rip),%xmm7,%xmm8        # 49a360 <hp1+0x70>
-4295082  4189aa:	08 00 
-4295084  4189ac:	c5 eb 58 e4          	vaddsd %xmm4,%xmm2,%xmm4
-4295088  4189b0:	c4 c1 43 59 f8       	vmulsd %xmm8,%xmm7,%xmm7
-4295093  4189b5:	c4 e2 c1 99 d0       	vfmadd132sd %xmm0,%xmm7,%xmm2
-4295098  4189ba:	c5 fb 10 04 ca       	vmovsd (%rdx,%rcx,8),%xmm0
-4295103  4189bf:	8d 48 01             	lea    0x1(%rax),%ecx
-4295106  4189c2:	83 c0 02             	add    $0x2,%eax
-4295109  4189c5:	48 63 c9             	movslq %ecx,%rcx
-4295112  4189c8:	48 98                	cltq   
-4295114  4189ca:	c5 f9 28 f9          	vmovapd %xmm1,%xmm7
-4295118  4189ce:	c4 e2 d9 a9 1c ca    	vfmadd213sd (%rdx,%rcx,8),%xmm4,%xmm3
-4295124  4189d4:	c5 c1 54 fe          	vandpd %xmm6,%xmm7,%xmm7
-4295128  4189d8:	c4 e2 e1 9d d0       	vfnmadd132sd %xmm0,%xmm3,%xmm2
-4295133  4189dd:	c4 e2 d9 b9 14 c2    	vfmadd231sd (%rdx,%rax,8),%xmm4,%xmm2
-4295139  4189e3:	c5 fb 58 d2          	vaddsd %xmm2,%xmm0,%xmm2
-4295143  4189e7:	c5 c9 55 f2          	vandnpd %xmm2,%xmm6,%xmm6
-4295147  4189eb:	c5 c9 56 f7          	vorpd  %xmm7,%xmm6,%xmm6
-4295151  4189ef:	c5 f9 28 ce          	vmovapd %xmm6,%xmm1
-4295155  4189f3:	e9 b0 fe ff ff       	jmpq   4188a8 <__cos_fma+0x118>
-4295160  4189f8:	0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
-4295167  4189ff:	00 
-4295168  418a00:	3d fa 21 99 41       	cmp    $0x419921fa,%eax
-4295173  418a05:	0f 8f d5 01 00 00    	jg     418be0 <__cos_fma+0x450>
-4295179  418a0b:	c5 fb 10 0d 65 19 08 	vmovsd 0x81965(%rip),%xmm1        # 49a378 <big>
-4295186  418a12:	00 
-4295187  418a13:	c5 f9 28 d8          	vmovapd %xmm0,%xmm3
-4295191  418a17:	c4 e2 f1 99 1d 50 19 	vfmadd132sd 0x81950(%rip),%xmm1,%xmm3        # 49a370 <hp0+0x8>
-4295198  418a1e:	08 00 
-4295200  418a20:	c5 fb 10 15 68 19 08 	vmovsd 0x81968(%rip),%xmm2        # 49a390 <mp1+0x10>
-4295207  418a27:	00 
-4295208  418a28:	c5 fb 10 2d 68 19 08 	vmovsd 0x81968(%rip),%xmm5        # 49a398 <mp1+0x18>
-4295215  418a2f:	00 
-4295216  418a30:	c5 e3 5c c9          	vsubsd %xmm1,%xmm3,%xmm1
-4295220  418a34:	c4 e1 f9 7e d8       	vmovq  %xmm3,%rax
-4295225  418a39:	c4 e2 f1 bd 05 3e 19 	vfnmadd231sd 0x8193e(%rip),%xmm1,%xmm0        # 49a380 <mp1>
-4295232  418a40:	08 00 
-4295234  418a42:	83 e0 03             	and    $0x3,%eax
-4295237  418a45:	c4 e2 f1 bd 05 3a 19 	vfnmadd231sd 0x8193a(%rip),%xmm1,%xmm0        # 49a388 <mp1+0x8>
-4295244  418a4c:	08 00 
-4295246  418a4e:	8d 48 01             	lea    0x1(%rax),%ecx
-4295249  418a51:	c5 f9 28 e1          	vmovapd %xmm1,%xmm4
-4295253  418a55:	c4 e2 f9 9d e2       	vfnmadd132sd %xmm2,%xmm0,%xmm4
-4295258  418a5a:	c5 fb 5c c4          	vsubsd %xmm4,%xmm0,%xmm0
-4295262  418a5e:	c4 e2 f1 bd c2       	vfnmadd231sd %xmm2,%xmm1,%xmm0
-4295267  418a63:	c5 f9 28 d1          	vmovapd %xmm1,%xmm2
-4295271  418a67:	c4 e2 d9 9d d5       	vfnmadd132sd %xmm5,%xmm4,%xmm2
-4295276  418a6c:	c5 db 5c e2          	vsubsd %xmm2,%xmm4,%xmm4
-4295280  418a70:	c5 f9 28 da          	vmovapd %xmm2,%xmm3
-4295284  418a74:	c5 fb 11 54 24 08    	vmovsd %xmm2,0x8(%rsp)
-4295290  418a7a:	c4 e2 d9 9d cd       	vfnmadd132sd %xmm5,%xmm4,%xmm1
-4295295  418a7f:	c5 fa 7e 2d 39 1a 08 	vmovq  0x81a39(%rip),%xmm5        # 49a4c0 <conversion_rate+0xa8>
-4295302  418a86:	00 
-4295303  418a87:	c5 e1 54 dd          	vandpd %xmm5,%xmm3,%xmm3
-4295307  418a8b:	c5 fb 58 c9          	vaddsd %xmm1,%xmm0,%xmm1
-4295311  418a8f:	c5 fb 11 4c 24 10    	vmovsd %xmm1,0x10(%rsp)
-4295317  418a95:	a8 01                	test   $0x1,%al
-4295319  418a97:	0f 84 73 01 00 00    	je     418c10 <__cos_fma+0x480>
-4295325  418a9d:	c5 fb 10 05 63 18 08 	vmovsd 0x81863(%rip),%xmm0        # 49a308 <hp1+0x18>
-4295332  418aa4:	00 
-4295333  418aa5:	c5 f9 2f c3          	vcomisd %xmm3,%xmm0
-4295337  418aa9:	0f 87 81 03 00 00    	ja     418e30 <__cos_fma+0x6a0>
-4295343  418aaf:	c5 f9 57 c0          	vxorpd %xmm0,%xmm0,%xmm0
-4295347  418ab3:	c5 fa 7e 35 15 1a 08 	vmovq  0x81a15(%rip),%xmm6        # 49a4d0 <conversion_rate+0xb8>
-4295354  418aba:	00 
-4295355  418abb:	c5 f9 2f c2          	vcomisd %xmm2,%xmm0
-4295359  418abf:	72 04                	jb     418ac5 <__cos_fma+0x335>
-4295361  418ac1:	c5 f1 57 ce          	vxorpd %xmm6,%xmm1,%xmm1
-4295365  418ac5:	c5 fb 10 25 6b 18 08 	vmovsd 0x8186b(%rip),%xmm4        # 49a338 <hp1+0x48>
-4295372  418acc:	00 
-4295373  418acd:	c5 7b 10 05 6b 18 08 	vmovsd 0x8186b(%rip),%xmm8        # 49a340 <hp1+0x50>
-4295380  418ad4:	00 
-4295381  418ad5:	48 8d 15 04 5b 08 00 	lea    0x85b04(%rip),%rdx        # 49e5e0 <__sincostab>
-4295388  418adc:	c5 e3 58 c4          	vaddsd %xmm4,%xmm3,%xmm0
-4295392  418ae0:	c5 fb 5c e4          	vsubsd %xmm4,%xmm0,%xmm4
-4295396  418ae4:	c4 e1 f9 7e c0       	vmovq  %xmm0,%rax
-4295401  418ae9:	c1 e0 02             	shl    $0x2,%eax
-4295404  418aec:	48 63 f0             	movslq %eax,%rsi
-4295407  418aef:	8d 78 03             	lea    0x3(%rax),%edi
-4295410  418af2:	c5 e3 5c dc          	vsubsd %xmm4,%xmm3,%xmm3
-4295414  418af6:	c5 fb 10 04 f2       	vmovsd (%rdx,%rsi,8),%xmm0
-4295419  418afb:	8d 70 01             	lea    0x1(%rax),%esi
-4295422  418afe:	48 63 ff             	movslq %edi,%rdi
-4295425  418b01:	48 63 f6             	movslq %esi,%rsi
-4295428  418b04:	83 c0 02             	add    $0x2,%eax
-4295431  418b07:	48 98                	cltq   
-4295433  418b09:	c5 e3 59 fb          	vmulsd %xmm3,%xmm3,%xmm7
-4295437  418b0d:	c4 62 c1 a9 05 ea 18 	vfmadd213sd 0x818ea(%rip),%xmm7,%xmm8        # 49a400 <t576+0x30>
-4295444  418b14:	08 00 
-4295446  418b16:	c5 e3 59 e7          	vmulsd %xmm7,%xmm3,%xmm4
-4295450  418b1a:	c4 c2 f1 99 e0       	vfmadd132sd %xmm8,%xmm1,%xmm4
-4295455  418b1f:	c5 7b 10 05 29 18 08 	vmovsd 0x81829(%rip),%xmm8        # 49a350 <hp1+0x60>
-4295462  418b26:	00 
-4295463  418b27:	c4 62 c1 a9 05 d8 18 	vfmadd213sd 0x818d8(%rip),%xmm7,%xmm8        # 49a408 <t576+0x38>
-4295470  418b2e:	08 00 
-4295472  418b30:	c4 62 c1 a9 05 27 18 	vfmadd213sd 0x81827(%rip),%xmm7,%xmm8        # 49a360 <hp1+0x70>
-4295479  418b37:	08 00 
-4295481  418b39:	c5 e3 58 e4          	vaddsd %xmm4,%xmm3,%xmm4
-4295485  418b3d:	c4 c1 43 59 f8       	vmulsd %xmm8,%xmm7,%xmm7
-4295490  418b42:	c4 e2 c1 99 cb       	vfmadd132sd %xmm3,%xmm7,%xmm1
-4295495  418b47:	c5 fb 10 1c fa       	vmovsd (%rdx,%rdi,8),%xmm3
-4295500  418b4c:	c4 e2 d9 a9 1c f2    	vfmadd213sd (%rdx,%rsi,8),%xmm4,%xmm3
-4295506  418b52:	c5 f9 28 fa          	vmovapd %xmm2,%xmm7
-4295510  418b56:	c5 c1 54 fe          	vandpd %xmm6,%xmm7,%xmm7
-4295514  418b5a:	c4 e2 f1 bd d8       	vfnmadd231sd %xmm0,%xmm1,%xmm3
-4295519  418b5f:	c4 e2 d9 b9 1c c2    	vfmadd231sd (%rdx,%rax,8),%xmm4,%xmm3
-4295525  418b65:	c5 fb 58 db          	vaddsd %xmm3,%xmm0,%xmm3
-4295529  418b69:	c5 c9 55 f3          	vandnpd %xmm3,%xmm6,%xmm6
-4295533  418b6d:	c5 c9 56 f7          	vorpd  %xmm7,%xmm6,%xmm6
-4295537  418b71:	c5 f9 28 ce          	vmovapd %xmm6,%xmm1
-4295541  418b75:	83 e1 02             	and    $0x2,%ecx
-4295544  418b78:	0f 84 2a fd ff ff    	je     4188a8 <__cos_fma+0x118>
-4295550  418b7e:	c5 f1 57 0d 4a 19 08 	vxorpd 0x8194a(%rip),%xmm1,%xmm1        # 49a4d0 <conversion_rate+0xb8>
-4295557  418b85:	00 
-4295558  418b86:	e9 1d fd ff ff       	jmpq   4188a8 <__cos_fma+0x118>
-4295563  418b8b:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
-4295568  418b90:	c5 fb 10 0d 08 18 08 	vmovsd 0x81808(%rip),%xmm1        # 49a3a0 <mp1+0x20>
-4295575  418b97:	00 
-4295576  418b98:	c5 f8 ae 5c 24 04    	vstmxcsr 0x4(%rsp)
-4295582  418b9e:	8b 44 24 04          	mov    0x4(%rsp),%eax
-4295586  418ba2:	81 e3 00 60 00 00    	and    $0x6000,%ebx
-4295592  418ba8:	80 e4 9f             	and    $0x9f,%ah
-4295595  418bab:	09 c3                	or     %eax,%ebx
-4295597  418bad:	89 5c 24 04          	mov    %ebx,0x4(%rsp)
-4295601  418bb1:	c5 f8 ae 54 24 04    	vldmxcsr 0x4(%rsp)
-4295607  418bb7:	e9 f5 fc ff ff       	jmpq   4188b1 <__cos_fma+0x121>
-4295612  418bbc:	0f 1f 40 00          	nopl   0x0(%rax)
-4295616  418bc0:	c5 f8 ae 54 24 10    	vldmxcsr 0x10(%rsp)
-4295622  418bc6:	3d ff ff 3f 3e       	cmp    $0x3e3fffff,%eax
-4295627  418bcb:	7e c3                	jle    418b90 <__cos_fma+0x400>
-4295629  418bcd:	bd 01 00 00 00       	mov    $0x1,%ebp
-4295634  418bd2:	e9 11 fc ff ff       	jmpq   4187e8 <__cos_fma+0x58>
-4295639  418bd7:	66 0f 1f 84 00 00 00 	nopw   0x0(%rax,%rax,1)
-4295646  418bde:	00 00 
-4295648  418be0:	3d ff ff ef 7f       	cmp    $0x7fefffff,%eax
-4295653  418be5:	0f 8e e5 00 00 00    	jle    418cd0 <__cos_fma+0x540>
-4295659  418beb:	3d 00 00 f0 7f       	cmp    $0x7ff00000,%eax
-4295664  418bf0:	0f 84 1a 02 00 00    	je     418e10 <__cos_fma+0x680>
-4295670  418bf6:	c5 fb 5e c8          	vdivsd %xmm0,%xmm0,%xmm1
-4295674  418bfa:	e9 a9 fc ff ff       	jmpq   4188a8 <__cos_fma+0x118>
-4295679  418bff:	90                   	nop
-4295680  418c00:	c5 f9 57 c6          	vxorpd %xmm6,%xmm0,%xmm0
-4295684  418c04:	e9 3a fd ff ff       	jmpq   418943 <__cos_fma+0x1b3>
-4295689  418c09:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
-4295696  418c10:	c5 d9 57 e4          	vxorpd %xmm4,%xmm4,%xmm4
-4295700  418c14:	c5 f9 28 e9          	vmovapd %xmm1,%xmm5
-4295704  418c18:	c5 f1 57 0d b0 18 08 	vxorpd 0x818b0(%rip),%xmm1,%xmm1        # 49a4d0 <conversion_rate+0xb8>
-4295711  418c1f:	00 
-4295712  418c20:	c5 eb c2 e4 01       	vcmpltsd %xmm4,%xmm2,%xmm4
-4295717  418c25:	c5 fb 10 15 0b 17 08 	vmovsd 0x8170b(%rip),%xmm2        # 49a338 <hp1+0x48>
-4295724  418c2c:	00 
-4295725  418c2d:	48 8d 15 ac 59 08 00 	lea    0x859ac(%rip),%rdx        # 49e5e0 <__sincostab>
-4295732  418c34:	c5 e3 58 c2          	vaddsd %xmm2,%xmm3,%xmm0
-4295736  418c38:	c4 e3 51 4b c9 40    	vblendvpd %xmm4,%xmm1,%xmm5,%xmm1
-4295742  418c3e:	c5 fb 10 25 fa 16 08 	vmovsd 0x816fa(%rip),%xmm4        # 49a340 <hp1+0x50>
-4295749  418c45:	00 
-4295750  418c46:	c5 fb 5c d2          	vsubsd %xmm2,%xmm0,%xmm2
-4295754  418c4a:	c4 e1 f9 7e c0       	vmovq  %xmm0,%rax
-4295759  418c4f:	c1 e0 02             	shl    $0x2,%eax
-4295762  418c52:	8d 70 02             	lea    0x2(%rax),%esi
-4295765  418c55:	8d 78 01             	lea    0x1(%rax),%edi
-4295768  418c58:	c5 e3 5c da          	vsubsd %xmm2,%xmm3,%xmm3
-4295772  418c5c:	48 63 f6             	movslq %esi,%rsi
-4295775  418c5f:	48 63 ff             	movslq %edi,%rdi
-4295778  418c62:	c5 fb 10 04 fa       	vmovsd (%rdx,%rdi,8),%xmm0
-4295783  418c67:	c5 e3 58 c9          	vaddsd %xmm1,%xmm3,%xmm1
-4295787  418c6b:	c5 f3 59 d1          	vmulsd %xmm1,%xmm1,%xmm2
-4295791  418c6f:	c4 e2 e9 a9 25 88 17 	vfmadd213sd 0x81788(%rip),%xmm2,%xmm4        # 49a400 <t576+0x30>
-4295798  418c76:	08 00 
-4295800  418c78:	c5 f3 59 da          	vmulsd %xmm2,%xmm1,%xmm3
-4295804  418c7c:	c4 e2 f1 99 dc       	vfmadd132sd %xmm4,%xmm1,%xmm3
-4295809  418c81:	c5 fb 10 0d c7 16 08 	vmovsd 0x816c7(%rip),%xmm1        # 49a350 <hp1+0x60>
-4295816  418c88:	00 
-4295817  418c89:	c4 e2 e9 a9 0d 76 17 	vfmadd213sd 0x81776(%rip),%xmm2,%xmm1        # 49a408 <t576+0x38>
-4295824  418c90:	08 00 
-4295826  418c92:	c4 e2 e9 a9 0d c5 16 	vfmadd213sd 0x816c5(%rip),%xmm2,%xmm1        # 49a360 <hp1+0x70>
-4295833  418c99:	08 00 
-4295835  418c9b:	c5 eb 59 d1          	vmulsd %xmm1,%xmm2,%xmm2
-4295839  418c9f:	c5 fb 10 0c f2       	vmovsd (%rdx,%rsi,8),%xmm1
-4295844  418ca4:	8d 70 03             	lea    0x3(%rax),%esi
-4295847  418ca7:	48 98                	cltq   
-4295849  418ca9:	48 63 f6             	movslq %esi,%rsi
-4295852  418cac:	c4 e2 e1 ad 04 f2    	vfnmadd213sd (%rdx,%rsi,8),%xmm3,%xmm0
-4295858  418cb2:	c4 e2 f9 9d d1       	vfnmadd132sd %xmm1,%xmm0,%xmm2
-4295863  418cb7:	c4 e2 e1 bd 14 c2    	vfnmadd231sd (%rdx,%rax,8),%xmm3,%xmm2
-4295869  418cbd:	c5 f3 58 ca          	vaddsd %xmm2,%xmm1,%xmm1
-4295873  418cc1:	e9 af fe ff ff       	jmpq   418b75 <__cos_fma+0x3e5>
-4295878  418cc6:	66 2e 0f 1f 84 00 00 	nopw   %cs:0x0(%rax,%rax,1)
-4295885  418ccd:	00 00 00 
-4295888  418cd0:	48 8d 74 24 10       	lea    0x10(%rsp),%rsi
-4295893  418cd5:	48 8d 7c 24 08       	lea    0x8(%rsp),%rdi
-4295898  418cda:	e8 e1 ed ff ff       	callq  417ac0 <__branred>
-4295903  418cdf:	c5 fb 10 5c 24 10    	vmovsd 0x10(%rsp),%xmm3
-4295909  418ce5:	c5 fb 10 54 24 08    	vmovsd 0x8(%rsp),%xmm2
-4295915  418ceb:	8d 48 01             	lea    0x1(%rax),%ecx
-4295918  418cee:	a8 01                	test   $0x1,%al
-4295920  418cf0:	0f 85 8a 01 00 00    	jne    418e80 <__cos_fma+0x6f0>
-4295926  418cf6:	c5 f9 57 c0          	vxorpd %xmm0,%xmm0,%xmm0
-4295930  418cfa:	c5 f9 28 cb          	vmovapd %xmm3,%xmm1
-4295934  418cfe:	c5 e1 57 1d ca 17 08 	vxorpd 0x817ca(%rip),%xmm3,%xmm3        # 49a4d0 <conversion_rate+0xb8>
-4295941  418d05:	00 
-4295942  418d06:	c5 fb 10 25 32 16 08 	vmovsd 0x81632(%rip),%xmm4        # 49a340 <hp1+0x50>
-4295949  418d0d:	00 
-4295950  418d0e:	c5 eb c2 c0 01       	vcmpltsd %xmm0,%xmm2,%xmm0
-4295955  418d13:	c5 e9 54 15 a5 17 08 	vandpd 0x817a5(%rip),%xmm2,%xmm2        # 49a4c0 <conversion_rate+0xa8>
-4295962  418d1a:	00 
-4295963  418d1b:	48 8d 15 be 58 08 00 	lea    0x858be(%rip),%rdx        # 49e5e0 <__sincostab>
-4295970  418d22:	c4 e3 71 4b db 00    	vblendvpd %xmm0,%xmm3,%xmm1,%xmm3
-4295976  418d28:	c5 f9 28 ca          	vmovapd %xmm2,%xmm1
-4295980  418d2c:	c5 fb 10 15 04 16 08 	vmovsd 0x81604(%rip),%xmm2        # 49a338 <hp1+0x48>
-4295987  418d33:	00 
-4295988  418d34:	c5 f3 58 c2          	vaddsd %xmm2,%xmm1,%xmm0
-4295992  418d38:	c5 fb 5c d2          	vsubsd %xmm2,%xmm0,%xmm2
-4295996  418d3c:	c4 e1 f9 7e c0       	vmovq  %xmm0,%rax
-4296001  418d41:	c1 e0 02             	shl    $0x2,%eax
-4296004  418d44:	8d 70 02             	lea    0x2(%rax),%esi
-4296007  418d47:	8d 78 01             	lea    0x1(%rax),%edi
-4296010  418d4a:	c5 f3 5c d2          	vsubsd %xmm2,%xmm1,%xmm2
-4296014  418d4e:	48 63 f6             	movslq %esi,%rsi
-4296017  418d51:	48 63 ff             	movslq %edi,%rdi
-4296020  418d54:	c5 fb 10 04 fa       	vmovsd (%rdx,%rdi,8),%xmm0
-4296025  418d59:	c5 eb 58 d3          	vaddsd %xmm3,%xmm2,%xmm2
-4296029  418d5d:	c5 eb 59 ca          	vmulsd %xmm2,%xmm2,%xmm1
-4296033  418d61:	c4 e2 f1 a9 25 96 16 	vfmadd213sd 0x81696(%rip),%xmm1,%xmm4        # 49a400 <t576+0x30>
-4296040  418d68:	08 00 
-4296042  418d6a:	c5 eb 59 d9          	vmulsd %xmm1,%xmm2,%xmm3
-4296046  418d6e:	c4 e2 e9 99 dc       	vfmadd132sd %xmm4,%xmm2,%xmm3
-4296051  418d73:	c5 fb 10 15 d5 15 08 	vmovsd 0x815d5(%rip),%xmm2        # 49a350 <hp1+0x60>
-4296058  418d7a:	00 
-4296059  418d7b:	c4 e2 f1 a9 15 84 16 	vfmadd213sd 0x81684(%rip),%xmm1,%xmm2        # 49a408 <t576+0x38>
-4296066  418d82:	08 00 
-4296068  418d84:	c4 e2 f1 a9 15 d3 15 	vfmadd213sd 0x815d3(%rip),%xmm1,%xmm2        # 49a360 <hp1+0x70>
-4296075  418d8b:	08 00 
-4296077  418d8d:	c5 f3 59 d2          	vmulsd %xmm2,%xmm1,%xmm2
-4296081  418d91:	c5 fb 10 0c f2       	vmovsd (%rdx,%rsi,8),%xmm1
-4296086  418d96:	8d 70 03             	lea    0x3(%rax),%esi
-4296089  418d99:	48 98                	cltq   
-4296091  418d9b:	48 63 f6             	movslq %esi,%rsi
-4296094  418d9e:	c4 e2 e1 ad 04 f2    	vfnmadd213sd (%rdx,%rsi,8),%xmm3,%xmm0
-4296100  418da4:	c4 e2 e9 bd c1       	vfnmadd231sd %xmm1,%xmm2,%xmm0
-4296105  418da9:	c4 e2 e1 bd 04 c2    	vfnmadd231sd (%rdx,%rax,8),%xmm3,%xmm0
-4296111  418daf:	c5 f3 58 c8          	vaddsd %xmm0,%xmm1,%xmm1
-4296115  418db3:	e9 bd fd ff ff       	jmpq   418b75 <__cos_fma+0x3e5>
-4296120  418db8:	0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
-4296127  418dbf:	00 
-4296128  418dc0:	c5 f3 59 d9          	vmulsd %xmm1,%xmm1,%xmm3
-4296132  418dc4:	c5 fb 10 15 44 15 08 	vmovsd 0x81544(%rip),%xmm2        # 49a310 <hp1+0x20>
-4296139  418dcb:	00 
-4296140  418dcc:	c4 e2 e1 a9 15 43 15 	vfmadd213sd 0x81543(%rip),%xmm3,%xmm2        # 49a318 <hp1+0x28>
-4296147  418dd3:	08 00 
-4296149  418dd5:	c4 e2 e1 a9 15 12 16 	vfmadd213sd 0x81612(%rip),%xmm3,%xmm2        # 49a3f0 <t576+0x20>
-4296156  418ddc:	08 00 
-4296158  418dde:	c4 e2 e1 a9 15 41 15 	vfmadd213sd 0x81541(%rip),%xmm3,%xmm2        # 49a328 <hp1+0x38>
-4296165  418de5:	08 00 
-4296167  418de7:	c5 fb 59 25 71 15 08 	vmulsd 0x81571(%rip),%xmm0,%xmm4        # 49a360 <hp1+0x70>
-4296174  418dee:	00 
-4296175  418def:	c4 e2 e1 a9 15 00 16 	vfmadd213sd 0x81600(%rip),%xmm3,%xmm2        # 49a3f8 <t576+0x28>
-4296182  418df6:	08 00 
-4296184  418df8:	c4 e2 d9 9b d1       	vfmsub132sd %xmm1,%xmm4,%xmm2
-4296189  418dfd:	c4 e2 e1 b9 c2       	vfmadd231sd %xmm2,%xmm3,%xmm0
-4296194  418e02:	c5 f3 58 c8          	vaddsd %xmm0,%xmm1,%xmm1
-4296198  418e06:	e9 9d fa ff ff       	jmpq   4188a8 <__cos_fma+0x118>
-4296203  418e0b:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
-4296208  418e10:	c4 e1 f9 7e c0       	vmovq  %xmm0,%rax
-4296213  418e15:	85 c0                	test   %eax,%eax
-4296215  418e17:	0f 85 d9 fd ff ff    	jne    418bf6 <__cos_fma+0x466>
-4296221  418e1d:	48 c7 c0 c0 ff ff ff 	mov    $0xffffffffffffffc0,%rax
-4296228  418e24:	64 c7 00 21 00 00 00 	movl   $0x21,%fs:(%rax)
-4296235  418e2b:	e9 c6 fd ff ff       	jmpq   418bf6 <__cos_fma+0x466>
-4296240  418e30:	c5 eb 59 da          	vmulsd %xmm2,%xmm2,%xmm3
-4296244  418e34:	c5 fb 10 05 d4 14 08 	vmovsd 0x814d4(%rip),%xmm0        # 49a310 <hp1+0x20>
-4296251  418e3b:	00 
-4296252  418e3c:	c4 e2 e1 a9 05 d3 14 	vfmadd213sd 0x814d3(%rip),%xmm3,%xmm0        # 49a318 <hp1+0x28>
-4296259  418e43:	08 00 
-4296261  418e45:	c4 e2 e1 a9 05 a2 15 	vfmadd213sd 0x815a2(%rip),%xmm3,%xmm0        # 49a3f0 <t576+0x20>
-4296268  418e4c:	08 00 
-4296270  418e4e:	c4 e2 e1 a9 05 d1 14 	vfmadd213sd 0x814d1(%rip),%xmm3,%xmm0        # 49a328 <hp1+0x38>
-4296277  418e55:	08 00 
-4296279  418e57:	c5 f3 59 25 01 15 08 	vmulsd 0x81501(%rip),%xmm1,%xmm4        # 49a360 <hp1+0x70>
-4296286  418e5e:	00 
-4296287  418e5f:	c4 e2 e1 a9 05 90 15 	vfmadd213sd 0x81590(%rip),%xmm3,%xmm0        # 49a3f8 <t576+0x28>
-4296294  418e66:	08 00 
-4296296  418e68:	c4 e2 d9 9b c2       	vfmsub132sd %xmm2,%xmm4,%xmm0
-4296301  418e6d:	c4 e2 e1 b9 c8       	vfmadd231sd %xmm0,%xmm3,%xmm1
-4296306  418e72:	c5 f3 58 ca          	vaddsd %xmm2,%xmm1,%xmm1
-4296310  418e76:	e9 fa fc ff ff       	jmpq   418b75 <__cos_fma+0x3e5>
-4296315  418e7b:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
-4296320  418e80:	c5 fa 7e 2d 38 16 08 	vmovq  0x81638(%rip),%xmm5        # 49a4c0 <conversion_rate+0xa8>
-4296327  418e87:	00 
-4296328  418e88:	c5 fb 10 0d 78 14 08 	vmovsd 0x81478(%rip),%xmm1        # 49a308 <hp1+0x18>
-4296335  418e8f:	00 
-4296336  418e90:	c5 f9 28 c2          	vmovapd %xmm2,%xmm0
-4296340  418e94:	c5 f9 54 c5          	vandpd %xmm5,%xmm0,%xmm0
-4296344  418e98:	c5 f9 2f c8          	vcomisd %xmm0,%xmm1
-4296348  418e9c:	0f 87 cb 00 00 00    	ja     418f6d <__cos_fma+0x7dd>
-4296354  418ea2:	c5 f1 57 c9          	vxorpd %xmm1,%xmm1,%xmm1
-4296358  418ea6:	c5 fa 7e 35 22 16 08 	vmovq  0x81622(%rip),%xmm6        # 49a4d0 <conversion_rate+0xb8>
-4296365  418ead:	00 
-4296366  418eae:	c5 f9 2f ca          	vcomisd %xmm2,%xmm1
-4296370  418eb2:	72 04                	jb     418eb8 <__cos_fma+0x728>
-4296372  418eb4:	c5 e1 57 de          	vxorpd %xmm6,%xmm3,%xmm3
-4296376  418eb8:	c5 fb 10 25 78 14 08 	vmovsd 0x81478(%rip),%xmm4        # 49a338 <hp1+0x48>
-4296383  418ebf:	00 
-4296384  418ec0:	c5 7b 10 05 78 14 08 	vmovsd 0x81478(%rip),%xmm8        # 49a340 <hp1+0x50>
-4296391  418ec7:	00 
-4296392  418ec8:	48 8d 15 11 57 08 00 	lea    0x85711(%rip),%rdx        # 49e5e0 <__sincostab>
-4296399  418ecf:	c5 fb 58 cc          	vaddsd %xmm4,%xmm0,%xmm1
-4296403  418ed3:	c5 f3 5c e4          	vsubsd %xmm4,%xmm1,%xmm4
-4296407  418ed7:	c4 e1 f9 7e c8       	vmovq  %xmm1,%rax
-4296412  418edc:	c1 e0 02             	shl    $0x2,%eax
-4296415  418edf:	48 63 f0             	movslq %eax,%rsi
-4296418  418ee2:	8d 78 03             	lea    0x3(%rax),%edi
-4296421  418ee5:	c5 fb 5c c4          	vsubsd %xmm4,%xmm0,%xmm0
-4296425  418ee9:	c5 fb 10 0c f2       	vmovsd (%rdx,%rsi,8),%xmm1
-4296430  418eee:	8d 70 01             	lea    0x1(%rax),%esi
-4296433  418ef1:	48 63 ff             	movslq %edi,%rdi
-4296436  418ef4:	48 63 f6             	movslq %esi,%rsi
-4296439  418ef7:	83 c0 02             	add    $0x2,%eax
-4296442  418efa:	48 98                	cltq   
-4296444  418efc:	c5 fb 59 f8          	vmulsd %xmm0,%xmm0,%xmm7
-4296448  418f00:	c4 62 c1 a9 05 f7 14 	vfmadd213sd 0x814f7(%rip),%xmm7,%xmm8        # 49a400 <t576+0x30>
-4296455  418f07:	08 00 
-4296457  418f09:	c5 fb 59 e7          	vmulsd %xmm7,%xmm0,%xmm4
-4296461  418f0d:	c4 c2 e1 99 e0       	vfmadd132sd %xmm8,%xmm3,%xmm4
-4296466  418f12:	c5 7b 10 05 36 14 08 	vmovsd 0x81436(%rip),%xmm8        # 49a350 <hp1+0x60>
-4296473  418f19:	00 
-4296474  418f1a:	c4 62 c1 a9 05 e5 14 	vfmadd213sd 0x814e5(%rip),%xmm7,%xmm8        # 49a408 <t576+0x38>
-4296481  418f21:	08 00 
-4296483  418f23:	c4 62 c1 a9 05 34 14 	vfmadd213sd 0x81434(%rip),%xmm7,%xmm8        # 49a360 <hp1+0x70>
-4296490  418f2a:	08 00 
-4296492  418f2c:	c5 fb 58 e4          	vaddsd %xmm4,%xmm0,%xmm4
-4296496  418f30:	c4 c1 43 59 f8       	vmulsd %xmm8,%xmm7,%xmm7
-4296501  418f35:	c4 e2 c1 99 c3       	vfmadd132sd %xmm3,%xmm7,%xmm0
-4296506  418f3a:	c5 fb 10 1c fa       	vmovsd (%rdx,%rdi,8),%xmm3
-4296511  418f3f:	c4 e2 d9 a9 1c f2    	vfmadd213sd (%rdx,%rsi,8),%xmm4,%xmm3
-4296517  418f45:	c5 f9 28 fa          	vmovapd %xmm2,%xmm7
-4296521  418f49:	c5 c1 54 fe          	vandpd %xmm6,%xmm7,%xmm7
-4296525  418f4d:	c4 e2 e1 9d c1       	vfnmadd132sd %xmm1,%xmm3,%xmm0
-4296530  418f52:	c4 e2 d9 b9 04 c2    	vfmadd231sd (%rdx,%rax,8),%xmm4,%xmm0
-4296536  418f58:	c5 f3 58 c0          	vaddsd %xmm0,%xmm1,%xmm0
-4296540  418f5c:	c5 c9 55 f0          	vandnpd %xmm0,%xmm6,%xmm6
-4296544  418f60:	c5 c9 56 f7          	vorpd  %xmm7,%xmm6,%xmm6
-4296548  418f64:	c5 f9 28 ce          	vmovapd %xmm6,%xmm1
-4296552  418f68:	e9 08 fc ff ff       	jmpq   418b75 <__cos_fma+0x3e5>
-4296557  418f6d:	c5 eb 59 ca          	vmulsd %xmm2,%xmm2,%xmm1
-4296561  418f71:	c5 fb 10 05 97 13 08 	vmovsd 0x81397(%rip),%xmm0        # 49a310 <hp1+0x20>
-4296568  418f78:	00 
-4296569  418f79:	c4 e2 f1 a9 05 96 13 	vfmadd213sd 0x81396(%rip),%xmm1,%xmm0        # 49a318 <hp1+0x28>
-4296576  418f80:	08 00 
-4296578  418f82:	c4 e2 f1 a9 05 65 14 	vfmadd213sd 0x81465(%rip),%xmm1,%xmm0        # 49a3f0 <t576+0x20>
-4296585  418f89:	08 00 
-4296587  418f8b:	c4 e2 f1 a9 05 94 13 	vfmadd213sd 0x81394(%rip),%xmm1,%xmm0        # 49a328 <hp1+0x38>
-4296594  418f92:	08 00 
-4296596  418f94:	c4 e2 f1 a9 05 5b 14 	vfmadd213sd 0x8145b(%rip),%xmm1,%xmm0        # 49a3f8 <t576+0x28>
-4296603  418f9b:	08 00 
-4296605  418f9d:	c5 e3 59 25 bb 13 08 	vmulsd 0x813bb(%rip),%xmm3,%xmm4        # 49a360 <hp1+0x70>
-4296612  418fa4:	00 
-4296613  418fa5:	c4 e2 d9 9b c2       	vfmsub132sd %xmm2,%xmm4,%xmm0
-4296618  418faa:	c4 e2 e1 99 c8       	vfmadd132sd %xmm0,%xmm3,%xmm1
-4296623  418faf:	c5 eb 58 c9          	vaddsd %xmm1,%xmm2,%xmm1
-4296627  418fb3:	e9 bd fb ff ff       	jmpq   418b75 <__cos_fma+0x3e5>
-4296632  418fb8:	e8 a3 57 04 00       	callq  45e760 <__stack_chk_fail>
+4294544  418790:	                                           f3 0f 1e fa          	endbr64 
+4294548  418794:	                                           55                   	push   %rbp
+4294549  418795:	                                           53                   	push   %rbx
+4294550  418796:	                                           48 83 ec 28          	sub    $0x28,%rsp
+4294554  41879a:	                                           64 48 8b 04 25 28 00 	mov    %fs:0x28,%rax
+4294561  4187a1:	                                           00 00 
+4294563  4187a3:	                                           48 89 44 24 18       	mov    %rax,0x18(%rsp)
+4294568  4187a8:	                                           31 c0                	xor    %eax,%eax
+4294570  4187aa:	                                           c4 e1 f9 7e c0       	vmovq  %xmm0,%rax
+4294575  4187af:	                                           c5 f8 ae 5c 24 08    	vstmxcsr 0x8(%rsp)
+4294581  4187b5:	                                           8b 5c 24 08          	mov    0x8(%rsp),%ebx
+4294585  4187b9:	                                           48 c1 f8 20          	sar    $0x20,%rax
+4294589  4187bd:	                                           25 ff ff ff 7f       	and    $0x7fffffff,%eax
+4294594  4187c2:	                                           89 da                	mov    %ebx,%edx
+4294596  4187c4:	                                           80 e6 9f             	and    $0x9f,%dh
+4294599  4187c7:	                                           89 54 24 10          	mov    %edx,0x10(%rsp)
+4294603  4187cb:	                                           39 d3                	cmp    %edx,%ebx
+4294605  4187cd:	            /----------------------------- 0f 85 ed 03 00 00    	jne    418bc0 <__cos_fma+0x430>
+4294611  4187d3:	            |                              c5 fb 10 0d c5 1b 08 	vmovsd 0x81bc5(%rip),%xmm1        # 49a3a0 <mp1+0x20>
+4294618  4187da:	            |                              00 
+4294619  4187db:	            |                              31 ed                	xor    %ebp,%ebp
+4294621  4187dd:	            |                              3d ff ff 3f 3e       	cmp    $0x3e3fffff,%eax
+4294626  4187e2:	            |     /----------------------- 0f 8e c9 00 00 00    	jle    4188b1 <__cos_fma+0x121>
+4294632  4187e8:	            |  /--|----------------------> 3d ff 5f eb 3f       	cmp    $0x3feb5fff,%eax
+4294637  4187ed:	            |  |  |                    /-- 0f 8f dd 00 00 00    	jg     4188d0 <__cos_fma+0x140>
+4294643  4187f3:	            |  |  |                    |   c5 f1 57 c9          	vxorpd %xmm1,%xmm1,%xmm1
+4294647  4187f7:	            |  |  |                    |   c5 fb 10 1d e9 1a 08 	vmovsd 0x81ae9(%rip),%xmm3        # 49a2e8 <not_available+0xdad>
+4294654  4187fe:	            |  |  |                    |   00 
+4294655  4187ff:	            |  |  |                    |   c5 fb 10 25 39 1b 08 	vmovsd 0x81b39(%rip),%xmm4        # 49a340 <hp1+0x50>
+4294662  418806:	            |  |  |                    |   00 
+4294663  418807:	            |  |  |                    |   48 8d 15 d2 5d 08 00 	lea    0x85dd2(%rip),%rdx        # 49e5e0 <__sincostab>
+4294670  41880e:	            |  |  |                    |   c5 fb c2 d1 05       	vcmpnltsd %xmm1,%xmm0,%xmm2
+4294675  418813:	            |  |  |                    |   c5 f9 54 05 a5 1c 08 	vandpd 0x81ca5(%rip),%xmm0,%xmm0        # 49a4c0 <conversion_rate+0xa8>
+4294682  41881a:	            |  |  |                    |   00 
+4294683  41881b:	            |  |  |                    |   c4 e3 61 4b d9 20    	vblendvpd %xmm2,%xmm1,%xmm3,%xmm3
+4294689  418821:	            |  |  |                    |   c5 fb 10 0d 0f 1b 08 	vmovsd 0x81b0f(%rip),%xmm1        # 49a338 <hp1+0x48>
+4294696  418828:	            |  |  |                    |   00 
+4294697  418829:	            |  |  |                    |   c5 fb 58 d1          	vaddsd %xmm1,%xmm0,%xmm2
+4294701  41882d:	            |  |  |                    |   c5 eb 5c c9          	vsubsd %xmm1,%xmm2,%xmm1
+4294705  418831:	            |  |  |                    |   c4 e1 f9 7e d0       	vmovq  %xmm2,%rax
+4294710  418836:	            |  |  |                    |   c1 e0 02             	shl    $0x2,%eax
+4294713  418839:	            |  |  |                    |   8d 48 02             	lea    0x2(%rax),%ecx
+4294716  41883c:	            |  |  |                    |   8d 70 01             	lea    0x1(%rax),%esi
+4294719  41883f:	            |  |  |                    |   c5 fb 5c c1          	vsubsd %xmm1,%xmm0,%xmm0
+4294723  418843:	            |  |  |                    |   48 63 c9             	movslq %ecx,%rcx
+4294726  418846:	            |  |  |                    |   48 63 f6             	movslq %esi,%rsi
+4294729  418849:	            |  |  |                    |   c5 fb 10 14 f2       	vmovsd (%rdx,%rsi,8),%xmm2
+4294734  41884e:	            |  |  |                    |   c5 fb 58 c3          	vaddsd %xmm3,%xmm0,%xmm0
+4294738  418852:	            |  |  |                    |   c5 fb 59 d8          	vmulsd %xmm0,%xmm0,%xmm3
+4294742  418856:	            |  |  |                    |   c4 e2 e1 a9 25 a1 1b 	vfmadd213sd 0x81ba1(%rip),%xmm3,%xmm4        # 49a400 <t576+0x30>
+4294749  41885d:	            |  |  |                    |   08 00 
+4294751  41885f:	            |  |  |                    |   c5 fb 59 cb          	vmulsd %xmm3,%xmm0,%xmm1
+4294755  418863:	            |  |  |                    |   c4 e2 f1 b9 c4       	vfmadd231sd %xmm4,%xmm1,%xmm0
+4294760  418868:	            |  |  |                    |   c5 fb 10 0d e0 1a 08 	vmovsd 0x81ae0(%rip),%xmm1        # 49a350 <hp1+0x60>
+4294767  41886f:	            |  |  |                    |   00 
+4294768  418870:	            |  |  |                    |   c4 e2 e1 a9 0d 8f 1b 	vfmadd213sd 0x81b8f(%rip),%xmm3,%xmm1        # 49a408 <t576+0x38>
+4294775  418877:	            |  |  |                    |   08 00 
+4294777  418879:	            |  |  |                    |   c4 e2 e1 a9 0d de 1a 	vfmadd213sd 0x81ade(%rip),%xmm3,%xmm1        # 49a360 <hp1+0x70>
+4294784  418880:	            |  |  |                    |   08 00 
+4294786  418882:	            |  |  |                    |   c5 e3 59 d9          	vmulsd %xmm1,%xmm3,%xmm3
+4294790  418886:	            |  |  |                    |   c5 fb 10 0c ca       	vmovsd (%rdx,%rcx,8),%xmm1
+4294795  41888b:	            |  |  |                    |   8d 48 03             	lea    0x3(%rax),%ecx
+4294798  41888e:	            |  |  |                    |   48 98                	cltq   
+4294800  418890:	            |  |  |                    |   48 63 c9             	movslq %ecx,%rcx
+4294803  418893:	            |  |  |                    |   c4 e2 f9 ad 14 ca    	vfnmadd213sd (%rdx,%rcx,8),%xmm0,%xmm2
+4294809  418899:	            |  |  |                    |   c4 e2 e9 9d d9       	vfnmadd132sd %xmm1,%xmm2,%xmm3
+4294814  41889e:	            |  |  |                    |   c4 e2 e1 9d 04 c2    	vfnmadd132sd (%rdx,%rax,8),%xmm3,%xmm0
+4294820  4188a4:	            |  |  |                    |   c5 f3 58 c8          	vaddsd %xmm0,%xmm1,%xmm1
+4294824  4188a8:	   /--------|--|--|--------------------|-> 40 84 ed             	test   %bpl,%bpl
+4294827  4188ab:	   |        |  |  |           /--------|-- 0f 85 e7 02 00 00    	jne    418b98 <__cos_fma+0x408>
+4294833  4188b1:	   |        |  |  >-----------|--------|-> 48 8b 44 24 18       	mov    0x18(%rsp),%rax
+4294838  4188b6:	   |        |  |  |           |        |   64 48 33 04 25 28 00 	xor    %fs:0x28,%rax
+4294845  4188bd:	   |        |  |  |           |        |   00 00 
+4294847  4188bf:	/--|--------|--|--|-----------|--------|-- 0f 85 f3 06 00 00    	jne    418fb8 <__cos_fma+0x828>
+4294853  4188c5:	|  |        |  |  |           |        |   48 83 c4 28          	add    $0x28,%rsp
+4294857  4188c9:	|  |        |  |  |           |        |   c5 f9 28 c1          	vmovapd %xmm1,%xmm0
+4294861  4188cd:	|  |        |  |  |           |        |   5b                   	pop    %rbx
+4294862  4188ce:	|  |        |  |  |           |        |   5d                   	pop    %rbp
+4294863  4188cf:	|  |        |  |  |           |        |   c3                   	retq   
+4294864  4188d0:	|  |        |  |  |           |        \-> 3d fc 68 03 40       	cmp    $0x400368fc,%eax
+4294869  4188d5:	|  |        |  |  |           |        /-- 0f 8f 25 01 00 00    	jg     418a00 <__cos_fma+0x270>
+4294875  4188db:	|  |        |  |  |           |        |   c5 fa 7e 2d dd 1b 08 	vmovq  0x81bdd(%rip),%xmm5        # 49a4c0 <conversion_rate+0xa8>
+4294882  4188e2:	|  |        |  |  |           |        |   00 
+4294883  4188e3:	|  |        |  |  |           |        |   c5 fb 10 15 7d 1a 08 	vmovsd 0x81a7d(%rip),%xmm2        # 49a368 <hp0>
+4294890  4188ea:	|  |        |  |  |           |        |   00 
+4294891  4188eb:	|  |        |  |  |           |        |   c5 fb 10 1d 15 1a 08 	vmovsd 0x81a15(%rip),%xmm3        # 49a308 <hp1+0x18>
+4294898  4188f2:	|  |        |  |  |           |        |   00 
+4294899  4188f3:	|  |        |  |  |           |        |   c5 f9 54 c5          	vandpd %xmm5,%xmm0,%xmm0
+4294903  4188f7:	|  |        |  |  |           |        |   c5 eb 5c c0          	vsubsd %xmm0,%xmm2,%xmm0
+4294907  4188fb:	|  |        |  |  |           |        |   c5 fb 10 15 ed 19 08 	vmovsd 0x819ed(%rip),%xmm2        # 49a2f0 <hp1>
+4294914  418902:	|  |        |  |  |           |        |   00 
+4294915  418903:	|  |        |  |  |           |        |   c5 fb 58 ca          	vaddsd %xmm2,%xmm0,%xmm1
+4294919  418907:	|  |        |  |  |           |        |   c5 fb 5c c1          	vsubsd %xmm1,%xmm0,%xmm0
+4294923  41890b:	|  |        |  |  |           |        |   c5 fb 11 4c 24 08    	vmovsd %xmm1,0x8(%rsp)
+4294929  418911:	|  |        |  |  |           |        |   c5 fb 58 c2          	vaddsd %xmm2,%xmm0,%xmm0
+4294933  418915:	|  |        |  |  |           |        |   c5 f9 28 d1          	vmovapd %xmm1,%xmm2
+4294937  418919:	|  |        |  |  |           |        |   c5 e9 54 d5          	vandpd %xmm5,%xmm2,%xmm2
+4294941  41891d:	|  |        |  |  |           |        |   c5 f9 2f da          	vcomisd %xmm2,%xmm3
+4294945  418921:	|  |        |  |  |           |        |   c5 fb 11 44 24 10    	vmovsd %xmm0,0x10(%rsp)
+4294951  418927:	|  |  /-----|--|--|-----------|--------|-- 0f 87 93 04 00 00    	ja     418dc0 <__cos_fma+0x630>
+4294957  41892d:	|  |  |     |  |  |           |        |   c5 e1 57 db          	vxorpd %xmm3,%xmm3,%xmm3
+4294961  418931:	|  |  |     |  |  |           |        |   c5 fa 7e 35 97 1b 08 	vmovq  0x81b97(%rip),%xmm6        # 49a4d0 <conversion_rate+0xb8>
+4294968  418938:	|  |  |     |  |  |           |        |   00 
+4294969  418939:	|  |  |     |  |  |           |        |   c5 f9 2f d9          	vcomisd %xmm1,%xmm3
+4294973  41893d:	|  |  |     |  |  |     /-----|--------|-- 0f 83 bd 02 00 00    	jae    418c00 <__cos_fma+0x470>
+4294979  418943:	|  |  |     |  |  |     |  /--|--------|-> c5 fb 10 25 ed 19 08 	vmovsd 0x819ed(%rip),%xmm4        # 49a338 <hp1+0x48>
+4294986  41894a:	|  |  |     |  |  |     |  |  |        |   00 
+4294987  41894b:	|  |  |     |  |  |     |  |  |        |   c5 7b 10 05 ed 19 08 	vmovsd 0x819ed(%rip),%xmm8        # 49a340 <hp1+0x50>
+4294994  418952:	|  |  |     |  |  |     |  |  |        |   00 
+4294995  418953:	|  |  |     |  |  |     |  |  |        |   48 8d 15 86 5c 08 00 	lea    0x85c86(%rip),%rdx        # 49e5e0 <__sincostab>
+4295002  41895a:	|  |  |     |  |  |     |  |  |        |   c5 eb 58 dc          	vaddsd %xmm4,%xmm2,%xmm3
+4295006  41895e:	|  |  |     |  |  |     |  |  |        |   c5 e3 5c e4          	vsubsd %xmm4,%xmm3,%xmm4
+4295010  418962:	|  |  |     |  |  |     |  |  |        |   c4 e1 f9 7e d8       	vmovq  %xmm3,%rax
+4295015  418967:	|  |  |     |  |  |     |  |  |        |   c1 e0 02             	shl    $0x2,%eax
+4295018  41896a:	|  |  |     |  |  |     |  |  |        |   48 63 c8             	movslq %eax,%rcx
+4295021  41896d:	|  |  |     |  |  |     |  |  |        |   8d 70 03             	lea    0x3(%rax),%esi
+4295024  418970:	|  |  |     |  |  |     |  |  |        |   c5 eb 5c d4          	vsubsd %xmm4,%xmm2,%xmm2
+4295028  418974:	|  |  |     |  |  |     |  |  |        |   48 63 f6             	movslq %esi,%rsi
+4295031  418977:	|  |  |     |  |  |     |  |  |        |   c5 fb 10 1c f2       	vmovsd (%rdx,%rsi,8),%xmm3
+4295036  41897c:	|  |  |     |  |  |     |  |  |        |   c5 eb 59 fa          	vmulsd %xmm2,%xmm2,%xmm7
+4295040  418980:	|  |  |     |  |  |     |  |  |        |   c4 62 c1 a9 05 77 1a 	vfmadd213sd 0x81a77(%rip),%xmm7,%xmm8        # 49a400 <t576+0x30>
+4295047  418987:	|  |  |     |  |  |     |  |  |        |   08 00 
+4295049  418989:	|  |  |     |  |  |     |  |  |        |   c5 eb 59 e7          	vmulsd %xmm7,%xmm2,%xmm4
+4295053  41898d:	|  |  |     |  |  |     |  |  |        |   c4 c2 f9 99 e0       	vfmadd132sd %xmm8,%xmm0,%xmm4
+4295058  418992:	|  |  |     |  |  |     |  |  |        |   c5 7b 10 05 b6 19 08 	vmovsd 0x819b6(%rip),%xmm8        # 49a350 <hp1+0x60>
+4295065  418999:	|  |  |     |  |  |     |  |  |        |   00 
+4295066  41899a:	|  |  |     |  |  |     |  |  |        |   c4 62 c1 a9 05 65 1a 	vfmadd213sd 0x81a65(%rip),%xmm7,%xmm8        # 49a408 <t576+0x38>
+4295073  4189a1:	|  |  |     |  |  |     |  |  |        |   08 00 
+4295075  4189a3:	|  |  |     |  |  |     |  |  |        |   c4 62 c1 a9 05 b4 19 	vfmadd213sd 0x819b4(%rip),%xmm7,%xmm8        # 49a360 <hp1+0x70>
+4295082  4189aa:	|  |  |     |  |  |     |  |  |        |   08 00 
+4295084  4189ac:	|  |  |     |  |  |     |  |  |        |   c5 eb 58 e4          	vaddsd %xmm4,%xmm2,%xmm4
+4295088  4189b0:	|  |  |     |  |  |     |  |  |        |   c4 c1 43 59 f8       	vmulsd %xmm8,%xmm7,%xmm7
+4295093  4189b5:	|  |  |     |  |  |     |  |  |        |   c4 e2 c1 99 d0       	vfmadd132sd %xmm0,%xmm7,%xmm2
+4295098  4189ba:	|  |  |     |  |  |     |  |  |        |   c5 fb 10 04 ca       	vmovsd (%rdx,%rcx,8),%xmm0
+4295103  4189bf:	|  |  |     |  |  |     |  |  |        |   8d 48 01             	lea    0x1(%rax),%ecx
+4295106  4189c2:	|  |  |     |  |  |     |  |  |        |   83 c0 02             	add    $0x2,%eax
+4295109  4189c5:	|  |  |     |  |  |     |  |  |        |   48 63 c9             	movslq %ecx,%rcx
+4295112  4189c8:	|  |  |     |  |  |     |  |  |        |   48 98                	cltq   
+4295114  4189ca:	|  |  |     |  |  |     |  |  |        |   c5 f9 28 f9          	vmovapd %xmm1,%xmm7
+4295118  4189ce:	|  |  |     |  |  |     |  |  |        |   c4 e2 d9 a9 1c ca    	vfmadd213sd (%rdx,%rcx,8),%xmm4,%xmm3
+4295124  4189d4:	|  |  |     |  |  |     |  |  |        |   c5 c1 54 fe          	vandpd %xmm6,%xmm7,%xmm7
+4295128  4189d8:	|  |  |     |  |  |     |  |  |        |   c4 e2 e1 9d d0       	vfnmadd132sd %xmm0,%xmm3,%xmm2
+4295133  4189dd:	|  |  |     |  |  |     |  |  |        |   c4 e2 d9 b9 14 c2    	vfmadd231sd (%rdx,%rax,8),%xmm4,%xmm2
+4295139  4189e3:	|  |  |     |  |  |     |  |  |        |   c5 fb 58 d2          	vaddsd %xmm2,%xmm0,%xmm2
+4295143  4189e7:	|  |  |     |  |  |     |  |  |        |   c5 c9 55 f2          	vandnpd %xmm2,%xmm6,%xmm6
+4295147  4189eb:	|  |  |     |  |  |     |  |  |        |   c5 c9 56 f7          	vorpd  %xmm7,%xmm6,%xmm6
+4295151  4189ef:	|  |  |     |  |  |     |  |  |        |   c5 f9 28 ce          	vmovapd %xmm6,%xmm1
+4295155  4189f3:	|  +--|-----|--|--|-----|--|--|--------|-- e9 b0 fe ff ff       	jmpq   4188a8 <__cos_fma+0x118>
+4295160  4189f8:	|  |  |     |  |  |     |  |  |        |   0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
+4295167  4189ff:	|  |  |     |  |  |     |  |  |        |   00 
+4295168  418a00:	|  |  |     |  |  |     |  |  |        \-> 3d fa 21 99 41       	cmp    $0x419921fa,%eax
+4295173  418a05:	|  |  |     |  |  |     |  |  |  /-------- 0f 8f d5 01 00 00    	jg     418be0 <__cos_fma+0x450>
+4295179  418a0b:	|  |  |     |  |  |     |  |  |  |         c5 fb 10 0d 65 19 08 	vmovsd 0x81965(%rip),%xmm1        # 49a378 <big>
+4295186  418a12:	|  |  |     |  |  |     |  |  |  |         00 
+4295187  418a13:	|  |  |     |  |  |     |  |  |  |         c5 f9 28 d8          	vmovapd %xmm0,%xmm3
+4295191  418a17:	|  |  |     |  |  |     |  |  |  |         c4 e2 f1 99 1d 50 19 	vfmadd132sd 0x81950(%rip),%xmm1,%xmm3        # 49a370 <hp0+0x8>
+4295198  418a1e:	|  |  |     |  |  |     |  |  |  |         08 00 
+4295200  418a20:	|  |  |     |  |  |     |  |  |  |         c5 fb 10 15 68 19 08 	vmovsd 0x81968(%rip),%xmm2        # 49a390 <mp1+0x10>
+4295207  418a27:	|  |  |     |  |  |     |  |  |  |         00 
+4295208  418a28:	|  |  |     |  |  |     |  |  |  |         c5 fb 10 2d 68 19 08 	vmovsd 0x81968(%rip),%xmm5        # 49a398 <mp1+0x18>
+4295215  418a2f:	|  |  |     |  |  |     |  |  |  |         00 
+4295216  418a30:	|  |  |     |  |  |     |  |  |  |         c5 e3 5c c9          	vsubsd %xmm1,%xmm3,%xmm1
+4295220  418a34:	|  |  |     |  |  |     |  |  |  |         c4 e1 f9 7e d8       	vmovq  %xmm3,%rax
+4295225  418a39:	|  |  |     |  |  |     |  |  |  |         c4 e2 f1 bd 05 3e 19 	vfnmadd231sd 0x8193e(%rip),%xmm1,%xmm0        # 49a380 <mp1>
+4295232  418a40:	|  |  |     |  |  |     |  |  |  |         08 00 
+4295234  418a42:	|  |  |     |  |  |     |  |  |  |         83 e0 03             	and    $0x3,%eax
+4295237  418a45:	|  |  |     |  |  |     |  |  |  |         c4 e2 f1 bd 05 3a 19 	vfnmadd231sd 0x8193a(%rip),%xmm1,%xmm0        # 49a388 <mp1+0x8>
+4295244  418a4c:	|  |  |     |  |  |     |  |  |  |         08 00 
+4295246  418a4e:	|  |  |     |  |  |     |  |  |  |         8d 48 01             	lea    0x1(%rax),%ecx
+4295249  418a51:	|  |  |     |  |  |     |  |  |  |         c5 f9 28 e1          	vmovapd %xmm1,%xmm4
+4295253  418a55:	|  |  |     |  |  |     |  |  |  |         c4 e2 f9 9d e2       	vfnmadd132sd %xmm2,%xmm0,%xmm4
+4295258  418a5a:	|  |  |     |  |  |     |  |  |  |         c5 fb 5c c4          	vsubsd %xmm4,%xmm0,%xmm0
+4295262  418a5e:	|  |  |     |  |  |     |  |  |  |         c4 e2 f1 bd c2       	vfnmadd231sd %xmm2,%xmm1,%xmm0
+4295267  418a63:	|  |  |     |  |  |     |  |  |  |         c5 f9 28 d1          	vmovapd %xmm1,%xmm2
+4295271  418a67:	|  |  |     |  |  |     |  |  |  |         c4 e2 d9 9d d5       	vfnmadd132sd %xmm5,%xmm4,%xmm2
+4295276  418a6c:	|  |  |     |  |  |     |  |  |  |         c5 db 5c e2          	vsubsd %xmm2,%xmm4,%xmm4
+4295280  418a70:	|  |  |     |  |  |     |  |  |  |         c5 f9 28 da          	vmovapd %xmm2,%xmm3
+4295284  418a74:	|  |  |     |  |  |     |  |  |  |         c5 fb 11 54 24 08    	vmovsd %xmm2,0x8(%rsp)
+4295290  418a7a:	|  |  |     |  |  |     |  |  |  |         c4 e2 d9 9d cd       	vfnmadd132sd %xmm5,%xmm4,%xmm1
+4295295  418a7f:	|  |  |     |  |  |     |  |  |  |         c5 fa 7e 2d 39 1a 08 	vmovq  0x81a39(%rip),%xmm5        # 49a4c0 <conversion_rate+0xa8>
+4295302  418a86:	|  |  |     |  |  |     |  |  |  |         00 
+4295303  418a87:	|  |  |     |  |  |     |  |  |  |         c5 e1 54 dd          	vandpd %xmm5,%xmm3,%xmm3
+4295307  418a8b:	|  |  |     |  |  |     |  |  |  |         c5 fb 58 c9          	vaddsd %xmm1,%xmm0,%xmm1
+4295311  418a8f:	|  |  |     |  |  |     |  |  |  |         c5 fb 11 4c 24 10    	vmovsd %xmm1,0x10(%rsp)
+4295317  418a95:	|  |  |     |  |  |     |  |  |  |         a8 01                	test   $0x1,%al
+4295319  418a97:	|  |  |     |  |  |     |  |  |  |  /----- 0f 84 73 01 00 00    	je     418c10 <__cos_fma+0x480>
+4295325  418a9d:	|  |  |     |  |  |     |  |  |  |  |      c5 fb 10 05 63 18 08 	vmovsd 0x81863(%rip),%xmm0        # 49a308 <hp1+0x18>
+4295332  418aa4:	|  |  |     |  |  |     |  |  |  |  |      00 
+4295333  418aa5:	|  |  |     |  |  |     |  |  |  |  |      c5 f9 2f c3          	vcomisd %xmm3,%xmm0
+4295337  418aa9:	|  |  |     |  |  |  /--|--|--|--|--|----- 0f 87 81 03 00 00    	ja     418e30 <__cos_fma+0x6a0>
+4295343  418aaf:	|  |  |     |  |  |  |  |  |  |  |  |      c5 f9 57 c0          	vxorpd %xmm0,%xmm0,%xmm0
+4295347  418ab3:	|  |  |     |  |  |  |  |  |  |  |  |      c5 fa 7e 35 15 1a 08 	vmovq  0x81a15(%rip),%xmm6        # 49a4d0 <conversion_rate+0xb8>
+4295354  418aba:	|  |  |     |  |  |  |  |  |  |  |  |      00 
+4295355  418abb:	|  |  |     |  |  |  |  |  |  |  |  |      c5 f9 2f c2          	vcomisd %xmm2,%xmm0
+4295359  418abf:	|  |  |     |  |  |  |  |  |  |  |  |  /-- 72 04                	jb     418ac5 <__cos_fma+0x335>
+4295361  418ac1:	|  |  |     |  |  |  |  |  |  |  |  |  |   c5 f1 57 ce          	vxorpd %xmm6,%xmm1,%xmm1
+4295365  418ac5:	|  |  |     |  |  |  |  |  |  |  |  |  \-> c5 fb 10 25 6b 18 08 	vmovsd 0x8186b(%rip),%xmm4        # 49a338 <hp1+0x48>
+4295372  418acc:	|  |  |     |  |  |  |  |  |  |  |  |      00 
+4295373  418acd:	|  |  |     |  |  |  |  |  |  |  |  |      c5 7b 10 05 6b 18 08 	vmovsd 0x8186b(%rip),%xmm8        # 49a340 <hp1+0x50>
+4295380  418ad4:	|  |  |     |  |  |  |  |  |  |  |  |      00 
+4295381  418ad5:	|  |  |     |  |  |  |  |  |  |  |  |      48 8d 15 04 5b 08 00 	lea    0x85b04(%rip),%rdx        # 49e5e0 <__sincostab>
+4295388  418adc:	|  |  |     |  |  |  |  |  |  |  |  |      c5 e3 58 c4          	vaddsd %xmm4,%xmm3,%xmm0
+4295392  418ae0:	|  |  |     |  |  |  |  |  |  |  |  |      c5 fb 5c e4          	vsubsd %xmm4,%xmm0,%xmm4
+4295396  418ae4:	|  |  |     |  |  |  |  |  |  |  |  |      c4 e1 f9 7e c0       	vmovq  %xmm0,%rax
+4295401  418ae9:	|  |  |     |  |  |  |  |  |  |  |  |      c1 e0 02             	shl    $0x2,%eax
+4295404  418aec:	|  |  |     |  |  |  |  |  |  |  |  |      48 63 f0             	movslq %eax,%rsi
+4295407  418aef:	|  |  |     |  |  |  |  |  |  |  |  |      8d 78 03             	lea    0x3(%rax),%edi
+4295410  418af2:	|  |  |     |  |  |  |  |  |  |  |  |      c5 e3 5c dc          	vsubsd %xmm4,%xmm3,%xmm3
+4295414  418af6:	|  |  |     |  |  |  |  |  |  |  |  |      c5 fb 10 04 f2       	vmovsd (%rdx,%rsi,8),%xmm0
+4295419  418afb:	|  |  |     |  |  |  |  |  |  |  |  |      8d 70 01             	lea    0x1(%rax),%esi
+4295422  418afe:	|  |  |     |  |  |  |  |  |  |  |  |      48 63 ff             	movslq %edi,%rdi
+4295425  418b01:	|  |  |     |  |  |  |  |  |  |  |  |      48 63 f6             	movslq %esi,%rsi
+4295428  418b04:	|  |  |     |  |  |  |  |  |  |  |  |      83 c0 02             	add    $0x2,%eax
+4295431  418b07:	|  |  |     |  |  |  |  |  |  |  |  |      48 98                	cltq   
+4295433  418b09:	|  |  |     |  |  |  |  |  |  |  |  |      c5 e3 59 fb          	vmulsd %xmm3,%xmm3,%xmm7
+4295437  418b0d:	|  |  |     |  |  |  |  |  |  |  |  |      c4 62 c1 a9 05 ea 18 	vfmadd213sd 0x818ea(%rip),%xmm7,%xmm8        # 49a400 <t576+0x30>
+4295444  418b14:	|  |  |     |  |  |  |  |  |  |  |  |      08 00 
+4295446  418b16:	|  |  |     |  |  |  |  |  |  |  |  |      c5 e3 59 e7          	vmulsd %xmm7,%xmm3,%xmm4
+4295450  418b1a:	|  |  |     |  |  |  |  |  |  |  |  |      c4 c2 f1 99 e0       	vfmadd132sd %xmm8,%xmm1,%xmm4
+4295455  418b1f:	|  |  |     |  |  |  |  |  |  |  |  |      c5 7b 10 05 29 18 08 	vmovsd 0x81829(%rip),%xmm8        # 49a350 <hp1+0x60>
+4295462  418b26:	|  |  |     |  |  |  |  |  |  |  |  |      00 
+4295463  418b27:	|  |  |     |  |  |  |  |  |  |  |  |      c4 62 c1 a9 05 d8 18 	vfmadd213sd 0x818d8(%rip),%xmm7,%xmm8        # 49a408 <t576+0x38>
+4295470  418b2e:	|  |  |     |  |  |  |  |  |  |  |  |      08 00 
+4295472  418b30:	|  |  |     |  |  |  |  |  |  |  |  |      c4 62 c1 a9 05 27 18 	vfmadd213sd 0x81827(%rip),%xmm7,%xmm8        # 49a360 <hp1+0x70>
+4295479  418b37:	|  |  |     |  |  |  |  |  |  |  |  |      08 00 
+4295481  418b39:	|  |  |     |  |  |  |  |  |  |  |  |      c5 e3 58 e4          	vaddsd %xmm4,%xmm3,%xmm4
+4295485  418b3d:	|  |  |     |  |  |  |  |  |  |  |  |      c4 c1 43 59 f8       	vmulsd %xmm8,%xmm7,%xmm7
+4295490  418b42:	|  |  |     |  |  |  |  |  |  |  |  |      c4 e2 c1 99 cb       	vfmadd132sd %xmm3,%xmm7,%xmm1
+4295495  418b47:	|  |  |     |  |  |  |  |  |  |  |  |      c5 fb 10 1c fa       	vmovsd (%rdx,%rdi,8),%xmm3
+4295500  418b4c:	|  |  |     |  |  |  |  |  |  |  |  |      c4 e2 d9 a9 1c f2    	vfmadd213sd (%rdx,%rsi,8),%xmm4,%xmm3
+4295506  418b52:	|  |  |     |  |  |  |  |  |  |  |  |      c5 f9 28 fa          	vmovapd %xmm2,%xmm7
+4295510  418b56:	|  |  |     |  |  |  |  |  |  |  |  |      c5 c1 54 fe          	vandpd %xmm6,%xmm7,%xmm7
+4295514  418b5a:	|  |  |     |  |  |  |  |  |  |  |  |      c4 e2 f1 bd d8       	vfnmadd231sd %xmm0,%xmm1,%xmm3
+4295519  418b5f:	|  |  |     |  |  |  |  |  |  |  |  |      c4 e2 d9 b9 1c c2    	vfmadd231sd (%rdx,%rax,8),%xmm4,%xmm3
+4295525  418b65:	|  |  |     |  |  |  |  |  |  |  |  |      c5 fb 58 db          	vaddsd %xmm3,%xmm0,%xmm3
+4295529  418b69:	|  |  |     |  |  |  |  |  |  |  |  |      c5 c9 55 f3          	vandnpd %xmm3,%xmm6,%xmm6
+4295533  418b6d:	|  |  |     |  |  |  |  |  |  |  |  |      c5 c9 56 f7          	vorpd  %xmm7,%xmm6,%xmm6
+4295537  418b71:	|  |  |     |  |  |  |  |  |  |  |  |      c5 f9 28 ce          	vmovapd %xmm6,%xmm1
+4295541  418b75:	|  |  |  /--|--|--|--|--|--|--|--|--|----> 83 e1 02             	and    $0x2,%ecx
+4295544  418b78:	|  +--|--|--|--|--|--|--|--|--|--|--|----- 0f 84 2a fd ff ff    	je     4188a8 <__cos_fma+0x118>
+4295550  418b7e:	|  |  |  |  |  |  |  |  |  |  |  |  |      c5 f1 57 0d 4a 19 08 	vxorpd 0x8194a(%rip),%xmm1,%xmm1        # 49a4d0 <conversion_rate+0xb8>
+4295557  418b85:	|  |  |  |  |  |  |  |  |  |  |  |  |      00 
+4295558  418b86:	|  +--|--|--|--|--|--|--|--|--|--|--|----- e9 1d fd ff ff       	jmpq   4188a8 <__cos_fma+0x118>
+4295563  418b8b:	|  |  |  |  |  |  |  |  |  |  |  |  |      0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+4295568  418b90:	|  |  |  |  |  |  |  |  |  |  |  |  |  /-> c5 fb 10 0d 08 18 08 	vmovsd 0x81808(%rip),%xmm1        # 49a3a0 <mp1+0x20>
+4295575  418b97:	|  |  |  |  |  |  |  |  |  |  |  |  |  |   00 
+4295576  418b98:	|  |  |  |  |  |  |  |  |  |  \--|--|--|-> c5 f8 ae 5c 24 04    	vstmxcsr 0x4(%rsp)
+4295582  418b9e:	|  |  |  |  |  |  |  |  |  |     |  |  |   8b 44 24 04          	mov    0x4(%rsp),%eax
+4295586  418ba2:	|  |  |  |  |  |  |  |  |  |     |  |  |   81 e3 00 60 00 00    	and    $0x6000,%ebx
+4295592  418ba8:	|  |  |  |  |  |  |  |  |  |     |  |  |   80 e4 9f             	and    $0x9f,%ah
+4295595  418bab:	|  |  |  |  |  |  |  |  |  |     |  |  |   09 c3                	or     %eax,%ebx
+4295597  418bad:	|  |  |  |  |  |  |  |  |  |     |  |  |   89 5c 24 04          	mov    %ebx,0x4(%rsp)
+4295601  418bb1:	|  |  |  |  |  |  |  |  |  |     |  |  |   c5 f8 ae 54 24 04    	vldmxcsr 0x4(%rsp)
+4295607  418bb7:	|  |  |  |  |  |  \--|--|--|-----|--|--|-- e9 f5 fc ff ff       	jmpq   4188b1 <__cos_fma+0x121>
+4295612  418bbc:	|  |  |  |  |  |     |  |  |     |  |  |   0f 1f 40 00          	nopl   0x0(%rax)
+4295616  418bc0:	|  |  |  |  \--|-----|--|--|-----|--|--|-> c5 f8 ae 54 24 10    	vldmxcsr 0x10(%rsp)
+4295622  418bc6:	|  |  |  |     |     |  |  |     |  |  |   3d ff ff 3f 3e       	cmp    $0x3e3fffff,%eax
+4295627  418bcb:	|  |  |  |     |     |  |  |     |  |  \-- 7e c3                	jle    418b90 <__cos_fma+0x400>
+4295629  418bcd:	|  |  |  |     |     |  |  |     |  |      bd 01 00 00 00       	mov    $0x1,%ebp
+4295634  418bd2:	|  |  |  |     \-----|--|--|-----|--|----- e9 11 fc ff ff       	jmpq   4187e8 <__cos_fma+0x58>
+4295639  418bd7:	|  |  |  |           |  |  |     |  |      66 0f 1f 84 00 00 00 	nopw   0x0(%rax,%rax,1)
+4295646  418bde:	|  |  |  |           |  |  |     |  |      00 00 
+4295648  418be0:	|  |  |  |           |  |  |     \--|----> 3d ff ff ef 7f       	cmp    $0x7fefffff,%eax
+4295653  418be5:	|  |  |  |           |  |  |        |  /-- 0f 8e e5 00 00 00    	jle    418cd0 <__cos_fma+0x540>
+4295659  418beb:	|  |  |  |           |  |  |        |  |   3d 00 00 f0 7f       	cmp    $0x7ff00000,%eax
+4295664  418bf0:	|  |  |  |           |  |  |     /--|--|-- 0f 84 1a 02 00 00    	je     418e10 <__cos_fma+0x680>
+4295670  418bf6:	|  |  |  |           |  |  |  /--|--|--|-> c5 fb 5e c8          	vdivsd %xmm0,%xmm0,%xmm1
+4295674  418bfa:	|  +--|--|-----------|--|--|--|--|--|--|-- e9 a9 fc ff ff       	jmpq   4188a8 <__cos_fma+0x118>
+4295679  418bff:	|  |  |  |           |  |  |  |  |  |  |   90                   	nop
+4295680  418c00:	|  |  |  |           |  \--|--|--|--|--|-> c5 f9 57 c6          	vxorpd %xmm6,%xmm0,%xmm0
+4295684  418c04:	|  |  |  |           |     \--|--|--|--|-- e9 3a fd ff ff       	jmpq   418943 <__cos_fma+0x1b3>
+4295689  418c09:	|  |  |  |           |        |  |  |  |   0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+4295696  418c10:	|  |  |  |           |        |  |  \--|-> c5 d9 57 e4          	vxorpd %xmm4,%xmm4,%xmm4
+4295700  418c14:	|  |  |  |           |        |  |     |   c5 f9 28 e9          	vmovapd %xmm1,%xmm5
+4295704  418c18:	|  |  |  |           |        |  |     |   c5 f1 57 0d b0 18 08 	vxorpd 0x818b0(%rip),%xmm1,%xmm1        # 49a4d0 <conversion_rate+0xb8>
+4295711  418c1f:	|  |  |  |           |        |  |     |   00 
+4295712  418c20:	|  |  |  |           |        |  |     |   c5 eb c2 e4 01       	vcmpltsd %xmm4,%xmm2,%xmm4
+4295717  418c25:	|  |  |  |           |        |  |     |   c5 fb 10 15 0b 17 08 	vmovsd 0x8170b(%rip),%xmm2        # 49a338 <hp1+0x48>
+4295724  418c2c:	|  |  |  |           |        |  |     |   00 
+4295725  418c2d:	|  |  |  |           |        |  |     |   48 8d 15 ac 59 08 00 	lea    0x859ac(%rip),%rdx        # 49e5e0 <__sincostab>
+4295732  418c34:	|  |  |  |           |        |  |     |   c5 e3 58 c2          	vaddsd %xmm2,%xmm3,%xmm0
+4295736  418c38:	|  |  |  |           |        |  |     |   c4 e3 51 4b c9 40    	vblendvpd %xmm4,%xmm1,%xmm5,%xmm1
+4295742  418c3e:	|  |  |  |           |        |  |     |   c5 fb 10 25 fa 16 08 	vmovsd 0x816fa(%rip),%xmm4        # 49a340 <hp1+0x50>
+4295749  418c45:	|  |  |  |           |        |  |     |   00 
+4295750  418c46:	|  |  |  |           |        |  |     |   c5 fb 5c d2          	vsubsd %xmm2,%xmm0,%xmm2
+4295754  418c4a:	|  |  |  |           |        |  |     |   c4 e1 f9 7e c0       	vmovq  %xmm0,%rax
+4295759  418c4f:	|  |  |  |           |        |  |     |   c1 e0 02             	shl    $0x2,%eax
+4295762  418c52:	|  |  |  |           |        |  |     |   8d 70 02             	lea    0x2(%rax),%esi
+4295765  418c55:	|  |  |  |           |        |  |     |   8d 78 01             	lea    0x1(%rax),%edi
+4295768  418c58:	|  |  |  |           |        |  |     |   c5 e3 5c da          	vsubsd %xmm2,%xmm3,%xmm3
+4295772  418c5c:	|  |  |  |           |        |  |     |   48 63 f6             	movslq %esi,%rsi
+4295775  418c5f:	|  |  |  |           |        |  |     |   48 63 ff             	movslq %edi,%rdi
+4295778  418c62:	|  |  |  |           |        |  |     |   c5 fb 10 04 fa       	vmovsd (%rdx,%rdi,8),%xmm0
+4295783  418c67:	|  |  |  |           |        |  |     |   c5 e3 58 c9          	vaddsd %xmm1,%xmm3,%xmm1
+4295787  418c6b:	|  |  |  |           |        |  |     |   c5 f3 59 d1          	vmulsd %xmm1,%xmm1,%xmm2
+4295791  418c6f:	|  |  |  |           |        |  |     |   c4 e2 e9 a9 25 88 17 	vfmadd213sd 0x81788(%rip),%xmm2,%xmm4        # 49a400 <t576+0x30>
+4295798  418c76:	|  |  |  |           |        |  |     |   08 00 
+4295800  418c78:	|  |  |  |           |        |  |     |   c5 f3 59 da          	vmulsd %xmm2,%xmm1,%xmm3
+4295804  418c7c:	|  |  |  |           |        |  |     |   c4 e2 f1 99 dc       	vfmadd132sd %xmm4,%xmm1,%xmm3
+4295809  418c81:	|  |  |  |           |        |  |     |   c5 fb 10 0d c7 16 08 	vmovsd 0x816c7(%rip),%xmm1        # 49a350 <hp1+0x60>
+4295816  418c88:	|  |  |  |           |        |  |     |   00 
+4295817  418c89:	|  |  |  |           |        |  |     |   c4 e2 e9 a9 0d 76 17 	vfmadd213sd 0x81776(%rip),%xmm2,%xmm1        # 49a408 <t576+0x38>
+4295824  418c90:	|  |  |  |           |        |  |     |   08 00 
+4295826  418c92:	|  |  |  |           |        |  |     |   c4 e2 e9 a9 0d c5 16 	vfmadd213sd 0x816c5(%rip),%xmm2,%xmm1        # 49a360 <hp1+0x70>
+4295833  418c99:	|  |  |  |           |        |  |     |   08 00 
+4295835  418c9b:	|  |  |  |           |        |  |     |   c5 eb 59 d1          	vmulsd %xmm1,%xmm2,%xmm2
+4295839  418c9f:	|  |  |  |           |        |  |     |   c5 fb 10 0c f2       	vmovsd (%rdx,%rsi,8),%xmm1
+4295844  418ca4:	|  |  |  |           |        |  |     |   8d 70 03             	lea    0x3(%rax),%esi
+4295847  418ca7:	|  |  |  |           |        |  |     |   48 98                	cltq   
+4295849  418ca9:	|  |  |  |           |        |  |     |   48 63 f6             	movslq %esi,%rsi
+4295852  418cac:	|  |  |  |           |        |  |     |   c4 e2 e1 ad 04 f2    	vfnmadd213sd (%rdx,%rsi,8),%xmm3,%xmm0
+4295858  418cb2:	|  |  |  |           |        |  |     |   c4 e2 f9 9d d1       	vfnmadd132sd %xmm1,%xmm0,%xmm2
+4295863  418cb7:	|  |  |  |           |        |  |     |   c4 e2 e1 bd 14 c2    	vfnmadd231sd (%rdx,%rax,8),%xmm3,%xmm2
+4295869  418cbd:	|  |  |  |           |        |  |     |   c5 f3 58 ca          	vaddsd %xmm2,%xmm1,%xmm1
+4295873  418cc1:	|  |  |  +-----------|--------|--|-----|-- e9 af fe ff ff       	jmpq   418b75 <__cos_fma+0x3e5>
+4295878  418cc6:	|  |  |  |           |        |  |     |   66 2e 0f 1f 84 00 00 	cs nopw 0x0(%rax,%rax,1)
+4295885  418ccd:	|  |  |  |           |        |  |     |   00 00 00 
+4295888  418cd0:	|  |  |  |           |        |  |     \-> 48 8d 74 24 10       	lea    0x10(%rsp),%rsi
+4295893  418cd5:	|  |  |  |           |        |  |         48 8d 7c 24 08       	lea    0x8(%rsp),%rdi
+4295898  418cda:	|  |  |  |           |        |  |         e8 e1 ed ff ff       	callq  417ac0 <__branred>
+4295903  418cdf:	|  |  |  |           |        |  |         c5 fb 10 5c 24 10    	vmovsd 0x10(%rsp),%xmm3
+4295909  418ce5:	|  |  |  |           |        |  |         c5 fb 10 54 24 08    	vmovsd 0x8(%rsp),%xmm2
+4295915  418ceb:	|  |  |  |           |        |  |         8d 48 01             	lea    0x1(%rax),%ecx
+4295918  418cee:	|  |  |  |           |        |  |         a8 01                	test   $0x1,%al
+4295920  418cf0:	|  |  |  |           |        |  |     /-- 0f 85 8a 01 00 00    	jne    418e80 <__cos_fma+0x6f0>
+4295926  418cf6:	|  |  |  |           |        |  |     |   c5 f9 57 c0          	vxorpd %xmm0,%xmm0,%xmm0
+4295930  418cfa:	|  |  |  |           |        |  |     |   c5 f9 28 cb          	vmovapd %xmm3,%xmm1
+4295934  418cfe:	|  |  |  |           |        |  |     |   c5 e1 57 1d ca 17 08 	vxorpd 0x817ca(%rip),%xmm3,%xmm3        # 49a4d0 <conversion_rate+0xb8>
+4295941  418d05:	|  |  |  |           |        |  |     |   00 
+4295942  418d06:	|  |  |  |           |        |  |     |   c5 fb 10 25 32 16 08 	vmovsd 0x81632(%rip),%xmm4        # 49a340 <hp1+0x50>
+4295949  418d0d:	|  |  |  |           |        |  |     |   00 
+4295950  418d0e:	|  |  |  |           |        |  |     |   c5 eb c2 c0 01       	vcmpltsd %xmm0,%xmm2,%xmm0
+4295955  418d13:	|  |  |  |           |        |  |     |   c5 e9 54 15 a5 17 08 	vandpd 0x817a5(%rip),%xmm2,%xmm2        # 49a4c0 <conversion_rate+0xa8>
+4295962  418d1a:	|  |  |  |           |        |  |     |   00 
+4295963  418d1b:	|  |  |  |           |        |  |     |   48 8d 15 be 58 08 00 	lea    0x858be(%rip),%rdx        # 49e5e0 <__sincostab>
+4295970  418d22:	|  |  |  |           |        |  |     |   c4 e3 71 4b db 00    	vblendvpd %xmm0,%xmm3,%xmm1,%xmm3
+4295976  418d28:	|  |  |  |           |        |  |     |   c5 f9 28 ca          	vmovapd %xmm2,%xmm1
+4295980  418d2c:	|  |  |  |           |        |  |     |   c5 fb 10 15 04 16 08 	vmovsd 0x81604(%rip),%xmm2        # 49a338 <hp1+0x48>
+4295987  418d33:	|  |  |  |           |        |  |     |   00 
+4295988  418d34:	|  |  |  |           |        |  |     |   c5 f3 58 c2          	vaddsd %xmm2,%xmm1,%xmm0
+4295992  418d38:	|  |  |  |           |        |  |     |   c5 fb 5c d2          	vsubsd %xmm2,%xmm0,%xmm2
+4295996  418d3c:	|  |  |  |           |        |  |     |   c4 e1 f9 7e c0       	vmovq  %xmm0,%rax
+4296001  418d41:	|  |  |  |           |        |  |     |   c1 e0 02             	shl    $0x2,%eax
+4296004  418d44:	|  |  |  |           |        |  |     |   8d 70 02             	lea    0x2(%rax),%esi
+4296007  418d47:	|  |  |  |           |        |  |     |   8d 78 01             	lea    0x1(%rax),%edi
+4296010  418d4a:	|  |  |  |           |        |  |     |   c5 f3 5c d2          	vsubsd %xmm2,%xmm1,%xmm2
+4296014  418d4e:	|  |  |  |           |        |  |     |   48 63 f6             	movslq %esi,%rsi
+4296017  418d51:	|  |  |  |           |        |  |     |   48 63 ff             	movslq %edi,%rdi
+4296020  418d54:	|  |  |  |           |        |  |     |   c5 fb 10 04 fa       	vmovsd (%rdx,%rdi,8),%xmm0
+4296025  418d59:	|  |  |  |           |        |  |     |   c5 eb 58 d3          	vaddsd %xmm3,%xmm2,%xmm2
+4296029  418d5d:	|  |  |  |           |        |  |     |   c5 eb 59 ca          	vmulsd %xmm2,%xmm2,%xmm1
+4296033  418d61:	|  |  |  |           |        |  |     |   c4 e2 f1 a9 25 96 16 	vfmadd213sd 0x81696(%rip),%xmm1,%xmm4        # 49a400 <t576+0x30>
+4296040  418d68:	|  |  |  |           |        |  |     |   08 00 
+4296042  418d6a:	|  |  |  |           |        |  |     |   c5 eb 59 d9          	vmulsd %xmm1,%xmm2,%xmm3
+4296046  418d6e:	|  |  |  |           |        |  |     |   c4 e2 e9 99 dc       	vfmadd132sd %xmm4,%xmm2,%xmm3
+4296051  418d73:	|  |  |  |           |        |  |     |   c5 fb 10 15 d5 15 08 	vmovsd 0x815d5(%rip),%xmm2        # 49a350 <hp1+0x60>
+4296058  418d7a:	|  |  |  |           |        |  |     |   00 
+4296059  418d7b:	|  |  |  |           |        |  |     |   c4 e2 f1 a9 15 84 16 	vfmadd213sd 0x81684(%rip),%xmm1,%xmm2        # 49a408 <t576+0x38>
+4296066  418d82:	|  |  |  |           |        |  |     |   08 00 
+4296068  418d84:	|  |  |  |           |        |  |     |   c4 e2 f1 a9 15 d3 15 	vfmadd213sd 0x815d3(%rip),%xmm1,%xmm2        # 49a360 <hp1+0x70>
+4296075  418d8b:	|  |  |  |           |        |  |     |   08 00 
+4296077  418d8d:	|  |  |  |           |        |  |     |   c5 f3 59 d2          	vmulsd %xmm2,%xmm1,%xmm2
+4296081  418d91:	|  |  |  |           |        |  |     |   c5 fb 10 0c f2       	vmovsd (%rdx,%rsi,8),%xmm1
+4296086  418d96:	|  |  |  |           |        |  |     |   8d 70 03             	lea    0x3(%rax),%esi
+4296089  418d99:	|  |  |  |           |        |  |     |   48 98                	cltq   
+4296091  418d9b:	|  |  |  |           |        |  |     |   48 63 f6             	movslq %esi,%rsi
+4296094  418d9e:	|  |  |  |           |        |  |     |   c4 e2 e1 ad 04 f2    	vfnmadd213sd (%rdx,%rsi,8),%xmm3,%xmm0
+4296100  418da4:	|  |  |  |           |        |  |     |   c4 e2 e9 bd c1       	vfnmadd231sd %xmm1,%xmm2,%xmm0
+4296105  418da9:	|  |  |  |           |        |  |     |   c4 e2 e1 bd 04 c2    	vfnmadd231sd (%rdx,%rax,8),%xmm3,%xmm0
+4296111  418daf:	|  |  |  |           |        |  |     |   c5 f3 58 c8          	vaddsd %xmm0,%xmm1,%xmm1
+4296115  418db3:	|  |  |  +-----------|--------|--|-----|-- e9 bd fd ff ff       	jmpq   418b75 <__cos_fma+0x3e5>
+4296120  418db8:	|  |  |  |           |        |  |     |   0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
+4296127  418dbf:	|  |  |  |           |        |  |     |   00 
+4296128  418dc0:	|  |  \--|-----------|--------|--|-----|-> c5 f3 59 d9          	vmulsd %xmm1,%xmm1,%xmm3
+4296132  418dc4:	|  |     |           |        |  |     |   c5 fb 10 15 44 15 08 	vmovsd 0x81544(%rip),%xmm2        # 49a310 <hp1+0x20>
+4296139  418dcb:	|  |     |           |        |  |     |   00 
+4296140  418dcc:	|  |     |           |        |  |     |   c4 e2 e1 a9 15 43 15 	vfmadd213sd 0x81543(%rip),%xmm3,%xmm2        # 49a318 <hp1+0x28>
+4296147  418dd3:	|  |     |           |        |  |     |   08 00 
+4296149  418dd5:	|  |     |           |        |  |     |   c4 e2 e1 a9 15 12 16 	vfmadd213sd 0x81612(%rip),%xmm3,%xmm2        # 49a3f0 <t576+0x20>
+4296156  418ddc:	|  |     |           |        |  |     |   08 00 
+4296158  418dde:	|  |     |           |        |  |     |   c4 e2 e1 a9 15 41 15 	vfmadd213sd 0x81541(%rip),%xmm3,%xmm2        # 49a328 <hp1+0x38>
+4296165  418de5:	|  |     |           |        |  |     |   08 00 
+4296167  418de7:	|  |     |           |        |  |     |   c5 fb 59 25 71 15 08 	vmulsd 0x81571(%rip),%xmm0,%xmm4        # 49a360 <hp1+0x70>
+4296174  418dee:	|  |     |           |        |  |     |   00 
+4296175  418def:	|  |     |           |        |  |     |   c4 e2 e1 a9 15 00 16 	vfmadd213sd 0x81600(%rip),%xmm3,%xmm2        # 49a3f8 <t576+0x28>
+4296182  418df6:	|  |     |           |        |  |     |   08 00 
+4296184  418df8:	|  |     |           |        |  |     |   c4 e2 d9 9b d1       	vfmsub132sd %xmm1,%xmm4,%xmm2
+4296189  418dfd:	|  |     |           |        |  |     |   c4 e2 e1 b9 c2       	vfmadd231sd %xmm2,%xmm3,%xmm0
+4296194  418e02:	|  |     |           |        |  |     |   c5 f3 58 c8          	vaddsd %xmm0,%xmm1,%xmm1
+4296198  418e06:	|  \-----|-----------|--------|--|-----|-- e9 9d fa ff ff       	jmpq   4188a8 <__cos_fma+0x118>
+4296203  418e0b:	|        |           |        |  |     |   0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+4296208  418e10:	|        |           |        |  \-----|-> c4 e1 f9 7e c0       	vmovq  %xmm0,%rax
+4296213  418e15:	|        |           |        |        |   85 c0                	test   %eax,%eax
+4296215  418e17:	|        |           |        +--------|-- 0f 85 d9 fd ff ff    	jne    418bf6 <__cos_fma+0x466>
+4296221  418e1d:	|        |           |        |        |   48 c7 c0 c0 ff ff ff 	mov    $0xffffffffffffffc0,%rax
+4296228  418e24:	|        |           |        |        |   64 c7 00 21 00 00 00 	movl   $0x21,%fs:(%rax)
+4296235  418e2b:	|        |           |        \--------|-- e9 c6 fd ff ff       	jmpq   418bf6 <__cos_fma+0x466>
+4296240  418e30:	|        |           \-----------------|-> c5 eb 59 da          	vmulsd %xmm2,%xmm2,%xmm3
+4296244  418e34:	|        |                             |   c5 fb 10 05 d4 14 08 	vmovsd 0x814d4(%rip),%xmm0        # 49a310 <hp1+0x20>
+4296251  418e3b:	|        |                             |   00 
+4296252  418e3c:	|        |                             |   c4 e2 e1 a9 05 d3 14 	vfmadd213sd 0x814d3(%rip),%xmm3,%xmm0        # 49a318 <hp1+0x28>
+4296259  418e43:	|        |                             |   08 00 
+4296261  418e45:	|        |                             |   c4 e2 e1 a9 05 a2 15 	vfmadd213sd 0x815a2(%rip),%xmm3,%xmm0        # 49a3f0 <t576+0x20>
+4296268  418e4c:	|        |                             |   08 00 
+4296270  418e4e:	|        |                             |   c4 e2 e1 a9 05 d1 14 	vfmadd213sd 0x814d1(%rip),%xmm3,%xmm0        # 49a328 <hp1+0x38>
+4296277  418e55:	|        |                             |   08 00 
+4296279  418e57:	|        |                             |   c5 f3 59 25 01 15 08 	vmulsd 0x81501(%rip),%xmm1,%xmm4        # 49a360 <hp1+0x70>
+4296286  418e5e:	|        |                             |   00 
+4296287  418e5f:	|        |                             |   c4 e2 e1 a9 05 90 15 	vfmadd213sd 0x81590(%rip),%xmm3,%xmm0        # 49a3f8 <t576+0x28>
+4296294  418e66:	|        |                             |   08 00 
+4296296  418e68:	|        |                             |   c4 e2 d9 9b c2       	vfmsub132sd %xmm2,%xmm4,%xmm0
+4296301  418e6d:	|        |                             |   c4 e2 e1 b9 c8       	vfmadd231sd %xmm0,%xmm3,%xmm1
+4296306  418e72:	|        |                             |   c5 f3 58 ca          	vaddsd %xmm2,%xmm1,%xmm1
+4296310  418e76:	|        +-----------------------------|-- e9 fa fc ff ff       	jmpq   418b75 <__cos_fma+0x3e5>
+4296315  418e7b:	|        |                             |   0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+4296320  418e80:	|        |                             \-> c5 fa 7e 2d 38 16 08 	vmovq  0x81638(%rip),%xmm5        # 49a4c0 <conversion_rate+0xa8>
+4296327  418e87:	|        |                                 00 
+4296328  418e88:	|        |                                 c5 fb 10 0d 78 14 08 	vmovsd 0x81478(%rip),%xmm1        # 49a308 <hp1+0x18>
+4296335  418e8f:	|        |                                 00 
+4296336  418e90:	|        |                                 c5 f9 28 c2          	vmovapd %xmm2,%xmm0
+4296340  418e94:	|        |                                 c5 f9 54 c5          	vandpd %xmm5,%xmm0,%xmm0
+4296344  418e98:	|        |                                 c5 f9 2f c8          	vcomisd %xmm0,%xmm1
+4296348  418e9c:	|        |                          /----- 0f 87 cb 00 00 00    	ja     418f6d <__cos_fma+0x7dd>
+4296354  418ea2:	|        |                          |      c5 f1 57 c9          	vxorpd %xmm1,%xmm1,%xmm1
+4296358  418ea6:	|        |                          |      c5 fa 7e 35 22 16 08 	vmovq  0x81622(%rip),%xmm6        # 49a4d0 <conversion_rate+0xb8>
+4296365  418ead:	|        |                          |      00 
+4296366  418eae:	|        |                          |      c5 f9 2f ca          	vcomisd %xmm2,%xmm1
+4296370  418eb2:	|        |                          |  /-- 72 04                	jb     418eb8 <__cos_fma+0x728>
+4296372  418eb4:	|        |                          |  |   c5 e1 57 de          	vxorpd %xmm6,%xmm3,%xmm3
+4296376  418eb8:	|        |                          |  \-> c5 fb 10 25 78 14 08 	vmovsd 0x81478(%rip),%xmm4        # 49a338 <hp1+0x48>
+4296383  418ebf:	|        |                          |      00 
+4296384  418ec0:	|        |                          |      c5 7b 10 05 78 14 08 	vmovsd 0x81478(%rip),%xmm8        # 49a340 <hp1+0x50>
+4296391  418ec7:	|        |                          |      00 
+4296392  418ec8:	|        |                          |      48 8d 15 11 57 08 00 	lea    0x85711(%rip),%rdx        # 49e5e0 <__sincostab>
+4296399  418ecf:	|        |                          |      c5 fb 58 cc          	vaddsd %xmm4,%xmm0,%xmm1
+4296403  418ed3:	|        |                          |      c5 f3 5c e4          	vsubsd %xmm4,%xmm1,%xmm4
+4296407  418ed7:	|        |                          |      c4 e1 f9 7e c8       	vmovq  %xmm1,%rax
+4296412  418edc:	|        |                          |      c1 e0 02             	shl    $0x2,%eax
+4296415  418edf:	|        |                          |      48 63 f0             	movslq %eax,%rsi
+4296418  418ee2:	|        |                          |      8d 78 03             	lea    0x3(%rax),%edi
+4296421  418ee5:	|        |                          |      c5 fb 5c c4          	vsubsd %xmm4,%xmm0,%xmm0
+4296425  418ee9:	|        |                          |      c5 fb 10 0c f2       	vmovsd (%rdx,%rsi,8),%xmm1
+4296430  418eee:	|        |                          |      8d 70 01             	lea    0x1(%rax),%esi
+4296433  418ef1:	|        |                          |      48 63 ff             	movslq %edi,%rdi
+4296436  418ef4:	|        |                          |      48 63 f6             	movslq %esi,%rsi
+4296439  418ef7:	|        |                          |      83 c0 02             	add    $0x2,%eax
+4296442  418efa:	|        |                          |      48 98                	cltq   
+4296444  418efc:	|        |                          |      c5 fb 59 f8          	vmulsd %xmm0,%xmm0,%xmm7
+4296448  418f00:	|        |                          |      c4 62 c1 a9 05 f7 14 	vfmadd213sd 0x814f7(%rip),%xmm7,%xmm8        # 49a400 <t576+0x30>
+4296455  418f07:	|        |                          |      08 00 
+4296457  418f09:	|        |                          |      c5 fb 59 e7          	vmulsd %xmm7,%xmm0,%xmm4
+4296461  418f0d:	|        |                          |      c4 c2 e1 99 e0       	vfmadd132sd %xmm8,%xmm3,%xmm4
+4296466  418f12:	|        |                          |      c5 7b 10 05 36 14 08 	vmovsd 0x81436(%rip),%xmm8        # 49a350 <hp1+0x60>
+4296473  418f19:	|        |                          |      00 
+4296474  418f1a:	|        |                          |      c4 62 c1 a9 05 e5 14 	vfmadd213sd 0x814e5(%rip),%xmm7,%xmm8        # 49a408 <t576+0x38>
+4296481  418f21:	|        |                          |      08 00 
+4296483  418f23:	|        |                          |      c4 62 c1 a9 05 34 14 	vfmadd213sd 0x81434(%rip),%xmm7,%xmm8        # 49a360 <hp1+0x70>
+4296490  418f2a:	|        |                          |      08 00 
+4296492  418f2c:	|        |                          |      c5 fb 58 e4          	vaddsd %xmm4,%xmm0,%xmm4
+4296496  418f30:	|        |                          |      c4 c1 43 59 f8       	vmulsd %xmm8,%xmm7,%xmm7
+4296501  418f35:	|        |                          |      c4 e2 c1 99 c3       	vfmadd132sd %xmm3,%xmm7,%xmm0
+4296506  418f3a:	|        |                          |      c5 fb 10 1c fa       	vmovsd (%rdx,%rdi,8),%xmm3
+4296511  418f3f:	|        |                          |      c4 e2 d9 a9 1c f2    	vfmadd213sd (%rdx,%rsi,8),%xmm4,%xmm3
+4296517  418f45:	|        |                          |      c5 f9 28 fa          	vmovapd %xmm2,%xmm7
+4296521  418f49:	|        |                          |      c5 c1 54 fe          	vandpd %xmm6,%xmm7,%xmm7
+4296525  418f4d:	|        |                          |      c4 e2 e1 9d c1       	vfnmadd132sd %xmm1,%xmm3,%xmm0
+4296530  418f52:	|        |                          |      c4 e2 d9 b9 04 c2    	vfmadd231sd (%rdx,%rax,8),%xmm4,%xmm0
+4296536  418f58:	|        |                          |      c5 f3 58 c0          	vaddsd %xmm0,%xmm1,%xmm0
+4296540  418f5c:	|        |                          |      c5 c9 55 f0          	vandnpd %xmm0,%xmm6,%xmm6
+4296544  418f60:	|        |                          |      c5 c9 56 f7          	vorpd  %xmm7,%xmm6,%xmm6
+4296548  418f64:	|        |                          |      c5 f9 28 ce          	vmovapd %xmm6,%xmm1
+4296552  418f68:	|        +--------------------------|----- e9 08 fc ff ff       	jmpq   418b75 <__cos_fma+0x3e5>
+4296557  418f6d:	|        |                          \----> c5 eb 59 ca          	vmulsd %xmm2,%xmm2,%xmm1
+4296561  418f71:	|        |                                 c5 fb 10 05 97 13 08 	vmovsd 0x81397(%rip),%xmm0        # 49a310 <hp1+0x20>
+4296568  418f78:	|        |                                 00 
+4296569  418f79:	|        |                                 c4 e2 f1 a9 05 96 13 	vfmadd213sd 0x81396(%rip),%xmm1,%xmm0        # 49a318 <hp1+0x28>
+4296576  418f80:	|        |                                 08 00 
+4296578  418f82:	|        |                                 c4 e2 f1 a9 05 65 14 	vfmadd213sd 0x81465(%rip),%xmm1,%xmm0        # 49a3f0 <t576+0x20>
+4296585  418f89:	|        |                                 08 00 
+4296587  418f8b:	|        |                                 c4 e2 f1 a9 05 94 13 	vfmadd213sd 0x81394(%rip),%xmm1,%xmm0        # 49a328 <hp1+0x38>
+4296594  418f92:	|        |                                 08 00 
+4296596  418f94:	|        |                                 c4 e2 f1 a9 05 5b 14 	vfmadd213sd 0x8145b(%rip),%xmm1,%xmm0        # 49a3f8 <t576+0x28>
+4296603  418f9b:	|        |                                 08 00 
+4296605  418f9d:	|        |                                 c5 e3 59 25 bb 13 08 	vmulsd 0x813bb(%rip),%xmm3,%xmm4        # 49a360 <hp1+0x70>
+4296612  418fa4:	|        |                                 00 
+4296613  418fa5:	|        |                                 c4 e2 d9 9b c2       	vfmsub132sd %xmm2,%xmm4,%xmm0
+4296618  418faa:	|        |                                 c4 e2 e1 99 c8       	vfmadd132sd %xmm0,%xmm3,%xmm1
+4296623  418faf:	|        |                                 c5 eb 58 c9          	vaddsd %xmm1,%xmm2,%xmm1
+4296627  418fb3:	|        \-------------------------------- e9 bd fb ff ff       	jmpq   418b75 <__cos_fma+0x3e5>
+4296632  418fb8:	\----------------------------------------> e8 a3 57 04 00       	callq  45e760 <__stack_chk_fail>

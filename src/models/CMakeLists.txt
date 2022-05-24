@@ -17,7 +17,8 @@ add_library(models STATIC
     ../util.cpp
     callercalleeproxy.cpp
     frequencymodel.cpp
-    disassemblydelegate.cpp
+    codedelegate.cpp
+    sourcecodemodel.cpp
 )
 
 target_link_libraries(models
