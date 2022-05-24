@@ -27,9 +27,9 @@
     <widget class="KMessageWidget" name="errorMessage"/>
    </item>
    <item>
-    <widget class="KSqueezedTextLabel" name="symbolLabel">
+    <widget class="KSqueezedTextLabel" name="filenameLabel">
      <property name="text">
-      <string/>
+      <string>KSqueezedTextLabel</string>
      </property>
      <property name="textElideMode">
       <enum>Qt::ElideRight</enum>
@@ -37,19 +37,46 @@
     </widget>
    </item>
    <item>
-    <widget class="QTreeView" name="asmView">
-     <property name="alternatingRowColors">
-      <bool>true</bool>
-     </property>
-     <property name="rootIsDecorated">
-      <bool>false</bool>
-     </property>
-     <property name="uniformRowHeights">
-      <bool>true</bool>
-     </property>
-     <attribute name="headerDefaultSectionSize">
-      <number>200</number>
-     </attribute>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QTreeView" name="sourceCodeView">
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
+        <property name="rootIsDecorated">
+         <bool>false</bool>
+        </property>
+        <property name="uniformRowHeights">
+         <bool>true</bool>
+        </property>
+        <attribute name="headerDefaultSectionSize">
+         <number>200</number>
+        </attribute>
+       </widget>
+      </item>
+      <item>
+       <widget class="QTreeView" name="assemblyView">
+        <property name="font">
+         <font>
+          <family>Monospace</family>
+         </font>
+        </property>
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
+        <property name="rootIsDecorated">
+         <bool>false</bool>
+        </property>
+        <property name="uniformRowHeights">
+         <bool>true</bool>
+        </property>
+        <attribute name="headerDefaultSectionSize">
+         <number>200</number>
+        </attribute>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
   </layout>

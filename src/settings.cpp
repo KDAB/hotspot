@@ -144,7 +144,7 @@ void Settings::setCostAggregation(Settings::CostAggregation costAggregation)
 {
     if (m_costAggregation != costAggregation) {
         m_costAggregation = costAggregation;
-        emit costAggregationChanged(m_costAggregation);
+        emit costAggregationChanged(costAggregation);
     }
 }
 
