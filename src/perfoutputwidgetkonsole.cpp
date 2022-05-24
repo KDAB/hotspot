@@ -112,9 +112,11 @@ void PerfOutputWidgetKonsole::addOutput(const QString& output)
 void PerfOutputWidgetKonsole::clear()
 {
     if (m_konsolePart) {
+        m_konsoleFile->deleteLater();
         m_konsolePart->deleteLater();
     }
 
+    m_konsoleFile = nullptr;
     m_konsolePart = createPart();
 
     addPartToLayout();
@@ -134,6 +136,7 @@ void PerfOutputWidgetKonsole::setInputVisible(bool visible)
 
 void PerfOutputWidgetKonsole::addPartToLayout()
 {
+    Q_ASSERT(!m_konsoleFile);
     m_konsoleFile = new QTemporaryFile(m_konsolePart);
     m_konsoleFile->open();
 
