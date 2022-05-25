@@ -147,25 +147,32 @@ int main(int argc, char** argv)
     auto applyCliArgs = [&](Settings* settings) {
         if (parser.isSet(sysroot)) {
             settings->setSysroot(parser.value(sysroot));
+            settings->setLastUsedEnvironment({});
         }
         if (parser.isSet(kallsyms)) {
             settings->setKallsyms(parser.value(kallsyms));
+            settings->setLastUsedEnvironment({});
         }
         if (parser.isSet(debugPaths)) {
             settings->setDebugPaths(parser.value(debugPaths));
+            settings->setLastUsedEnvironment({});
         }
         if (parser.isSet(extraLibPaths)) {
             settings->setExtraLibPaths(parser.value(extraLibPaths));
+            settings->setLastUsedEnvironment({});
         }
         if (parser.isSet(appPath)) {
             settings->setAppPath(parser.value(appPath));
+            settings->setLastUsedEnvironment({});
         }
         if (parser.isSet(arch)) {
             settings->setArch(parser.value(arch));
+            settings->setLastUsedEnvironment({});
         }
     };
 
     const auto settings = Settings::instance();
+    settings->loadFromFile();
     applyCliArgs(settings);
 
     auto files = parser.positionalArguments();

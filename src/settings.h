@@ -133,6 +133,13 @@ public:
         return m_costAggregation;
     }
 
+    QString lastUsedEnvironment() const
+    {
+        return m_lastUsedEnvironment;
+    }
+
+    void loadFromFile();
+
 signals:
     void prettifySymbolsChanged(bool);
     void collapseTemplatesChanged(bool);
@@ -149,6 +156,7 @@ signals:
     void archChanged(const QString& arch);
     void objdumpChanged(const QString& objdump);
     void callgraphChanged();
+    void lastUsedEnvironmentChanged(const QString& envName);
 
 public slots:
     void setPrettifySymbols(bool prettifySymbols);
@@ -168,6 +176,7 @@ public slots:
     void setCallgraphChildDepth(int child);
     void setCallgraphColors(const QColor& active, const QColor& inactive);
     void setCostAggregation(CostAggregation costAggregation);
+    void setLastUsedEnvironment(const QString& envName);
 
 private:
     Settings() = default;
@@ -189,6 +198,8 @@ private:
     QString m_appPath;
     QString m_arch;
     QString m_objdump;
+
+    QString m_lastUsedEnvironment;
 
     int m_callgraphParentDepth = 3;
     int m_callgraphChildDepth = 2;

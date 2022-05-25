@@ -164,6 +164,22 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(m_resultsPage, &ResultsPage::navigateToCode, this, &MainWindow::navigateToCode);
     ui->fileMenu->addAction(KStandardAction::open(this, SLOT(onOpenFileButtonClicked()), this));
+
+    auto openNewWindow = new QAction(QIcon::fromTheme(QStringLiteral("document-open")), tr("Open in new window"), this);
+    openNewWindow->setShortcut(Qt::Key_O | Qt::ControlModifier | Qt::ShiftModifier);
+    connect(openNewWindow, &QAction::triggered, this, [this] {
+        const auto fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(),
+                                                           tr("Data Files (perf*.data perf.data.*);;All Files (*)"));
+        QStringList arguments;
+
+        QProcess process;
+        process.setProgram(qApp->applicationFilePath());
+        process.setArguments({fileName});
+        if (!process.startDetached()) {
+            qWarning() << "failed to start new hotspot instance" << process.errorString();
+        }
+    });
+    ui->fileMenu->addAction(openNewWindow);
     m_recentFilesAction = KStandardAction::openRecent(this, SLOT(openFile(QUrl)), this);
     m_recentFilesAction->loadEntries(m_config->group("RecentFiles"));
     ui->fileMenu->addAction(m_recentFilesAction);
@@ -184,52 +200,6 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->actionAbout_Hotspot, &QAction::triggered, this, &MainWindow::aboutHotspot);
 
     connect(Settings::instance(), &Settings::costAggregationChanged, this, &MainWindow::reload);
-
-    {
-        auto config = m_config->group("Settings");
-        auto settings = Settings::instance();
-        settings->setPrettifySymbols(config.readEntry("prettifySymbols", true));
-        settings->setCollapseTemplates(config.readEntry("collapseTemplates", true));
-        settings->setCollapseDepth(config.readEntry("collapseDepth", 1));
-
-        connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, [this](bool prettifySymbols) {
-            m_config->group("Settings").writeEntry("prettifySymbols", prettifySymbols);
-        });
-
-        connect(Settings::instance(), &Settings::collapseTemplatesChanged, this, [this](bool collapseTemplates) {
-            m_config->group("Settings").writeEntry("collapseTemplates", collapseTemplates);
-        });
-
-        connect(Settings::instance(), &Settings::collapseDepthChanged, this,
-                [this](int collapseDepth) { m_config->group("Settings").writeEntry("collapseDepth", collapseDepth); });
-
-        const QStringList userPaths = {QDir::homePath()};
-        const QStringList systemPaths = {QDir::rootPath()};
-        settings->setPaths(m_config->group("PathSettings").readEntry("userPaths", userPaths),
-                           m_config->group("PathSettings").readEntry("systemPaths", systemPaths));
-        connect(Settings::instance(), &Settings::pathsChanged, this, [this, settings] {
-            m_config->group("PathSettings").writeEntry("userPaths", settings->userPaths());
-            m_config->group("PathSettings").writeEntry("systemPaths", settings->systemPaths());
-        });
-
-        // fix build error in app image build
-        const auto colorScheme = KColorScheme(QPalette::Normal, KColorScheme::View, m_config);
-        const auto color = colorScheme.background(KColorScheme::AlternateBackground).color().name();
-        const auto currentColor = colorScheme.background(KColorScheme::ActiveBackground).color().name();
-        settings->setCallgraphParentDepth(m_config->group("CallgraphSettings").readEntry("parent", 3));
-        settings->setCallgraphChildDepth(m_config->group("CallgraphSettings").readEntry("child", 3));
-        settings->setCallgraphColors(m_config->group("CallgraphSettings").readEntry("activeColor", currentColor), m_config->group("CallgraphSettings").readEntry("color", color));
-        connect(Settings::instance(), &Settings::callgraphChanged, this, [this, settings] {
-            m_config->group("CallgraphSettings").writeEntry("parent", settings->callgraphParentDepth());
-            m_config->group("CallgraphSettings").writeEntry("child", settings->callgraphChildDepth());
-            m_config->group("CallgraphSettings").writeEntry("activeColor", settings->callgraphActiveColor());
-            m_config->group("CallgraphSettings").writeEntry("color", settings->callgraphColor());
-        });
-
-        settings->setDebuginfodUrls(m_config->group("debuginfod").readEntry("urls", QStringList()));
-        connect(Settings::instance(), &Settings::debuginfodUrlsChanged, this,
-                [this, settings] { m_config->group("debuginfod").writeEntry("urls", settings->debuginfodUrls()); });
-    }
 
     auto* prettifySymbolsAction = ui->viewMenu->addAction(tr("Prettify Symbols"));
     prettifySymbolsAction->setCheckable(true);
@@ -292,18 +262,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     const auto restored = serializer.restoredDockWidgets();
     m_resultsPage->initDockWidgets(restored);
-
-    m_lastUsedSettings = m_config->group("PerfPaths").readEntry("lastUsed");
-    if (!m_lastUsedSettings.isEmpty()) {
-        auto currentConfig = m_config->group("PerfPaths").group(m_lastUsedSettings);
-        settings->setSysroot(currentConfig.readEntry("sysroot", ""));
-        settings->setAppPath(currentConfig.readEntry("appPath", ""));
-        settings->setExtraLibPaths(currentConfig.readEntry("extraLibPaths", ""));
-        settings->setDebugPaths(currentConfig.readEntry("debugPaths", ""));
-        settings->setKallsyms(currentConfig.readEntry("kallsyms", ""));
-        settings->setArch(currentConfig.readEntry("arch", ""));
-        settings->setObjdump(currentConfig.readEntry("objdump", ""));
-    }
 }
 
 MainWindow::~MainWindow() = default;
@@ -439,7 +397,7 @@ void MainWindow::openSettingsDialog()
     m_settingsDialog->setWindowTitle(tr("Paths and Architecture Settings"));
     m_settingsDialog->setWindowIcon(windowIcon());
     m_settingsDialog->adjustSize();
-    m_settingsDialog->initSettings(m_lastUsedSettings);
+    m_settingsDialog->initSettings();
     m_settingsDialog->open();
 }
 

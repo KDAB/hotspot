@@ -26,7 +26,7 @@ class SettingsDialog : public KPageDialog
 public:
     explicit SettingsDialog(QWidget* parent = nullptr);
     ~SettingsDialog();
-    void initSettings(const QString& configName);
+    void initSettings();
     void initSettings(const QString& sysroot, const QString& appPath, const QString& extraLibPaths,
                       const QString& debugPaths, const QString& kallsyms, const QString& arch, const QString& objdump);    
     QString sysroot() const;
