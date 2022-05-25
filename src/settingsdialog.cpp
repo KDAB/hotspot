@@ -51,9 +51,12 @@ SettingsDialog::SettingsDialog(QWidget* parent)
 
 SettingsDialog::~SettingsDialog() = default;
 
-void SettingsDialog::initSettings(const QString& configName)
+void SettingsDialog::initSettings()
 {
-    m_configs->selectConfig(configName);
+    const auto configName = Settings::instance()->lastUsedEnvironment();
+    if (!configName.isEmpty()) {
+        m_configs->selectConfig(configName);
+    }
 }
 
 void SettingsDialog::initSettings(const QString &sysroot, const QString &appPath, const QString &extraLibPaths,

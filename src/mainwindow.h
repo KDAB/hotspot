@@ -72,7 +72,6 @@ private:
     ResultsPage* m_resultsPage;
     SettingsDialog* m_settingsDialog;
 
-    QString m_lastUsedSettings;
     KRecentFilesAction* m_recentFilesAction = nullptr;
     QAction* m_reloadAction = nullptr;
     QAction* m_exportAction = nullptr;

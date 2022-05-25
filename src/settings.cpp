@@ -6,7 +6,13 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
+#include <QDir>
+#include <QPalette>
 #include <QThread>
+
+#include <KColorScheme>
+#include <KConfigGroup>
+#include <KSharedConfig>
 
 #include "settings.h"
 
@@ -140,4 +146,79 @@ void Settings::setCostAggregation(Settings::CostAggregation costAggregation)
         m_costAggregation = costAggregation;
         emit costAggregationChanged(m_costAggregation);
     }
+}
+
+void Settings::setLastUsedEnvironment(const QString& envName)
+{
+    if (envName != m_lastUsedEnvironment) {
+        m_lastUsedEnvironment = envName;
+        emit lastUsedEnvironmentChanged(m_lastUsedEnvironment);
+    }
+}
+
+void Settings::loadFromFile()
+{
+    auto sharedConfig = KSharedConfig::openConfig();
+
+    auto config = sharedConfig->group("Settings");
+    setPrettifySymbols(config.readEntry("prettifySymbols", true));
+    setCollapseTemplates(config.readEntry("collapseTemplates", true));
+    setCollapseDepth(config.readEntry("collapseDepth", 1));
+
+    connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, [sharedConfig](bool prettifySymbols) {
+        sharedConfig->group("Settings").writeEntry("prettifySymbols", prettifySymbols);
+    });
+
+    connect(Settings::instance(), &Settings::collapseTemplatesChanged, this, [sharedConfig](bool collapseTemplates) {
+        sharedConfig->group("Settings").writeEntry("collapseTemplates", collapseTemplates);
+    });
+
+    connect(this, &Settings::collapseDepthChanged, this, [sharedConfig](int collapseDepth) {
+        sharedConfig->group("Settings").writeEntry("collapseDepth", collapseDepth);
+    });
+
+    const QStringList userPaths = {QDir::homePath()};
+    const QStringList systemPaths = {QDir::rootPath()};
+    setPaths(sharedConfig->group("PathSettings").readEntry("userPaths", userPaths),
+             sharedConfig->group("PathSettings").readEntry("systemPaths", systemPaths));
+    connect(this, &Settings::pathsChanged, this, [sharedConfig, this] {
+        sharedConfig->group("PathSettings").writeEntry("userPaths", this->userPaths());
+        sharedConfig->group("PathSettings").writeEntry("systemPaths", this->systemPaths());
+    });
+
+    // fix build error in app image build
+    const auto colorScheme = KColorScheme(QPalette::Normal, KColorScheme::View, sharedConfig);
+    const auto color = colorScheme.background(KColorScheme::AlternateBackground).color().name();
+    const auto currentColor = colorScheme.background(KColorScheme::ActiveBackground).color().name();
+
+    setCallgraphParentDepth(sharedConfig->group("CallgraphSettings").readEntry("parent", 3));
+    setCallgraphChildDepth(sharedConfig->group("CallgraphSettings").readEntry("child", 3));
+    setCallgraphColors(sharedConfig->group("CallgraphSettings").readEntry("activeColor", currentColor),
+                       sharedConfig->group("CallgraphSettings").readEntry("color", color));
+    connect(this, &Settings::callgraphChanged, this, [sharedConfig, this] {
+        sharedConfig->group("CallgraphSettings").writeEntry("parent", this->callgraphParentDepth());
+        sharedConfig->group("CallgraphSettings").writeEntry("child", this->callgraphChildDepth());
+        sharedConfig->group("CallgraphSettings").writeEntry("activeColor", this->callgraphActiveColor());
+        sharedConfig->group("CallgraphSettings").writeEntry("color", this->callgraphColor());
+    });
+
+    setDebuginfodUrls(sharedConfig->group("debuginfod").readEntry("urls", QStringList()));
+    connect(this, &Settings::debuginfodUrlsChanged, this,
+            [sharedConfig, this] { sharedConfig->group("debuginfod").writeEntry("urls", this->debuginfodUrls()); });
+
+    m_lastUsedEnvironment = sharedConfig->group("PerfPaths").readEntry("lastUsed");
+
+    if (!m_lastUsedEnvironment.isEmpty()) {
+        auto currentConfig = sharedConfig->group("PerfPaths").group(m_lastUsedEnvironment);
+        setSysroot(currentConfig.readEntry("sysroot", ""));
+        setAppPath(currentConfig.readEntry("appPath", ""));
+        setExtraLibPaths(currentConfig.readEntry("extraLibPaths", ""));
+        setDebugPaths(currentConfig.readEntry("debugPaths", ""));
+        setKallsyms(currentConfig.readEntry("kallsyms", ""));
+        setArch(currentConfig.readEntry("arch", ""));
+        setObjdump(currentConfig.readEntry("objdump", ""));
+    }
+    connect(this, &Settings::lastUsedEnvironmentChanged, [sharedConfig, this](const QString& envName) {
+        sharedConfig->group("PerfPaths").writeEntry("lastUsed", envName);
+    });
 }
