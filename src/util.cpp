@@ -34,8 +34,12 @@
 
 QString collapseTemplate(const QString& str, int level)
 {
-
     if (str.indexOf(QLatin1Char('<')) == -1) {
+        return str;
+    }
+
+    // special handling for fake section symbols of the form <.SECTION+OFFSET>
+    if (str.startsWith(QLatin1String("<.")) && str.endsWith(QLatin1Char('>'))) {
         return str;
     }
 
