@@ -170,12 +170,8 @@ MainWindow::MainWindow(QWidget* parent)
     connect(openNewWindow, &QAction::triggered, this, [this] {
         const auto fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(),
                                                            tr("Data Files (perf*.data perf.data.*);;All Files (*)"));
-        QProcess process;
-        process.setProgram(qApp->applicationFilePath());
-        process.setArguments({fileName});
-        if (!process.startDetached()) {
-            qWarning() << "failed to start new hotspot instance" << process.errorString();
-        }
+        if (!fileName.isEmpty())
+            openInNewWindow(fileName);
     });
     ui->fileMenu->addAction(openNewWindow);
     m_recentFilesAction = KStandardAction::openRecent(this, SLOT(openFile(QUrl)), this);
@@ -539,4 +535,21 @@ void MainWindow::navigateToCode(const QString& filePath, int lineNumber, int col
         QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
         return;
     }
+}
+
+void MainWindow::openInNewWindow(const QString& file, const QStringList& args)
+{
+    auto process = new QProcess(qApp);
+    QObject::connect(process, &QProcess::errorOccurred, qApp, [=]() { qWarning() << file << process->errorString(); });
+    // the event loop locker prevents the main app from quitting while the child processes are still running
+    // we want to keep them all alive and quit them in one go. detaching isn't as nice, as we would not be
+    // able to quit all apps in one go via Ctrl+C then anymore'
+    QObject::connect(process, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), qApp,
+                     [process, lock = std::make_unique<QEventLoopLocker>()]() mutable {
+                         lock.reset();
+                         process->deleteLater();
+                     });
+    auto allArgs = args;
+    allArgs.append(file);
+    process->start(QCoreApplication::applicationFilePath(), allArgs);
 }

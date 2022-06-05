@@ -183,18 +183,7 @@ int main(int argc, char** argv)
     while (files.size() > 1) {
         // spawn new instances if we have more than one file argument
         const auto file = files.takeLast();
-        auto process = new QProcess(&app);
-        QObject::connect(process, &QProcess::errorOccurred, &app, [=]() {
-            qWarning() << file << process->errorString();
-        });
-        // the event loop locker prevents the main app from quitting while the child processes are still running
-        // we want to keep them all alive and quit them in one go. detaching isn't as nice, as we would not be
-        // able to quit all apps in one go via Ctrl+C then anymore'
-        QObject::connect(process, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), &app,
-                         [lock = std::make_unique<QEventLoopLocker>()]() mutable { lock.reset(); });
-        auto args = minimalArguments;
-        args.append(file);
-        process->start(app.applicationFilePath(), args);
+        MainWindow::openInNewWindow(file, minimalArguments);
     }
 
     // we now only have at most one file

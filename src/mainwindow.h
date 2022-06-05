@@ -54,6 +54,8 @@ public slots:
     void setCodeNavigationIDE(QAction* action);
     void navigateToCode(const QString& url, int lineNumber, int columnNumber);
 
+    static void openInNewWindow(const QString& file, const QStringList& args = {});
+
 signals:
     void openFileError(const QString& errorMessage);
 
