@@ -169,28 +169,25 @@ int main(int argc, char** argv)
     applyCliArgs(settings);
 
     auto files = parser.positionalArguments();
-    auto arguments = app.arguments();
-    arguments.pop_front(); // pop executable
-
-    for (const auto& file : files) {
-        auto it = std::find(arguments.begin(), arguments.end(), file);
-        if (it != arguments.end()) {
-            arguments.erase(it);
-        }
-    }
+    const auto originalArguments = app.arguments();
+    // remove leading executable name and trailing positional arguments
+    const auto minimalArguments = originalArguments.mid(1, originalArguments.size() - 1 - files.size());
 
     while (files.size() > 1) {
         // spawn new instances if we have more than one file argument
-        QProcess process;
-        process.setProgram(app.applicationFilePath());
-        const auto file = files.front();
-        files.pop_front();
-        auto args = arguments;
+        const auto file = files.takeLast();
+        auto process = new QProcess(&app);
+        QObject::connect(process, &QProcess::errorOccurred, &app, [=]() {
+            qWarning() << file << process->errorString();
+        });
+        // the event loop locker prevents the main app from quitting while the child processes are still running
+        // we want to keep them all alive and quit them in one go. detaching isn't as nice, as we would not be
+        // able to quit all apps in one go via Ctrl+C then anymore'
+        QObject::connect(process, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), &app,
+                         [lock = std::make_unique<QEventLoopLocker>()]() mutable { lock.reset(); });
+        auto args = minimalArguments;
         args.append(file);
-        process.setArguments(args);
-        if (!process.startDetached()) {
-            qWarning() << "failed to start new hotspot instance";
-        }
+        process->start(app.applicationFilePath(), args);
     }
 
     // we now only have at most one file
