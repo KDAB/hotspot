@@ -308,14 +308,14 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, con
 
 bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
 {
-    if (watched != m_view->viewport() || !m_view->isEnabled()) {
-        return false;
-    }
-
     const bool isButtonRelease = event->type() == QEvent::MouseButtonRelease;
     const bool isButtonPress = event->type() == QEvent::MouseButtonPress;
     const bool isMove = event->type() == QEvent::MouseMove;
     if (!isButtonRelease && !isButtonPress && !isMove) {
+        return false;
+    }
+
+    if (watched != m_view->viewport() || !m_view->isEnabled()) {
         return false;
     }
 
