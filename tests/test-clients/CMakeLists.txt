@@ -5,6 +5,7 @@ include(CMakePushCheckState)
 # making static linking fail.
 cmake_push_check_state(RESET)
 set(CMAKE_REQUIRED_LIBRARIES "-static")
+set(CMAKE_REQUIRED_FLAGS "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 check_cxx_source_compiles("int main() {}" STATIC_LINKING_WORKS)
 cmake_pop_check_state()
 
