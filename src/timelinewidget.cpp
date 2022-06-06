@@ -114,7 +114,8 @@ void TimeLineWidget::selectSymbol(const Data::Symbol& symbol)
     const auto& bottomUpResults = m_parser->bottomUpResults();
 
     scheduleJob(m_timeLineDelegate, m_currentSelectStackJobId,
-                [stacks, bottomUpResults, symbol](auto timeLineDelegate, auto jobCancelled) {
+                [stacks, bottomUpResults, symbol](const QPointer<TimeLineDelegate>& timeLineDelegate,
+                                                  auto jobCancelled) {
                     const auto numStacks = stacks.size();
                     QSet<qint32> selectedStacks;
                     selectedStacks.reserve(numStacks);
