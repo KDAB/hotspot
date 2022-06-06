@@ -66,6 +66,10 @@ template<typename Callback>
 void TimeLineData::findSamples(int mappedX, int costType, int lostEventCostId, bool contains, const Data::Event* start,
                                const Callback& callback) const
 {
+    if (events.isEmpty()) {
+        return;
+    }
+
     auto it = start;
     if (contains) {
         // for a contains check, we must only include events for the correct type
