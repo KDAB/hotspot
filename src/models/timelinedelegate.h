@@ -33,6 +33,10 @@ struct TimeLineData
 
     void zoom(const Data::TimeRange& time);
 
+    template<typename Callback>
+    void findSamples(int mappedX, int costType, int lostEventCostId, bool contains, const Data::Event* start,
+                     const Callback& callback) const;
+
     static const constexpr int padding = 2;
     Data::Events events;
     quint64 maxCost;
@@ -60,6 +64,9 @@ public:
     void setEventType(int type);
     void setSelectedStacks(const QSet<qint32>& selectedStacks);
 
+signals:
+    void stacksHovered(const QSet<qint32>& stacks);
+
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
@@ -71,5 +78,6 @@ private:
     QAbstractItemView* m_view = nullptr;
     Data::TimeRange m_timeSlice;
     QSet<qint32> m_selectedStacks;
+    QSet<qint32> m_hoveredStacks;
     int m_eventType = 0;
 };

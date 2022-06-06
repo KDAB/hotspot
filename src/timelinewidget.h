@@ -37,6 +37,9 @@ public:
 
     void selectSymbol(const Data::Symbol& symbol);
 
+signals:
+    void stacksHovered(const QSet<qint32>& stacks);
+
 private:
     std::unique_ptr<Ui::TimeLineWidget> ui;
 

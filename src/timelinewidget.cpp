@@ -104,6 +104,8 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
                 const auto typeId = ui->timeLineEventSource->itemData(index).toInt();
                 m_timeLineDelegate->setEventType(typeId);
             });
+
+    connect(m_timeLineDelegate, &TimeLineDelegate::stacksHovered, this, &TimeLineWidget::stacksHovered);
 }
 
 TimeLineWidget::~TimeLineWidget() = default;
