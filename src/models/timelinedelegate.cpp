@@ -124,7 +124,11 @@ TimeLineData dataFromIndex(const QModelIndex& index, QRect rect, const Data::Zoo
 Data::Events::const_iterator findEvent(Data::Events::const_iterator begin, Data::Events::const_iterator end,
                                        quint64 time)
 {
-    return std::lower_bound(begin, end, time, [](const Data::Event& event, quint64 time) { return event.time < time; });
+    auto byTime = [](const Data::Event& event, quint64 time) { return event.time < time; };
+    auto it = std::lower_bound(begin, end, time, byTime);
+    // it points to the first item for which our predicate returns false, we want to find the item before that
+    // so decrement it if possible or return begin otherwise
+    return it == begin ? begin : (it - 1);
 }
 }
 
