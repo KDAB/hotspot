@@ -612,10 +612,10 @@ private slots:
         QTest::addColumn<Settings::CostAggregation>("aggregation");
         QTest::addColumn<QString>("filename");
 
-        QTest::addRow("by symbol") << Settings::CostAggregation::BySymbol << "by_symbol.txt";
-        QTest::addRow("by cpu") << Settings::CostAggregation::ByCPU << "by_cpu.txt";
-        QTest::addRow("by process") << Settings::CostAggregation::ByProcess << "by_process.txt";
-        QTest::addRow("by thread") << Settings::CostAggregation::ByThread << "by_thread.txt";
+        QTest::addRow("by_symbol") << Settings::CostAggregation::BySymbol << "by_symbol.txt";
+        QTest::addRow("by_cpu") << Settings::CostAggregation::ByCPU << "by_cpu.txt";
+        QTest::addRow("by_process") << Settings::CostAggregation::ByProcess << "by_process.txt";
+        QTest::addRow("by_thread") << Settings::CostAggregation::ByThread << "by_thread.txt";
     }
 
     void testCustomCostAggregation()
