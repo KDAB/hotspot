@@ -41,43 +41,6 @@
 																					std::execute_native_thread_routine
 																						start_thread
 																							__GI___clone
-	__schedule
-		__schedule
-			schedule
-				do_nanosleep
-					hrtimer_nanosleep
-						common_nsleep
-							__x64_sys_clock_nanosleep
-								do_syscall_64
-									entry_SYSCALL_64_after_hwframe
-										__clock_nanosleep
-											__GI___nanosleep
-												void std::this_thread::sleep_for<long, std::ratio<1l, 1000l> >(std::chrono::duration<long, std::ratio<1l, 1000l> > const&)
-													void std::this_thread::sleep_for<long, std::ratio<1l, 1000l> >(std::chrono::duration<long, std::ratio<1l, 1000l> > const&)
-														std::__invoke_impl<void, main()::<lambda()> >::operator()
-															std::__invoke_impl<void, main()::<lambda()> >
-																std::__invoke<main()::<lambda()> >
-																	std::thread::_Invoker<std::tuple<main()::<lambda()> > >::_M_invoke<0>
-																		std::thread::_Invoker<std::tuple<main()::<lambda()> > >::operator()
-																			std::thread::_State_impl<std::thread::_Invoker<std::tuple<main()::<lambda()> > > >::_M_run
-																				std::execute_native_thread_routine
-																					start_thread
-																						__GI___clone
-				futex_wait_queue
-					futex_wait
-						do_futex
-							__x64_sys_futex
-								do_syscall_64
-									entry_SYSCALL_64_after_hwframe
-										__futex_abstimed_wait_common
-											__pthread_clockjoin_ex
-												std::thread::join()::__gthread_join
-													std::thread::join()::__gthread_join
-														std::thread::join()
-															main
-																__libc_start_call_main
-																	__libc_start_main_alias_2
-																		_start
 	threadname1
 		__schedule
 			__schedule

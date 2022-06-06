@@ -150,6 +150,15 @@ QString findExe(const QString& name)
     return exe.canonicalFilePath();
 }
 
+void dump(const Data::BottomUp& bottomUp, QTextStream& stream, const QByteArray& prefix)
+{
+    stream << prefix << bottomUp.symbol.symbol << '\n';
+
+    for (const auto& child : bottomUp.children) {
+        dump(child, stream, prefix + '\t');
+    }
+}
+
 class TestPerfParser : public QObject
 {
     Q_OBJECT
@@ -176,6 +185,9 @@ private slots:
         m_callerCalleeData = {};
         m_summaryData = {};
         m_perfCommand.clear();
+        m_cpuArchitecture = QSysInfo::currentCpuArchitecture();
+        m_linuxKernelVersion = QSysInfo::kernelVersion();
+        m_machineHostName = QSysInfo::machineHostName();
     }
 
     void testCppInliningNoOptions()
@@ -598,15 +610,6 @@ private slots:
         }
     }
 
-    void dump(const Data::BottomUp& bottomUp, QTextStream& stream, const QString& prefix)
-    {
-        stream << prefix << bottomUp.symbol.symbol << QLatin1Char('\n');
-
-        for (const auto& child : bottomUp.children) {
-            dump(child, stream, prefix + QLatin1Char('\t'));
-        }
-    }
-
     void testCustomCostAggregation_data()
     {
         QTest::addColumn<Settings::CostAggregation>("aggregation");
@@ -623,27 +626,42 @@ private slots:
         QFETCH(Settings::CostAggregation, aggregation);
         QFETCH(QString, filename);
 
-        const auto actualBinaryFile = QFINDTESTDATA("custom_cost_aggregation_testfiles/" + filename);
+        QFile expectedData(QFINDTESTDATA("custom_cost_aggregation_testfiles/" + filename));
+        QVERIFY(expectedData.open(QIODevice::ReadOnly | QIODevice::Text));
+        const auto expected = expectedData.readAll();
 
         Settings::instance()->setCostAggregation(aggregation);
         m_perfCommand = "perf record --call-graph dwarf --sample-cpu --switch-events --event sched:sched_switch -c "
                         "1000000 /tmp/cpp-threadnames";
+        m_cpuArchitecture = "x86_64";
+        m_linuxKernelVersion = "5.17.5-arch1-1";
+        m_machineHostName = "Sparrow";
 
-        QFile perfData(QFINDTESTDATA("custom_cost_aggregation_testfiles/custom_cost_aggregation.perfparser"));
+        const auto perfData = QFINDTESTDATA("custom_cost_aggregation_testfiles/custom_cost_aggregation.perfparser");
+        QVERIFY(!perfData.isEmpty() && QFile::exists(perfData));
 
         try {
-            testPerfData({}, {}, perfData.fileName(), false);
+            testPerfData({}, {}, perfData, false);
         } catch (...) {
         }
 
-        QFile file(actualBinaryFile);
-        file.open(QIODevice::WriteOnly);
+        QByteArray actual;
+        {
+            QTextStream stream(&actual);
+            dump(m_bottomUpData.root, stream, {});
+        }
 
-        QString actual;
-        QTextStream stream(&actual);
-        dump(m_bottomUpData.root, stream, "");
+        if (expected != actual) {
+            QFile actualData(expectedData.fileName() + ".actual");
+            QVERIFY(actualData.open(QIODevice::WriteOnly | QIODevice::Text));
+            actualData.write(actual);
 
-        Q_ASSERT(file.readAll() == actual);
+            const auto diff = QStandardPaths::findExecutable("diff");
+            if (!diff.isEmpty()) {
+                QProcess::execute(diff, {"-u", expectedData.fileName(), actualData.fileName()});
+            }
+        }
+        QCOMPARE(actual, expected);
     }
 
 #if KF5Archive_FOUND
@@ -690,6 +708,9 @@ private:
     Data::CallerCalleeResults m_callerCalleeData;
     Data::EventResults m_eventData;
     QString m_perfCommand;
+    QString m_cpuArchitecture;
+    QString m_linuxKernelVersion;
+    QString m_machineHostName;
 
     void perfRecord(const QStringList& perfOptions, const QString& exePath, const QStringList& exeOptions,
                     const QString& fileName)
@@ -767,9 +788,9 @@ private:
         VERIFY_OR_THROW(m_summaryData.cpusAvailable > 0);
         COMPARE_OR_THROW(m_summaryData.processCount, quint32(1)); // for now we always have a single process
         VERIFY_OR_THROW(m_summaryData.threadCount > 0); // and at least one thread
-        COMPARE_OR_THROW(m_summaryData.cpuArchitecture, QSysInfo::currentCpuArchitecture());
-        COMPARE_OR_THROW(m_summaryData.linuxKernelVersion, QSysInfo::kernelVersion());
-        COMPARE_OR_THROW(m_summaryData.hostName, QSysInfo::machineHostName());
+        COMPARE_OR_THROW(m_summaryData.cpuArchitecture, m_cpuArchitecture);
+        COMPARE_OR_THROW(m_summaryData.linuxKernelVersion, m_linuxKernelVersion);
+        COMPARE_OR_THROW(m_summaryData.hostName, m_machineHostName);
 
         if (checkFrequency) {
             // Verify the sample frequency is acceptable, greater than 500Hz
