@@ -381,7 +381,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                 data.findSamples(hoverX, costType, results.lostEventCostId, contains, start,
                                  [&](const Data::Event& event, bool isLost) {
                                      foundAny = true;
-                                     if (isLost)
+                                     if (isLost || event.stackId == -1)
                                          return;
                                      stacks.insert(event.stackId);
                                  });
