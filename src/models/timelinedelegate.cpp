@@ -93,6 +93,10 @@ void TimeLineData::findSamples(int mappedX, int costType, int lostEventCostId, b
             // event lies to the left of the selected time
             ++it;
             continue;
+        } else if (!contains && timeX < mappedX) {
+            // event lies to the left of the selected time
+            ++it;
+            continue;
         }
         Q_ASSERT(contains || mappedX == timeX);
         callback(*it, isLost);
