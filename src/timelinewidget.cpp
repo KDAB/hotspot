@@ -106,6 +106,12 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
             });
 
     connect(m_timeLineDelegate, &TimeLineDelegate::stacksHovered, this, [this](const QSet<qint32>& stackIds) {
+        if (stackIds.isEmpty()) {
+            ++m_currentHoverStacksJobId;
+            emit stacksHovered({});
+            return;
+        }
+
         const auto& stacks = m_parser->eventResults().stacks;
         const auto& bottomUpResults = m_parser->bottomUpResults();
 
