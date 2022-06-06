@@ -128,7 +128,7 @@ Data::Events::const_iterator findEvent(Data::Events::const_iterator begin, Data:
     auto it = std::lower_bound(begin, end, time, byTime);
     // it points to the first item for which our predicate returns false, we want to find the item before that
     // so decrement it if possible or return begin otherwise
-    return it == begin ? begin : (it - 1);
+    return (it == begin || it->time == time) ? it : (it - 1);
 }
 }
 
