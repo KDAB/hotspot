@@ -38,7 +38,7 @@ public:
     void selectSymbol(const Data::Symbol& symbol);
 
 signals:
-    void stacksHovered(const QSet<qint32>& stacks);
+    void stacksHovered(const QVector<QVector<Data::Symbol>>& stacks);
 
 private:
     std::unique_ptr<Ui::TimeLineWidget> ui;
@@ -48,4 +48,5 @@ private:
     TimeLineDelegate* m_timeLineDelegate = nullptr;
     TimeAxisHeaderView* m_timeAxisHeaderView = nullptr;
     std::atomic<uint> m_currentSelectStackJobId;
+    std::atomic<uint> m_currentHoverStacksJobId;
 };

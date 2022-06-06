@@ -72,6 +72,8 @@ ResultsFlameGraphPage::ResultsFlameGraphPage(FilterAndZoomStack* filterStack, Pe
     connect(ui->flameGraph, &FlameGraph::jumpToDisassembly, this, &ResultsFlameGraphPage::jumpToDisassembly);
 }
 
+ResultsFlameGraphPage::~ResultsFlameGraphPage() = default;
+
 void ResultsFlameGraphPage::clear()
 {
     ui->flameGraph->clear();
@@ -79,4 +81,7 @@ void ResultsFlameGraphPage::clear()
     m_exportAction = nullptr;
 }
 
-ResultsFlameGraphPage::~ResultsFlameGraphPage() = default;
+void ResultsFlameGraphPage::setHoveredStacks(const QVector<QVector<Data::Symbol>>& hoveredStacks)
+{
+    ui->flameGraph->setHoveredStacks(hoveredStacks);
+}

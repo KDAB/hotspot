@@ -31,7 +31,7 @@ public:
     explicit FlameGraph(QWidget* parent = nullptr, Qt::WindowFlags flags = {});
     ~FlameGraph();
 
-    void setHoveredStacks(const QSet<qint32>& stacks);
+    void setHoveredStacks(const QVector<QVector<Data::Symbol>>& stacks);
     void setFilterStack(FilterAndZoomStack* filterStack);
     void setTopDownData(const Data::TopDownResults& topDownData);
     void setBottomUpData(const Data::BottomUpResults& bottomUpData);
@@ -92,5 +92,5 @@ private:
     // cost threshold in percent, items below that value will not be shown
     static const constexpr double DEFAULT_COST_THRESHOLD = 0.1;
     double m_costThreshold = DEFAULT_COST_THRESHOLD;
-    QSet<qint32> m_hoveredStacks;
+    QVector<QVector<Data::Symbol>> m_hoveredStacks;
 };

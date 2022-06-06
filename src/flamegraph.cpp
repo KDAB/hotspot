@@ -67,6 +67,9 @@ public:
     QString description() const;
     void setSearchMatchType(SearchMatchType matchType);
 
+    bool isExternallyHovered() const;
+    void setIsExternallyHovered(bool isExternallyHovered);
+
 protected:
     void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent* event) override;
@@ -75,6 +78,7 @@ private:
     qint64 m_cost;
     Data::Symbol m_symbol;
     bool m_isHovered;
+    bool m_isExternallyHovered;
     SearchMatchType m_searchMatch = NoSearch;
     Data::Costs::Unit m_unit;
 };
@@ -87,6 +91,7 @@ FrameGraphicsItem::FrameGraphicsItem(const qint64 cost, Data::Costs::Unit unit, 
     , m_cost(cost)
     , m_symbol(symbol)
     , m_isHovered(false)
+    , m_isExternallyHovered(false)
     , m_unit(unit)
 {
     setFlag(QGraphicsItem::ItemIsSelectable);
@@ -110,7 +115,7 @@ Data::Symbol FrameGraphicsItem::symbol() const
 
 void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* /*widget*/)
 {
-    if (isSelected() || m_isHovered || m_searchMatch == DirectMatch) {
+    if (isSelected() || m_isHovered || m_isExternallyHovered || m_searchMatch == DirectMatch) {
         auto selectedColor = brush().color();
         selectedColor.setAlpha(255);
         painter->fillRect(rect(), selectedColor);
@@ -201,6 +206,19 @@ void FrameGraphicsItem::setSearchMatchType(SearchMatchType matchType)
 {
     if (m_searchMatch != matchType) {
         m_searchMatch = matchType;
+        update();
+    }
+}
+
+bool FrameGraphicsItem::isExternallyHovered() const
+{
+    return m_isExternallyHovered;
+}
+
+void FrameGraphicsItem::setIsExternallyHovered(bool externallyHovered)
+{
+    if (m_isExternallyHovered != externallyHovered) {
+        m_isExternallyHovered = externallyHovered;
         update();
     }
 }
@@ -449,6 +467,60 @@ SearchResults applySearch(FrameGraphicsItem* item, const QString& searchValue)
     item->setSearchMatchType(result.matchType);
     return result;
 }
+
+// only apply positive matching, resetting is handled globally once before
+// this way we can correctly match multiple stacks
+bool hoverStack(FrameGraphicsItem* item, const QVector<Data::Symbol>& stack, int depth)
+{
+    if ((stack.size() - 1) == depth && item->symbol() == stack.constFirst()) {
+        item->setIsExternallyHovered(true);
+        return true;
+    }
+    if (stack.size() <= depth) {
+        return false;
+    } else if (item->symbol() != stack[stack.size() - 1 - depth]) {
+        return false;
+    }
+
+    const auto children = item->childItems();
+    for (auto* child : children) {
+        if (hoverStack(static_cast<FrameGraphicsItem*>(child), stack, depth + 1)) {
+            item->setIsExternallyHovered(true);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void resetIsExternallyHovered(FrameGraphicsItem* item)
+{
+    if (!item->isExternallyHovered()) {
+        // when nothing is hovered we don't need to recurse
+        return;
+    }
+    item->setIsExternallyHovered(false);
+    const auto children = item->childItems();
+    for (auto* child : children) {
+        resetIsExternallyHovered(static_cast<FrameGraphicsItem*>(child));
+    }
+}
+
+void hoverStacks(FrameGraphicsItem* rootItem, const QVector<QVector<Data::Symbol>>& stacks)
+{
+    const auto children = rootItem->childItems();
+    for (auto* child : children) {
+        // reset everything first
+        resetIsExternallyHovered(static_cast<FrameGraphicsItem*>(child));
+
+        // then match all stacks
+        for (const auto& stack : stacks) {
+            if (hoverStack(static_cast<FrameGraphicsItem*>(child), stack, 0)) {
+                break;
+            }
+        }
+    }
+}
 }
 
 void updateFlameGraphColorScheme(FrameGraphicsItem* item, Settings::ColorScheme scheme)
@@ -632,6 +704,19 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
 }
 
 FlameGraph::~FlameGraph() = default;
+
+void FlameGraph::setHoveredStacks(const QVector<QVector<Data::Symbol>>& hoveredStacks)
+{
+    if (m_hoveredStacks == hoveredStacks) {
+        return;
+    }
+
+    m_hoveredStacks = hoveredStacks;
+
+    if (m_rootItem) {
+        hoverStacks(m_rootItem, m_hoveredStacks);
+    }
+}
 
 void FlameGraph::setFilterStack(FilterAndZoomStack* filterStack)
 {
@@ -868,6 +953,9 @@ void FlameGraph::setData(FrameGraphicsItem* rootItem)
 
     if (!m_searchInput->text().isEmpty()) {
         setSearchValue(m_searchInput->text());
+    }
+    if (!m_hoveredStacks.isEmpty()) {
+        hoverStacks(rootItem, m_hoveredStacks);
     }
 
     if (isVisible()) {

@@ -160,6 +160,8 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
             &ResultsPage::onJumpToDisassembly);
     connect(m_resultsDisassemblyPage, &ResultsDisassemblyPage::jumpToCallerCallee, this,
             &ResultsPage::onJumpToCallerCallee);
+    connect(m_timeLineWidget, &TimeLineWidget::stacksHovered, m_resultsFlameGraphPage,
+            &ResultsFlameGraphPage::setHoveredStacks);
 
     connect(parser, &PerfParser::parsingStarted, this, [this]() {
         // disable when we apply a filter

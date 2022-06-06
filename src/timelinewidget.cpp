@@ -105,7 +105,35 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
                 m_timeLineDelegate->setEventType(typeId);
             });
 
-    connect(m_timeLineDelegate, &TimeLineDelegate::stacksHovered, this, &TimeLineWidget::stacksHovered);
+    connect(m_timeLineDelegate, &TimeLineDelegate::stacksHovered, this, [this](const QSet<qint32>& stackIds) {
+        const auto& stacks = m_parser->eventResults().stacks;
+        const auto& bottomUpResults = m_parser->bottomUpResults();
+
+        scheduleJob(
+            this, m_currentHoverStacksJobId,
+            [stacks, bottomUpResults, stackIds](const QPointer<TimeLineWidget>& timeLineWidget, auto jobCancelled) {
+                QVector<QVector<Data::Symbol>> hovered;
+                hovered.reserve(stackIds.size());
+                for (auto stackId : stackIds) {
+                    if (jobCancelled())
+                        return;
+                    const auto& stack = stacks[stackId];
+                    QVector<Data::Symbol> symbols;
+                    symbols.reserve(stack.size());
+                    bottomUpResults.foreachFrame(stack, [&](const Data::Symbol& frame, const Data::Location&) {
+                        if (jobCancelled())
+                            return false;
+                        symbols.append(frame);
+                        return true;
+                    });
+                    hovered.append(std::move(symbols));
+                }
+
+                QMetaObject::invokeMethod(
+                    timeLineWidget.data(), [timeLineWidget, hovered]() { emit timeLineWidget->stacksHovered(hovered); },
+                    Qt::QueuedConnection);
+            });
+    });
 }
 
 TimeLineWidget::~TimeLineWidget() = default;
