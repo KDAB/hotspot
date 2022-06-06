@@ -141,6 +141,7 @@ TimeLineWidget::~TimeLineWidget() = default;
 void TimeLineWidget::selectSymbol(const Data::Symbol& symbol)
 {
     if (!symbol.isValid()) {
+        ++m_currentSelectStackJobId;
         m_timeLineDelegate->setSelectedStacks({});
         return;
     }
@@ -179,6 +180,7 @@ void TimeLineWidget::selectSymbol(const Data::Symbol& symbol)
 void TimeLineWidget::selectStack(const QVector<Data::Symbol>& stack)
 {
     if (stack.isEmpty()) {
+        ++m_currentSelectStackJobId;
         m_timeLineDelegate->setSelectedStacks({});
         return;
     }
