@@ -53,6 +53,7 @@ signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
     void openEditor(const Data::Symbol& symbol);
     void selectSymbol(const Data::Symbol& symbol);
+    void selectStack(const QVector<Data::Symbol>& stack);
     void jumpToDisassembly(const Data::Symbol& symbol);
     void uiResetRequested();
 

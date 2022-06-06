@@ -154,8 +154,8 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::jumpToCallerCallee, this,
             &ResultsPage::onJumpToCallerCallee);
     connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::openEditor, this, &ResultsPage::onOpenEditor);
-    connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::selectSymbol, m_timeLineWidget,
-            &TimeLineWidget::selectSymbol);
+    connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::selectStack, m_timeLineWidget,
+            &TimeLineWidget::selectStack);
     connect(m_resultsFlameGraphPage, &ResultsFlameGraphPage::jumpToDisassembly, this,
             &ResultsPage::onJumpToDisassembly);
     connect(m_resultsDisassemblyPage, &ResultsDisassemblyPage::jumpToCallerCallee, this,

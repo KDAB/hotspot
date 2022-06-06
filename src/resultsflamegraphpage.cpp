@@ -69,6 +69,7 @@ ResultsFlameGraphPage::ResultsFlameGraphPage(FilterAndZoomStack* filterStack, Pe
     connect(ui->flameGraph, &FlameGraph::jumpToCallerCallee, this, &ResultsFlameGraphPage::jumpToCallerCallee);
     connect(ui->flameGraph, &FlameGraph::openEditor, this, &ResultsFlameGraphPage::openEditor);
     connect(ui->flameGraph, &FlameGraph::selectSymbol, this, &ResultsFlameGraphPage::selectSymbol);
+    connect(ui->flameGraph, &FlameGraph::selectStack, this, &ResultsFlameGraphPage::selectStack);
     connect(ui->flameGraph, &FlameGraph::jumpToDisassembly, this, &ResultsFlameGraphPage::jumpToDisassembly);
 }
 

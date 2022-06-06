@@ -140,6 +140,11 @@ TimeLineWidget::~TimeLineWidget() = default;
 
 void TimeLineWidget::selectSymbol(const Data::Symbol& symbol)
 {
+    if (!symbol.isValid()) {
+        m_timeLineDelegate->setSelectedStacks({});
+        return;
+    }
+
     const auto& stacks = m_parser->eventResults().stacks;
     const auto& bottomUpResults = m_parser->bottomUpResults();
 
@@ -169,4 +174,52 @@ void TimeLineWidget::selectSymbol(const Data::Symbol& symbol)
                         [timeLineDelegate, selectedStacks]() { timeLineDelegate->setSelectedStacks(selectedStacks); },
                         Qt::QueuedConnection);
                 });
+}
+
+void TimeLineWidget::selectStack(const QVector<Data::Symbol>& stack)
+{
+    if (stack.isEmpty()) {
+        m_timeLineDelegate->setSelectedStacks({});
+        return;
+    }
+
+    const auto& stacks = m_parser->eventResults().stacks;
+    const auto& bottomUpResults = m_parser->bottomUpResults();
+
+    scheduleJob(
+        m_timeLineDelegate, m_currentSelectStackJobId,
+        [stacks, bottomUpResults, stack](const QPointer<TimeLineDelegate>& timeLineDelegate, auto jobCancelled) {
+            const auto numStacks = stacks.size();
+            QSet<qint32> selectedStacks;
+            selectedStacks.reserve(numStacks);
+            QVarLengthArray<Data::Symbol, 64> frames;
+            for (int i = 0; i < numStacks; ++i) {
+                if (jobCancelled())
+                    return;
+
+                frames.clear();
+                bottomUpResults.foreachFrame(stacks[i], [&](const Data::Symbol& frame, const Data::Location&) {
+                    if (jobCancelled())
+                        return false;
+                    frames.append(frame);
+                    return true;
+                });
+
+                if (jobCancelled())
+                    return;
+
+                if (frames.size() < stack.size())
+                    continue;
+
+                const auto matches =
+                    std::equal(frames.rbegin(), std::next(frames.rbegin(), stack.size()), stack.rbegin(), stack.rend());
+                if (matches)
+                    selectedStacks.insert(i);
+            }
+
+            QMetaObject::invokeMethod(
+                timeLineDelegate.data(),
+                [timeLineDelegate, selectedStacks]() { timeLineDelegate->setSelectedStacks(selectedStacks); },
+                Qt::QueuedConnection);
+        });
 }

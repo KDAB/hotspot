@@ -920,6 +920,13 @@ void FlameGraph::setTooltipItem(const FrameGraphicsItem* item)
 
     if (item) {
         emit selectSymbol(item->symbol());
+        QVector<Data::Symbol> stack;
+        stack.reserve(32);
+        while (item && item != m_rootItem) {
+            stack.append(item->symbol());
+            item = static_cast<const FrameGraphicsItem*>(item->parentItem());
+        }
+        emit selectStack(stack);
     }
 }
 
