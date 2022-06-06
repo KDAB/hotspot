@@ -8,6 +8,8 @@ set(CMAKE_REQUIRED_LIBRARIES "-static")
 check_cxx_source_compiles("int main() {}" STATIC_LINKING_WORKS)
 cmake_pop_check_state()
 
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
+
 if (STATIC_LINKING_WORKS)
     add_subdirectory(cpp-minimal-static)
 endif()
