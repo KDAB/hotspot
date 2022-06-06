@@ -91,7 +91,7 @@
       <bool>true</bool>
      </property>
      <property name="itemsExpandable">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
     </widget>
    </item>
