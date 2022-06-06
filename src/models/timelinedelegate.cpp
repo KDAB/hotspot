@@ -63,8 +63,8 @@ void TimeLineData::zoom(const Data::TimeRange& t)
 }
 
 template<typename Callback>
-void TimeLineData::findSamples(int mappedX, int costType, int lostEventCostId, bool contains, const Data::Event* start,
-                               const Callback& callback) const
+void TimeLineData::findSamples(int mappedX, int costType, int lostEventCostId, bool contains,
+                               const Data::Events::const_iterator start, const Callback& callback) const
 {
     if (events.isEmpty()) {
         return;
