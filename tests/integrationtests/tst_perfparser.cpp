@@ -260,7 +260,7 @@ private slots:
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-            testPerfData(cppInliningTopSymbol(), cppInliningTopSymbol(), tempFile.fileName());
+            testPerfData(cppInliningTopSymbol(), {}, tempFile.fileName());
         } catch (...) {
         }
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
