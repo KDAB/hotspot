@@ -125,8 +125,9 @@ set_target_properties(perf2text
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
 )
 
-add_custom_target(link_perfparser ALL
+add_custom_command(TARGET hotspot-perfparser POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E create_symlink
         "${PROJECT_BINARY_DIR}/${KDE_INSTALL_LIBEXECDIR}/hotspot-perfparser"
         "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}/perfparser"
+    BYPRODUCTS "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}/perfparser"
 )
