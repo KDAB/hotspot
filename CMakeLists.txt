@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.16)
 project(hotspot VERSION 1.3.80 LANGUAGES CXX C)
 
 set(CMAKE_MODULE_PATH
