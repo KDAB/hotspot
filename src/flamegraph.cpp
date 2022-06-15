@@ -52,11 +52,11 @@ enum SearchMatchType
     ChildMatch
 };
 }
+
 class FrameGraphicsItem : public QGraphicsRectItem
 {
 public:
-    FrameGraphicsItem(const qint64 cost, Data::Costs::Unit unit, const Data::Symbol& symbol,
-                      FrameGraphicsItem* parent = nullptr);
+    FrameGraphicsItem(const qint64 cost, const Data::Symbol& symbol, FrameGraphicsItem* parent);
 
     qint64 cost() const;
     void setCost(qint64 cost);
@@ -80,19 +80,41 @@ private:
     bool m_isHovered;
     bool m_isExternallyHovered;
     SearchMatchType m_searchMatch = NoSearch;
+};
+Q_DECLARE_METATYPE(FrameGraphicsItem*)
+
+class FrameGraphicsRootItem : public FrameGraphicsItem
+{
+public:
+    FrameGraphicsRootItem(const qint64 totalCost, Data::Costs::Unit unit, const QString& costName, const QString& label)
+        : FrameGraphicsItem(totalCost, {label, {}}, nullptr)
+        , m_costName(costName)
+        , m_unit(unit)
+    {
+    }
+
+    Data::Costs::Unit unit() const
+    {
+        return m_unit;
+    }
+    QString costName() const
+    {
+        return m_costName;
+    }
+
+private:
+    QString m_costName;
     Data::Costs::Unit m_unit;
 };
 
-Q_DECLARE_METATYPE(FrameGraphicsItem*)
+Q_DECLARE_METATYPE(FrameGraphicsRootItem*)
 
-FrameGraphicsItem::FrameGraphicsItem(const qint64 cost, Data::Costs::Unit unit, const Data::Symbol& symbol,
-                                     FrameGraphicsItem* parent)
+FrameGraphicsItem::FrameGraphicsItem(const qint64 cost, const Data::Symbol& symbol, FrameGraphicsItem* parent)
     : QGraphicsRectItem(parent)
     , m_cost(cost)
     , m_symbol(symbol)
     , m_isHovered(false)
     , m_isExternallyHovered(false)
-    , m_unit(unit)
 {
     setFlag(QGraphicsItem::ItemIsSelectable);
     setAcceptHoverEvents(true);
@@ -184,32 +206,34 @@ QString FrameGraphicsItem::description() const
 {
     // we build the tooltip text on demand, which is much faster than doing that for potentially thousands of items when
     // we load the data
-    qint64 totalCost = 0;
+    const FrameGraphicsRootItem* root = nullptr;
     {
         auto item = this;
         while (item->parentItem()) {
             item = static_cast<const FrameGraphicsItem*>(item->parentItem());
         }
-        totalCost = item->cost();
+        root = static_cast<const FrameGraphicsRootItem*>(item);
     }
     const auto symbol = Util::formatSymbol(m_symbol);
-    if (!parentItem()) {
+    if (root == this) {
         return symbol;
     }
 
-    switch (m_unit) {
+    switch (root->unit()) {
     case Data::Costs::Unit::Unknown:
-        return i18nc("%1: aggregated sample costs, %2: relative number, %3: function label, %4: binary",
-                     "%1 (%2%) aggregated sample costs in %3 (%4) and below.", Data::Costs::formatCost(m_unit, m_cost),
-                     Util::formatCostRelative(m_cost, totalCost), symbol, m_symbol.binary);
+        return i18nc("%1: aggregated sample costs, %2: relative number, %3: function label, %4: binary, %5: cost name",
+                     "%1 (%2%) aggregated %5 costs in %3 (%4) and below.",
+                     Data::Costs::formatCost(root->unit(), m_cost), Util::formatCostRelative(m_cost, root->cost()),
+                     symbol, m_symbol.binary, root->costName());
     case Data::Costs::Unit::Tracepoint:
         return i18nc("%1: number of tracepoint events, %2: relative number, %3: function label, %4: binary",
-                     "%1 (%2%) tracepoint events in %3 (%4) and below.", Data::Costs::formatCost(m_unit, m_cost),
-                     Util::formatCostRelative(m_cost, totalCost), symbol, m_symbol.binary);
+                     "%1 (%2%) aggregated %5 events in %3 (%4) and below.",
+                     Data::Costs::formatCost(root->unit(), m_cost), Util::formatCostRelative(m_cost, root->cost()),
+                     symbol, m_symbol.binary, root->costName());
     case Data::Costs::Unit::Time:
         return i18nc("%1: elapsed time, %2: relative number, %3: function label, %4: binary",
-                     "%1 (%2%) elapsed time in %3 (%4) and below.", Data::Costs::formatCost(m_unit, m_cost),
-                     Util::formatCostRelative(m_cost, totalCost), symbol, m_symbol.binary);
+                     "%1 (%2%) aggregated %5 in %3 (%4) and below.", Data::Costs::formatCost(root->unit(), m_cost),
+                     Util::formatCostRelative(m_cost, root->cost()), symbol, m_symbol.binary, root->costName());
     }
     Q_UNREACHABLE();
 }
@@ -417,7 +441,7 @@ void toGraphicsItems(const Data::Costs& costs, int type, const QVector<Tree>& da
         }
         auto item = findItemBySymbol(parent->childItems(), row.symbol);
         if (!item) {
-            item = new FrameGraphicsItem(costs.cost(type, row.id), costs.unit(type), row.symbol, parent);
+            item = new FrameGraphicsItem(costs.cost(type, row.id), row.symbol, parent);
             item->setPen(parent->pen());
             item->setBrush(brush(row.symbol, colorScheme));
         } else {
@@ -439,7 +463,7 @@ FrameGraphicsItem* parseData(const Data::Costs& costs, int type, const QVector<T
     const QPen pen(scheme.foreground().color());
 
     QString label = i18n("%1 aggregated %2 cost in total", costs.formatCost(type, totalCost), costs.typeName(type));
-    auto rootItem = new FrameGraphicsItem(totalCost, costs.unit(type), {label, {}});
+    auto rootItem = new FrameGraphicsRootItem(totalCost, costs.unit(type), costs.typeName(type), label);
     rootItem->setBrush(scheme.background());
     rootItem->setPen(pen);
     toGraphicsItems(costs, type, topDownData, rootItem, static_cast<double>(totalCost) * costThreshold / 100.,
