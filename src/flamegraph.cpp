@@ -197,9 +197,21 @@ QString FrameGraphicsItem::description() const
         return symbol;
     }
 
-    return i18nc("%1: aggregated sample costs, %2: relative number, %3: function label, %4: binary",
-                 "%1 (%2%) aggregated sample costs in %3 (%4) and below.", Data::Costs::formatCost(m_unit, m_cost),
-                 Util::formatCostRelative(m_cost, totalCost), symbol, m_symbol.binary);
+    switch (m_unit) {
+    case Data::Costs::Unit::Unknown:
+        return i18nc("%1: aggregated sample costs, %2: relative number, %3: function label, %4: binary",
+                     "%1 (%2%) aggregated sample costs in %3 (%4) and below.", Data::Costs::formatCost(m_unit, m_cost),
+                     Util::formatCostRelative(m_cost, totalCost), symbol, m_symbol.binary);
+    case Data::Costs::Unit::Tracepoint:
+        return i18nc("%1: number of tracepoint events, %2: relative number, %3: function label, %4: binary",
+                     "%1 (%2%) tracepoint events in %3 (%4) and below.", Data::Costs::formatCost(m_unit, m_cost),
+                     Util::formatCostRelative(m_cost, totalCost), symbol, m_symbol.binary);
+    case Data::Costs::Unit::Time:
+        return i18nc("%1: elapsed time, %2: relative number, %3: function label, %4: binary",
+                     "%1 (%2%) elapsed time in %3 (%4) and below.", Data::Costs::formatCost(m_unit, m_cost),
+                     Util::formatCostRelative(m_cost, totalCost), symbol, m_symbol.binary);
+    }
+    Q_UNREACHABLE();
 }
 
 void FrameGraphicsItem::setSearchMatchType(SearchMatchType matchType)
