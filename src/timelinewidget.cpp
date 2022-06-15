@@ -29,15 +29,24 @@
 #include <ui_timelinewidget.h>
 
 namespace {
-template<typename Context, typename Job>
-void scheduleJob(Context* context, std::atomic<uint>& currentJobId, Job&& job)
+template<typename Context, typename Job, typename SetData>
+void scheduleJob(Context* context, std::atomic<uint>* currentJobId, Job&& job, SetData&& setData)
 {
     using namespace ThreadWeaver;
-    const auto jobId = ++currentJobId;
+    const auto jobId = ++(*currentJobId);
     QPointer<Context> smartContext(context);
-    stream() << make_job([job, jobId, &currentJobId, smartContext]() {
-        auto jobCancelled = [&]() { return !smartContext || jobId != currentJobId; };
-        job(smartContext, jobCancelled);
+    auto jobCancelled = [=]() { return !smartContext || jobId != (*currentJobId); };
+    stream() << make_job([=]() {
+        auto results = job(jobCancelled);
+
+        QMetaObject::invokeMethod(
+            smartContext.data(),
+            [results, jobCancelled, setData]() {
+                if (!jobCancelled()) {
+                    setData(results);
+                }
+            },
+            Qt::QueuedConnection);
     });
 }
 }
@@ -116,13 +125,13 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
         const auto& bottomUpResults = m_parser->bottomUpResults();
 
         scheduleJob(
-            this, m_currentHoverStacksJobId,
-            [stacks, bottomUpResults, stackIds](const QPointer<TimeLineWidget>& timeLineWidget, auto jobCancelled) {
+            this, &m_currentHoverStacksJobId,
+            [stacks, bottomUpResults, stackIds](auto jobCancelled) -> QVector<QVector<Data::Symbol>> {
                 QVector<QVector<Data::Symbol>> hovered;
                 hovered.reserve(stackIds.size());
                 for (auto stackId : stackIds) {
                     if (jobCancelled())
-                        return;
+                        return {};
                     const auto& stack = stacks[stackId];
                     QVector<Data::Symbol> symbols;
                     symbols.reserve(stack.size());
@@ -135,10 +144,9 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
                     hovered.append(std::move(symbols));
                 }
 
-                QMetaObject::invokeMethod(
-                    timeLineWidget.data(), [timeLineWidget, hovered]() { emit timeLineWidget->stacksHovered(hovered); },
-                    Qt::QueuedConnection);
-            });
+                return hovered;
+            },
+            [this](const QVector<QVector<Data::Symbol>>& hovered) { emit stacksHovered(hovered); });
     });
 }
 
@@ -155,32 +163,30 @@ void TimeLineWidget::selectSymbol(const Data::Symbol& symbol)
     const auto& stacks = m_parser->eventResults().stacks;
     const auto& bottomUpResults = m_parser->bottomUpResults();
 
-    scheduleJob(m_timeLineDelegate, m_currentSelectStackJobId,
-                [stacks, bottomUpResults, symbol](const QPointer<TimeLineDelegate>& timeLineDelegate,
-                                                  auto jobCancelled) {
-                    const auto numStacks = stacks.size();
-                    QSet<qint32> selectedStacks;
-                    selectedStacks.reserve(numStacks);
-                    for (int i = 0; i < numStacks; ++i) {
-                        if (jobCancelled())
-                            return;
-                        bool symbolFound = false;
-                        bottomUpResults.foreachFrame(stacks[i], [&](const Data::Symbol& frame, const Data::Location&) {
-                            if (jobCancelled())
-                                return false;
-                            symbolFound = (frame == symbol);
-                            // break once we find the symbol we are looking for
-                            return !symbolFound;
-                        });
-                        if (symbolFound)
-                            selectedStacks.insert(i);
-                    }
-
-                    QMetaObject::invokeMethod(
-                        timeLineDelegate.data(),
-                        [timeLineDelegate, selectedStacks]() { timeLineDelegate->setSelectedStacks(selectedStacks); },
-                        Qt::QueuedConnection);
+    scheduleJob(
+        m_timeLineDelegate, &m_currentSelectStackJobId,
+        [stacks, bottomUpResults, symbol](auto jobCancelled) -> QSet<qint32> {
+            const auto numStacks = stacks.size();
+            QSet<qint32> selectedStacks;
+            selectedStacks.reserve(numStacks);
+            for (int i = 0; i < numStacks; ++i) {
+                if (jobCancelled())
+                    return {};
+                bool symbolFound = false;
+                bottomUpResults.foreachFrame(stacks[i], [&](const Data::Symbol& frame, const Data::Location&) {
+                    if (jobCancelled())
+                        return false;
+                    symbolFound = (frame == symbol);
+                    // break once we find the symbol we are looking for
+                    return !symbolFound;
                 });
+                if (symbolFound)
+                    selectedStacks.insert(i);
+            }
+
+            return selectedStacks;
+        },
+        [this](const QSet<qint32>& selectedStacks) { m_timeLineDelegate->setSelectedStacks(selectedStacks); });
 }
 
 void TimeLineWidget::selectStack(const QVector<Data::Symbol>& stack)
@@ -195,15 +201,15 @@ void TimeLineWidget::selectStack(const QVector<Data::Symbol>& stack)
     const auto& bottomUpResults = m_parser->bottomUpResults();
 
     scheduleJob(
-        m_timeLineDelegate, m_currentSelectStackJobId,
-        [stacks, bottomUpResults, stack](const QPointer<TimeLineDelegate>& timeLineDelegate, auto jobCancelled) {
+        m_timeLineDelegate, &m_currentSelectStackJobId,
+        [stacks, bottomUpResults, stack](auto jobCancelled) -> QSet<qint32> {
             const auto numStacks = stacks.size();
             QSet<qint32> selectedStacks;
             selectedStacks.reserve(numStacks);
             QVarLengthArray<Data::Symbol, 64> frames;
             for (int i = 0; i < numStacks; ++i) {
                 if (jobCancelled())
-                    return;
+                    return {};
 
                 frames.clear();
                 bottomUpResults.foreachFrame(stacks[i], [&](const Data::Symbol& frame, const Data::Location&) {
@@ -214,7 +220,7 @@ void TimeLineWidget::selectStack(const QVector<Data::Symbol>& stack)
                 });
 
                 if (jobCancelled())
-                    return;
+                    return {};
 
                 if (frames.size() < stack.size())
                     continue;
@@ -225,9 +231,7 @@ void TimeLineWidget::selectStack(const QVector<Data::Symbol>& stack)
                     selectedStacks.insert(i);
             }
 
-            QMetaObject::invokeMethod(
-                timeLineDelegate.data(),
-                [timeLineDelegate, selectedStacks]() { timeLineDelegate->setSelectedStacks(selectedStacks); },
-                Qt::QueuedConnection);
-        });
+            return selectedStacks;
+        },
+        [this](const QSet<qint32>& selectedStacks) { m_timeLineDelegate->setSelectedStacks(selectedStacks); });
 }
