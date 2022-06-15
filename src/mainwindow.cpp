@@ -447,7 +447,7 @@ void MainWindow::aboutHotspot()
 {
     AboutDialog dialog(this);
     dialog.setWindowTitle(tr("About Hotspot"));
-    dialog.setTitle(tr("Hotspot - the Linux perf GUI for performance analysis"));
+    dialog.setTitle(tr("Hotspot %1 - the Linux perf GUI for performance analysis").arg(QCoreApplication::applicationVersion()));
     dialog.setText(tr("<qt><p>Hotspot is supported and maintained by KDAB</p>"
                       "<p>This project is a KDAB R&D effort to create a standalone GUI for performance data. "
                       "As the first goal, we want to provide a UI like KCachegrind around Linux perf. "
