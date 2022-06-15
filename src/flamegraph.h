@@ -64,6 +64,7 @@ private:
     void selectItem(int item);
     void selectItem(FrameGraphicsItem* item);
     void updateNavigationActions();
+    void rebuild();
 
     Data::TopDownResults m_topDownData;
     Data::BottomUpResults m_bottomUpData;

@@ -817,22 +817,31 @@ void FlameGraph::setTopDownData(const Data::TopDownResults& topDownData)
 {
     m_topDownData = topDownData;
 
-    if (isVisible()) {
-        showData();
-    } else {
-        setData(nullptr);
-    }
+    if (!m_showBottomUpData)
+        rebuild();
 }
 
 void FlameGraph::setBottomUpData(const Data::BottomUpResults& bottomUpData)
 {
     m_bottomUpData = bottomUpData;
+    m_topDownData = {};
 
     disconnect(m_costSource, nullptr, this, nullptr);
     ResultsUtil::fillEventSourceComboBox(m_costSource, bottomUpData.costs,
                                          tr("Show a flame graph over the aggregated %1 sample costs."));
     connect(m_costSource, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             &FlameGraph::showData);
+
+    rebuild();
+}
+
+void FlameGraph::rebuild()
+{
+    if (isVisible()) {
+        showData();
+    } else {
+        setData(nullptr);
+    }
 }
 
 void FlameGraph::clear()
