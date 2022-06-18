@@ -47,4 +47,6 @@ BinPackParameters: true
 #MacroBlockBegin: BEGINTESTFUNCIMPL
 #MacroBlockEnd: ENDTESTFUNCIMPL
 ...
-
+---
+Language: Json
+DisableFormat: true
