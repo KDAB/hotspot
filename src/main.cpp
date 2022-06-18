@@ -145,30 +145,22 @@ int main(int argc, char** argv)
     ThreadWeaver::Queue::instance()->setMaximumNumberOfThreads(QThread::idealThreadCount());
 
     auto applyCliArgs = [&](Settings* settings) {
-        if (parser.isSet(sysroot)) {
-            settings->setSysroot(parser.value(sysroot));
-            settings->setLastUsedEnvironment({});
-        }
-        if (parser.isSet(kallsyms)) {
-            settings->setKallsyms(parser.value(kallsyms));
-            settings->setLastUsedEnvironment({});
-        }
-        if (parser.isSet(debugPaths)) {
-            settings->setDebugPaths(parser.value(debugPaths));
-            settings->setLastUsedEnvironment({});
-        }
-        if (parser.isSet(extraLibPaths)) {
-            settings->setExtraLibPaths(parser.value(extraLibPaths));
-            settings->setLastUsedEnvironment({});
-        }
-        if (parser.isSet(appPath)) {
-            settings->setAppPath(parser.value(appPath));
-            settings->setLastUsedEnvironment({});
-        }
-        if (parser.isSet(arch)) {
-            settings->setArch(parser.value(arch));
-            settings->setLastUsedEnvironment({});
-        }
+        using Setter = void (Settings::*)(const QString&);
+        auto applyArg = [&](const QCommandLineOption& arg, Setter setter) {
+            if (parser.isSet(arg)) {
+                // set a custom env when any arg is set on the mainwindow
+                // we don't want to overwrite the previous one's with our custom settings
+                settings->setLastUsedEnvironment({});
+
+                (settings->*setter)(parser.value(arg));
+            }
+        };
+        applyArg(sysroot, &Settings::setSysroot);
+        applyArg(kallsyms, &Settings::setKallsyms);
+        applyArg(debugPaths, &Settings::setDebugPaths);
+        applyArg(extraLibPaths, &Settings::setExtraLibPaths);
+        applyArg(appPath, &Settings::setAppPath);
+        applyArg(arch, &Settings::setArch);
     };
 
     const auto settings = Settings::instance();
