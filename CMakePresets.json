@@ -1,0 +1,71 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "dev",
+      "displayName": "dev",
+      "description": "Preset for developers",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "asan",
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS_DEBUG": "-g -fsanitize=address,undefined",
+        "CMAKE_C_FLAGS_DEBUG": "-g -fsanitize=address,undefined"
+      }
+    },
+    {
+      "name": "dev-asan",
+      "displayName": "dev with sanitizers",
+      "description": "Preset for developers with asan and ubsan enabled",
+      "inherits": [
+        "dev",
+        "asan"
+      ]
+    },
+    {
+      "name": "dev-opt",
+      "displayName": "dev with optimizations",
+      "description": "Preset for developers with compiler optimizations enabled",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_CXX_FLAGS" : "-DQT_FORCE_ASSERTS -DQT_MESSAGELOGCONTEXT"
+      },
+      "inherits": [
+        "dev"
+      ]
+    },
+    {
+      "name": "dev-opt-asan",
+      "displayName": "dev with optimizations and sanitizers",
+      "description": "Preset for developers with compiler optimizations and sanitizers enabled",
+      "inherits": [
+        "dev-opt",
+        "asan"
+      ]
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "dev",
+      "configurePreset": "dev"
+    },
+    {
+      "name": "dev-asan",
+      "configurePreset": "dev-asan"
+    },
+    {
+      "name": "dev-opt",
+      "configurePreset": "dev-opt"
+    },
+    {
+      "name": "dev-opt-asan",
+      "configurePreset": "dev-opt-asan"
+    }
+  ]
+}
