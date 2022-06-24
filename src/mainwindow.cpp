@@ -37,6 +37,11 @@
 #include <KStandardAction>
 #include <KColorScheme>
 
+#include <kio_version.h>
+#if KIO_VERSION >= QT_VERSION_CHECK(5, 69, 0)
+#include <KIO/CommandLauncherJob>
+#endif
+
 #include <kddockwidgets/LayoutSaver.h>
 
 #include "aboutdialog.h"
@@ -51,18 +56,19 @@ struct IdeSettings
     const char* const app;
     const char* const args;
     const char* const name;
+    const char* const desktopEntryName;
 };
 
 static const IdeSettings ideSettings[] = {
 #if defined(Q_OS_WIN) || defined(Q_OS_OSX)
-    {"", "", "", ""} // Dummy content, because we can't have empty arrays.
+    {"", "", "", "", ""} // Dummy content, because we can't have empty arrays.
 #else
-    {"kdevelop", "%f:%l:%c", QT_TRANSLATE_NOOP("MainWindow", "KDevelop")},
-    {"kate", "%f --line %l --column %c", QT_TRANSLATE_NOOP("MainWindow", "Kate")},
-    {"kwrite", "%f --line %l --column %c", QT_TRANSLATE_NOOP("MainWindow", "KWrite")},
-    {"gedit", "%f +%l:%c", QT_TRANSLATE_NOOP("MainWindow", "gedit")},
-    {"gvim", "%f +%l", QT_TRANSLATE_NOOP("MainWindow", "gvim")},
-    {"qtcreator", "-client %f:%l", QT_TRANSLATE_NOOP("MainWindow", "Qt Creator")}
+    {"kdevelop", "%f:%l:%c", QT_TRANSLATE_NOOP("MainWindow", "KDevelop"), "org.kde.kdevelop"},
+    {"kate", "%f --line %l --column %c", QT_TRANSLATE_NOOP("MainWindow", "Kate"), "org.kde.kate"},
+    {"kwrite", "%f --line %l --column %c", QT_TRANSLATE_NOOP("MainWindow", "KWrite"), "org.kde.kwrite"},
+    {"gedit", "%f +%l:%c", QT_TRANSLATE_NOOP("MainWindow", "gedit"), "org.gnome.gedit"},
+    {"gvim", "%f +%l", QT_TRANSLATE_NOOP("MainWindow", "gvim"), "gvim"},
+    {"qtcreator", "-client %f:%l", QT_TRANSLATE_NOOP("MainWindow", "Qt Creator"), "org.qt-project.qtcreator"}
 #endif
 };
 #if defined(Q_OS_WIN)                                                                                                  \
@@ -503,11 +509,13 @@ void MainWindow::navigateToCode(const QString& filePath, int lineNumber, int col
     const auto ideIdx = settings.readEntry("IDE", firstAvailableIde());
 
     QString command;
+    QString desktopEntryName;
 #if !defined(Q_OS_WIN)                                                                                                 \
     && !defined(Q_OS_OSX) // Remove this #if branch when adding real data to ideSettings for Windows/OSX.
     if (ideIdx >= 0 && ideIdx < ideSettingsSize) {
         command =
             QString::fromUtf8(ideSettings[ideIdx].app) + QLatin1Char(' ') + QString::fromUtf8(ideSettings[ideIdx].args);
+        desktopEntryName = QString::fromUtf8(ideSettings[ideIdx].desktopEntryName);
     } else
 #endif
         if (ideIdx == -1) {
@@ -528,9 +536,22 @@ void MainWindow::navigateToCode(const QString& filePath, int lineNumber, int col
             arg.replace(QLatin1String("%c"), QString::number(std::max(1, columnNumber)));
         }
 
+#if KIO_VERSION >= QT_VERSION_CHECK(5, 69, 0)
+        auto *job = new KIO::CommandLauncherJob(command, args);
+        job->setDesktopName(desktopEntryName);
+
+        connect(job, &KJob::finished, this, [this, command, args](KJob *job) {
+            if (job->error()) {
+                m_resultsPage->showError(tr("Failed to launch command: %1 %2").arg(command, args.join(QLatin1Char(' '))));
+            }
+        });
+
+        job->start();
+#else
         if (!QProcess::startDetached(command, args)) {
             m_resultsPage->showError(tr("Failed to launch command: %1 %2").arg(command, args.join(QLatin1Char(' '))));
         }
+#endif
     } else {
         QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
         return;
