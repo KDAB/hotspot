@@ -5,3 +5,7 @@ build*/
 !3rdparty/perfparser/**/perf.data
 **/perf.data.old
 **/a.out
+3rdparty/perfparser/build*/
+.github
+scripts/compile-test
+.cache
