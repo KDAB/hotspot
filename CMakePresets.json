@@ -67,5 +67,33 @@
       "name": "dev-opt-asan",
       "configurePreset": "dev-opt-asan"
     }
+  ],
+  "testPresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "output": {"outputOnFailure": true},
+      "execution": {"noTestsAction": "error", "stopOnFailure": true}
+    },
+    {
+      "name": "dev",
+      "configurePreset": "dev",
+      "inherits": "base"
+    },
+    {
+      "name": "dev-asan",
+      "configurePreset": "dev-asan",
+      "inherits": "base"
+    },
+    {
+      "name": "dev-opt",
+      "configurePreset": "dev-opt",
+      "inherits": "base"
+    },
+    {
+      "name": "dev-opt-asan",
+      "configurePreset": "dev-opt-asan",
+      "inherits": "base"
+    }
   ]
 }

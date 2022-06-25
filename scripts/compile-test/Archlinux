@@ -20,9 +20,6 @@ FROM hotspot_archlinux_intermediate
 
 ADD . /opt/hotspot/
 
-RUN cd hotspot && mkdir build && cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja \
-        -DCMAKE_INSTALL_PREFIX=/usr/ \
-        -DCMAKE_CXX_FLAGS_DEBUG="-g -fsanitize=address,undefined" \
-        -DCMAKE_C_FLAGS_DEBUG="-g -fsanitize=address,undefined" .. && \
-    cmake --build .
+RUN cd hotspot && \
+    cmake --preset dev-asan && \
+    cmake --build --preset dev-asan
