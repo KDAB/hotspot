@@ -92,7 +92,8 @@ private slots:
 private:
     Data::CallerCalleeResults callerCalleeResults(const QString& filename)
     {
-        qputenv("HOTSPOT_PERFPARSER", qApp->applicationDirPath().toUtf8() + QByteArrayLiteral("/../../bin/perfparser"));
+        qputenv("HOTSPOT_PERFPARSER",
+                QCoreApplication::applicationDirPath().toUtf8() + QByteArrayLiteral("/../../bin/perfparser"));
         PerfParser parser(this);
 
         QSignalSpy parsingFinishedSpy(&parser, &PerfParser::parsingFinished);
