@@ -2,25 +2,33 @@ FROM opensuse/tumbleweed:latest as hotspot_opensuse_intermediate
 
 # install dependencies
 
-RUN zypper --non-interactive in git libqt5-qtx11extras-devel libQt5Widgets5-devel
+RUN zypper --non-interactive update && \
+    zypper --non-interactive install \
+    cmake gcc-c++ glibc-devel-static git ninja binutils gettext \
+    libzstd-devel libelf-devel libdw-devel qcustomplot-devel \
+    libqt5-qtx11extras-devel libQt5Widgets-devel libqt5-qtbase-devel libqt5-qtsvg-devel \
+    libQt5Widgets-private-headers-devel \
+    extra-cmake-modules threadweaver-devel kio-devel \
+    solid-devel kcoreaddons-devel threadweaver-devel kconfigwidgets-devel \
+    kitemmodels-devel kitemviews-devel kwindowsystem-devel kparts-devel \
+    knotifications-devel kiconthemes-devel karchive-devel
 
 WORKDIR /opt
 
-FROM hotspot_opensuse_intermediate
-
-ARG DISABLE_RUSTC_DEMANGLE
-ARG DISABLE_D_DEMANGLE
-
 # install build dependencies
 
-RUN git clone https://github.com/KDAB/KDDockWidgets && cd KDDockWidgets && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr/ .. && make && make install
+RUN git clone -b 1.6 https://github.com/KDAB/KDDockWidgets && \
+    cd KDDockWidgets && mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr/ -G Ninja .. && \
+    cmake --build . --target install
 
-COPY ../../* hotspot/
+FROM hotspot_opensuse_intermediate
 
-RUN zypper --non-interactive in cmake gcc-c++ extra-cmake-modules threadweaver-devel kio-devel \
-    solid-devel kcoreaddons-devel threadweaver-devel kconfigwidgets-devel \
-    kitemmodels-devel kitemviews-devel kwindowsystem-devel kparts-devel \
-    libqt5-qtbase-devel libqt5-qtsvg-devel libelf-devel libdw-devel gettext glibc-devel-static \
-    knotifications-devel kiconthemes-devel libzstd-devel binutils
+ADD . /opt/hotspot/
 
-RUN cd hotspot && git submodule update --init --recursive && mkdir build && cd build && cmake .. && make
+RUN cd hotspot && mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja \
+        -DCMAKE_INSTALL_PREFIX=/usr/ \
+        -DCMAKE_CXX_FLAGS_DEBUG="-g -fsanitize=address,undefined" \
+        -DCMAKE_C_FLAGS_DEBUG="-g -fsanitize=address,undefined" .. && \
+    cmake --build .
