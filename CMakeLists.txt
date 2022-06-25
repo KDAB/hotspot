@@ -73,7 +73,7 @@ find_package(KF5 COMPONENTS
     REQUIRED
 )
 
-find_package(KF5Archive CONFIG)
+find_package(KF5Archive 5.85.0 CONFIG)
 find_package(KF5Auth CONFIG)
 find_package(KDDockWidgets CONFIG)
 set_package_properties(KDDockWidgets PROPERTIES
