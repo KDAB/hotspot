@@ -51,7 +51,7 @@ mark_as_advanced(
 )
 
 if (QCUSTOMPLOT_FOUND)
-    add_library(QCustomPlot UNKNOWN IMPORTED)
+    add_library(QCustomPlot UNKNOWN IMPORTED GLOBAL)
     set_target_properties(QCustomPlot PROPERTIES IMPORTED_LOCATION ${QCustomPlot_LIBRARY})
     target_include_directories(QCustomPlot INTERFACE ${QCustomPlot_INCLUDE_DIRS})
     add_library(QCustomPlot::QCustomPlot ALIAS QCustomPlot)
