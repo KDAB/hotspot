@@ -1,0 +1,32 @@
+FROM ubuntu:22.04 as hotspot_ubuntu22.04_intermediate
+
+# install dependencies
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get -y upgrade && \
+    apt-get install -y qtbase5-dev qtbase5-private-dev libqt5svg5-dev libqt5x11extras5-dev \
+        cmake libdwarf-dev mesa-common-dev libqcustomplot-dev \
+        libboost-iostreams-dev libboost-program-options-dev libboost-system-dev libboost-filesystem-dev \
+        build-essential curl git wget autotools-dev autoconf libtool liblzma-dev libz-dev gettext cmake \
+        libzstd-dev ninja-build libdw-dev libelf-dev extra-cmake-modules \
+        libkf5archive-dev libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev \
+        libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libkf5kio-dev libkf5parts-dev \
+        libkf5solid-dev libkf5windowsystem-dev libkf5notifications-dev libkf5iconthemes-dev
+
+# install build dependencies
+
+RUN git clone -b 1.6 https://github.com/KDAB/KDDockWidgets && \
+    cd KDDockWidgets && mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr/ -G Ninja .. && \
+    cmake --build . --target install
+
+WORKDIR /opt
+
+FROM hotspot_ubuntu22.04_intermediate
+
+ADD . /opt/hotspot/
+
+RUN cd hotspot && \
+    cmake --preset dev-asan && \
+    cmake --build --preset dev-asan
