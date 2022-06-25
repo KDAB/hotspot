@@ -13,8 +13,10 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
-    - name: test build instructions on ubuntu
-      run: docker build -f scripts/compile-test/Ubuntu .
+    - name: compile
+      run: docker build -t hotspot-build-ubuntu -f scripts/compile-test/Ubuntu .
+    - name: run unit tests
+      run: docker run hotspot-build-ubuntu bash -c "cd hotspot/build/ && ctest --output-on-failure -j \$(nproc) -E tst_perfdata"
   
   test-archlinux:
     runs-on: ubuntu-latest
@@ -23,8 +25,10 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
-    - name: test build instructions on archlinux
-      run: docker build -f scripts/compile-test/Archlinux .
+    - name: compile
+      run: docker build -t hotspot-build-archlinux -f scripts/compile-test/Archlinux .
+    - name: run unit tests
+      run: docker run hotspot-build-archlinux bash -c "cd hotspot/build/ && ctest --output-on-failure -j \$(nproc)"
 
   test-fedora:
     runs-on: ubuntu-latest
@@ -33,5 +37,19 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
-    - name: test build instructions on fedora
-      run: docker build -f scripts/compile-test/Fedora .
+    - name: compile
+      run: docker build -t hotspot-build-fedora -f scripts/compile-test/Fedora .
+    - name: run unit tests
+      run: docker run hotspot-build-fedora bash -c "cd hotspot/build/ && ctest --output-on-failure -j \$(nproc)"
+
+  test-opensuse:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: compile
+      run: docker build -t hotspot-build-opensuse -f scripts/compile-test/OpenSuse .
+    - name: run unit tests
+      run: docker run hotspot-build-opensuse bash -c "cd hotspot/build/ && ctest --output-on-failure -j \$(nproc)"
