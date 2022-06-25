@@ -2,22 +2,27 @@ FROM archlinux:latest as hotspot_archlinux_intermediate
 
 # install dependencies
 
-RUN pacman -Syu --noconfirm git make qt5-x11extras cmake gcc
+RUN pacman -Syu --noconfirm git make qt5-x11extras cmake gcc extra-cmake-modules \
+    libelf gettext qt5-base ninja qcustomplot \
+    threadweaver kconfigwidgets knotifications karchive \
+    kiconthemes kitemviews kitemmodels kwindowsystem kio kparts solid
 
 WORKDIR /opt
 
-FROM hotspot_archlinux_intermediate
-
-ARG DISABLE_RUSTC_DEMANGLE
-ARG DISABLE_D_DEMANGLE
-
 # install build dependencies
 
-RUN git clone https://github.com/KDAB/KDDockWidgets && cd KDDockWidgets && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr/ .. && make && make install
+RUN git clone -b 1.6 https://github.com/KDAB/KDDockWidgets && \
+    cd KDDockWidgets && mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr/ -G Ninja .. && \
+    cmake --build . --target install
 
-RUN pacman -Sy --noconfirm gcc extra-cmake-modules threadweaver kconfigwidgets knotifications \
-    kiconthemes kitemviews kitemmodels kwindowsystem kio kparts solid libelf gettext qt5-base
+FROM hotspot_archlinux_intermediate
 
 ADD . /opt/hotspot/
 
-RUN cd hotspot && mkdir build && cd build && cmake .. && make
+RUN cd hotspot && mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja \
+        -DCMAKE_INSTALL_PREFIX=/usr/ \
+        -DCMAKE_CXX_FLAGS_DEBUG="-g -fsanitize=address,undefined" \
+        -DCMAKE_C_FLAGS_DEBUG="-g -fsanitize=address,undefined" .. && \
+    cmake --build .
