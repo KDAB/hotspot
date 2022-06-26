@@ -1,4 +1,4 @@
-name: test build instructions
+name: compile and test
 
 on:
   push:
