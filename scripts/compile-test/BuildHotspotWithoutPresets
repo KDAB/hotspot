@@ -1,0 +1,15 @@
+ARG BASEIMAGE
+FROM $BASEIMAGE
+
+WORKDIR /opt
+
+ADD . /opt/hotspot/
+
+RUN cd hotspot && \
+    cmake -S . -B build -G Ninja \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -DCMAKE_INSTALL_PREFIX=/usr/ \
+        -DCMAKE_CXX_FLAGS_DEBUG="-g -fsanitize=address,undefined" \
+        -DCMAKE_C_FLAGS_DEBUG="-g -fsanitize=address,undefined" .. && \
+    cmake --build .
+
