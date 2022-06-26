@@ -43,7 +43,7 @@ jobs:
     - name: run unit tests
       run: docker run hotspot-build-archlinux bash -c "cd hotspot && ctest --preset dev-asan -j \$(nproc)"
 
-  fedora:
+  fedora34:
     runs-on: ubuntu-latest
 
     steps:
@@ -51,11 +51,11 @@ jobs:
       with:
         submodules: recursive
     - name: compile
-      run: docker build -t hotspot-build-fedora -f scripts/compile-test/Fedora .
+      run: docker build -t hotspot-build-fedora34 -f scripts/compile-test/Fedora34 .
     - name: run unit tests
-      run: docker run hotspot-build-fedora bash -c "cd hotspot/build/ && ctest --output-on-failure -j \$(nproc)"
+      run: docker run hotspot-build-fedora34 bash -c "cd hotspot/build/ && ctest --output-on-failure -j \$(nproc)"
 
-  opensuse:
+  opensuse-tumbleweed:
     runs-on: ubuntu-latest
 
     steps:
@@ -63,6 +63,6 @@ jobs:
       with:
         submodules: recursive
     - name: compile
-      run: docker build -t hotspot-build-opensuse -f scripts/compile-test/OpenSuse .
+      run: docker build -t hotspot-build-opensuse-tumbleweed -f scripts/compile-test/OpenSuseTumbleweed .
     - name: run unit tests
-      run: docker run hotspot-build-opensuse bash -c "cd hotspot/build/ && ctest --output-on-failure -j \$(nproc)"
+      run: docker run hotspot-build-opensuse-tumbleweed bash -c "cd hotspot/build/ && ctest --output-on-failure -j \$(nproc)"
