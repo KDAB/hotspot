@@ -1,68 +1,130 @@
 name: compile and test
 
-on:
-  push:
-    branches: "**"
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
+  pre_job:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+    - id: skip_check
+      uses: fkirc/skip-duplicate-actions@v4
+      with:
+        # All of these options are optional, so you can remove them if you are happy with the defaults
+        concurrent_skipping: 'same_content'
+        do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
+
   ubuntu-2004:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
+    container: ghcr.io/kdab/hotspot-ubuntu20.04-dependencies
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v3
       with:
         submodules: recursive
-    - name: compile
-      run: docker build -t hotspot-build-ubuntu20.04 -f scripts/compile-test/Ubuntu20.04 .
-    - name: run unit tests
-      run: docker run hotspot-build-ubuntu20.04 bash -c "cd hotspot/build/ && ctest --output-on-failure -j \$(nproc) -E tst_perfdata"
+
+    - name: Configure
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -G Ninja >
+          -DCMAKE_CXX_FLAGS_DEBUG="-g -fsanitize=address,undefined" >
+          -DCMAKE_C_FLAGS_DEBUG="-g -fsanitize=address,undefined"
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Test
+      run: ctest --test-dir build --output-on-failure -E tst_perfdata
 
   ubuntu-2204:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
+    container: ghcr.io/kdab/hotspot-ubuntu22.04-dependencies
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v3
       with:
         submodules: recursive
-    - name: compile
-      run: docker build -t hotspot-build-ubuntu22.04 -f scripts/compile-test/Ubuntu22.04 .
-    - name: run unit tests
-      run: docker run hotspot-build-ubuntu22.04 bash -c "cd hotspot && ctest --preset dev-asan -j \$(nproc)"
+
+    - name: Configure
+      run: cmake --preset dev-asan
+
+    - name: Build
+      run: cmake --build build-dev-asan
+
+    - name: Test
+      run: ctest --preset dev-asan
 
   archlinux:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+
     runs-on: ubuntu-latest
+    container: ghcr.io/kdab/hotspot-archlinux-dependencies
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v3
       with:
         submodules: recursive
-    - name: compile
-      run: docker build -t hotspot-build-archlinux -f scripts/compile-test/Archlinux .
-    - name: run unit tests
-      run: docker run hotspot-build-archlinux bash -c "cd hotspot && ctest --preset dev-asan -j \$(nproc)"
+
+    - name: Configure
+      run: cmake --preset dev-asan
+
+    - name: Build
+      run: cmake --build --preset dev-asan
+
+    - name: Test
+      run: ctest --preset dev-asan
 
   fedora34:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+
     runs-on: ubuntu-latest
+    container: ghcr.io/kdab/hotspot-fedora34-dependencies
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v3
       with:
         submodules: recursive
-    - name: compile
-      run: docker build -t hotspot-build-fedora34 -f scripts/compile-test/Fedora34 .
-    - name: run unit tests
-      run: docker run hotspot-build-fedora34 bash -c "cd hotspot/build/ && ctest --output-on-failure -j \$(nproc)"
+
+    - name: Configure
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -G Ninja >
+          -DCMAKE_CXX_FLAGS_DEBUG="-g -fsanitize=address,undefined" >
+          -DCMAKE_C_FLAGS_DEBUG="-g -fsanitize=address,undefined"
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Test
+      run: ctest --test-dir build --output-on-failure
 
   opensuse-tumbleweed:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+
     runs-on: ubuntu-latest
+    container: ghcr.io/kdab/hotspot-opensusetumbleweed-dependencies
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v3
       with:
         submodules: recursive
-    - name: compile
-      run: docker build -t hotspot-build-opensuse-tumbleweed -f scripts/compile-test/OpenSuseTumbleweed .
-    - name: run unit tests
-      run: docker run hotspot-build-opensuse-tumbleweed bash -c "cd hotspot/build/ && ctest --output-on-failure -j \$(nproc)"
+
+    - name: Configure
+      run: cmake --preset dev-asan
+
+    - name: Build
+      run: cmake --build --preset dev-asan
+
+    - name: Test
+      run: ctest --preset dev-asan

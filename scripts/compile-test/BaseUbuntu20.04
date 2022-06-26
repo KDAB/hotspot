@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 as hotspot_ubuntu20.04_intermediate
+FROM ubuntu:20.04
 
 # install dependencies
 ARG DEBIAN_FRONTEND=noninteractive
@@ -22,23 +22,3 @@ RUN apt-get update && \
 ENV PATH="/opt/bin:/opt/qt515/bin:${PATH}" \
     PKG_CONFIG_PATH="/opt/qt515/lib/pkgconfig:${PKG_CONFIG_PATH}" \
     LD_LIBRARY_PATH="/opt/qt515/lib:/opt/qt515/lib/x86_64-linux-gnu"
-
-# install build dependencies
-
-RUN git clone -b 1.6 https://github.com/KDAB/KDDockWidgets && \
-    cd KDDockWidgets && mkdir build && cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr/ -G Ninja .. && \
-    cmake --build . --target install
-
-WORKDIR /opt
-
-FROM hotspot_ubuntu20.04_intermediate
-
-ADD . /opt/hotspot/
-
-RUN cd hotspot && mkdir build && cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja \
-        -DCMAKE_INSTALL_PREFIX=/usr/ \
-        -DCMAKE_CXX_FLAGS_DEBUG="-g -fsanitize=address,undefined" \
-        -DCMAKE_C_FLAGS_DEBUG="-g -fsanitize=address,undefined" .. && \
-    cmake --build .

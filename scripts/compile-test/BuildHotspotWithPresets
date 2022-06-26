@@ -1,0 +1,11 @@
+ARG BASEIMAGE
+FROM $BASEIMAGE
+
+WORKDIR /opt
+
+ADD . /opt/hotspot/
+
+RUN cd hotspot && \
+    cmake --preset dev-asan && \
+    cmake --build --preset dev-asan
+

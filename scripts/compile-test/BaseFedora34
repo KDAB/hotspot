@@ -1,4 +1,4 @@
-FROM fedora:34 as hotspot_fedora_intermediate
+FROM fedora:34
 
 # install dependencies
 
@@ -10,23 +10,3 @@ RUN echo "max_parallel_downloads=10" >> /etc/dnf/dnf.conf && \
     kf5-kconfigwidgets-devel kf5-kitemviews-devel kf5-kitemmodels-devel kf5-karchive-devel \
     kf5-kio-devel kf5-solid-devel kf5-kwindowsystem-devel kf5-kiconthemes-devel \
     kf5-knotifications-devel kf5-kparts-devel libzstd-devel qcustomplot-qt5-devel
-
-WORKDIR /opt
-
-# install build dependencies
-
-RUN git clone -b 1.6 https://github.com/KDAB/KDDockWidgets && \
-    cd KDDockWidgets && mkdir build && cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr/ -G Ninja .. && \
-    cmake --build . --target install
-
-FROM hotspot_fedora_intermediate
-
-ADD . /opt/hotspot/
-
-RUN cd hotspot && mkdir build && cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja \
-        -DCMAKE_INSTALL_PREFIX=/usr/ \
-        -DCMAKE_CXX_FLAGS_DEBUG="-g -fsanitize=address,undefined" \
-        -DCMAKE_C_FLAGS_DEBUG="-g -fsanitize=address,undefined" .. && \
-    cmake --build .

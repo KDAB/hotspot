@@ -1,0 +1,8 @@
+FROM archlinux:latest
+
+# install dependencies
+
+RUN pacman -Syu --noconfirm git make qt5-x11extras cmake gcc extra-cmake-modules \
+    libelf gettext qt5-base ninja qcustomplot \
+    threadweaver kconfigwidgets knotifications karchive \
+    kiconthemes kitemviews kitemmodels kwindowsystem kio kparts solid
