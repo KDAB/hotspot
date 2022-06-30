@@ -8,9 +8,15 @@
 
 #pragma once
 
+#include <memory>
 #include <QAbstractTableModel>
+#include <QTextLine>
+
 #include "data.h"
 #include "disassemblyoutput.h"
+
+class QTextDocument;
+class Highlighter;
 
 class DisassemblyModel : public QAbstractTableModel
 {
@@ -47,12 +53,15 @@ public:
         LinkedFunctionNameRole,
         LinkedFunctionOffsetRole,
         RainbowLineNumberRole,
+        SyntaxHighlightRole,
     };
 
 public slots:
     void updateHighlighting(int line);
 
 private:
+    QTextDocument* m_document;
+    Highlighter* m_highlighter;
     DisassemblyOutput m_data;
     Data::CallerCalleeResults m_results;
     int m_numTypes = 0;

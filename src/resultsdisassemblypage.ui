@@ -41,6 +41,11 @@
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
        <widget class="QTreeView" name="sourceCodeView">
+        <property name="font">
+         <font>
+          <family>Monospace</family>
+         </font>
+        </property>
         <property name="alternatingRowColors">
          <bool>true</bool>
         </property>

@@ -45,10 +45,10 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(QWidget* parent)
     , m_sourceCodeModel(new SourceCodeModel(this))
     , m_disassemblyCostDelegate(new CostDelegate(DisassemblyModel::CostRole, DisassemblyModel::TotalCostRole, this))
     , m_sourceCodeCostDelegate(new CostDelegate(SourceCodeModel::CostRole, SourceCodeModel::TotalCostRole, this))
-    , m_disassemblyDelegate(
-          new CodeDelegate(DisassemblyModel::RainbowLineNumberRole, DisassemblyModel::HighlightRole, this))
-    , m_sourceCodeDelegate(
-          new CodeDelegate(SourceCodeModel::RainbowLineNumberRole, SourceCodeModel::HighlightRole, this))
+    , m_disassemblyDelegate(new CodeDelegate(DisassemblyModel::RainbowLineNumberRole, DisassemblyModel::HighlightRole,
+                                             DisassemblyModel::SyntaxHighlightRole, this))
+    , m_sourceCodeDelegate(new CodeDelegate(SourceCodeModel::RainbowLineNumberRole, SourceCodeModel::HighlightRole,
+                                            SourceCodeModel::SyntaxHighlightRole, this))
 {
     ui->setupUi(this);
     ui->assemblyView->setModel(m_disassemblyModel);
