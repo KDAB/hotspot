@@ -6,11 +6,22 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
-#include "disassemblymodel.h"
+#include <QFont>
+#include <QTextBlock>
+#include <QTextDocument>
 
-DisassemblyModel::DisassemblyModel(QObject *parent)
+#include "disassemblymodel.h"
+#include "hotspot-config.h"
+
+#include "highlighter.hpp"
+#include "sourcecodemodel.h"
+
+DisassemblyModel::DisassemblyModel(QObject* parent)
     : QAbstractTableModel(parent)
+    , m_document(new QTextDocument(this))
+    , m_highlighter(new Highlighter(m_document, this))
 {
+    m_document->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 }
 
 DisassemblyModel::~DisassemblyModel() = default;
@@ -40,6 +51,17 @@ void DisassemblyModel::setDisassembly(const DisassemblyOutput& disassemblyOutput
 {
     beginResetModel();
     m_data = disassemblyOutput;
+
+    QTextCursor cursor(m_document);
+    for (const auto& it : disassemblyOutput.disassemblyLines) {
+        cursor.insertText(it.disassembly);
+        cursor.insertBlock();
+    }
+
+    m_document->setTextWidth(m_document->idealWidth());
+
+    m_highlighter->setDefinitionForName(QStringLiteral("GNU Assembler"));
+
     endResetModel();
 }
 
@@ -77,9 +99,14 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
 
     const auto &data = m_data.disassemblyLines.at(index.row());
 
-    if (role == Qt::DisplayRole || role == CostRole || role == TotalCostRole || role == Qt::ToolTipRole) {
-        if (index.column() == DisassemblyColumn)
-            return data.disassembly;
+    if (role == Qt::DisplayRole || role == CostRole || role == TotalCostRole || role == SyntaxHighlightRole
+        || role == Qt::ToolTipRole) {
+        if (index.column() == DisassemblyColumn) {
+            const auto block = m_document->findBlockByLineNumber(index.row());
+            if (role == SyntaxHighlightRole)
+                return QVariant::fromValue(block.layout()->lineAt(0));
+            return block.text();
+        }
 
         if (data.addr == 0) {
             return {};

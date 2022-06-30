@@ -183,3 +183,22 @@ inline QString findExe(const QString& name)
     VERIFY_OR_THROW(exe.exists() && exe.isExecutable());
     return exe.canonicalFilePath();
 }
+
+#define HOTSPOT_TEST_MAIN_IMPL(TestObject, QApp)                                                                       \
+    int main(int argc, char** argv)                                                                                    \
+    {                                                                                                                  \
+        if (!qEnvironmentVariableIsSet("QT_QPA_PLATFORM"))                                                             \
+            qputenv("QT_QPA_PLATFORM", "minimal");                                                                     \
+                                                                                                                       \
+        QApp app(argc, argv);                                                                                          \
+        app.setAttribute(Qt::AA_Use96Dpi, true);                                                                       \
+        app.setAttribute(Qt::AA_UseHighDpiPixmaps);                                                                    \
+        TestObject tc;                                                                                                 \
+        QTEST_SET_MAIN_SOURCE_PATH                                                                                     \
+        QTest::qInit(&tc, argc, argv);                                                                                 \
+        int ret = QTest::qRun();                                                                                       \
+        QTest::qCleanup();                                                                                             \
+        return ret;                                                                                                    \
+    }
+
+#define HOTSPOT_GUITEST_MAIN(TestObject) HOTSPOT_TEST_MAIN_IMPL(TestObject, QGuiApplication)

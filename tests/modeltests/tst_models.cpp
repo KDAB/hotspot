@@ -653,6 +653,6 @@ private slots:
     }
 };
 
-QTEST_GUILESS_MAIN(TestModels);
+HOTSPOT_GUITEST_MAIN(TestModels);
 
 #include "tst_models.moc"

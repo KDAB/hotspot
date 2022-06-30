@@ -13,7 +13,7 @@ class CodeDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    CodeDelegate(int lineNumberRole, int highlightRole, QObject* parent = nullptr);
+    CodeDelegate(int lineNumberRole, int highlightRole, int syntaxHighlightRole, QObject* parent = nullptr);
     ~CodeDelegate();
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
@@ -21,4 +21,5 @@ public:
 private:
     int m_lineNumberRole;
     int m_highlightRole;
+    int m_syntaxHighlightRole;
 };

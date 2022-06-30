@@ -6,12 +6,20 @@
 */
 
 #include "sourcecodemodel.h"
+
 #include <QDir>
 #include <QFile>
+#include <QTextBlock>
+#include <QTextDocument>
+
+#include "highlighter.hpp"
 
 SourceCodeModel::SourceCodeModel(QObject* parent)
     : QAbstractTableModel(parent)
+    , m_document(new QTextDocument(this))
+    , m_highlighter(new Highlighter(m_document, this))
 {
+    qRegisterMetaType<QTextLine>();
 }
 
 SourceCodeModel::~SourceCodeModel() = default;
@@ -19,12 +27,14 @@ SourceCodeModel::~SourceCodeModel() = default;
 void SourceCodeModel::clear()
 {
     beginResetModel();
-    m_sourceCode.clear();
+    m_document->clear();
     endResetModel();
 }
 
 void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
 {
+    m_numLines = 0;
+
     if (disassemblyOutput.sourceFileName.isEmpty())
         return;
 
@@ -43,6 +53,13 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
     auto entry = m_callerCalleeResults.entry(disassemblyOutput.symbol);
     m_costs = {};
     m_costs.initializeCostsFrom(m_callerCalleeResults.selfCosts);
+
+    const auto sourceCode = QString::fromUtf8(file.readAll());
+
+    m_document->setPlainText(sourceCode);
+    m_document->setTextWidth(m_document->idealWidth());
+
+    m_highlighter->setDefinitionForFilename(disassemblyOutput.sourceFileName);
 
     for (const auto& line : disassemblyOutput.disassemblyLines) {
         if (line.sourceCodeLine == 0) {
@@ -71,15 +88,14 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
     Q_ASSERT(minLineNumber > 0);
     Q_ASSERT(minLineNumber < maxLineNumber);
 
-    // -2: 1 for index, one for extra line with the symbol
+    m_startLine = minLineNumber - 2;
     m_lineOffset = minLineNumber - 1;
+    m_numLines = maxLineNumber - m_startLine;
 
-    const auto lines = QString::fromUtf8(file.readAll()).split(QLatin1Char('\n'));
-
-    m_sourceCode.push_back(disassemblyOutput.symbol.prettySymbol);
-    for (int i = minLineNumber - 1; i < maxLineNumber; i++) {
-        m_sourceCode.push_back(lines[i]);
-    }
+    QTextCursor cursor(m_document->findBlockByLineNumber(m_startLine));
+    cursor.select(QTextCursor::SelectionType::LineUnderCursor);
+    cursor.removeSelectedText();
+    cursor.insertText(disassemblyOutput.symbol.prettySymbol);
 
     endResetModel();
 }
@@ -109,14 +125,19 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
     if (!hasIndex(index.row(), index.column(), index.parent()))
         return {};
 
-    if (index.row() > m_sourceCode.count() || index.row() < 0)
+    if (index.row() > m_numLines || index.row() < 0)
         return {};
 
-    const auto& line = m_sourceCode.at(index.row());
-
-    if (role == Qt::DisplayRole || role == Qt::ToolTipRole || role == CostRole || role == TotalCostRole) {
-        if (index.column() == SourceCodeColumn)
-            return line;
+    if (role == Qt::DisplayRole || role == Qt::ToolTipRole || role == CostRole || role == TotalCostRole
+        || role == SyntaxHighlightRole) {
+        if (index.column() == SourceCodeColumn) {
+            const auto block = m_document->findBlockByLineNumber(index.row() + m_startLine);
+            if (!block.isValid())
+                return {};
+            if (role == SyntaxHighlightRole)
+                return QVariant::fromValue(block.layout()->lineAt(0));
+            return block.text();
+        }
 
         if (index.column() == SourceCodeLineNumber) {
             return index.row() + m_lineOffset;
@@ -152,7 +173,7 @@ int SourceCodeModel::columnCount(const QModelIndex& parent) const
 
 int SourceCodeModel::rowCount(const QModelIndex& parent) const
 {
-    return parent.isValid() ? 0 : m_sourceCode.count();
+    return parent.isValid() ? 0 : m_numLines;
 }
 
 void SourceCodeModel::updateHighlighting(int line)

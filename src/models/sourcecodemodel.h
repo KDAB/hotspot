@@ -10,8 +10,15 @@
 #include "data.h"
 #include "disassemblyoutput.h"
 
+#include <memory>
 #include <QAbstractTableModel>
 #include <QTextLine>
+
+class QTextDocument;
+
+class Highlighter;
+
+Q_DECLARE_METATYPE(QTextLine)
 
 class SourceCodeModel : public QAbstractTableModel
 {
@@ -43,7 +50,8 @@ public:
         RainbowLineNumberRole = Qt::UserRole,
         HighlightRole,
         CostRole,
-        TotalCostRole
+        TotalCostRole,
+        SyntaxHighlightRole,
     };
 
 public slots:
@@ -54,10 +62,13 @@ public slots:
 private:
     QString m_sysroot;
     QSet<int> m_validLineNumbers;
-    QStringList m_sourceCode;
+    QTextDocument* m_document = nullptr;
+    Highlighter* m_highlighter = nullptr;
     Data::CallerCalleeResults m_callerCalleeResults;
     Data::Costs m_costs;
     int m_numTypes = 0;
     int m_lineOffset = 0;
+    int m_startLine = 0;
+    int m_numLines = 0;
     int m_highlightLine = 0;
 };

@@ -87,7 +87,10 @@ private slots:
 
     QString patch_expected_file(const QString& actualText, const QString& actualBinaryFile)
     {
-        if (actualText.contains("jmpq")) {
+        bool jmpPatch = !actualText.contains("jmpq");
+        bool nopwPatch = !actualText.contains("cs nopw");
+
+        if (!jmpPatch && !nopwPatch) {
             return actualBinaryFile + ".expected.txt";
         }
 
@@ -95,9 +98,16 @@ private slots:
         file->open();
 
         auto text = actualText;
-        text.replace("jmpq", "jmp");
-        text.replace("retq", "ret");
-        text.replace("callq", "call");
+
+        if (jmpPatch) {
+            text.replace("jmpq", "jmp");
+            text.replace("retq", "ret");
+            text.replace("callq", "call");
+        }
+
+        if (nopwPatch) {
+            text.replace("cs nopw 0x", "nopw   %cs:0x");
+        }
 
         file->write(text.toUtf8());
 

@@ -7,23 +7,27 @@
 
 #include "codedelegate.h"
 
+#include <QApplication>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QTextLine>
 
 #include "disassemblymodel.h"
+#include "sourcecodemodel.h"
 
 namespace {
 QColor backgroundColor(int line, bool isCurrent)
 {
     int degrees = (line * 139) % 360;
-    return QColor::fromHsv(degrees, 255, 255, isCurrent ? 120 : 40);
+    return QColor::fromHsv(degrees, 255, 255, isCurrent ? 60 : 40);
 }
 }
 
-CodeDelegate::CodeDelegate(int lineNumberRole, int highlightRole, QObject* parent)
+CodeDelegate::CodeDelegate(int lineNumberRole, int highlightRole, int syntaxHighlightRole, QObject* parent)
     : QStyledItemDelegate(parent)
     , m_lineNumberRole(lineNumberRole)
     , m_highlightRole(highlightRole)
+    , m_syntaxHighlightRole(syntaxHighlightRole)
 {
 }
 
@@ -50,14 +54,26 @@ void CodeDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
         painter->drawRect(option.rect);
     }
 
-    painter->setBrush(brush);
     painter->setPen(pen);
+    painter->setBrush(brush);
 
-    if (option.features & QStyleOptionViewItem::Alternate) {
-        auto o = option;
-        o.features &= ~QStyleOptionViewItem::Alternate;
-        QStyledItemDelegate::paint(painter, o, index);
+    const auto line = index.data(m_syntaxHighlightRole).value<QTextLine>();
+    if (line.isValid()) {
+        const auto textRect = line.naturalTextRect();
+
+        auto rect = QStyle::alignedRect(Qt::LayoutDirection::LeftToRight, Qt::AlignVCenter, textRect.size().toSize(),
+                                        option.rect);
+
+        painter->setClipRect(option.rect);
+        line.draw(painter, rect.topLeft());
+        painter->setClipping(false);
     } else {
-        QStyledItemDelegate::paint(painter, option, index);
+        if (option.features & QStyleOptionViewItem::Alternate) {
+            auto o = option;
+            o.features &= ~QStyleOptionViewItem::Alternate;
+            QStyledItemDelegate::paint(painter, o, index);
+        } else {
+            QStyledItemDelegate::paint(painter, option, index);
+        }
     }
 }
