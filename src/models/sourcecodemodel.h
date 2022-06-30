@@ -7,7 +7,9 @@
 
 #pragma once
 
+#include "data.h"
 #include "disassemblyoutput.h"
+
 #include <QAbstractTableModel>
 #include <QTextLine>
 
@@ -40,16 +42,22 @@ public:
     {
         RainbowLineNumberRole = Qt::UserRole,
         HighlightRole,
+        CostRole,
+        TotalCostRole
     };
 
 public slots:
     void updateHighlighting(int line);
     void setSysroot(const QString& sysroot);
+    void setCallerCalleeResults(const Data::CallerCalleeResults& results);
 
 private:
     QString m_sysroot;
     QSet<int> m_validLineNumbers;
     QStringList m_sourceCode;
+    Data::CallerCalleeResults m_callerCalleeResults;
+    Data::Costs m_costs;
+    int m_numTypes = 0;
     int m_lineOffset = 0;
     int m_highlightLine = 0;
 };

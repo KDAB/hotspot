@@ -297,8 +297,7 @@ private slots:
         DisassemblyModel model;
         QAbstractItemModelTester tester(&model);
         model.setResults(results);
-        QCOMPARE(model.columnCount(),
-                 DisassemblyModel::COLUMN_COUNT + results.selfCosts.numTypes()); // disassembly + linked funtion
+        QCOMPARE(model.columnCount(), DisassemblyModel::COLUMN_COUNT + results.selfCosts.numTypes());
         QCOMPARE(model.rowCount(), 0); // no disassembly data yet
 
         DisassemblyOutput disassemblyOutput = DisassemblyOutput::disassemble("objdump","x86_64", symbol);
