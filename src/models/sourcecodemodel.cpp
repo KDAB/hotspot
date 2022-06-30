@@ -40,6 +40,10 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
 
     m_validLineNumbers.clear();
 
+    auto entry = m_callerCalleeResults.entry(disassemblyOutput.symbol);
+    m_costs = {};
+    m_costs.initializeCostsFrom(m_callerCalleeResults.selfCosts);
+
     for (const auto& line : disassemblyOutput.disassemblyLines) {
         if (line.sourceCodeLine == 0) {
             continue;
@@ -50,6 +54,15 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
         }
         if (line.sourceCodeLine < minLineNumber) {
             minLineNumber = line.sourceCodeLine;
+        }
+
+        auto it = entry.offsetMap.find(line.addr);
+        if (it != entry.offsetMap.end()) {
+            const auto& locationCost = it.value();
+            const auto& costLine = locationCost.selfCost;
+            const auto totalCost = m_callerCalleeResults.selfCosts.totalCosts();
+
+            m_costs.add(line.sourceCodeLine, costLine);
         }
 
         m_validLineNumbers.insert(line.sourceCodeLine);
@@ -73,7 +86,7 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
 
 QVariant SourceCodeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (section < 0 || section >= COLUMN_COUNT)
+    if (section < 0 || section >= COLUMN_COUNT + m_numTypes)
         return {};
     if (role != Qt::DisplayRole || orientation != Qt::Horizontal)
         return {};
@@ -83,6 +96,10 @@ QVariant SourceCodeModel::headerData(int section, Qt::Orientation orientation, i
 
     if (section == SourceCodeLineNumber)
         return tr("Line");
+
+    if (section - COLUMN_COUNT <= m_numTypes) {
+        return m_costs.typeName(section - COLUMN_COUNT);
+    }
 
     return {};
 }
@@ -97,12 +114,25 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
 
     const auto& line = m_sourceCode.at(index.row());
 
-    if (role == Qt::DisplayRole || role == Qt::ToolTipRole) {
+    if (role == Qt::DisplayRole || role == Qt::ToolTipRole || role == CostRole || role == TotalCostRole) {
         if (index.column() == SourceCodeColumn)
             return line;
 
         if (index.column() == SourceCodeLineNumber) {
             return index.row() + m_lineOffset;
+        }
+
+        if (index.column() - COLUMN_COUNT < m_numTypes) {
+            const auto cost = m_costs.cost(index.column() - COLUMN_COUNT, index.row() + m_lineOffset);
+            const auto totalCost = m_costs.totalCost(index.column() - COLUMN_COUNT);
+            if (role == CostRole) {
+                return cost;
+            }
+            if (role == TotalCostRole) {
+                return totalCost;
+            }
+
+            return Util::formatCostRelative(cost, totalCost, true);
         }
     } else if (role == HighlightRole) {
         return index.row() + m_lineOffset == m_highlightLine;
@@ -117,7 +147,7 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
 
 int SourceCodeModel::columnCount(const QModelIndex& parent) const
 {
-    return parent.isValid() ? 0 : COLUMN_COUNT;
+    return parent.isValid() ? 0 : COLUMN_COUNT + m_numTypes;
 }
 
 int SourceCodeModel::rowCount(const QModelIndex& parent) const
@@ -139,4 +169,12 @@ int SourceCodeModel::lineForIndex(const QModelIndex& index) const
 void SourceCodeModel::setSysroot(const QString& sysroot)
 {
     m_sysroot = sysroot;
+}
+
+void SourceCodeModel::setCallerCalleeResults(const Data::CallerCalleeResults& results)
+{
+    beginResetModel();
+    m_callerCalleeResults = results;
+    m_numTypes = results.selfCosts.numTypes();
+    endResetModel();
 }
