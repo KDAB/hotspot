@@ -5,8 +5,7 @@ include_directories(
     perfparser/app
 )
 
-add_executable(hotspot-perfparser
-    perfparser/app/main.cpp
+add_library(libhotspot-perfparser STATIC
     perfparser/app/perfattributes.cpp
     perfparser/app/perfheader.cpp
     perfparser/app/perffilesection.cpp
@@ -24,8 +23,8 @@ add_executable(hotspot-perfparser
     perfparser/app/demangler.cpp
 )
 
-target_link_libraries(hotspot-perfparser
-LINK_PRIVATE
+target_link_libraries(libhotspot-perfparser
+PUBLIC
     Qt5::Core
     Qt5::Network
     ${LIBDW_LIBRARIES}
@@ -33,10 +32,19 @@ LINK_PRIVATE
 )
 
 if (Zstd_FOUND)
-    target_include_directories(hotspot-perfparser PRIVATE ${Zstd_INCLUDE_DIR})
-    target_link_libraries(hotspot-perfparser PRIVATE ${Zstd_LIBRARY})
-    target_compile_definitions(hotspot-perfparser PRIVATE HAVE_ZSTD=1)
+    target_include_directories(libhotspot-perfparser PUBLIC ${Zstd_INCLUDE_DIR})
+    target_link_libraries(libhotspot-perfparser PUBLIC ${Zstd_LIBRARY})
+    target_compile_definitions(libhotspot-perfparser PUBLIC HAVE_ZSTD=1)
 endif()
+
+add_executable(hotspot-perfparser
+    perfparser/app/main.cpp
+)
+
+target_link_libraries(hotspot-perfparser
+PRIVATE
+    libhotspot-perfparser
+)
 
 set_target_properties(hotspot-perfparser
     PROPERTIES
@@ -47,29 +55,18 @@ install(TARGETS hotspot-perfparser RUNTIME DESTINATION ${KDE_INSTALL_LIBEXECDIR}
 
 ecm_add_test(
     perfparser/tests/auto/elfmap/tst_elfmap.cpp
-    perfparser/app/perfelfmap.cpp
     LINK_LIBRARIES
-        Qt5::Core
-        Qt5::Network
+        libhotspot-perfparser
         Qt5::Test
-        ${LIBDW_LIBRARIES}
-        ${LIBELF_LIBRARIES}
     TEST_NAME
         tst_elfmap
 )
 
 ecm_add_test(
     perfparser/tests/auto/addresscache/tst_addresscache.cpp
-    perfparser/app/perfelfmap.cpp
-    perfparser/app/perfdwarfdiecache.cpp
-    perfparser/app/perfaddresscache.cpp
-    perfparser/app/demangler.cpp
     LINK_LIBRARIES
-        Qt5::Core
-        Qt5::Network
+        libhotspot-perfparser
         Qt5::Test
-        ${LIBDW_LIBRARIES}
-        ${LIBELF_LIBRARIES}
     TEST_NAME
         tst_addresscache
 )
@@ -78,35 +75,12 @@ ecm_add_test(
     perfparser/tests/auto/perfdata/tst_perfdata.cpp
     perfparser/tests/auto/shared/perfparsertestclient.cpp
     perfparser/tests/auto/perfdata/perfdata.qrc
-    perfparser/app/perfaddresscache.cpp
-    perfparser/app/perfattributes.cpp
-    perfparser/app/perfdata.cpp
-    perfparser/app/perfelfmap.cpp
-    perfparser/app/perffeatures.cpp
-    perfparser/app/perffilesection.cpp
-    perfparser/app/perfheader.cpp
-    perfparser/app/perfkallsyms.cpp
-    perfparser/app/perfregisterinfo.cpp
-    perfparser/app/perfsymboltable.cpp
-    perfparser/app/perftracingdata.cpp
-    perfparser/app/perfunwind.cpp
-    perfparser/app/perfdwarfdiecache.cpp
-    perfparser/app/demangler.cpp
     LINK_LIBRARIES
-        Qt5::Core
-        Qt5::Network
         Qt5::Test
-        ${LIBDW_LIBRARIES}
-        ${LIBELF_LIBRARIES}
+        libhotspot-perfparser
     TEST_NAME
         tst_perfdata
 )
-
-if (Zstd_FOUND)
-    target_include_directories(tst_perfdata PRIVATE ${Zstd_INCLUDE_DIR})
-    target_link_libraries(tst_perfdata ${Zstd_LIBRARY})
-    target_compile_definitions(tst_perfdata PRIVATE HAVE_ZSTD=1)
-endif()
 
 include_directories(perfparser/tests/auto/shared)
 add_executable(perf2text
