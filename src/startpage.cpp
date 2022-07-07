@@ -62,6 +62,24 @@ void StartPage::onParseFileProgress(float percent)
     ui->openFileProgressBar->setValue(static_cast<int>(percent * scale));
 }
 
+void StartPage::onDebugInfoDownloadProgress(const QString& url, qint64 numerator, qint64 denominator)
+{
+    if (numerator == denominator) {
+        ui->loadStack->setCurrentWidget(ui->parseProgressPage);
+        return;
+    }
+
+    ui->loadStack->setCurrentWidget(ui->downloadDebugInfoProgressPage);
+    ui->downloadDebugInfoProgressLabel->setText(tr("Downloading Debug Information from %1...").arg(url));
+    if (!denominator) {
+        ui->downloadDebugInfoProgressBar->setRange(0, 0);
+        ui->downloadDebugInfoProgressBar->setValue(-1);
+    } else {
+        ui->downloadDebugInfoProgressBar->setRange(0, denominator);
+        ui->downloadDebugInfoProgressBar->setValue(numerator);
+    }
+}
+
 void StartPage::paintEvent(QPaintEvent* /*event*/)
 {
     QPainter painter(this);

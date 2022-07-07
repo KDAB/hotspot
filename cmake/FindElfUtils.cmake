@@ -44,6 +44,17 @@ find_library (LIBDW_LIBRARIES
       ENV LIBRARY_PATH   # PATH and LIB will also work
       ENV LD_LIBRARY_PATH)
 
+find_library (LIBDEBUGINFOD_LIBRARIES
+    NAMES
+      debuginfod
+    PATHS
+      /usr/lib
+      /usr/local/lib
+      /opt/local/lib
+      /sw/lib
+      ENV LIBRARY_PATH   # PATH and LIB will also work
+      ENV LD_LIBRARY_PATH)
+
 include (FindPackageHandleStandardArgs)
 
 
@@ -53,4 +64,4 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(ElfUtils DEFAULT_MSG
     LIBDW_LIBRARIES
     LIBDW_INCLUDE_DIR)
 
-mark_as_advanced(LIBDW_INCLUDE_DIR LIBDW_LIBRARIES)
+mark_as_advanced(LIBDW_INCLUDE_DIR LIBDW_LIBRARIES LIBDEBUGINFOD_LIBRARIES)

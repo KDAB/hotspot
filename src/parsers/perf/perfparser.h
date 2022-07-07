@@ -58,6 +58,7 @@ signals:
     void parsingFinished();
     void parsingFailed(const QString& errorMessage);
     void progress(float progress);
+    void debugInfoDownloadProgress(const QString& url, qint64 numerator, qint64 denominator);
     void stopRequested();
 
     void parserWarning(const QString& errorMessage);

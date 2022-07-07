@@ -793,6 +793,15 @@ public:
             emit progress(percent);
             break;
         }
+        case EventType::DebugInfoDownloadProgress: {
+            StringId url;
+            qint64 numerator = 0;
+            qint64 denominator = 0;
+            stream >> url >> numerator >> denominator;
+            qCDebug(LOG_PERFPARSER) << "parsed:" << url << numerator << denominator;
+            emit debugInfoDownloadProgress(strings.value(url.id), numerator, denominator);
+            break;
+        }
         case EventType::TracePointFormat:
             // TODO: implement me
             return true;
@@ -1322,6 +1331,7 @@ public:
         ContextSwitchDefinition,
         Sample,
         TracePointSample,
+        DebugInfoDownloadProgress,
         InvalidType
     };
 
@@ -1367,6 +1377,7 @@ public slots:
 
 signals:
     void progress(float percent);
+    void debugInfoDownloadProgress(const QString& url, qint64 numerator, qint64 denominator);
 };
 
 PerfParser::PerfParser(QObject* parent)
@@ -1487,6 +1498,7 @@ void PerfParser::startParseFile(const QString& path)
     stream() << make_job([path, parserBinary, debuginfodUrls, costAggregation, this]() {
         PerfParserPrivate d(costAggregation);
         connect(&d, &PerfParserPrivate::progress, this, &PerfParser::progress);
+        connect(&d, &PerfParserPrivate::debugInfoDownloadProgress, this, &PerfParser::debugInfoDownloadProgress);
         connect(this, &PerfParser::stopRequested, &d, &PerfParserPrivate::stop);
 
         auto finalize = [&d, this]() {

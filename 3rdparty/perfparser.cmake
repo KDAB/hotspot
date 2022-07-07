@@ -1,3 +1,8 @@
+include(CheckSymbolExists)
+set(CMAKE_REQUIRED_INCLUDES ${LIBELF_INCLUDE_DIRS} ${LIBDW_INCLUDE_DIR}/elfutils ${LIBDWARF_INCLUDE_DIRS})
+set(CMAKE_REQUIRED_LIBRARIES ${LIBDW_LIBRARIES} ${LIBELF_LIBRARIES})
+check_symbol_exists(dwfl_get_debuginfod_client "libdwfl.h" HAVE_DWFL_GET_DEBUGINFOD_CLIENT)
+
 include_directories(
     ${LIBELF_INCLUDE_DIRS}
     ${LIBDW_INCLUDE_DIR}/elfutils
@@ -35,6 +40,11 @@ if (Zstd_FOUND)
     target_include_directories(libhotspot-perfparser PUBLIC ${Zstd_INCLUDE_DIR})
     target_link_libraries(libhotspot-perfparser PUBLIC ${Zstd_LIBRARY})
     target_compile_definitions(libhotspot-perfparser PUBLIC HAVE_ZSTD=1)
+endif()
+
+if (HAVE_DWFL_GET_DEBUGINFOD_CLIENT)
+    target_link_libraries(libhotspot-perfparser PRIVATE ${LIBDEBUGINFOD_LIBRARIES})
+    target_compile_definitions(libhotspot-perfparser PRIVATE HAVE_DWFL_GET_DEBUGINFOD_CLIENT=1)
 endif()
 
 add_executable(hotspot-perfparser

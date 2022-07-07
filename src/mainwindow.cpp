@@ -138,6 +138,7 @@ MainWindow::MainWindow(QWidget* parent)
     connect(m_startPage, &StartPage::stopParseButtonClicked, this,
             static_cast<void (MainWindow::*)()>(&MainWindow::clear));
     connect(m_parser, &PerfParser::progress, m_startPage, &StartPage::onParseFileProgress);
+    connect(m_parser, &PerfParser::debugInfoDownloadProgress, m_startPage, &StartPage::onDebugInfoDownloadProgress);
     connect(this, &MainWindow::openFileError, m_startPage, &StartPage::onOpenFileError);
     connect(m_recordPage, &RecordPage::homeButtonClicked, this, &MainWindow::onHomeButtonClicked);
     connect(m_recordPage, &RecordPage::openFile, this,
