@@ -10,6 +10,7 @@
 #include "costcontextmenu.h"
 #include "recordpage.h"
 #include "resultspage.h"
+#include "resultspagediff.h"
 #include "settings.h"
 #include "settingsdialog.h"
 #include "startpage.h"
@@ -45,6 +46,7 @@
 #include <kddockwidgets/LayoutSaver.h>
 
 #include "aboutdialog.h"
+#include "diffreportdialog.h"
 
 #include "parsers/perf/perfparser.h"
 
@@ -103,13 +105,16 @@ MainWindow::MainWindow(QWidget* parent)
     , m_startPage(new StartPage(this))
     , m_recordPage(new RecordPage(this))
     , m_resultsPage(new ResultsPage(m_parser, this))
+    , m_resultsPageDiff(new ResultsPageDiff(this))
     , m_settingsDialog(new SettingsDialog(this))
+    , m_diffReportDialog(new DiffReportDialog(this))
 {
     ui->setupUi(this);
 
     m_pageStack->addWidget(m_startPage);
     m_pageStack->addWidget(m_resultsPage);
     m_pageStack->addWidget(m_recordPage);
+    m_pageStack->addWidget(m_resultsPageDiff);
 
     QVBoxLayout* layout = new QVBoxLayout;
     layout->setContentsMargins(0, 0, 0, 0);
@@ -137,6 +142,7 @@ MainWindow::MainWindow(QWidget* parent)
     connect(m_startPage, &StartPage::recordButtonClicked, this, &MainWindow::onRecordButtonClicked);
     connect(m_startPage, &StartPage::stopParseButtonClicked, this,
             static_cast<void (MainWindow::*)()>(&MainWindow::clear));
+    connect(m_startPage, &StartPage::createDiffReportButtonClicked, this, [this] { m_diffReportDialog->show(); });
     connect(m_parser, &PerfParser::progress, m_startPage, &StartPage::onParseFileProgress);
     connect(m_parser, &PerfParser::debugInfoDownloadProgress, m_startPage, &StartPage::onDebugInfoDownloadProgress);
     connect(this, &MainWindow::openFileError, m_startPage, &StartPage::onOpenFileError);
@@ -262,6 +268,13 @@ MainWindow::MainWindow(QWidget* parent)
 
     const auto restored = serializer.restoredDockWidgets();
     m_resultsPage->initDockWidgets(restored);
+
+    connect(m_diffReportDialog, &QDialog::accepted, this, [this] {
+        m_diffReportDialog->close();
+        clear();
+        m_pageStack->setCurrentWidget(m_resultsPageDiff);
+        m_resultsPageDiff->createDiffReport(m_diffReportDialog->fileA(), m_diffReportDialog->fileB());
+    });
 }
 
 MainWindow::~MainWindow() = default;

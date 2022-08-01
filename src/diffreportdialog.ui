@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DiffReportDialog</class>
+ <widget class="QDialog" name="DiffReportDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Diff two files</string>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>false</bool>
+  </property>
+  <layout class="QFormLayout" name="formLayout">
+   <property name="leftMargin">
+    <number>6</number>
+   </property>
+   <property name="topMargin">
+    <number>6</number>
+   </property>
+   <property name="rightMargin">
+    <number>6</number>
+   </property>
+   <property name="bottomMargin">
+    <number>6</number>
+   </property>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>File A:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>File B:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="KUrlRequester" name="file_a"/>
+   </item>
+   <item row="1" column="1">
+    <widget class="KUrlRequester" name="file_b"/>
+   </item>
+   <item row="2" column="1">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Open</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>KUrlRequester</class>
+   <extends>QWidget</extends>
+   <header>kurlrequester.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

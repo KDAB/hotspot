@@ -71,29 +71,6 @@
           <item>
            <widget class="QWidget" name="widget_3" native="true">
             <layout class="QGridLayout" name="gridLayout">
-             <item row="1" column="0" colspan="2">
-              <widget class="QPushButton" name="recordDataButton">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="toolTip">
-                <string>Record perf data</string>
-               </property>
-               <property name="text">
-                <string>Record Data</string>
-               </property>
-               <property name="icon">
-                <iconset theme="media-record">
-                 <normaloff>.</normaloff>.</iconset>
-               </property>
-               <property name="autoDefault">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
              <item row="0" column="1">
               <widget class="QToolButton" name="pathSettings">
                <property name="sizePolicy">
@@ -117,6 +94,29 @@
                </property>
               </widget>
              </item>
+             <item row="1" column="0" colspan="2">
+              <widget class="QPushButton" name="recordDataButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="toolTip">
+                <string>Record perf data</string>
+               </property>
+               <property name="text">
+                <string>Record Data</string>
+               </property>
+               <property name="icon">
+                <iconset theme="media-record">
+                 <normaloff>.</normaloff>.</iconset>
+               </property>
+               <property name="autoDefault">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
              <item row="0" column="0">
               <widget class="QPushButton" name="openFileButton">
                <property name="toolTip">
@@ -131,6 +131,13 @@
                </property>
                <property name="autoDefault">
                 <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QPushButton" name="diffButton">
+               <property name="text">
+                <string>Diff Report</string>
                </property>
               </widget>
              </item>

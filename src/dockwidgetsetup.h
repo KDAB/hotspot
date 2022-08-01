@@ -9,6 +9,7 @@
 
 namespace KDDockWidgets {
 class MainWindow;
+class DockWidget;
 }
 
 class QWidget;
@@ -16,3 +17,4 @@ class QString;
 
 void setupDockWidgets();
 KDDockWidgets::MainWindow* createDockingArea(const QString& id, QWidget* parent);
+KDDockWidgets::DockWidget* dockify(QWidget* widget, const QString& id, const QString& title, const QString& shortcut);
