@@ -143,13 +143,6 @@ ComparableSymbol cppRecursionTopSymbol(QString binary = "cpp-recursion")
     return ComparableSymbol(QVector<QPair<QString, QString>> {{"fibonacci", binary}, {{}, binary}});
 }
 
-QString findExe(const QString& name)
-{
-    QFileInfo exe(QCoreApplication::applicationDirPath() + QLatin1String("/../tests/test-clients/%1/%1").arg(name));
-    VERIFY_OR_THROW(exe.exists() && exe.isExecutable());
-    return exe.canonicalFilePath();
-}
-
 void dump(const Data::BottomUp& bottomUp, QTextStream& stream, const QByteArray& prefix)
 {
     stream << prefix << bottomUp.symbol.symbol << '\n';

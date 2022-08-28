@@ -7,8 +7,10 @@
 
 #pragma once
 
+#include <QFileInfo>
 #include <QString>
 #include <QStringList>
+#include <QTest>
 #include <QTextStream>
 
 #include <models/callercalleemodel.h>
@@ -174,3 +176,10 @@ QStringList printModel(const QAbstractItemModel* model)
         if (!QTest::qCompare(actual, expected, #actual, #expected, __FILE__, __LINE__))                                \
             throw std::logic_error("compare failed: " #actual #expected);                                              \
     } while (false)
+
+inline QString findExe(const QString& name)
+{
+    QFileInfo exe(QCoreApplication::applicationDirPath() + QLatin1String("/../tests/test-clients/%1/%1").arg(name));
+    VERIFY_OR_THROW(exe.exists() && exe.isExecutable());
+    return exe.canonicalFilePath();
+}

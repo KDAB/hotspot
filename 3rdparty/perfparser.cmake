@@ -72,6 +72,11 @@ ecm_add_test(
         tst_elfmap
 )
 
+set_target_properties(tst_elfmap
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
+)
+
 ecm_add_test(
     perfparser/tests/auto/addresscache/tst_addresscache.cpp
     LINK_LIBRARIES
@@ -79,6 +84,11 @@ ecm_add_test(
         Qt5::Test
     TEST_NAME
         tst_addresscache
+)
+
+set_target_properties(tst_addresscache
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
 )
 
 ecm_add_test(
@@ -90,6 +100,11 @@ ecm_add_test(
         libhotspot-perfparser
     TEST_NAME
         tst_perfdata
+)
+
+set_target_properties(tst_perfdata
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
 )
 
 include_directories(perfparser/tests/auto/shared)

@@ -11,13 +11,6 @@
 #include "../testutils.h"
 #include "data.h"
 
-QString findExe(const QString& name)
-{
-    QFileInfo exe(QCoreApplication::applicationDirPath() + QLatin1String("/../test-clients/%1/%1").arg(name));
-    VERIFY_OR_THROW(exe.exists() && exe.isExecutable());
-    return exe.canonicalFilePath();
-}
-
 class TestCallgraphGenerator : public QObject
 {
     Q_OBJECT
@@ -89,7 +82,7 @@ private:
     Data::CallerCalleeResults callerCalleeResults(const QString& filename)
     {
         qputenv("HOTSPOT_PERFPARSER",
-                QCoreApplication::applicationDirPath().toUtf8() + QByteArrayLiteral("/../../bin/perfparser"));
+                QCoreApplication::applicationDirPath().toUtf8() + QByteArrayLiteral("/perfparser"));
         PerfParser parser(this);
 
         QSignalSpy parsingFinishedSpy(&parser, &PerfParser::parsingFinished);
