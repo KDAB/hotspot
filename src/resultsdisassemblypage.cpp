@@ -162,7 +162,7 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
 
     const auto& entry = m_callerCalleeResults.entry(m_curSymbol);
 
-    ui->filenameLabel->setText(disassemblyOutput.sourceFileName);
+    ui->filenameLabel->setText(disassemblyOutput.mainSourceFileName);
     // don't set tooltip on symbolLabel, as that will be called internally and then get overwritten
     setToolTip(Util::formatTooltip(entry.id, m_curSymbol, m_callerCalleeResults.selfCosts,
                                    m_callerCalleeResults.inclusiveCosts));

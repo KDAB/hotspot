@@ -18,7 +18,7 @@ namespace {
 struct ObjectdumpOutput
 {
     QVector<DisassemblyOutput::DisassemblyLine> disassemblyLines;
-    QString sourceCodeFile;
+    QString mainSourceFileName;
 };
 
 DisassemblyOutput::LinkedFunction extractLinkedFunction(const QString& disassembly)
@@ -60,6 +60,7 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
     QTextStream stream(output);
     QString asmLine;
     QString sourceFileName;
+    QString currentSourceFileName;
     // detect lines like:
     // 4f616: 84 c0 test %al,%al
     static const QRegularExpression disassemblyRegex(QStringLiteral("^[ ]+([0-9a-f]{4,}):\t"));
@@ -91,12 +92,12 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
             // - /usr/include/c++/11.2.0/bits/stl_tree.h:3452
             // - ././test.cpp
 
-            auto lineNumber = asmLine.rightRef(asmLine.length() - colonIndex - 1);
-
+            currentSourceFileName = asmLine.left(colonIndex);
             if (sourceFileName.isEmpty()) {
-                sourceFileName = asmLine.left(colonIndex);
+                sourceFileName = currentSourceFileName;
             }
 
+            auto lineNumber = asmLine.rightRef(asmLine.length() - colonIndex - 1);
             const auto spaceIndex = lineNumber.indexOf(QLatin1Char(' '));
             if (spaceIndex != -1) {
                 lineNumber = lineNumber.left(spaceIndex);
@@ -120,7 +121,8 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
             }
         }
 
-        disassemblyLines.push_back({addr, asmLine, extractLinkedFunction(asmLine), sourceCodeLine});
+        disassemblyLines.push_back(
+            {addr, asmLine, extractLinkedFunction(asmLine), currentSourceFileName, sourceCodeLine});
     }
     return {disassemblyLines, sourceFileName};
 }
@@ -179,6 +181,6 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
 
     const auto objdumpOutput = objdumpParse(output);
     disassemblyOutput.disassemblyLines = objdumpOutput.disassemblyLines;
-    disassemblyOutput.sourceFileName = objdumpOutput.sourceCodeFile;
+    disassemblyOutput.mainSourceFileName = objdumpOutput.mainSourceFileName;
     return disassemblyOutput;
 }
