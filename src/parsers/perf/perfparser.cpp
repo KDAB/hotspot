@@ -1385,6 +1385,18 @@ PerfParser::PerfParser(QObject* parent)
     , m_isParsing(false)
     , m_stopRequested(false)
 {
+    qRegisterMetaType<Data::Summary>();
+    qRegisterMetaType<Data::BottomUp>();
+    qRegisterMetaType<Data::TopDown>();
+    qRegisterMetaType<Data::CallerCalleeEntryMap>("Data::CallerCalleeEntryMap");
+    qRegisterMetaType<Data::BottomUpResults>();
+    qRegisterMetaType<Data::TopDownResults>();
+    qRegisterMetaType<Data::CallerCalleeResults>();
+    qRegisterMetaType<Data::EventResults>();
+    qRegisterMetaType<Data::PerLibraryResults>();
+    qRegisterMetaType<Data::TracepointResults>();
+    qRegisterMetaType<Data::FrequencyResults>();
+
     // set data via signal/slot connection to ensure we don't introduce a data race
     connect(this, &PerfParser::bottomUpDataAvailable, this, [this](const Data::BottomUpResults& data) {
         if (m_bottomUpResults.root.children.isEmpty()) {

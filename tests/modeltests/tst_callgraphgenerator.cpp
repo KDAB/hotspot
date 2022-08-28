@@ -24,10 +24,6 @@ class TestCallgraphGenerator : public QObject
 private slots:
     void initTestCase()
     {
-        qRegisterMetaType<Data::BottomUpResults>("Data::BottomUpResults");
-        qRegisterMetaType<Data::CallerCalleeResults>("Data::CallerCalleeResults");
-        qRegisterMetaType<Data::EventResults>("Data::EventResults");
-
         const QStringList perfOptions = {"--call-graph", "dwarf"};
         QStringList exeOptions;
 

@@ -168,14 +168,6 @@ private slots:
         if (!PerfRecord::isPerfInstalled()) {
             QSKIP("perf is not available, cannot run integration tests.");
         }
-
-        qRegisterMetaType<Data::Summary>();
-        qRegisterMetaType<Data::BottomUp>();
-        qRegisterMetaType<Data::TopDown>();
-        qRegisterMetaType<Data::CallerCalleeEntryMap>("Data::CallerCalleeEntryMap");
-        qRegisterMetaType<Data::EventResults>();
-        qRegisterMetaType<Data::FrequencyResults>();
-        qRegisterMetaType<Data::TracepointResults>();
     }
 
     void init()

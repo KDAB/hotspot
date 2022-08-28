@@ -23,11 +23,6 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    qRegisterMetaType<Data::BottomUpResults>();
-    qRegisterMetaType<Data::EventResults>();
-    qRegisterMetaType<Data::Summary>();
-    qRegisterMetaType<Data::CallerCalleeResults>();
-
     int runningParsers = 0;
     for (const auto& arg : args) {
         auto parser = new PerfParser(&app);

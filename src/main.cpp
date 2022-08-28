@@ -80,17 +80,6 @@ int main(int argc, char** argv)
 #endif
 
     app.setWindowIcon(QIcon(QStringLiteral(":/images/icons/512-hotspot_app_icon.png")));
-    qRegisterMetaType<Data::Summary>();
-    qRegisterMetaType<Data::BottomUp>();
-    qRegisterMetaType<Data::TopDown>();
-    qRegisterMetaType<Data::CallerCalleeEntryMap>("Data::CallerCalleeEntryMap");
-    qRegisterMetaType<Data::BottomUpResults>();
-    qRegisterMetaType<Data::TopDownResults>();
-    qRegisterMetaType<Data::CallerCalleeResults>();
-    qRegisterMetaType<Data::EventResults>();
-    qRegisterMetaType<Data::PerLibraryResults>();
-    qRegisterMetaType<Data::TracepointResults>();
-    qRegisterMetaType<Data::FrequencyResults>();
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("Linux perf GUI for performance analysis."));
