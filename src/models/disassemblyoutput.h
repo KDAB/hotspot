@@ -24,12 +24,14 @@ struct DisassemblyOutput
         quint64 addr = 0;
         QString disassembly;
         LinkedFunction linkedFunction;
+        QString sourceFileName;
         int sourceCodeLine = 0;
     };
     QVector<DisassemblyLine> disassemblyLines;
 
     quint64 baseAddress = 0;
-    QString sourceFileName;
+    // due to inlining there can be multiple source files encountered in the disassembly lines above
+    QString mainSourceFileName;
 
     Data::Symbol symbol;
     QString errorMessage;

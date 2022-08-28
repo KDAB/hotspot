@@ -35,10 +35,10 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
 {
     m_numLines = 0;
 
-    if (disassemblyOutput.sourceFileName.isEmpty())
+    if (disassemblyOutput.mainSourceFileName.isEmpty())
         return;
 
-    QFile file(m_sysroot + QDir::separator() + disassemblyOutput.sourceFileName);
+    QFile file(m_sysroot + QDir::separator() + disassemblyOutput.mainSourceFileName);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
@@ -59,10 +59,10 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
     m_document->setPlainText(sourceCode);
     m_document->setTextWidth(m_document->idealWidth());
 
-    m_highlighter->setDefinitionForFilename(disassemblyOutput.sourceFileName);
+    m_highlighter->setDefinitionForFilename(disassemblyOutput.mainSourceFileName);
 
     for (const auto& line : disassemblyOutput.disassemblyLines) {
-        if (line.sourceCodeLine == 0) {
+        if (line.sourceCodeLine == 0 || line.sourceFileName != disassemblyOutput.mainSourceFileName) {
             continue;
         }
 
