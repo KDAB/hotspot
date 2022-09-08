@@ -692,31 +692,31 @@ private slots:
         QTest::addColumn<QString>("collapsed");
 
         QTest::addRow("operator<") << "Foo<Bar> operator< (Asdf<Xyz>);"
-                                   << "Foo<...> operator< (Asdf<...>);";
+                                   << "Foo<…> operator< (Asdf<…>);";
         QTest::addRow("operator>") << "Foo<Bar> operator> (Asdf<Xyz>);"
-                                   << "Foo<...> operator> (Asdf<...>);";
+                                   << "Foo<…> operator> (Asdf<…>);";
         QTest::addRow("operator<<") << "Foo<Bar> operator<< (Asdf<Xyz>);"
-                                    << "Foo<...> operator<< (Asdf<...>);";
+                                    << "Foo<…> operator<< (Asdf<…>);";
         QTest::addRow("operator>>") << "Foo<Bar> operator>> (Asdf<Xyz>);"
-                                    << "Foo<...> operator>> (Asdf<...>);";
+                                    << "Foo<…> operator>> (Asdf<…>);";
 
         QTest::addRow("operator <") << "Foo<Bar> operator < (Asdf<Xyz>);"
-                                    << "Foo<...> operator < (Asdf<...>);";
+                                    << "Foo<…> operator < (Asdf<…>);";
         QTest::addRow("operator   >") << "Foo<Bar> operator   > (Asdf<Xyz>);"
-                                      << "Foo<...> operator   > (Asdf<...>);";
+                                      << "Foo<…> operator   > (Asdf<…>);";
         QTest::addRow("operator <<") << "Foo<Bar> operator << (Asdf<Xyz>);"
-                                     << "Foo<...> operator << (Asdf<...>);";
+                                     << "Foo<…> operator << (Asdf<…>);";
         QTest::addRow("operator   >>") << "Foo<Bar> operator   >> (Asdf<Xyz>);"
-                                       << "Foo<...> operator   >> (Asdf<...>);";
+                                       << "Foo<…> operator   >> (Asdf<…>);";
 
         QTest::addRow("operator< 2") << "Foo<Bar<Xyz>> operator< (Asdf<Xyz>);"
-                                     << "Foo<...> operator< (Asdf<...>);";
+                                     << "Foo<…> operator< (Asdf<…>);";
         QTest::addRow("operator> 2") << "Foo<Bar<Xyz>> operator> (Asdf<Xyz>);"
-                                     << "Foo<...> operator> (Asdf<...>);";
+                                     << "Foo<…> operator> (Asdf<…>);";
         QTest::addRow("operator<< 2") << "Foo<Bar<Xyz>> operator<< (Asdf<Xyz>);"
-                                      << "Foo<...> operator<< (Asdf<...>);";
+                                      << "Foo<…> operator<< (Asdf<…>);";
         QTest::addRow("operator>> 2") << "Foo<Bar<Xyz>> operator>> (Asdf<Xyz>);"
-                                      << "Foo<...> operator>> (Asdf<...>);";
+                                      << "Foo<…> operator>> (Asdf<…>);";
     }
 
     void testCollapseTemplates()
