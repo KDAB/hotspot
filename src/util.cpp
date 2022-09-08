@@ -57,6 +57,9 @@ QString collapseTemplate(const QString& str, int level)
         return false;
     };
 
+    // QLatin1String does not work with …
+    const auto elideString = QString::fromUtf8("<…");
+
     QString output;
     output.reserve(str.size());
     const auto operatorKeyword = QLatin1String("operator");
@@ -67,7 +70,7 @@ QString collapseTemplate(const QString& str, int level)
         if (c == QLatin1Char('<')) {
             depth++;
             if (depth == level) {
-                output.append(QLatin1String("<..."));
+                output.append(elideString);
             }
         } else if (c == QLatin1Char('>')) {
             depth--;
