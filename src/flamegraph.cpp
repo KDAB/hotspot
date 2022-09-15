@@ -365,7 +365,16 @@ QBrush brushSystem(const Data::Symbol& symbol)
     return user;
 }
 
-QBrush brush(const Data::Symbol& entry, Settings::ColorScheme scheme)
+QBrush costRatioBrush(quint32 cost, quint32 totalCost)
+{
+    // interpolate between red and yellow
+    // where yellow = 0% and red = 100%
+    float ratio = (1 - static_cast<float>(cost) / totalCost);
+    int hue = ratio * ratio * 60;
+    return QColor::fromHsv(hue, 230, 200, 125);
+}
+
+QBrush brush(const Data::Symbol& entry, Settings::ColorScheme scheme, quint32 cost = 0, quint32 totalCost = 1)
 {
     switch (scheme) {
     case Settings::ColorScheme::Binary:
@@ -376,6 +385,8 @@ QBrush brush(const Data::Symbol& entry, Settings::ColorScheme scheme)
         return brushSystem(entry);
     case Settings::ColorScheme::Default:
         return brushImpl(qHash(entry), BrushType::Hot);
+    case Settings::ColorScheme::CostRatio:
+        return costRatioBrush(cost, totalCost);
     case Settings::ColorScheme::NumColorSchemes:
         Q_UNREACHABLE();
     }
@@ -443,7 +454,7 @@ void toGraphicsItems(const Data::Costs& costs, int type, const QVector<Tree>& da
         if (!item) {
             item = new FrameGraphicsItem(costs.cost(type, row.id), row.symbol, parent);
             item->setPen(parent->pen());
-            item->setBrush(brush(row.symbol, colorScheme));
+            item->setBrush(brush(row.symbol, colorScheme, item->cost(), costs.totalCost(type)));
         } else {
             item->setCost(item->cost() + costs.cost(type, row.id));
         }
@@ -576,12 +587,12 @@ void hoverStacks(FrameGraphicsItem* rootItem, const QVector<QVector<Data::Symbol
 }
 }
 
-void updateFlameGraphColorScheme(FrameGraphicsItem* item, Settings::ColorScheme scheme)
+void updateFlameGraphColorScheme(FrameGraphicsItem* item, Settings::ColorScheme scheme, quint32 totalCost)
 {
-    item->setBrush(brush(item->symbol(), scheme));
+    item->setBrush(brush(item->symbol(), scheme, item->cost(), totalCost));
     const auto children = item->childItems();
     for (const auto& child : children) {
-        updateFlameGraphColorScheme(static_cast<FrameGraphicsItem*>(child), scheme);
+        updateFlameGraphColorScheme(static_cast<FrameGraphicsItem*>(child), scheme, totalCost);
     }
 }
 
@@ -738,6 +749,7 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     m_colorSchemeSelector->addItem(tr("Binary"), QVariant::fromValue(Settings::ColorScheme::Binary));
     m_colorSchemeSelector->addItem(tr("Kernel"), QVariant::fromValue(Settings::ColorScheme::Kernel));
     m_colorSchemeSelector->addItem(tr("System"), QVariant::fromValue(Settings::ColorScheme::System));
+    m_colorSchemeSelector->addItem(tr("Cost Ratio"), QVariant::fromValue(Settings::ColorScheme::CostRatio));
 
     auto setColorScheme = [this](Settings::ColorScheme scheme) {
         Settings::instance()->setColorScheme(scheme);
@@ -746,7 +758,7 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
             const auto children = m_rootItem->childItems();
             // don't recolor the root item
             for (const auto& child : children) {
-                updateFlameGraphColorScheme(static_cast<FrameGraphicsItem*>(child), scheme);
+                updateFlameGraphColorScheme(static_cast<FrameGraphicsItem*>(child), scheme, m_rootItem->cost());
             }
         }
     };
