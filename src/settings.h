@@ -23,6 +23,7 @@ public:
         Binary,
         Kernel,
         System,
+        CostRatio,
         NumColorSchemes
     };
     Q_ENUM(ColorScheme);
