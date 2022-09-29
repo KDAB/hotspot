@@ -1,1 +1,4 @@
-add_executable(c-fork c-fork.c)
+add_executable(
+    c-fork
+    c-fork.c
+)
