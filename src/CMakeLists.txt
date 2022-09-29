@@ -12,21 +12,24 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(models)
 
-ecm_install_icons(ICONS
+ecm_install_icons(
+    ICONS
     ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/16-apps-hotspot.png
     ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/22-apps-hotspot.png
     ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/32-apps-hotspot.png
     ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/48-apps-hotspot.png
     ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/64-apps-hotspot.png
     ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/128-apps-hotspot.png
-    DESTINATION ${ICON_INSTALL_DIR} THEME hicolor)
+    DESTINATION
+    ${ICON_INSTALL_DIR}
+    THEME
+    hicolor
+)
 
-set(hotspot_SRCS
+set(HOTSPOT_SRCS
     main.cpp
-
     parsers/perf/perfparser.cpp
     perfrecord.cpp
-
     mainwindow.cpp
     flamegraph.cpp
     aboutdialog.cpp
@@ -49,7 +52,6 @@ set(hotspot_SRCS
     perfoutputwidgettext.cpp
     perfoutputwidgetkonsole.cpp
     costcontextmenu.cpp
-
     # ui files:
     mainwindow.ui
     aboutdialog.ui
@@ -69,29 +71,30 @@ set(hotspot_SRCS
     callgraphwidget.ui
     callgraphsettingspage.ui
     frequencypage.ui
-
     # resources:
     resources.qrc
 )
 
-if (KGRAPHVIEWER_FOUND)
-    set(hotspot_SRCS ${hotspot_SRCS} callgraphwidget.cpp callgraphgenerator.cpp)
+if(KGRAPHVIEWER_FOUND)
+    set(HOTSPOT_SRCS ${HOTSPOT_SRCS} callgraphwidget.cpp callgraphgenerator.cpp)
 endif(KGRAPHVIEWER_FOUND)
 
-ecm_add_app_icon(hotspot_SRCS ICONS
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/128-hotspot_app_icon.png
+ecm_add_app_icon(
+    HOTSPOT_SRCS ICONS ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/128-hotspot_app_icon.png
     ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/512-hotspot_app_icon.png
 )
 
-if (QCustomPlot_FOUND)
-    set(hotspot_SRCS ${hotspot_SRCS} frequencypage.cpp)
+if(QCustomPlot_FOUND)
+    set(HOTSPOT_SRCS ${HOTSPOT_SRCS} frequencypage.cpp)
 endif()
 
-add_executable(hotspot
-    ${hotspot_SRCS}
+add_executable(
+    hotspot
+    ${HOTSPOT_SRCS}
 )
 
-target_link_libraries(hotspot
+target_link_libraries(
+    hotspot
     Qt5::Widgets
     Qt5::Svg
     KF5::ThreadWeaver
@@ -113,35 +116,36 @@ target_link_libraries(hotspot
     KDAB::kddockwidgets
 )
 
-if (KF5Archive_FOUND)
-    target_link_libraries(hotspot
-        KF5::Archive)
+if(KF5Archive_FOUND)
+    target_link_libraries(hotspot KF5::Archive)
 endif(KF5Archive_FOUND)
 
-if (QCustomPlot_FOUND)
-    target_link_libraries(hotspot
-        QCustomPlot::QCustomPlot)
+if(QCustomPlot_FOUND)
+    target_link_libraries(hotspot QCustomPlot::QCustomPlot)
 endif(QCustomPlot_FOUND)
 
-set_target_properties(hotspot
-    PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
+set_target_properties(hotspot PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}")
+
+install(
+    TARGETS hotspot
+    RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
+)
+install(
+    FILES hotspot.notifyrc
+    DESTINATION ${KDE_INSTALL_KNOTIFY5RCDIR}
 )
 
-install(TARGETS hotspot RUNTIME DESTINATION ${KDE_INSTALL_BINDIR})
-install(FILES hotspot.notifyrc DESTINATION ${KDE_INSTALL_KNOTIFY5RCDIR})
-
-if (KF5Auth_FOUND)
+if(KF5Auth_FOUND)
     target_link_libraries(hotspot KF5::AuthCore)
 
     add_executable(hotspot-auth-helper authhelper.cpp)
     target_link_libraries(hotspot-auth-helper KF5::AuthCore)
 
-    option(INSTALL_KAUTH_HELPER "Install the KAuth helper, defaults to ON but can be disabled when you want to install to a custom prefix" ON)
-    if (INSTALL_KAUTH_HELPER)
+    option(INSTALL_KAUTH_HELPER "Install the KAuth helper, disable when you install to a custom prefix" ON)
+    if(INSTALL_KAUTH_HELPER)
         install(TARGETS hotspot-auth-helper DESTINATION ${KAUTH_HELPER_INSTALL_DIR})
 
         kauth_install_helper_files(hotspot-auth-helper com.kdab.hotspot.perf root)
         kauth_install_actions(com.kdab.hotspot.perf hotspot-perf-authhelper.actions)
-    endif ()
-endif (KF5Auth_FOUND)
+    endif()
+endif(KF5Auth_FOUND)

@@ -1,1 +1,4 @@
-add_executable(cpp-stdin main.cpp)
+add_executable(
+    cpp-stdin
+    main.cpp
+)

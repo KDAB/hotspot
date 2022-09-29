@@ -1,1 +1,4 @@
-add_executable(cpp-inlining main.cpp)
+add_executable(
+    cpp-inlining
+    main.cpp
+)

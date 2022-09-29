@@ -1,1 +1,4 @@
-add_executable(callgraph main.c)
+add_executable(
+    callgraph
+    main.c
+)

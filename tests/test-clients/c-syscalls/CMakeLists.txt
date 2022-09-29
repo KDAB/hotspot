@@ -1,1 +1,4 @@
-add_executable(c-syscalls main.c)
+add_executable(
+    c-syscalls
+    main.c
+)

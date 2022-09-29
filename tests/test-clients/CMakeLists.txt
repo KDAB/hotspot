@@ -1,8 +1,7 @@
 include(CMakePushCheckState)
 
-# Check if static linking works at all.
-# For example OpenSuse 42.3 with clang doesn't ship a static libc++.a,
-# making static linking fail.
+# Check if static linking works at all. For example OpenSuse 42.3 with clang
+# doesn't ship a static libc++.a, making static linking fail.
 cmake_push_check_state(RESET)
 set(CMAKE_REQUIRED_LIBRARIES "-static")
 set(CMAKE_REQUIRED_FLAGS "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
@@ -11,7 +10,7 @@ cmake_pop_check_state()
 
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
-if (STATIC_LINKING_WORKS)
+if(STATIC_LINKING_WORKS)
     add_subdirectory(cpp-minimal-static)
 endif()
 add_subdirectory(cpp-inlining)
