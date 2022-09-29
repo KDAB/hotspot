@@ -38,6 +38,9 @@
 #endif
 #endif
 
+#include <fstream>
+#include <sys/stat.h>
+
 PerfRecord::PerfRecord(QObject* parent)
     : QObject(parent)
     , m_perfRecordProcess(nullptr)
@@ -71,10 +74,42 @@ static QStringList sudoOptions(const QString& sudoBinary)
     return options;
 }
 
+static bool privsAlreadyElevated()
+{
+    auto readSysctl = [](const char* path) {
+        std::ifstream ifs {path};
+        int i = std::numeric_limits<int>::min();
+        if (ifs) {
+            ifs >> i;
+        }
+        return i;
+    };
+
+    bool isElevated = readSysctl("/proc/sys/kernel/kptr_restrict") == 0;
+    if (!isElevated) {
+        return false;
+    }
+
+    isElevated = readSysctl("/proc/sys/kernel/perf_event_paranoid") == -1;
+    if (!isElevated) {
+        return false;
+    }
+
+    auto checkPerms = [required, &buf](const char* path) {
+        const mode_t required = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH; // 755
+        struct stat buf;
+        return stat(path, &buf) == 0 && ((buf.st_mode & 07777) & required) == required;
+    };
+    static const auto paths = {"/sys/kernel/debug", "/sys/kernel/debug/tracing"};
+    isElevated = std::all_of(paths.begin(), paths.end(), checkPerms);
+
+    return isElevated;
+}
+
 void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
                                 const QStringList& recordOptions, const QString& workingDirectory)
 {
-    if (elevatePrivileges && geteuid() != 0) {
+    if (elevatePrivileges && geteuid() != 0 && !privsAlreadyElevated()) {
         // elevate privileges temporarily as root
         // use kauth/kdesudo to start the elevate_perf_privileges.sh script
         // then parse its output and once we get the "waiting..." line the privileges got elevated
