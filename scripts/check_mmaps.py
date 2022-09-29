@@ -9,18 +9,21 @@
 import sys
 import re
 
-prog = re.compile("\[(0x[a-z0-9]+)\((0x[a-z0-9]+)\)")
+prog = re.compile(r"\[(0x[a-z0-9]+)((0x[a-z0-9]+)\)")
 
 for line in sys.stdin:
     if not "PERF_RECORD_MMAP" in line:
         continue
+
     m = prog.search(line)
     if not m:
         print("no match: ", line.rstrip())
         continue
+
     start = int(m[1], 16)
     length = int(m[2], 16)
     end = start + length
+
     for arg in sys.argv[1:]:
         if start <= int(arg, 16) < end:
             print(arg, "matched in:", line)
