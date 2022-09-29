@@ -189,7 +189,7 @@ void TimeLineWidget::selectSymbol(const Data::Symbol& symbol)
         [this](const QSet<qint32>& selectedStacks) { m_timeLineDelegate->setSelectedStacks(selectedStacks); });
 }
 
-void TimeLineWidget::selectStack(const QVector<Data::Symbol>& stack)
+void TimeLineWidget::selectStack(const QVector<Data::Symbol>& stack, bool bottomUp)
 {
     if (stack.isEmpty()) {
         ++m_currentSelectStackJobId;
@@ -202,7 +202,7 @@ void TimeLineWidget::selectStack(const QVector<Data::Symbol>& stack)
 
     scheduleJob(
         m_timeLineDelegate, &m_currentSelectStackJobId,
-        [stacks, bottomUpResults, stack](auto jobCancelled) -> QSet<qint32> {
+        [stacks, bottomUpResults, stack, bottomUp](auto jobCancelled) -> QSet<qint32> {
             const auto numStacks = stacks.size();
             QSet<qint32> selectedStacks;
             selectedStacks.reserve(numStacks);
@@ -225,8 +225,15 @@ void TimeLineWidget::selectStack(const QVector<Data::Symbol>& stack)
                 if (frames.size() < stack.size())
                     continue;
 
-                const auto matches =
-                    std::equal(frames.rbegin(), std::next(frames.rbegin(), stack.size()), stack.rbegin(), stack.rend());
+                const auto matches = [&]() {
+                    if (bottomUp) {
+                        return std::equal(frames.begin(), std::next(frames.begin(), stack.size()), stack.rbegin(),
+                                          stack.rend());
+                    } else {
+                        return std::equal(frames.rbegin(), std::next(frames.rbegin(), stack.size()), stack.rbegin(),
+                                          stack.rend());
+                    }
+                }();
                 if (matches)
                     selectedStacks.insert(i);
             }
