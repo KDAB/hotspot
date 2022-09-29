@@ -544,16 +544,33 @@ void resetIsExternallyHovered(FrameGraphicsItem* item)
 
 void hoverStacks(FrameGraphicsItem* rootItem, const QVector<QVector<Data::Symbol>>& stacks)
 {
+    auto matchStacks = [&stacks](QGraphicsItem* item) {
+        for (const auto& stack : stacks) {
+            if (hoverStack(static_cast<FrameGraphicsItem*>(item), stack, 0)) {
+                return true;
+            }
+        }
+        return false;
+    };
+
     const auto children = rootItem->childItems();
+    const auto costAggregation = Settings::instance()->costAggregation();
+    const auto skipFirstLevel = costAggregation != Settings::CostAggregation::BySymbol;
     for (auto* child : children) {
         // reset everything first
         resetIsExternallyHovered(static_cast<FrameGraphicsItem*>(child));
 
         // then match all stacks
-        for (const auto& stack : stacks) {
-            if (hoverStack(static_cast<FrameGraphicsItem*>(child), stack, 0)) {
-                break;
+        if (skipFirstLevel) {
+            // skip first level
+            const auto grandChildren = child->childItems();
+            bool anyMatched = false;
+            for (auto* grandChild : grandChildren) {
+                anyMatched |= matchStacks(grandChild);
             }
+            static_cast<FrameGraphicsItem*>(child)->setIsExternallyHovered(anyMatched);
+        } else {
+            matchStacks(child);
         }
     }
 }
@@ -965,9 +982,12 @@ void FlameGraph::setTooltipItem(const FrameGraphicsItem* item)
 
     if (item) {
         emit selectSymbol(item->symbol());
+
+        const auto costAggregation = Settings::instance()->costAggregation();
+        const auto skipFirstLevel = costAggregation != Settings::CostAggregation::BySymbol;
         QVector<Data::Symbol> stack;
         stack.reserve(32);
-        while (item && item != m_rootItem) {
+        while (item && (item != m_rootItem && (!skipFirstLevel || item->parentItem() != m_rootItem))) {
             stack.append(item->symbol());
             item = static_cast<const FrameGraphicsItem*>(item->parentItem());
         }

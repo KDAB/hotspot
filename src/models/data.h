@@ -469,7 +469,7 @@ struct TopDownResults
     TopDown root;
     Costs selfCosts;
     Costs inclusiveCosts;
-    static TopDownResults fromBottomUp(const Data::BottomUpResults& bottomUpData);
+    static TopDownResults fromBottomUp(const Data::BottomUpResults& bottomUpData, bool skipFirstLevel);
 };
 
 struct PerLibrary : SymbolTree<PerLibrary>

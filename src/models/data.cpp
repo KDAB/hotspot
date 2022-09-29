@@ -15,13 +15,14 @@ using namespace Data;
 namespace {
 
 ItemCost buildTopDownResult(const BottomUp& bottomUpData, const Costs& bottomUpCosts, TopDown* topDownData,
-                            Costs* inclusiveCosts, Costs* selfCosts, quint32* maxId)
+                            Costs* inclusiveCosts, Costs* selfCosts, quint32* maxId, bool skipFirstLevel)
 {
     ItemCost totalCost;
     totalCost.resize(bottomUpCosts.numTypes(), 0);
     for (const auto& row : bottomUpData.children) {
         // recurse and find the cost attributed to children
-        const auto childCost = buildTopDownResult(row, bottomUpCosts, topDownData, inclusiveCosts, selfCosts, maxId);
+        const auto childCost =
+            buildTopDownResult(row, bottomUpCosts, topDownData, inclusiveCosts, selfCosts, maxId, skipFirstLevel);
         const auto rowCost = bottomUpCosts.itemCost(row.id);
         const auto diff = rowCost - childCost;
         if (diff.sum() != 0) {
@@ -32,12 +33,16 @@ ItemCost buildTopDownResult(const BottomUp& bottomUpData, const Costs& bottomUpC
             while (node) {
                 auto frame = stack->entryForSymbol(node->symbol, maxId);
 
+                const auto isLastNode = !node->parent || (skipFirstLevel && !node->parent->parent);
+
                 // always use the leaf node's cost and propagate that one up the chain
                 // otherwise we'd count the cost of some nodes multiple times
                 inclusiveCosts->add(frame->id, diff);
-                if (!node->parent) {
+                if (isLastNode) {
                     selfCosts->add(frame->id, diff);
+                    break;
                 }
+
                 stack = frame;
                 node = node->parent;
             }
@@ -283,14 +288,29 @@ QString Data::prettifySymbol(const QString& name)
     return result == name ? name : result;
 }
 
-TopDownResults TopDownResults::fromBottomUp(const BottomUpResults& bottomUpData)
+TopDownResults TopDownResults::fromBottomUp(const BottomUpResults& bottomUpData, bool skipFirstLevel)
 {
     TopDownResults results;
     results.selfCosts.initializeCostsFrom(bottomUpData.costs);
     results.inclusiveCosts.initializeCostsFrom(bottomUpData.costs);
     quint32 maxId = 0;
-    buildTopDownResult(bottomUpData.root, bottomUpData.costs, &results.root, &results.inclusiveCosts,
-                       &results.selfCosts, &maxId);
+    if (skipFirstLevel) {
+        results.root.children.reserve(bottomUpData.root.children.size());
+        for (const auto& bottomUpGroup : bottomUpData.root.children) {
+            // manually copy the first level
+            auto topDownGroup = results.root.entryForSymbol(bottomUpGroup.symbol, &maxId);
+            // then traverse the children as separate trees basically
+            buildTopDownResult(bottomUpGroup, bottomUpData.costs, topDownGroup, &results.inclusiveCosts,
+                               &results.selfCosts, &maxId, true);
+            // finally manually sum up the inclusive costs
+            for (const auto& child : topDownGroup->children) {
+                results.inclusiveCosts.add(topDownGroup->id, results.inclusiveCosts.itemCost(child.id));
+            }
+        }
+    } else {
+        buildTopDownResult(bottomUpData.root, bottomUpData.costs, &results.root, &results.inclusiveCosts,
+                           &results.selfCosts, &maxId, false);
+    }
     TopDown::initializeParents(&results.root);
     return results;
 }
