@@ -35,3 +35,10 @@ repos:
     exclude: (cmake/ECMEnableSanitizers\.cmake|cmake/Find|3rdparty/perfparser|3rdparty/PrefixTickLabels|\.h\.cmake$)
   - id: cmake-format
     exclude: (cmake/ECMEnableSanitizers\.cmake|cmake/Find|3rdparty/perfparser|3rdparty/PrefixTickLabels|\.h\.cmake$)
+- repo: https://github.com/markdownlint/markdownlint
+  rev: v0.11.0
+  hooks:
+  - id: markdownlint
+    entry: mdl
+    language: ruby
+    files: \.(md|mdown|markdown)$

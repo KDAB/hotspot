@@ -12,6 +12,7 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
+
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
@@ -24,10 +25,11 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Version Info (please complete the following information):**
- - Linux Kernel version:
- - perf version:
- - hotspot version (appimage? selfcompiled?):
- - if self-compiled hotspot, what version of elfutils:
+
+- Linux Kernel version:
+- perf version:
+- hotspot version (appimage? selfcompiled?):
+- if self-compiled hotspot, what version of elfutils:
 
 **Additional context**
 Add any other context about the problem here.
