@@ -61,6 +61,21 @@ Data::BottomUpResults generateTree1()
         C
     )");
 }
+
+Data::BottomUpResults generateTreeByThread()
+{
+    return buildBottomUpTree(R"(
+        A;B;C;T1
+        A;B;D;T1
+        A;B;D;T2
+        A;B;C;E;T1
+        A;B;C;E;C;T1
+        A;B;C;E;C;E;T1
+        A;B;C;C;T1
+        C;T1
+        C;T2
+    )");
+}
 }
 
 class TestModels : public QObject
@@ -183,16 +198,34 @@ private slots:
         QCOMPARE(modelData, expectedModelData);
     }
 
+    void testTopDownModel_data()
+    {
+        QTest::addColumn<bool>("skipFirstLevel");
+        QTest::addColumn<QStringList>("expectedTree");
+
+        QTest::addRow("normal") << false << QStringList {"A=s:0,i:7",    " B=s:0,i:7",    "  C=s:1,i:5",
+                                                         "   E=s:1,i:3", "    C=s:1,i:2", "     E=s:1,i:1",
+                                                         "   C=s:1,i:1", "  D=s:2,i:2",   "C=s:2,i:2"};
+
+        QTest::addRow("skipFirstLevel") << true
+                                        << QStringList {
+                                               "T1=s:0,i:7",    " A=s:0,i:6",     "  B=s:0,i:6",     "   C=s:1,i:5",
+                                               "    E=s:1,i:3", "     C=s:1,i:2", "      E=s:1,i:1", "    C=s:1,i:1",
+                                               "   D=s:1,i:1",  " C=s:1,i:1",     "T2=s:0,i:2",      " A=s:0,i:1",
+                                               "  B=s:0,i:1",   "   D=s:1,i:1",   " C=s:1,i:1",
+                                           };
+    }
+
     void testTopDownModel()
     {
-        const auto bottomUpTree = generateTree1();
-        const auto tree = Data::TopDownResults::fromBottomUp(bottomUpTree);
+        QFETCH(bool, skipFirstLevel);
+        QFETCH(QStringList, expectedTree);
+
+        const auto bottomUpTree = skipFirstLevel ? generateTreeByThread() : generateTree1();
+        const auto tree = Data::TopDownResults::fromBottomUp(bottomUpTree, skipFirstLevel);
         QCOMPARE(tree.inclusiveCosts.totalCost(0), qint64(9));
         QCOMPARE(tree.selfCosts.totalCost(0), qint64(9));
 
-        const QStringList expectedTree = {"A=s:0,i:7",    " B=s:0,i:7",    "  C=s:1,i:5",
-                                          "   E=s:1,i:3", "    C=s:1,i:2", "     E=s:1,i:1",
-                                          "   C=s:1,i:1", "  D=s:2,i:2",   "C=s:2,i:2"};
         QTextStream(stdout) << "Actual:\n"
                             << printTree(tree).join("\n") << "\nExpected:\n"
                             << expectedTree.join("\n") << "\n";

@@ -1120,7 +1120,8 @@ public:
 
     void buildTopDownResult()
     {
-        topDownResult = Data::TopDownResults::fromBottomUp(bottomUpResult);
+        topDownResult =
+            Data::TopDownResults::fromBottomUp(bottomUpResult, costAggregation != Settings::CostAggregation::BySymbol);
     }
 
     void buildPerLibraryResult()
@@ -1644,7 +1645,8 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
 
     emit parsingStarted();
     using namespace ThreadWeaver;
-    stream() << make_job([this, filter]() {
+    const auto costAggregation = Settings::instance()->costAggregation();
+    stream() << make_job([this, filter, costAggregation]() {
         Queue queue;
         queue.setMaximumNumberOfThreads(QThread::idealThreadCount());
 
@@ -1832,7 +1834,8 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
             return;
         }
 
-        const auto topDown = Data::TopDownResults::fromBottomUp(bottomUp);
+        const auto topDown =
+            Data::TopDownResults::fromBottomUp(bottomUp, costAggregation != Settings::CostAggregation::BySymbol);
         const auto perLibrary = Data::PerLibraryResults::fromTopDown(topDown);
 
         if (m_stopRequested) {
