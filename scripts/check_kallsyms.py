@@ -24,14 +24,15 @@ for line in sys.stdin:
     if not m:
         print("no match: ", line.rstrip())
         continue
+
     start = int(m[1], 16)
     if start > addr:
         nextLine = line
         nextStart = start
         break
-    else:
-        prevLine = line
-        prevStart = start
+
+    prevLine = line
+    prevStart = start
 
 print("best match sym:", prevLine.rstrip(), "diff is:", hex(addr - prevStart))
 print("next sym is:", nextLine.rstrip(), "diff is:", hex(nextStart - addr))
