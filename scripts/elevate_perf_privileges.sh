@@ -51,7 +51,7 @@ trap cleanup EXIT
 quit() {
     echo "quitting..."
 }
-trap quit TERM INT 
+trap quit TERM INT
 
 echo "elevating privileges..."
 sysctl -wq kernel.kptr_restrict=0 kernel.perf_event_paranoid=-1
