@@ -26,14 +26,17 @@
 
 namespace {
 // TODO: c++17 constexpr
-auto xForTimeFactory(const Data::TimeRange& timeRange, const Data::TimeRange& zoomTime, int width, int pos) {
+auto xForTimeFactory(const Data::TimeRange& timeRange, const Data::TimeRange& zoomTime, int width, int pos)
+{
     const double oneNanoSecond = 1.0e-9;
     const double start = (zoomTime.start - timeRange.start) * oneNanoSecond;
     const double end = (zoomTime.end - timeRange.start) * oneNanoSecond;
 
     const double resolution = (end - start) / width;
 
-    return [pos, start, resolution](double time) {return pos + static_cast<int>(std::round((time - start) / resolution));};
+    return [pos, start, resolution](double time) {
+        return pos + static_cast<int>(std::round((time - start) / resolution));
+    };
 }
 }
 
@@ -68,7 +71,8 @@ bool TimeAxisHeaderView::event(QEvent* event)
         if (!zoomTime.isValid())
             zoomTime = m_timeRange; // full
 
-        const auto xForTime = xForTimeFactory(m_timeRange, zoomTime, sectionSize(EventModel::EventsColumn), sectionPosition(EventModel::EventsColumn));
+        const auto xForTime = xForTimeFactory(m_timeRange, zoomTime, sectionSize(EventModel::EventsColumn),
+                                              sectionPosition(EventModel::EventsColumn));
 
         const auto oneNanoSecond = 1e-9;
         for (const auto& tracepoint : m_tracepoints.tracepoints) {
@@ -117,7 +121,8 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
     const double start = (zoomTime.start - m_timeRange.start) * oneNanoSecond;
     const double end = (zoomTime.end - m_timeRange.start) * oneNanoSecond;
 
-    const auto xForTime = xForTimeFactory(m_timeRange, zoomTime, sectionSize(EventModel::EventsColumn), sectionPosition(EventModel::EventsColumn));
+    const auto xForTime = xForTimeFactory(m_timeRange, zoomTime, sectionSize(EventModel::EventsColumn),
+                                          sectionPosition(EventModel::EventsColumn));
 
     const int fontSize = painter->fontMetrics().height();
     const int startY = rect.height() - s_tickHeight - 2 * fontSize;

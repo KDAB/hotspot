@@ -87,8 +87,7 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
     connect(timeLineProxy, &QAbstractItemModel::modelReset, this, [this]() { ui->timeLineView->expandToDepth(1); });
 
     connect(m_parser, &PerfParser::bottomUpDataAvailable, this, [this](const Data::BottomUpResults& data) {
-        ResultsUtil::fillEventSourceComboBox(ui->timeLineEventSource, data.costs,
-                                             tr("Show timeline for %1 events."));
+        ResultsUtil::fillEventSourceComboBox(ui->timeLineEventSource, data.costs, tr("Show timeline for %1 events."));
     });
 
     connect(m_parser, &PerfParser::eventsAvailable, this, [this, eventModel](const Data::EventResults& data) {

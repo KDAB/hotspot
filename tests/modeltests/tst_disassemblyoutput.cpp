@@ -16,8 +16,8 @@
 #include <QTest>
 #include <QVector>
 
+#include <data.h>
 #include <models/disassemblyoutput.h>
-#include "data.h"
 
 class TestDisassemblyOutput : public QObject
 {
@@ -35,8 +35,10 @@ private slots:
                                4294544,
                                2093,
                                "vector_static_gcc/vector_static_gcc_v9.1.0",
-                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/vector_static_gcc/vector_static_gcc_v9.1.0",
-                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/vector_static_gcc/vector_static_gcc_v9.1.0"};
+                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/"
+                               "vector_static_gcc/vector_static_gcc_v9.1.0",
+                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/"
+                               "vector_static_gcc/vector_static_gcc_v9.1.0"};
 
         QTest::newRow("curSymbol") << symbol;
     }
@@ -56,8 +58,8 @@ private slots:
 
         QTextStream disassemblyStream(&actual);
 
-        DisassemblyOutput disassemblyOutput = DisassemblyOutput::disassemble("objdump","x86_64", symbol);
-        for (const auto &disassemblyLine : disassemblyOutput.disassemblyLines) {
+        DisassemblyOutput disassemblyOutput = DisassemblyOutput::disassemble("objdump", "x86_64", symbol);
+        for (const auto& disassemblyLine : disassemblyOutput.disassemblyLines) {
             disassemblyStream << QString::number(disassemblyLine.addr) << disassemblyLine.disassembly << '\n';
         }
         actual.close();

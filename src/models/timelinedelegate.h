@@ -8,8 +8,8 @@
 #pragma once
 
 #include <QScopedPointer>
-#include <QStyledItemDelegate>
 #include <QSet>
+#include <QStyledItemDelegate>
 
 #include "data.h"
 

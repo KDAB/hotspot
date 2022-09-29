@@ -17,11 +17,11 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QProcess>
+#include <QStandardItemModel>
+#include <QStandardPaths>
 #include <QString>
 #include <QTemporaryFile>
 #include <QTextStream>
-#include <QStandardItemModel>
-#include <QStandardPaths>
 
 #include <KRecursiveFilterProxyModel>
 

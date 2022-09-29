@@ -86,9 +86,8 @@ void setupContextMenu(QTreeView* view, CostContextMenu* costContextMenu, int sym
                       FilterAndZoomStack* filterStack, CallbackActions actions,
                       std::function<void(CallbackAction action, const Data::Symbol&)> callback)
 {
-    QObject::connect(costContextMenu, &CostContextMenu::hiddenColumnsChanged, view, [view, costContextMenu]{
-        costContextMenu->hideColumns(view);
-    });
+    QObject::connect(costContextMenu, &CostContextMenu::hiddenColumnsChanged, view,
+                     [view, costContextMenu] { costContextMenu->hideColumns(view); });
 
     view->setContextMenuPolicy(Qt::CustomContextMenu);
     QObject::connect(view, &QTreeView::customContextMenuRequested, view, [=](const QPoint& point) {

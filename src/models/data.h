@@ -70,7 +70,8 @@ QDebug operator<<(QDebug stream, const Symbol& symbol);
 
 inline bool operator==(const Symbol& lhs, const Symbol& rhs)
 {
-    return std::tie(lhs.symbol, lhs.binary, lhs.path, lhs.relAddr) == std::tie(rhs.symbol, rhs.binary, rhs.path, rhs.relAddr);
+    return std::tie(lhs.symbol, lhs.binary, lhs.path, lhs.relAddr)
+        == std::tie(rhs.symbol, rhs.binary, rhs.path, rhs.relAddr);
 }
 
 inline bool operator!=(const Symbol& lhs, const Symbol& rhs)
@@ -814,7 +815,8 @@ struct FilterAction
     {
         return time.isValid() || processId != INVALID_PID || threadId != INVALID_PID || cpuId != INVALID_CPU_ID
             || !excludeProcessIds.isEmpty() || !excludeThreadIds.isEmpty() || !excludeCpuIds.isEmpty()
-            || !includeSymbols.isEmpty() || !excludeSymbols.isEmpty() || !includeBinaries.isEmpty() || !excludeBinaries.isEmpty();
+            || !includeSymbols.isEmpty() || !excludeSymbols.isEmpty() || !includeBinaries.isEmpty()
+            || !excludeBinaries.isEmpty();
     }
 };
 

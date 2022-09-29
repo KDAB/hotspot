@@ -19,14 +19,15 @@ CostContextMenu::CostContextMenu(QObject* parent)
 
 CostContextMenu::~CostContextMenu() = default;
 
-void CostContextMenu::addToMenu(QHeaderView *view, QMenu *menu)
+void CostContextMenu::addToMenu(QHeaderView* view, QMenu* menu)
 {
     for (int i = 1; i < view->count(); ++i) {
         const auto name = view->model()->headerData(i, Qt::Horizontal).toString();
         auto* action = menu->addAction(name);
         action->setCheckable(true);
         action->setChecked(!view->isSectionHidden(i));
-        connect(action, &QAction::toggled, this, [this, view, name, i](bool visible) { view->setSectionHidden(i, !visible);
+        connect(action, &QAction::toggled, this, [this, view, name, i](bool visible) {
+            view->setSectionHidden(i, !visible);
             if (visible) {
                 m_hiddenColumns.remove(name);
             } else {
@@ -38,7 +39,7 @@ void CostContextMenu::addToMenu(QHeaderView *view, QMenu *menu)
     }
 }
 
-void CostContextMenu::hideColumns(QTreeView *view)
+void CostContextMenu::hideColumns(QTreeView* view)
 {
     const auto model = view->model();
     for (int i = 1, size = model->columnCount(); i < size; i++) {

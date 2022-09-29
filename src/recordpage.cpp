@@ -17,6 +17,7 @@
 #include <QDebug>
 #include <QKeyEvent>
 #include <QListView>
+#include <QRegularExpression>
 #include <QScrollArea>
 #include <QShortcut>
 #include <QStandardItemModel>
@@ -32,11 +33,11 @@
 #include <KShell>
 #include <KUrlCompletion>
 #include <KUrlRequester>
-#include <Solid/Device>
-#include <Solid/Processor>
 #include <kio_version.h>
 
-#include <QRegularExpression>
+#include <Solid/Device>
+#include <Solid/Processor>
+
 #include "hotspot-config.h"
 
 #include "multiconfigwidget.h"
@@ -169,7 +170,7 @@ RecordPage::RecordPage(QWidget* parent)
         auto* scrollArea = new QScrollArea(this);
         scrollArea->setFrameStyle(QFrame::NoFrame);
         layout->addWidget(scrollArea);
-        auto *contents = new QWidget(this);
+        auto* contents = new QWidget(this);
         scrollArea->setWidget(contents);
         scrollArea->setWidgetResizable(true);
 
@@ -340,7 +341,7 @@ RecordPage::RecordPage(QWidget* parent)
         ui->viewPerfRecordResultsButton->setEnabled(false);
     });
 
-    connect(m_perfRecord, &PerfRecord::debuggeeCrashed, this, [this]{
+    connect(m_perfRecord, &PerfRecord::debuggeeCrashed, this, [this] {
         ui->applicationRecordWarningMessage->setText(tr("Debugge crashed. Results may be unusable."));
         ui->applicationRecordWarningMessage->show();
     });

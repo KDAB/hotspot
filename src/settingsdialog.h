@@ -9,7 +9,7 @@
 #pragma once
 
 #include <KPageDialog>
-#include "multiconfigwidget.h"
+
 #include <memory>
 
 namespace Ui {
@@ -18,6 +18,8 @@ class FlamegraphSettingsPage;
 class DebuginfodPage;
 class CallgraphSettingsPage;
 }
+
+class MultiConfigWidget;
 
 class SettingsDialog : public KPageDialog
 {
