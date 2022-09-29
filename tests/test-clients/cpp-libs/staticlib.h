@@ -10,10 +10,12 @@
 class StaticLib
 {
     unsigned long m_max;
+
 public:
     StaticLib(unsigned long max)
         : m_max(max)
-    {}
+    {
+    }
 
     double foo() const;
 

@@ -7,23 +7,25 @@
 */
 
 #include "settingsdialog.h"
+
 #include "ui_callgraphsettingspage.h"
 #include "ui_debuginfodpage.h"
 #include "ui_flamegraphsettingspage.h"
 #include "ui_unwindsettingspage.h"
 
+#include "multiconfigwidget.h"
+#include "settings.h"
+
 #include <KComboBox>
-#include <KUrlRequester>
 #include <KConfigGroup>
 #include <KSharedConfig>
+#include <KUrlRequester>
+
 #include <QKeyEvent>
 #include <QLineEdit>
-#include <settings.h>
 #include <QListView>
 
-#include "multiconfigwidget.h"
-
-#include "hotspot-config.h"
+#include <hotspot-config.h>
 
 namespace {
 KConfigGroup config()
@@ -59,12 +61,11 @@ void SettingsDialog::initSettings()
     }
 }
 
-void SettingsDialog::initSettings(const QString &sysroot, const QString &appPath, const QString &extraLibPaths,
-                                  const QString &debugPaths, const QString &kallsyms, const QString &arch,
-                                  const QString &objdump)
+void SettingsDialog::initSettings(const QString& sysroot, const QString& appPath, const QString& extraLibPaths,
+                                  const QString& debugPaths, const QString& kallsyms, const QString& arch,
+                                  const QString& objdump)
 {
-    auto fromPathString = [](KEditListWidget* listWidget, const QString &string)
-    {
+    auto fromPathString = [](KEditListWidget* listWidget, const QString& string) {
         listWidget->setItems(string.split(QLatin1Char(':'), Qt::SkipEmptyParts));
     };
     fromPathString(unwindPage->extraLibraryPaths, extraLibPaths);
@@ -185,7 +186,8 @@ void SettingsDialog::addPathSettingsPage()
 
     connect(this, &KPageDialog::accepted, this, [this] { m_configs->updateCurrentConfig(); });
 
-    for (auto field : {unwindPage->lineEditSysroot, unwindPage->lineEditApplicationPath, unwindPage->lineEditKallsyms, unwindPage->lineEditObjdump}) {
+    for (auto field : {unwindPage->lineEditSysroot, unwindPage->lineEditApplicationPath, unwindPage->lineEditKallsyms,
+                       unwindPage->lineEditObjdump}) {
         connect(field, &KUrlRequester::textEdited, m_configs, &MultiConfigWidget::updateCurrentConfig);
         connect(field, &KUrlRequester::urlSelected, m_configs, &MultiConfigWidget::updateCurrentConfig);
     }
@@ -194,7 +196,8 @@ void SettingsDialog::addPathSettingsPage()
             &MultiConfigWidget::updateCurrentConfig);
 
     connect(unwindPage->debugPaths, &KEditListWidget::changed, m_configs, &MultiConfigWidget::updateCurrentConfig);
-    connect(unwindPage->extraLibraryPaths, &KEditListWidget::changed, m_configs, &MultiConfigWidget::updateCurrentConfig);
+    connect(unwindPage->extraLibraryPaths, &KEditListWidget::changed, m_configs,
+            &MultiConfigWidget::updateCurrentConfig);
 }
 
 void SettingsDialog::keyPressEvent(QKeyEvent* event)
@@ -285,7 +288,7 @@ void SettingsDialog::addCallgraphPage()
         callgraphPage->functionColor->setColor(settings->callgraphColor());
     });
 
-    connect(buttonBox(), &QDialogButtonBox::accepted, this, [this]{
+    connect(buttonBox(), &QDialogButtonBox::accepted, this, [this] {
         auto settings = Settings::instance();
         settings->setCallgraphParentDepth(callgraphPage->parentSpinBox->value());
         settings->setCallgraphChildDepth(callgraphPage->childSpinBox->value());

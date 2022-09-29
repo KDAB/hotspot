@@ -8,8 +8,8 @@
 #include "dockwidgetsetup.h"
 
 #include <kddockwidgets/Config.h>
-#include <kddockwidgets/MainWindow.h>
 #include <kddockwidgets/FrameworkWidgetFactory.h>
+#include <kddockwidgets/MainWindow.h>
 
 namespace {
 class DockingArea : public KDDockWidgets::MainWindow

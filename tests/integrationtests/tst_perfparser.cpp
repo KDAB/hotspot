@@ -114,10 +114,9 @@ struct ComparableSymbol
     bool isPattern = false;
 };
 
-namespace QTest
-{
+namespace QTest {
 template<>
-char *toString(const ComparableSymbol &symbol)
+char* toString(const ComparableSymbol& symbol)
 {
     if (symbol.isPattern) {
         QStringList patterns;

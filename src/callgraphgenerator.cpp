@@ -30,7 +30,7 @@ QHash<Data::Symbol, QString> writeGraph(QTextStream& stream, const Data::Symbol&
     stream << "\", color=\"" << settings->callgraphActiveColor().name() << "\"]\n";
 
     QHash<Data::Symbol, QString> symbolToIdLookup;
-    symbolToIdLookup.insert(symbol, parentId);;
+    symbolToIdLookup.insert(symbol, parentId);
 
     resultsToDot(settings->callgraphParentDepth(), Direction::Caller, symbol, results, parentId, stream,
                  symbolToIdLookup, thresholdPercent);

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <QString>
+
 #include "data.h"
 
 struct DisassemblyOutput

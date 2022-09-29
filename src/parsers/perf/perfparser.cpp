@@ -1105,9 +1105,10 @@ public:
                                  bottomUpResult.costs.numTypes());
 
             if (perfScriptOutput) {
-                *perfScriptOutput << '\t' << Qt::hex << qSetFieldWidth(16) << location.address << qSetFieldWidth(0) << Qt::dec
-                                  << ' ' << (symbol.symbol.isEmpty() ? QStringLiteral("[unknown]") : symbol.symbol)
-                                  << " (" << symbol.binary << ")\n";
+                *perfScriptOutput << '\t' << Qt::hex << qSetFieldWidth(16) << location.address << qSetFieldWidth(0)
+                                  << Qt::dec << ' '
+                                  << (symbol.symbol.isEmpty() ? QStringLiteral("[unknown]") : symbol.symbol) << " ("
+                                  << symbol.binary << ")\n";
             }
         };
 

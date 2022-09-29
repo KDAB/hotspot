@@ -97,7 +97,7 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
     if (index.row() > m_data.disassemblyLines.count() || index.row() < 0)
         return {};
 
-    const auto &data = m_data.disassemblyLines.at(index.row());
+    const auto& data = m_data.disassemblyLines.at(index.row());
 
     if (role == Qt::DisplayRole || role == CostRole || role == TotalCostRole || role == SyntaxHighlightRole
         || role == Qt::ToolTipRole) {
@@ -118,8 +118,8 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
         if (it != entry.offsetMap.end()) {
             int event = index.column() - COLUMN_COUNT;
 
-            const auto &locationCost = it.value();
-            const auto &costLine = locationCost.selfCost[event];
+            const auto& locationCost = it.value();
+            const auto& costLine = locationCost.selfCost[event];
             const auto totalCost = m_results.selfCosts.totalCost(event);
 
             if (role == CostRole)
@@ -132,7 +132,8 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
             return Util::formatCostRelative(costLine, totalCost, true);
         } else {
             if (role == Qt::ToolTipRole)
-                return tr("<qt><tt>%1</tt><hr/>No samples at this location.</qt>").arg(data.disassembly.toHtmlEscaped());
+                return tr("<qt><tt>%1</tt><hr/>No samples at this location.</qt>")
+                    .arg(data.disassembly.toHtmlEscaped());
             else
                 return QString();
         }

@@ -66,8 +66,7 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
     static const QRegularExpression disassemblyRegex(QStringLiteral("^[ ]+([0-9a-f]{4,}):\t"));
 
     int sourceCodeLine = 0;
-    while (stream.readLineInto(&asmLine))
-    {
+    while (stream.readLineInto(&asmLine)) {
         if (asmLine.isEmpty() || asmLine.startsWith(QLatin1String("Disassembly")))
             continue;
 
@@ -140,8 +139,8 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
     const auto processPath = QStandardPaths::findExecutable(objdump);
     if (processPath.isEmpty()) {
         disassemblyOutput.errorMessage =
-                QApplication::tr("Cannot find objdump process %1, please install the missing binutils package for arch %2")
-                        .arg(objdump, arch);
+            QApplication::tr("Cannot find objdump process %1, please install the missing binutils package for arch %2")
+                .arg(objdump, arch);
         return disassemblyOutput;
     }
 

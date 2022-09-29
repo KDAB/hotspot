@@ -10,10 +10,12 @@
 class SharedLib
 {
     unsigned long m_max;
+
 public:
     SharedLib(unsigned long max)
         : m_max(max)
-    {}
+    {
+    }
 
     double foo() const;
 

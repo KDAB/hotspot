@@ -35,8 +35,8 @@
 
 #include <KColorScheme>
 #include <KLocalizedString>
-#include <KStandardAction>
 #include <KSqueezedTextLabel>
+#include <KStandardAction>
 #include <ThreadWeaver/ThreadWeaver>
 
 #include "models/filterandzoomstack.h"

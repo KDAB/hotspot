@@ -55,9 +55,7 @@ CallgraphWidget::CallgraphWidget(const Data::CallerCalleeResults& results, KPart
 
     m_graphFile->open();
 
-    connect(Settings::instance(), &Settings::callgraphChanged, this, [this]{
-        generateCallgraph(m_currentSymbol);
-    });
+    connect(Settings::instance(), &Settings::callgraphChanged, this, [this] { generateCallgraph(m_currentSymbol); });
 }
 
 CallgraphWidget::~CallgraphWidget() = default;
@@ -86,7 +84,7 @@ void CallgraphWidget::selectSymbol(const Data::Symbol& symbol)
     generateCallgraph(symbol);
 }
 
-void CallgraphWidget::setResults(const Data::CallerCalleeResults &results)
+void CallgraphWidget::setResults(const Data::CallerCalleeResults& results)
 {
     m_callerCalleeResults = results;
     selectSymbol(m_currentSymbol);

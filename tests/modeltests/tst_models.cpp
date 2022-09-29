@@ -5,16 +5,16 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
+#include <QAbstractItemModelTester>
 #include <QDebug>
 #include <QObject>
 #include <QTest>
 #include <QTextStream>
-#include <QAbstractItemModelTester>
 
 #include "../testutils.h"
 
-#include <models/eventmodel.h>
 #include <models/disassemblymodel.h>
+#include <models/eventmodel.h>
 
 namespace {
 Data::BottomUpResults buildBottomUpTree(const QByteArray& stacks)
@@ -304,8 +304,10 @@ private slots:
                                4294544,
                                2093,
                                "vector_static_gcc/vector_static_gcc_v9.1.0",
-                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/vector_static_gcc/vector_static_gcc_v9.1.0",
-                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/vector_static_gcc/vector_static_gcc_v9.1.0"};
+                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/"
+                               "vector_static_gcc/vector_static_gcc_v9.1.0",
+                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/"
+                               "vector_static_gcc/vector_static_gcc_v9.1.0"};
 
         QTest::newRow("curSymbol") << symbol;
     }
@@ -333,7 +335,7 @@ private slots:
         QCOMPARE(model.columnCount(), DisassemblyModel::COLUMN_COUNT + results.selfCosts.numTypes());
         QCOMPARE(model.rowCount(), 0); // no disassembly data yet
 
-        DisassemblyOutput disassemblyOutput = DisassemblyOutput::disassemble("objdump","x86_64", symbol);
+        DisassemblyOutput disassemblyOutput = DisassemblyOutput::disassemble("objdump", "x86_64", symbol);
         model.setDisassembly(disassemblyOutput);
         QCOMPARE(model.rowCount(), disassemblyOutput.disassemblyLines.size());
     }

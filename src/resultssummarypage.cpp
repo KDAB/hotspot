@@ -70,15 +70,14 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
                                                + PerLibraryModel::NUM_BASE_COLUMNS);
             });
 
-    connect(parser, &PerfParser::bottomUpDataAvailable, this,
-            [this, bottomUpCostModel](const Data::BottomUpResults& data) {
-                bottomUpCostModel->setData(data);
-                ResultsUtil::hideEmptyColumns(data.costs, ui->topHotspotsTableView, BottomUpModel::NUM_BASE_COLUMNS);
-                ResultsUtil::hideTracepointColumns(data.costs, ui->topHotspotsTableView,
-                                                   BottomUpModel::NUM_BASE_COLUMNS);
-                ResultsUtil::fillEventSourceComboBox(ui->eventSourceComboBox, data.costs,
-                                                     tr("Show top hotspots for %1 events."));
-            });
+    connect(
+        parser, &PerfParser::bottomUpDataAvailable, this, [this, bottomUpCostModel](const Data::BottomUpResults& data) {
+            bottomUpCostModel->setData(data);
+            ResultsUtil::hideEmptyColumns(data.costs, ui->topHotspotsTableView, BottomUpModel::NUM_BASE_COLUMNS);
+            ResultsUtil::hideTracepointColumns(data.costs, ui->topHotspotsTableView, BottomUpModel::NUM_BASE_COLUMNS);
+            ResultsUtil::fillEventSourceComboBox(ui->eventSourceComboBox, data.costs,
+                                                 tr("Show top hotspots for %1 events."));
+        });
 
     connect(parser, &PerfParser::perLibraryDataAvailable, this,
             [this, perLibraryModel](const Data::PerLibraryResults& data) {

@@ -30,12 +30,12 @@
 #include <QStandardPaths>
 #include <QWidgetAction>
 
+#include <KColorScheme>
 #include <KConfigGroup>
 #include <KNotification>
 #include <KRecentFilesAction>
 #include <KShell>
 #include <KStandardAction>
-#include <KColorScheme>
 
 #include <kio_version.h>
 #if KIO_VERSION >= QT_VERSION_CHECK(5, 69, 0)
@@ -406,7 +406,8 @@ void MainWindow::aboutHotspot()
 {
     AboutDialog dialog(this);
     dialog.setWindowTitle(tr("About Hotspot"));
-    dialog.setTitle(tr("Hotspot %1 - the Linux perf GUI for performance analysis").arg(QCoreApplication::applicationVersion()));
+    dialog.setTitle(
+        tr("Hotspot %1 - the Linux perf GUI for performance analysis").arg(QCoreApplication::applicationVersion()));
     dialog.setText(tr("<qt><p>Hotspot is supported and maintained by KDAB</p>"
                       "<p>This project is a KDAB R&D effort to create a standalone GUI for performance data. "
                       "As the first goal, we want to provide a UI like KCachegrind around Linux perf. "
@@ -538,12 +539,13 @@ void MainWindow::navigateToCode(const QString& filePath, int lineNumber, int col
         }
 
 #if KIO_VERSION >= QT_VERSION_CHECK(5, 69, 0)
-        auto *job = new KIO::CommandLauncherJob(command, args);
+        auto* job = new KIO::CommandLauncherJob(command, args);
         job->setDesktopName(desktopEntryName);
 
-        connect(job, &KJob::finished, this, [this, command, args](KJob *job) {
+        connect(job, &KJob::finished, this, [this, command, args](KJob* job) {
             if (job->error()) {
-                m_resultsPage->showError(tr("Failed to launch command: %1 %2").arg(command, args.join(QLatin1Char(' '))));
+                m_resultsPage->showError(
+                    tr("Failed to launch command: %1 %2").arg(command, args.join(QLatin1Char(' '))));
             }
         });
 

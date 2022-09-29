@@ -26,12 +26,12 @@ public:
     ~FrequencyPage();
 
 protected:
-    void changeEvent(QEvent *event) override;
+    void changeEvent(QEvent* event) override;
 
 private:
     void updateColors();
 
-    QCustomPlot *m_plot = nullptr;
+    QCustomPlot* m_plot = nullptr;
     QScopedPointer<Ui::FrequencyPage> m_page;
     Data::FrequencyResults m_results;
 };
