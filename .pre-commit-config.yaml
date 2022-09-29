@@ -1,0 +1,15 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+exclude: ^(/3rdparty/perfparser|/3rdparty/PrefixTickLabels/)
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.3.0
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: check-added-large-files
+    args: ['--maxkb=1000']
+  - id: check-case-conflict
+  - id: check-yaml
+    args: [--allow-multiple-documents]
+  - id: check-json

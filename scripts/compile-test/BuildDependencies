@@ -8,4 +8,3 @@ RUN git clone -b 1.6 https://github.com/KDAB/KDDockWidgets && \
     cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr/ \
         -DKDDockWidgets_EXAMPLES=OFF -G Ninja .. && \
     cmake --build . --target install
-

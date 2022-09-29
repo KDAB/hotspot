@@ -148,7 +148,7 @@ void SettingsDialog::addPathSettingsPage()
     auto lastExtraLibsWidget = setupMultiPath(unwindPage->extraLibraryPaths, unwindPage->extraLibraryPathsLabel,
                                               unwindPage->lineEditApplicationPath);
     setupMultiPath(unwindPage->debugPaths, unwindPage->debugPathsLabel, lastExtraLibsWidget);
-    
+
     auto* label = new QLabel(this);
     label->setText(tr("Config:"));
 
