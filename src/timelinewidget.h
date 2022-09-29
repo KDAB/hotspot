@@ -36,7 +36,7 @@ public:
     ~TimeLineWidget() override;
 
     void selectSymbol(const Data::Symbol& symbol);
-    void selectStack(const QVector<Data::Symbol>& stack);
+    void selectStack(const QVector<Data::Symbol>& stack, bool bottomUp);
 
 signals:
     void stacksHovered(const QVector<QVector<Data::Symbol>>& stacks);

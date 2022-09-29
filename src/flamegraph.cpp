@@ -631,7 +631,15 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
         "Enable the bottom-up flame graph view. When this is unchecked, the top-down view is enabled by default."));
     bottomUpCheckbox->setChecked(m_showBottomUpData);
     connect(bottomUpCheckbox, &QCheckBox::toggled, this, [this, bottomUpCheckbox] {
-        m_showBottomUpData = bottomUpCheckbox->isChecked();
+        const auto showBottomUpData = bottomUpCheckbox->isChecked();
+        if (showBottomUpData == m_showBottomUpData) {
+            return;
+        }
+
+        m_showBottomUpData = showBottomUpData;
+        for (auto& stack : m_hoveredStacks) {
+            std::reverse(stack.begin(), stack.end());
+        }
         showData();
     });
 
@@ -765,6 +773,11 @@ void FlameGraph::setHoveredStacks(const QVector<QVector<Data::Symbol>>& hoveredS
     }
 
     m_hoveredStacks = hoveredStacks;
+    if (m_showBottomUpData) {
+        for (auto& stack : m_hoveredStacks) {
+            std::reverse(stack.begin(), stack.end());
+        }
+    }
 
     if (m_rootItem) {
         hoverStacks(m_rootItem, m_hoveredStacks);
@@ -991,7 +1004,7 @@ void FlameGraph::setTooltipItem(const FrameGraphicsItem* item)
             stack.append(item->symbol());
             item = static_cast<const FrameGraphicsItem*>(item->parentItem());
         }
-        emit selectStack(stack);
+        emit selectStack(stack, m_showBottomUpData);
     }
 }
 
