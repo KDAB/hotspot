@@ -175,8 +175,8 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
 
     ui->errorMessage->hide();
 
-    m_disassemblyModel->setDisassembly(disassemblyOutput);
-    m_sourceCodeModel->setDisassembly(disassemblyOutput);
+    m_disassemblyModel->setDisassembly(disassemblyOutput, m_callerCalleeResults);
+    m_sourceCodeModel->setDisassembly(disassemblyOutput, m_callerCalleeResults);
 
     setupAsmViewModel();
 }
@@ -189,8 +189,6 @@ void ResultsDisassemblyPage::setSymbol(const Data::Symbol& symbol)
 void ResultsDisassemblyPage::setCostsMap(const Data::CallerCalleeResults& callerCalleeResults)
 {
     m_callerCalleeResults = callerCalleeResults;
-    m_disassemblyModel->setResults(m_callerCalleeResults);
-    m_sourceCodeModel->setCallerCalleeResults(m_callerCalleeResults);
 }
 
 void ResultsDisassemblyPage::setObjdump(const QString& objdump)

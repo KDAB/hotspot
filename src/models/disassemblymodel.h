@@ -25,8 +25,7 @@ public:
     explicit DisassemblyModel(QObject* parent = nullptr);
     ~DisassemblyModel();
 
-    void setDisassembly(const DisassemblyOutput& disassemblyOutput);
-    void setResults(const Data::CallerCalleeResults& results);
+    void setDisassembly(const DisassemblyOutput& disassemblyOutput, const Data::CallerCalleeResults& results);
 
     void clear();
     QModelIndex findIndexWithOffset(int offset);

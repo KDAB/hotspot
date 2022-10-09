@@ -15,6 +15,7 @@
 
 #include <models/disassemblymodel.h>
 #include <models/eventmodel.h>
+#include <models/sourcecodemodel.h>
 
 namespace {
 Data::BottomUpResults buildBottomUpTree(const QByteArray& stacks)
@@ -330,14 +331,54 @@ private slots:
         locationCost.selfCost[0] += 200;
 
         DisassemblyModel model;
-        QAbstractItemModelTester tester(&model);
-        model.setResults(results);
-        QCOMPARE(model.columnCount(), DisassemblyModel::COLUMN_COUNT + results.selfCosts.numTypes());
-        QCOMPARE(model.rowCount(), 0); // no disassembly data yet
+
+        // no disassembly data yet
+        QCOMPARE(model.columnCount(), DisassemblyModel::COLUMN_COUNT);
+        QCOMPARE(model.rowCount(), 0);
 
         DisassemblyOutput disassemblyOutput = DisassemblyOutput::disassemble("objdump", "x86_64", symbol);
-        model.setDisassembly(disassemblyOutput);
+        model.setDisassembly(disassemblyOutput, results);
+        QCOMPARE(model.columnCount(), DisassemblyModel::COLUMN_COUNT + results.selfCosts.numTypes());
         QCOMPARE(model.rowCount(), disassemblyOutput.disassemblyLines.size());
+    }
+
+    void testSourceCodeModelNoFileName_data()
+    {
+        QTest::addColumn<Data::Symbol>("symbol");
+        Data::Symbol symbol = {"__cos_fma",
+                               4294544,
+                               2093,
+                               "vector_static_gcc/vector_static_gcc_v9.1.0",
+                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/"
+                               "vector_static_gcc/vector_static_gcc_v9.1.0",
+                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/"
+                               "vector_static_gcc/vector_static_gcc_v9.1.0"};
+
+        QTest::newRow("curSymbol") << symbol;
+    }
+
+    void testSourceCodeModelNoFileName()
+    {
+        QFETCH(Data::Symbol, symbol);
+
+        const auto actualBinaryFile = QFINDTESTDATA(symbol.binary);
+        symbol.actualPath = actualBinaryFile;
+
+        const auto tree = generateTree1();
+
+        Data::CallerCalleeResults results;
+        Data::callerCalleesFromBottomUpData(tree, &results);
+
+        SourceCodeModel model;
+        QCOMPARE(model.columnCount(), SourceCodeModel::COLUMN_COUNT);
+        QCOMPARE(model.rowCount(), 0);
+
+        DisassemblyOutput disassemblyOutput = DisassemblyOutput::disassemble("objdump", "x86_64", symbol);
+        model.setDisassembly(disassemblyOutput, results);
+
+        // no source file name
+        QCOMPARE(model.columnCount(), SourceCodeModel::COLUMN_COUNT);
+        QCOMPARE(model.rowCount(), 0);
     }
 
     void testEventModel()

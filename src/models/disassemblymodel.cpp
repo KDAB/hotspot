@@ -47,10 +47,14 @@ QModelIndex DisassemblyModel::findIndexWithOffset(int offset)
     return {};
 }
 
-void DisassemblyModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
+void DisassemblyModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
+                                      const Data::CallerCalleeResults& results)
 {
     beginResetModel();
+
     m_data = disassemblyOutput;
+    m_results = results;
+    m_numTypes = results.selfCosts.numTypes();
 
     QTextCursor cursor(m_document);
     for (const auto& it : disassemblyOutput.disassemblyLines) {
@@ -62,14 +66,6 @@ void DisassemblyModel::setDisassembly(const DisassemblyOutput& disassemblyOutput
 
     m_highlighter->setDefinitionForName(QStringLiteral("GNU Assembler"));
 
-    endResetModel();
-}
-
-void DisassemblyModel::setResults(const Data::CallerCalleeResults& results)
-{
-    beginResetModel();
-    m_results = results;
-    m_numTypes = results.selfCosts.numTypes();
     endResetModel();
 }
 
