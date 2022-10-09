@@ -34,6 +34,7 @@ void SourceCodeModel::clear()
 void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
 {
     m_numLines = 0;
+    m_numTypes = 0;
 
     if (disassemblyOutput.mainSourceFileName.isEmpty())
         return;
@@ -53,6 +54,8 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
     auto entry = m_callerCalleeResults.entry(disassemblyOutput.symbol);
     m_costs = {};
     m_costs.initializeCostsFrom(m_callerCalleeResults.selfCosts);
+
+    m_numTypes = m_costs.numTypes();
 
     const auto sourceCode = QString::fromUtf8(file.readAll());
 
@@ -196,6 +199,5 @@ void SourceCodeModel::setCallerCalleeResults(const Data::CallerCalleeResults& re
 {
     beginResetModel();
     m_callerCalleeResults = results;
-    m_numTypes = results.selfCosts.numTypes();
     endResetModel();
 }
