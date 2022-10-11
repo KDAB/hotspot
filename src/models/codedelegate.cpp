@@ -35,8 +35,8 @@ CodeDelegate::~CodeDelegate() = default;
 
 void CodeDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    const auto& brush = painter->brush();
-    const auto& pen = painter->pen();
+    const auto brush = painter->brush();
+    const auto pen = painter->pen();
 
     painter->setPen(Qt::NoPen);
 
