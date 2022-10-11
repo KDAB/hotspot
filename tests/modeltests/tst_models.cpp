@@ -342,7 +342,7 @@ private slots:
         QCOMPARE(model.rowCount(), disassemblyOutput.disassemblyLines.size());
     }
 
-    void testSourceCodeModel_data()
+    void testSourceCodeModelNoFileName_data()
     {
         QTest::addColumn<Data::Symbol>("symbol");
         Data::Symbol symbol = {"__cos_fma",
@@ -357,7 +357,7 @@ private slots:
         QTest::newRow("curSymbol") << symbol;
     }
 
-    void testSourceCodeModel()
+    void testSourceCodeModelNoFileName()
     {
         QFETCH(Data::Symbol, symbol);
 
