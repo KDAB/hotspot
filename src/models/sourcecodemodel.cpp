@@ -9,6 +9,7 @@
 
 #include <QDir>
 #include <QFile>
+#include <QScopeGuard>
 #include <QTextBlock>
 #include <QTextDocument>
 
@@ -31,10 +32,14 @@ void SourceCodeModel::clear()
     endResetModel();
 }
 
-void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
+void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
+                                     const Data::CallerCalleeResults& results)
 {
-    m_numLines = 0;
+    beginResetModel();
+    auto guard = qScopeGuard([this]() { endResetModel(); });
+
     m_numTypes = 0;
+    m_numLines = 0;
 
     if (disassemblyOutput.mainSourceFileName.isEmpty())
         return;
@@ -44,16 +49,13 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
 
-    beginResetModel();
-
     int maxLineNumber = 0;
     int minLineNumber = INT_MAX;
 
     m_validLineNumbers.clear();
 
-    auto entry = m_callerCalleeResults.entry(disassemblyOutput.symbol);
     m_costs = {};
-    m_costs.initializeCostsFrom(m_callerCalleeResults.selfCosts);
+    m_costs.initializeCostsFrom(results.selfCosts);
 
     m_numTypes = m_costs.numTypes();
 
@@ -76,13 +78,15 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
             minLineNumber = line.sourceCodeLine;
         }
 
-        auto it = entry.offsetMap.find(line.addr);
-        if (it != entry.offsetMap.end()) {
-            const auto& locationCost = it.value();
-            const auto& costLine = locationCost.selfCost;
-            const auto totalCost = m_callerCalleeResults.selfCosts.totalCosts();
+        const auto entry = results.entries.find(disassemblyOutput.symbol);
+        if (entry != results.entries.end()) {
+            const auto it = entry->offsetMap.find(line.addr);
+            if (it != entry->offsetMap.end()) {
+                const auto& locationCost = it.value();
+                const auto& costLine = locationCost.selfCost;
 
-            m_costs.add(line.sourceCodeLine, costLine);
+                m_costs.add(line.sourceCodeLine, costLine);
+            }
         }
 
         m_validLineNumbers.insert(line.sourceCodeLine);
@@ -99,8 +103,6 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
     cursor.select(QTextCursor::SelectionType::LineUnderCursor);
     cursor.removeSelectedText();
     cursor.insertText(disassemblyOutput.symbol.prettySymbol);
-
-    endResetModel();
 }
 
 QVariant SourceCodeModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -193,11 +195,4 @@ int SourceCodeModel::lineForIndex(const QModelIndex& index) const
 void SourceCodeModel::setSysroot(const QString& sysroot)
 {
     m_sysroot = sysroot;
-}
-
-void SourceCodeModel::setCallerCalleeResults(const Data::CallerCalleeResults& results)
-{
-    beginResetModel();
-    m_callerCalleeResults = results;
-    endResetModel();
 }
