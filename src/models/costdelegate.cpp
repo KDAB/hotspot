@@ -36,8 +36,8 @@ void CostDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
     auto rect = option.rect;
     rect.setWidth(rect.width() * fraction);
 
-    const auto& brush = painter->brush();
-    const auto& pen = painter->pen();
+    const auto brush = painter->brush();
+    const auto pen = painter->pen();
 
     painter->setPen(Qt::NoPen);
 
