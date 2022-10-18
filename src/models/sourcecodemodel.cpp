@@ -35,6 +35,10 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
 {
     m_numLines = 0;
 
+    // initilize costs to prevent crash in headerData if costs is empty
+    m_costs = {};
+    m_costs.initializeCostsFrom(m_callerCalleeResults.selfCosts);
+
     if (disassemblyOutput.mainSourceFileName.isEmpty())
         return;
 
@@ -51,8 +55,6 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput)
     m_validLineNumbers.clear();
 
     auto entry = m_callerCalleeResults.entry(disassemblyOutput.symbol);
-    m_costs = {};
-    m_costs.initializeCostsFrom(m_callerCalleeResults.selfCosts);
 
     const auto sourceCode = QString::fromUtf8(file.readAll());
 
