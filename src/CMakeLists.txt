@@ -75,9 +75,9 @@ set(HOTSPOT_SRCS
     resources.qrc
 )
 
-if(KGRAPHVIEWER_FOUND)
+if(KGraphViewerPart_FOUND)
     set(HOTSPOT_SRCS ${HOTSPOT_SRCS} callgraphwidget.cpp callgraphgenerator.cpp)
-endif(KGRAPHVIEWER_FOUND)
+endif(KGraphViewerPart_FOUND)
 
 ecm_add_app_icon(
     HOTSPOT_SRCS ICONS ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/128-hotspot_app_icon.png

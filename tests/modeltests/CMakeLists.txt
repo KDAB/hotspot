@@ -43,7 +43,7 @@ set_target_properties(
     tst_disassemblyoutput PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
 )
 
-if(KGRAPHVIEWER_FOUND)
+if(KGraphViewerPart_FOUND)
     ecm_add_test(
         tst_callgraphgenerator.cpp
         ../../src/parsers/perf/perfparser.cpp
@@ -64,4 +64,4 @@ if(KGRAPHVIEWER_FOUND)
     set_target_properties(
         tst_callgraphgenerator PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
     )
-endif(KGRAPHVIEWER_FOUND)
+endif(KGraphViewerPart_FOUND)
