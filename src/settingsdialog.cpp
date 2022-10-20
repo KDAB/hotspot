@@ -39,14 +39,14 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     , unwindPage(new Ui::UnwindSettingsPage)
     , flamegraphPage(new Ui::FlamegraphSettingsPage)
     , debuginfodPage(new Ui::DebuginfodPage)
-#if KGRAPHVIEWER_FOUND
+#if KGraphViewerPart_FOUND
     , callgraphPage(new Ui::CallgraphSettingsPage)
 #endif
 {
     addPathSettingsPage();
     addFlamegraphPage();
     addDebuginfodPage();
-#if KGRAPHVIEWER_FOUND
+#if KGraphViewerPart_FOUND
     addCallgraphPage();
 #endif
 }

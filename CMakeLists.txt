@@ -122,7 +122,6 @@ set_package_properties(
     URL "https://invent.kde.org/graphics/kgraphviewer"
     TYPE OPTIONAL
 )
-set(KGRAPHVIEWER_FOUND ${KGraphViewerPart_FOUND})
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 

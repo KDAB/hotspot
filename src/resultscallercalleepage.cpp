@@ -31,7 +31,7 @@
 
 #include "hotspot-config.h"
 
-#if KGRAPHVIEWER_FOUND
+#if KGraphViewerPart_FOUND
 #include "callgraphwidget.h"
 #endif
 
@@ -98,14 +98,14 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
         ResultsUtil::hideEmptyColumns(data.inclusiveCosts, ui->sourceMapView, SourceMapModel::NUM_BASE_COLUMNS);
         ResultsUtil::hideTracepointColumns(data.selfCosts, ui->sourceMapView, SourceMapModel::NUM_BASE_COLUMNS);
 
-#if KGRAPHVIEWER_FOUND
+#if KGraphViewerPart_FOUND
         if (m_callgraph) {
             m_callgraph->setResults(data);
         }
 #endif
     });
 
-#if KGRAPHVIEWER_FOUND
+#if KGraphViewerPart_FOUND
     m_callgraph = CallgraphWidget::createCallgraphWidget({}, this);
     if (m_callgraph) {
         ui->callerCalleeLayout->addWidget(m_callgraph);
@@ -127,7 +127,7 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
         if (index.model() == m_callerCalleeCostModel) {
             ui->callerCalleeTableView->setCurrentIndex(m_callerCalleeProxy->mapFromSource(index));
         }
-#if KGRAPHVIEWER_FOUND
+#if KGraphViewerPart_FOUND
         if (m_callgraph) {
             m_callgraph->selectSymbol(index.data(CallerCalleeModel::SymbolRole).value<Data::Symbol>());
         }
@@ -142,7 +142,7 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
                                   {ResultsUtil::CallbackAction::OpenEditor, ResultsUtil::CallbackAction::SelectSymbol,
                                    ResultsUtil::CallbackAction::ViewDisassembly});
 
-#if KGRAPHVIEWER_FOUND
+#if KGraphViewerPart_FOUND
     if (m_callgraph) {
         connect(m_callgraph, &CallgraphWidget::clickedOn, this,
                 [this, selectCallerCaleeeIndex](const Data::Symbol& symbol) {

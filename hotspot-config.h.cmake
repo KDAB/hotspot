@@ -25,6 +25,6 @@
 
 #cmakedefine01 QCustomPlot_FOUND
 
-#cmakedefine01 KGRAPHVIEWER_FOUND
+#cmakedefine01 KGraphViewerPart_FOUND
 
 #cmakedefine01 KF5SyntaxHighlighting_FOUND
