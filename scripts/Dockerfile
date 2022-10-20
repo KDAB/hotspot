@@ -56,7 +56,13 @@ FROM hotspot_appimage_intermediate
 ARG DISABLE_RUSTC_DEMANGLE
 ARG DISABLE_D_DEMANGLE
 
-RUN git clone https://github.com/KDAB/KDDockWidgets ; cd KDDockWidgets ; mkdir build ; cd build ; cmake -DCMAKE_INSTALL_PREFIX=/usr/ .. ; make ; make install
+RUN git clone https://github.com/KDAB/KDDockWidgets && \
+    cd KDDockWidgets && \
+    mkdir build && \
+    cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/ .. && \
+    make -j$(nproc) && \
+    make install
 
 RUN apt-get update && apt-get install -y libphonon4qt5-dev
 
