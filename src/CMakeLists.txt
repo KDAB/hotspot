@@ -77,7 +77,7 @@ set(HOTSPOT_SRCS
 
 if(KGraphViewerPart_FOUND)
     set(HOTSPOT_SRCS ${HOTSPOT_SRCS} callgraphwidget.cpp callgraphgenerator.cpp)
-endif(KGraphViewerPart_FOUND)
+endif()
 
 ecm_add_app_icon(
     HOTSPOT_SRCS ICONS ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/128-hotspot_app_icon.png
@@ -118,11 +118,11 @@ target_link_libraries(
 
 if(KF5Archive_FOUND)
     target_link_libraries(hotspot KF5::Archive)
-endif(KF5Archive_FOUND)
+endif()
 
 if(QCustomPlot_FOUND)
     target_link_libraries(hotspot QCustomPlot::QCustomPlot)
-endif(QCustomPlot_FOUND)
+endif()
 
 set_target_properties(hotspot PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}")
 
@@ -148,4 +148,4 @@ if(KF5Auth_FOUND)
         kauth_install_helper_files(hotspot-auth-helper com.kdab.hotspot.perf root)
         kauth_install_actions(com.kdab.hotspot.perf hotspot-perf-authhelper.actions)
     endif()
-endif(KF5Auth_FOUND)
+endif()

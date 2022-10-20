@@ -64,4 +64,4 @@ if(KGraphViewerPart_FOUND)
     set_target_properties(
         tst_callgraphgenerator PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
     )
-endif(KGraphViewerPart_FOUND)
+endif()
