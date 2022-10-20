@@ -108,11 +108,21 @@ set_package_properties(
 find_package(QCustomPlot)
 set_package_properties(
     QCustomPlot PROPERTIES
-    PURPOSE "QCustomPlot is a Qt charting library. https://www.qcustomplot.com/"
+    DESCRIPTION "QCustomPlot is a Qt charting library. https://www.qcustomplot.com/"
+    PURPOSE "Frequency tab"
+    URL "https://www.qcustomplot.com/index.php/download"
     TYPE OPTIONAL
 )
 
-find_program(KGRAPHVIEWER_FOUND kgraphviewer)
+find_package(KGraphViewerPart CONFIG)
+set_package_properties(
+    KGraphViewerPart PROPERTIES
+    DESCRIPTION "KGraphViewer (from KDE extragear) is a tool to display graphviz .dot graphs"
+    PURPOSE "Call graph in the caller/callee tab"
+    URL "https://invent.kde.org/graphics/kgraphviewer"
+    TYPE OPTIONAL
+)
+set(KGRAPHVIEWER_FOUND ${KGraphViewerPart_FOUND})
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
