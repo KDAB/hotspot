@@ -42,6 +42,7 @@
 #include "models/filterandzoomstack.h"
 #include "resultsutil.h"
 #include "settings.h"
+#include "util.h"
 
 namespace {
 enum SearchMatchType
@@ -181,7 +182,7 @@ void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
     const auto symbolText = symbol.isEmpty() ? QObject::tr("?? [%1]").arg(binary) : symbol;
     painter->drawText(margin + rect().x(), rect().y(), width, height,
                       Qt::AlignVCenter | Qt::AlignLeft | Qt::TextSingleLine,
-                      option->fontMetrics.elidedText(symbolText, Qt::ElideRight, width));
+                      Util::elideSymbol(symbolText, option->fontMetrics, width));
 
     if (m_searchMatch == NoMatch) {
         painter->setPen(oldPen);
@@ -626,7 +627,8 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     m_view->setScene(m_scene);
     m_view->viewport()->installEventFilter(this);
     m_view->viewport()->setMouseTracking(true);
-    m_view->setFont(QFont(QStringLiteral("monospace")));
+    // fix for  QTBUG-105237 view->setFont does not update fontMetrics only the rendered font
+    m_scene->setFont(QFont(QStringLiteral("monospace")));
 
     m_backButton = new QPushButton(this);
     m_backButton->setIcon(QIcon::fromTheme(QStringLiteral("go-previous")));
