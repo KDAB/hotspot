@@ -552,6 +552,32 @@ void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& loca
     }
 }
 
+template<typename FrameCallback>
+void addBottomUpResult(Data::BottomUpResults* bottomUpResult, Settings::CostAggregation costAggregation,
+                       const QHash<qint32, QHash<qint32, QString>>& commands, int type, quint64 cost, qint32 pid,
+                       qint32 tid, quint32 cpu, const QVector<qint32>& frames, const FrameCallback& frameCallback)
+{
+    switch (costAggregation) {
+    case Settings::CostAggregation::BySymbol:
+        bottomUpResult->addEvent(type, cost, frames, frameCallback);
+        break;
+    case Settings::CostAggregation::ByThread: {
+        auto thread = commands.value(pid).value(tid);
+        bottomUpResult->addEvent(thread.isEmpty() ? QString::number(tid) : thread, type, cost, frames, frameCallback);
+        break;
+    }
+    case Settings::CostAggregation::ByProcess: {
+        auto process = commands.value(pid).value(pid);
+        bottomUpResult->addEvent(process.isEmpty() ? QString::number(pid) : process, type, cost, frames, frameCallback);
+        break;
+    }
+    case Settings::CostAggregation::ByCPU:
+        bottomUpResult->addEvent({QLatin1String("CPU %1").arg(QString::number(cpu))}, type, cost, frames,
+                                 frameCallback);
+        break;
+    }
+}
+
 struct SymbolCount
 {
     qint32 total = 0;
@@ -1222,27 +1248,8 @@ public:
     void addBottomUpResult(int type, quint64 cost, qint32 pid, qint32 tid, quint32 cpu, const QVector<qint32>& frames,
                            const FrameCallback& frameCallback)
     {
-        switch (costAggregation) {
-        case Settings::CostAggregation::BySymbol:
-            bottomUpResult.addEvent(type, cost, frames, frameCallback);
-            break;
-        case Settings::CostAggregation::ByThread: {
-            auto thread = commands.value(pid).value(tid);
-            bottomUpResult.addEvent(thread.isEmpty() ? QString::number(tid) : thread, type, cost, frames,
-                                    frameCallback);
-            break;
-        }
-        case Settings::CostAggregation::ByProcess: {
-            auto process = commands.value(pid).value(pid);
-            bottomUpResult.addEvent(process.isEmpty() ? QString::number(pid) : process, type, cost, frames,
-                                    frameCallback);
-            break;
-        }
-        case Settings::CostAggregation::ByCPU:
-            bottomUpResult.addEvent({QLatin1String("CPU %1").arg(QString::number(cpu))}, type, cost, frames,
-                                    frameCallback);
-            break;
-        }
+        ::addBottomUpResult(&bottomUpResult, costAggregation, commands, type, cost, pid, tid, cpu, frames,
+                            frameCallback);
     }
 
     void addLost(const LostDefinition& lost)
@@ -1527,6 +1534,8 @@ void PerfParser::startParseFile(const QString& path)
             emit frequencyDataAvailable(d.frequencyResult);
             emit parsingFinished();
 
+            m_threadNames = d.commands;
+
             if (d.m_numSamplesWithMoreThanOneFrame == 0) {
                 emit parserWarning(tr("Samples contained no call stack frames. Consider passing <code>--call-graph "
                                       "dwarf</code> to <code>perf record</code>."));
@@ -1809,7 +1818,8 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                     };
 
                     if (event.stackId != -1) {
-                        bottomUp.addEvent(event.type, event.cost, events.stacks.at(event.stackId), frameCallback);
+                        addBottomUpResult(&bottomUp, costAggregation, m_threadNames, event.type, event.cost, thread.pid,
+                                          thread.tid, event.cpuId, events.stacks.at(event.stackId), frameCallback);
                     }
                 }
             }

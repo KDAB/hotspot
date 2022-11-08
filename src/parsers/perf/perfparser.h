@@ -78,4 +78,5 @@ private:
     std::atomic<bool> m_isParsing;
     std::atomic<bool> m_stopRequested;
     std::unique_ptr<QTemporaryFile> m_decompressed;
+    QHash<qint32, QHash<qint32, QString>> m_threadNames;
 };
