@@ -19,6 +19,7 @@
 #include "settings.h"
 #include "util.h"
 
+#include <KLocalizedString>
 #include <ThreadWeaver/ThreadWeaver>
 #include <QThread>
 
@@ -56,6 +57,7 @@ void Q_DECL_UNUSED initRCCIconTheme()
 
 int main(int argc, char** argv)
 {
+    KLocalizedString::setApplicationDomain("hotspot");
     QCoreApplication::setOrganizationName(QStringLiteral("KDAB"));
     QCoreApplication::setOrganizationDomain(QStringLiteral("kdab.com"));
     QCoreApplication::setApplicationName(QStringLiteral("hotspot"));
