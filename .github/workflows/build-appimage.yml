@@ -1,0 +1,41 @@
+name: build appimage
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  pre_job:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+    - id: skip_check
+      uses: fkirc/skip-duplicate-actions@v5
+      with:
+        # All of these options are optional, so you can remove them if you are happy with the defaults
+        concurrent_skipping: 'same_content_newer'
+        do_not_skip: '["workflow_dispatch", "schedule"]'
+
+  appimage:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/kdab/kdesrc-build
+      options: --privileged --device /dev/fuse --cap-add SYS_ADMIN
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: recursive
+
+    - name: Build
+      run: /build_appimage.sh
+
+    - name: Upload
+      uses: actions/upload-artifact@v3
+      with:
+        name: appimage
+        path: /output/hotspot*
