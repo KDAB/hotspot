@@ -1,0 +1,62 @@
+# This is a sample kdesrc-build configuration file appropriate for KDE
+# Frameworks 5-based build environments.
+#
+# See the kdesrc-buildrc-sample for explanations of what the options do, or
+# view the manpage or kdesrc-build documentation at
+# https://docs.kde.org/?application=kdesrc-build
+#
+# SPDX-FileCopyrightText: Milian Wolff <milian.wolff@kdab.com>
+# SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+#
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+global
+    branch-group kf5-qt5
+    kdedir /usr # Where to install KF5-based software
+    # Uncomment this and edit value to choose a different Qt5
+    qtdir /usr   # Where to find Qt5
+
+    # Where to download source code. By default the build directory and
+    # logs will be kept under this directory as well.
+    source-dir /opt/kde/src
+
+    # These values should be set to the number of cores to use during build (if
+    # in doubt, run "nproc" to see how many cores you have)
+    num-cores FULL_NPROC
+
+    # This is the same as above but used for heavyweight modules like
+    # qtwebengine, though you can use it for modules yourself. A conservative
+    # thumbrule is one core for every 2 GiB of total memory.
+    num-cores-low-mem HALF_NPROC
+
+    cmake-options -DBUILD_TESTING=OFF -DBUILD_DESIGNERPLUGIN=OFF
+end global
+
+# Instead of specifying modules here, the current best practice is to refer to
+# KF5 module lists maintained with kdesrc-build by the KF5 developers. As new
+# modules are added or modified, the kdesrc-build KF5 module list is altered to
+# suit, and when you update kdesrc-build you will automatically pick up the
+# needed changes.
+
+# NOTE: You MUST change the path below to include the actual path to your
+# kdesrc-build installation.
+include /opt/kdesrc-build/kf5-qt5-build-include
+
+# If you wish to maintain the module list yourself that is possible, simply
+# look at the files pointed to above and use the "module-set" declarations that
+# they use, with your own changes.
+
+# It is possible to change the options for modules loaded from the file
+# included above (since it's not possible to add a module that's already been
+# included), e.g.
+options kconfig
+    cmake-options -DKCONFIG_USE_QML=OFF
+end options
+
+options ki18n
+    cmake-options -DBUILD_WITH_QML=OFF
+end options
+
+options sonnet
+    cmake-options -DSONNET_USE_QML=OFF
+end options
