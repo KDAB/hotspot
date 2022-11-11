@@ -1393,6 +1393,7 @@ PerfParser::PerfParser(QObject* parent)
     : QObject(parent)
     , m_isParsing(false)
     , m_stopRequested(false)
+    , m_costAggregationChanged(false)
 {
     qRegisterMetaType<Data::Summary>();
     qRegisterMetaType<Data::BottomUp>();
@@ -1441,6 +1442,8 @@ PerfParser::PerfParser(QObject* parent)
         m_isParsing = false;
         m_decompressed.reset();
     };
+
+    connect(Settings::instance(), &Settings::costAggregationChanged, this, [this] { m_costAggregationChanged = true; });
 
     connect(this, &PerfParser::parsingFailed, this, parsingStopped);
     connect(this, &PerfParser::parsingFinished, this, parsingStopped);
@@ -1674,7 +1677,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         const bool excludeByBinary = !filter.excludeBinaries.isEmpty();
         const bool filterByStack = includeBySymbol || excludeBySymbol || includeByBinary || excludeByBinary;
 
-        if (!filter.isValid()) {
+        if (!filter.isValid() && !m_costAggregationChanged) {
             bottomUp = m_bottomUpResults;
             callerCallee = m_callerCalleeResults;
         } else {
@@ -1853,6 +1856,8 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
             emit parsingFailed(tr("Parsing stopped."));
             return;
         }
+
+        m_costAggregationChanged = false;
 
         emit bottomUpDataAvailable(bottomUp);
         emit topDownDataAvailable(topDown);

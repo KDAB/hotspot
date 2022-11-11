@@ -10,6 +10,7 @@
 #include "ui_resultspage.h"
 
 #include "parsers/perf/perfparser.h"
+#include "settings.h"
 
 #include "costcontextmenu.h"
 #include "dockwidgetsetup.h"
@@ -192,6 +193,9 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
         label->setAlignment(Qt::AlignCenter);
         layout->addWidget(label);
     }
+
+    connect(Settings::instance(), &Settings::costAggregationChanged, this,
+            [this, parser] { parser->filterResults(m_filterAndZoomStack->filter()); });
 }
 
 ResultsPage::~ResultsPage() = default;
