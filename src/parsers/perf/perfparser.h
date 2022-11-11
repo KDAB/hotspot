@@ -77,6 +77,7 @@ private:
     Data::FrequencyResults m_frequencyResults;
     std::atomic<bool> m_isParsing;
     std::atomic<bool> m_stopRequested;
+    std::atomic<bool> m_costAggregationChanged;
     std::unique_ptr<QTemporaryFile> m_decompressed;
     QHash<qint32, QHash<qint32, QString>> m_threadNames;
 };
