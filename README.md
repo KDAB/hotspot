@@ -207,10 +207,13 @@ hotspot is available in Fedora repositories.
 
 ### For any Linux distro: AppImage
 
-Head over to our [download page](https://github.com/KDAB/hotspot/releases) and download the latest
-[AppImage](http://appimage.org/) release and just run it.
+Head over to our [list of AppImage build jobs][appimagejobs].
+When you click on a job, you'll see a page with an "Artifacts" section that contains an "appimage" binary
+you can then download. Unzip the AppImage file and make it executable, then run it.
 
-Please use the latest Continuous release to get the most recent version. If it doesn't work, please report a
+[appimagejobs]: https://github.com/KDAB/hotspot/actions/workflows/build-appimage.yml?query=branch%3Amaster
+
+Please use the latest build to get the most recent version. If it doesn't work, please report a
 bug and test the latest stable version.
 
 *Note: Your system libraries or preferences are not altered. In case you'd like to remove Hotspot again,
