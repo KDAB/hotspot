@@ -7,6 +7,8 @@
 #
 set -e
 
+. /opt/rh/devtoolset-10/enable
+
 mkdir build && cd build
 PREFIX=/usr
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
