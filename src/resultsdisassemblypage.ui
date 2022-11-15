@@ -24,7 +24,11 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="KMessageWidget" name="errorMessage"/>
+    <widget class="KMessageWidget" name="errorMessage">
+     <property name="messageType">
+      <enum>KMessageWidget::Warning</enum>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="KSqueezedTextLabel" name="filenameLabel">
