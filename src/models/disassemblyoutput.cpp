@@ -175,7 +175,8 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
     }
 
     if (output.isEmpty()) {
-        disassemblyOutput.errorMessage += QApplication::tr("Empty output of command %1").arg(objdump);
+        disassemblyOutput.errorMessage +=
+            QApplication::tr("Empty output of command %1 %2").arg(objdump, arguments.join(QLatin1Char(' ')));
     }
 
     const auto objdumpOutput = objdumpParse(output);
