@@ -13,6 +13,7 @@
 
 class QString;
 class QProcessEnvironment;
+class QFontMetrics;
 
 namespace Data {
 struct Symbol;
@@ -60,6 +61,8 @@ QString formatTooltip(int id, const Data::Symbol& symbol, const Data::Costs& sel
                       const Data::Costs& inclusiveCosts);
 QString formatTooltip(const Data::Symbol& symbol, const Data::ItemCost& itemCost, const Data::Costs& totalCosts);
 QString formatTooltip(const QString& location, const Data::LocationCost& cost, const Data::Costs& totalCosts);
+
+QString elideSymbol(const QString& symbolText, const QFontMetrics& metrics, int maxWidth);
 
 // the process environment including the custom AppImage-specific LD_LIBRARY_PATH
 // this is initialized on the first call and cached internally afterwards

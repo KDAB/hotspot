@@ -13,6 +13,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>
+#include <QFontMetrics>
 #include <QProcessEnvironment>
 #include <QStandardPaths>
 
@@ -31,6 +32,64 @@
 #endif
 
 #include <KParts/ReadOnlyPart>
+
+namespace {
+std::pair<QString, QString> elideArguments(const QString symbolText)
+{
+    QChar quoteChar = QLatin1Char('"');
+    int numQuotes = 0;
+    int depth = 0;
+
+    int endEliding = symbolText.length();
+    int startEliding = 0;
+
+    // this loop tries to to find the opening and closing bracket of the arguments
+    // it does this by counting the number of opening and closing brackets from the back
+    // it also has some basic string checking, so that string arguments like "(" of "\')"
+    // will not be counted
+    for (int i = symbolText.length() - 1; i > 0; i--) {
+        auto c = symbolText[i];
+
+        // detect quotes and skip those
+        if ((c == QLatin1Char('"') || c == QLatin1Char('\'')) && numQuotes == 0) {
+            quoteChar = c;
+            numQuotes++;
+        } else if (c == quoteChar && numQuotes == 1) {
+            if (symbolText[i - 1] == QLatin1Char('\\')) {
+                continue;
+            }
+            numQuotes = 0;
+            continue;
+        }
+        if (numQuotes == 1)
+            continue;
+
+        // mark opening and closing brackets
+        if (c == QLatin1Char(')')) {
+            if (depth == 0) {
+                endEliding = i;
+            }
+            depth++;
+        }
+        if (c == QLatin1Char('(')) {
+            depth--;
+            if (depth == 0) {
+                startEliding = i;
+                break;
+            }
+        }
+    }
+
+    if (endEliding - startEliding == 1) {
+        // don't elide if we have () in symbol
+        return {symbolText, {}};
+    }
+
+    // QLatin1String does not work with …
+    const auto elideSymbol = QStringLiteral("…");
+    return {symbolText.left(startEliding + 1), symbolText.right(symbolText.length() - endEliding)};
+}
+}
 
 QString collapseTemplate(const QString& str, int level)
 {
@@ -57,6 +116,9 @@ QString collapseTemplate(const QString& str, int level)
         return false;
     };
 
+    // QLatin1String does not work with …
+    const auto elideString = QStringLiteral("<…");
+
     QString output;
     output.reserve(str.size());
     const auto operatorKeyword = QLatin1String("operator");
@@ -67,7 +129,7 @@ QString collapseTemplate(const QString& str, int level)
         if (c == QLatin1Char('<')) {
             depth++;
             if (depth == level) {
-                output.append(QLatin1String("<..."));
+                output.append(elideString);
             }
         } else if (c == QLatin1Char('>')) {
             depth--;
@@ -90,6 +152,38 @@ QString collapseTemplate(const QString& str, int level)
     }
 
     return output;
+}
+
+QString Util::elideSymbol(const QString& symbolText, const QFontMetrics& metrics, int maxWidth)
+{
+    if (metrics.horizontalAdvance(symbolText) < maxWidth) {
+        return symbolText;
+    }
+
+    const auto argumentsElided = elideArguments(symbolText);
+    const auto fixedWidthLength =
+        metrics.horizontalAdvance(argumentsElided.first) + metrics.horizontalAdvance(argumentsElided.second);
+
+    QString elided;
+
+    if (fixedWidthLength < maxWidth) {
+        auto elidedArguments =
+            symbolText.mid(argumentsElided.first.size(), symbolText.size() - argumentsElided.second.size());
+
+        elided = argumentsElided.first
+            + metrics.elidedText(elidedArguments, Qt::TextElideMode::ElideRight, maxWidth - fixedWidthLength)
+            + argumentsElided.second;
+        return elided;
+    } else {
+        elided = argumentsElided.first + QStringLiteral("…") + argumentsElided.second;
+    }
+
+    const auto templateElided = collapseTemplate(elided, 1);
+    if (metrics.horizontalAdvance(templateElided) < maxWidth) {
+        return templateElided;
+    }
+
+    return metrics.elidedText(templateElided, Qt::TextElideMode::ElideLeft, maxWidth);
 }
 
 QString Util::findLibexecBinary(const QString& name)

@@ -692,31 +692,31 @@ private slots:
         QTest::addColumn<QString>("collapsed");
 
         QTest::addRow("operator<") << "Foo<Bar> operator< (Asdf<Xyz>);"
-                                   << "Foo<...> operator< (Asdf<...>);";
+                                   << "Foo<…> operator< (Asdf<…>);";
         QTest::addRow("operator>") << "Foo<Bar> operator> (Asdf<Xyz>);"
-                                   << "Foo<...> operator> (Asdf<...>);";
+                                   << "Foo<…> operator> (Asdf<…>);";
         QTest::addRow("operator<<") << "Foo<Bar> operator<< (Asdf<Xyz>);"
-                                    << "Foo<...> operator<< (Asdf<...>);";
+                                    << "Foo<…> operator<< (Asdf<…>);";
         QTest::addRow("operator>>") << "Foo<Bar> operator>> (Asdf<Xyz>);"
-                                    << "Foo<...> operator>> (Asdf<...>);";
+                                    << "Foo<…> operator>> (Asdf<…>);";
 
         QTest::addRow("operator <") << "Foo<Bar> operator < (Asdf<Xyz>);"
-                                    << "Foo<...> operator < (Asdf<...>);";
+                                    << "Foo<…> operator < (Asdf<…>);";
         QTest::addRow("operator   >") << "Foo<Bar> operator   > (Asdf<Xyz>);"
-                                      << "Foo<...> operator   > (Asdf<...>);";
+                                      << "Foo<…> operator   > (Asdf<…>);";
         QTest::addRow("operator <<") << "Foo<Bar> operator << (Asdf<Xyz>);"
-                                     << "Foo<...> operator << (Asdf<...>);";
+                                     << "Foo<…> operator << (Asdf<…>);";
         QTest::addRow("operator   >>") << "Foo<Bar> operator   >> (Asdf<Xyz>);"
-                                       << "Foo<...> operator   >> (Asdf<...>);";
+                                       << "Foo<…> operator   >> (Asdf<…>);";
 
         QTest::addRow("operator< 2") << "Foo<Bar<Xyz>> operator< (Asdf<Xyz>);"
-                                     << "Foo<...> operator< (Asdf<...>);";
+                                     << "Foo<…> operator< (Asdf<…>);";
         QTest::addRow("operator> 2") << "Foo<Bar<Xyz>> operator> (Asdf<Xyz>);"
-                                     << "Foo<...> operator> (Asdf<...>);";
+                                     << "Foo<…> operator> (Asdf<…>);";
         QTest::addRow("operator<< 2") << "Foo<Bar<Xyz>> operator<< (Asdf<Xyz>);"
-                                      << "Foo<...> operator<< (Asdf<...>);";
+                                      << "Foo<…> operator<< (Asdf<…>);";
         QTest::addRow("operator>> 2") << "Foo<Bar<Xyz>> operator>> (Asdf<Xyz>);"
-                                      << "Foo<...> operator>> (Asdf<...>);";
+                                      << "Foo<…> operator>> (Asdf<…>);";
     }
 
     void testCollapseTemplates()
@@ -726,6 +726,41 @@ private slots:
         QFETCH(QString, collapsed);
 
         QCOMPARE(collapseTemplate(original, 1), collapsed);
+    }
+
+    void testSymbolEliding_data()
+    {
+        QTest::addColumn<int>("maxWidth");
+        QTest::addColumn<QString>("elidedSymbol");
+
+        QTest::addRow("no eliding")
+            << 1500 << "asdf_namespace::foobar<asdf, yxcvyxcv>::blablub(someotherreallylongnames) const";
+        QTest::addRow("elide arguments")
+            << 1000 << "asdf_namespace::foobar<asdf, yxcvyxcv>::blablub(someotherreallylongn…) const";
+        QTest::addRow("elide templates") << 700 << "asdf_namespace::foobar<…>::blablub(…) const";
+        QTest::addRow("elide symbol") << 350 << "…obar<…>::blablub(…) const";
+    }
+
+    void testSymbolEliding()
+    {
+        const QFontMetrics metrics(QFont(QStringLiteral("monospace"), 10));
+
+        const QString testSymbol =
+            QStringLiteral("asdf_namespace::foobar<asdf, yxcvyxcv>::blablub(someotherreallylongnames) const");
+
+        QFETCH(int, maxWidth);
+        QFETCH(QString, elidedSymbol);
+
+        QCOMPARE(Util::elideSymbol(testSymbol, metrics, maxWidth), elidedSymbol);
+    }
+
+    void testSymbolElidingParanthese()
+    {
+        const QFontMetrics metrics(QFont(QStringLiteral("monospace"), 10));
+
+        const QString symbol = QStringLiteral("Foo<&bar::operator()>::asdf<XYZ>(blabla<&foo::operator(), ')', '('>)");
+
+        QCOMPARE(Util::elideSymbol(symbol, metrics, 700), "Foo<&bar::operator()>::asdf<XYZ>(blabla<&foo::opera…)");
     }
 };
 
