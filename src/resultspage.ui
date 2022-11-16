@@ -26,7 +26,7 @@
    <item>
     <widget class="KMessageWidget" name="errorWidget">
      <property name="wordWrap">
-      <bool>false</bool>
+      <bool>true</bool>
      </property>
      <property name="messageType">
       <enum>KMessageWidget::Warning</enum>
