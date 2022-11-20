@@ -16,6 +16,7 @@ USER root
 
 # install dependencies
 RUN sed -i 's#enabled=1#enabled=0#' /etc/yum/pluginconf.d/fastestmirror.conf && \
+    yum install -y deltarpm && \
     yum update -y && yum install -y epel-release centos-release-scl && \
     yum install -y \
         devtoolset-11 devtoolset-11-elfutils-devel flex bison file \
