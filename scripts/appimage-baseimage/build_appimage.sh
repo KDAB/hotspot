@@ -7,11 +7,12 @@
 #
 set -e
 
-. /opt/rh/devtoolset-10/enable
+. /opt/rh/devtoolset-11/enable
 
 mkdir build && cd build
 PREFIX=/usr
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_PREFIX_PATH=/opt/rh/devtoolset-11/root/ \
     -DAPPIMAGE_BUILD=ON "-DCMAKE_INSTALL_PREFIX=$PREFIX" ..
 
 make -j

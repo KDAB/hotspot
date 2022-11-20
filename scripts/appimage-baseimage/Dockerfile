@@ -14,12 +14,14 @@ ARG d_demangler_VERSION=0.0.2
 
 USER root
 
-# install some core tools
-RUN yum update -y && yum install -y epel-release centos-release-scl && \
-    yum install -y rh-perl530-perl rh-perl530-perl-IO-Socket-SSL rh-perl530-perl-YAML cmake3 rh-git227-git polkit-devel gperf python3 which libxslt-devel docbook-style-xsl wget devtoolset-10 elfutils-devel libzstd-devel && \
-    ln -s /usr/bin/cmake3 /usr/bin/cmake && \
-    yum groupinstall -y "Development Tools" && \
+# install dependencies
+RUN sed -i 's#enabled=1#enabled=0#' /etc/yum/pluginconf.d/fastestmirror.conf && \
+    yum update -y && yum install -y epel-release centos-release-scl && \
     yum install -y \
+        devtoolset-11 devtoolset-11-elfutils-devel flex bison file \
+        rh-perl530-perl rh-perl530-perl-IO-Socket-SSL rh-perl530-perl-YAML \
+        gperf wget cmake3 which rh-git227-git python3 libzstd-devel \
+        polkit-devel libxslt-devel docbook-style-xsl \
         # install Qt build dependencies, see: https://wiki.qt.io/Building_Qt_5_from_Git
         # qtbase
         libxcb libxcb-devel xcb-util xcb-util-devel mesa-libGL-devel libxkbcommon-devel libudev-devel \
@@ -40,11 +42,12 @@ RUN yum update -y && yum install -y epel-release centos-release-scl && \
         boost boost-devel graphviz-devel \
         # appimages
         fuse fuse-libs && \
+    ln -s /usr/bin/cmake3 /usr/bin/cmake && \
     rm -Rf /var/cache/yum && \
-    . /opt/rh/devtoolset-10/enable
+    . /opt/rh/devtoolset-11/enable
 
-ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-10/root/usr/lib64:/opt/rh/devtoolset-10/root/usr/lib:/opt/rh/devtoolset-10/root/usr/lib64/dyninst:/opt/rh/devtoolset-10/root/usr/lib/dyninst:/opt/rh/devtoolset-10/root/usr/lib64:/opt/rh/devtoolset-10/root/usr/lib:/opt/rh/httpd24/root/usr/lib64:/opt/rh/rh-perl530/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}} \
-    PATH=/opt/rh/devtoolset-10/root/usr/bin:/opt/rh/rh-git227/root/usr/bin:/opt/rh/rh-perl530/root/usr/local/bin:/opt/rh/rh-perl530/root/usr/bin${PATH:+:${PATH}}
+ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/devtoolset-11/root/usr/lib64/dyninst:/opt/rh/devtoolset-11/root/usr/lib/dyninst:/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/httpd24/root/usr/lib64:/opt/rh/rh-perl530/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}} \
+    PATH=/opt/rh/devtoolset-11/root/usr/bin:/opt/rh/rh-git227/root/usr/bin:/opt/rh/rh-perl530/root/usr/local/bin:/opt/rh/rh-perl530/root/usr/bin${PATH:+:${PATH}}
 
 # qt5
 RUN wget https://download.qt.io/official_releases/qt/5.15/${QT_VERSION}/single/qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
