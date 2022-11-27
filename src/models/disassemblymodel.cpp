@@ -108,8 +108,7 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
             return {};
         }
 
-        auto results = m_results;
-        auto entry = results.entry(m_data.symbol);
+        const auto entry = m_results.entries.value(m_data.symbol);
         auto it = entry.offsetMap.find(data.addr);
         if (it != entry.offsetMap.end()) {
             int event = index.column() - COLUMN_COUNT;
