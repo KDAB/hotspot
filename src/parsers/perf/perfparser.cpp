@@ -539,14 +539,15 @@ void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& loca
     if (recursionIt == recursionGuard->end()) {
         auto& entry = callerCalleeResult->entry(symbol);
         auto& sourceCost = entry.source(location.location, numCosts);
-        auto& locationCost = entry.offset(location.relAddr, numCosts);
+        // relAddr can be 0 for symbols in the main executable
+        auto& addrCost = entry.offset(location.relAddr ? location.relAddr : location.address, numCosts);
 
         sourceCost.inclusiveCost[type] += cost;
-        locationCost.inclusiveCost[type] += cost;
+        addrCost.inclusiveCost[type] += cost;
         if (recursionGuard->isEmpty()) {
             // increment self cost for leaf
             sourceCost.selfCost[type] += cost;
-            locationCost.selfCost[type] += cost;
+            addrCost.selfCost[type] += cost;
         }
         recursionGuard->insert(symbol);
     }

@@ -99,7 +99,7 @@ struct Location
     }
 
     quint64 address = 0;
-    // relative address
+    // relative address, might be 0 for locations in the main executable
     quint64 relAddr = 0;
     // file + line
     QString location;
