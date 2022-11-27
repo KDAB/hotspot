@@ -80,15 +80,14 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(QWidget* parent)
     ui->sourceCodeView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->sourceCodeView, &QTreeView::customContextMenuRequested, this, [this](const QPoint& point) {
         const auto index = ui->sourceCodeView->indexAt(point);
-        const auto file = index.data(SourceCodeModel::FileNameRole).toString();
-        if (file.isEmpty())
+        const auto fileLine = index.data(SourceCodeModel::FileLineRole).value<Data::FileLine>();
+        if (!fileLine.isValid())
             return;
-        const auto line = index.data(SourceCodeModel::LineNumberRole).toInt();
 
         QMenu contextMenu;
         auto* openEditorAction = contextMenu.addAction(QCoreApplication::translate("Util", "Open in Editor"));
         QObject::connect(openEditorAction, &QAction::triggered, &contextMenu,
-                         [this, file, line]() { emit navigateToCode(file, line, -1); });
+                         [this, fileLine]() { emit navigateToCode(fileLine.file, fileLine.line, -1); });
         contextMenu.exec(QCursor::pos());
     });
 

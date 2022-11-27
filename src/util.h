@@ -62,6 +62,7 @@ QString formatTooltip(int id, const Data::Symbol& symbol, const Data::Costs& sel
                       const Data::Costs& inclusiveCosts);
 QString formatTooltip(const Data::Symbol& symbol, const Data::ItemCost& itemCost, const Data::Costs& totalCosts);
 QString formatTooltip(const Data::FileLine& fileLine, const Data::LocationCost& cost, const Data::Costs& totalCosts);
+QString formatTooltip(const Data::FileLine& fileLine, const Data::Costs& selfCosts, const Data::Costs& inclusiveCosts);
 QString formatTooltip(const QString& location, const Data::LocationCost& cost, const Data::Costs& totalCosts);
 
 QString elideSymbol(const QString& symbolText, const QFontMetrics& metrics, int maxWidth);

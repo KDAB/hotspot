@@ -52,8 +52,7 @@ public:
         CostRole,
         TotalCostRole,
         SyntaxHighlightRole,
-        FileNameRole,
-        LineNumberRole,
+        FileLineRole,
     };
 
 public slots:

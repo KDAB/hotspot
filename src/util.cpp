@@ -304,14 +304,19 @@ QString Util::formatFrequency(quint64 occurrences, quint64 nanoseconds)
     return QString::number(hz, 'G', 4) + QLatin1String(*unit);
 }
 
-static QString formatTooltipImpl(int id, const Data::Symbol& symbol, const Data::Costs* selfCosts,
+static QString formatForTooltip(const Data::Symbol& symbol)
+{
+    return QCoreApplication::translate("Util", "symbol: <tt>%1</tt><br/>binary: <tt>%2</tt>")
+        .arg(Util::formatSymbol(symbol).toHtmlEscaped(), Util::formatString(symbol.binary));
+}
+
+static QString formatTooltipImpl(int id, const QString& text, const Data::Costs* selfCosts,
                                  const Data::Costs* inclusiveCosts)
 {
     Q_ASSERT(selfCosts || inclusiveCosts);
     Q_ASSERT(!selfCosts || !inclusiveCosts || (selfCosts->numTypes() == inclusiveCosts->numTypes()));
 
-    QString toolTip = QCoreApplication::translate("Util", "symbol: <tt>%1</tt><br/>binary: <tt>%2</tt>")
-                          .arg(Util::formatSymbol(symbol).toHtmlEscaped(), Util::formatString(symbol.binary));
+    QString toolTip = text;
 
     auto extendTooltip = [&toolTip, id](int i, const Data::Costs& costs, const QString& formatting) {
         const auto currentCost = costs.cost(i, id);
@@ -345,20 +350,19 @@ static QString formatTooltipImpl(int id, const Data::Symbol& symbol, const Data:
 
 QString Util::formatTooltip(int id, const Data::Symbol& symbol, const Data::Costs& costs)
 {
-    return formatTooltipImpl(id, symbol, nullptr, &costs);
+    return formatTooltipImpl(id, formatForTooltip(symbol), nullptr, &costs);
 }
 
 QString Util::formatTooltip(int id, const Data::Symbol& symbol, const Data::Costs& selfCosts,
                             const Data::Costs& inclusiveCosts)
 {
-    return formatTooltipImpl(id, symbol, &selfCosts, &inclusiveCosts);
+    return formatTooltipImpl(id, formatForTooltip(symbol), &selfCosts, &inclusiveCosts);
 }
 
 QString Util::formatTooltip(const Data::Symbol& symbol, const Data::ItemCost& itemCost, const Data::Costs& totalCosts)
 {
     Q_ASSERT(static_cast<quint32>(totalCosts.numTypes()) == itemCost.size());
-    auto toolTip = QCoreApplication::translate("Util", "symbol: <tt>%1</tt><br/>binary: <tt>%2</tt>")
-                       .arg(Util::formatSymbol(symbol), Util::formatString(symbol.binary));
+    auto toolTip = formatForTooltip(symbol);
     for (int i = 0, c = totalCosts.numTypes(); i < c; ++i) {
         const auto cost = itemCost[i];
         const auto total = totalCosts.totalCost(i);
@@ -371,6 +375,12 @@ QString Util::formatTooltip(const Data::Symbol& symbol, const Data::ItemCost& it
                        Util::formatCostRelative(cost, total));
     }
     return QString(QLatin1String("<qt>") + toolTip + QLatin1String("</qt>"));
+}
+
+QString Util::formatTooltip(const Data::FileLine& fileLine, const Data::Costs& selfCosts,
+                            const Data::Costs& inclusiveCosts)
+{
+    return formatTooltipImpl(fileLine.line, fileLine.toString(), &selfCosts, &inclusiveCosts);
 }
 
 QString Util::formatTooltip(const Data::FileLine& fileLine, const Data::LocationCost& cost,

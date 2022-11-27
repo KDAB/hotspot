@@ -136,14 +136,16 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
     if (index.row() > m_numLines || index.row() < 0)
         return {};
 
-    if (role == FileNameRole) {
-        return m_mainSourceFileName;
-    } else if (role == LineNumberRole) {
-        return index.row() + m_lineOffset;
+    const auto fileLine = Data::FileLine(m_mainSourceFileName, index.row() + m_lineOffset);
+    if (role == FileLineRole) {
+        return QVariant::fromValue(fileLine);
     }
 
-    if (role == Qt::DisplayRole || role == Qt::ToolTipRole || role == CostRole || role == TotalCostRole
-        || role == SyntaxHighlightRole) {
+    if (role == Qt::ToolTipRole) {
+        return Util::formatTooltip(fileLine, m_selfCosts, m_inclusiveCosts);
+    }
+
+    if (role == Qt::DisplayRole || role == CostRole || role == TotalCostRole || role == SyntaxHighlightRole) {
         if (index.column() == SourceCodeColumn) {
             const auto block = m_document->findBlockByLineNumber(index.row() + m_startLine);
             if (!block.isValid())
@@ -154,7 +156,7 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
         }
 
         if (index.column() == SourceCodeLineNumber) {
-            return index.row() + m_lineOffset;
+            return fileLine.line;
         }
 
         auto cost = [role, id = index.row() + m_lineOffset](int type, const Data::Costs& costs) -> QVariant {
