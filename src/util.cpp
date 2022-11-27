@@ -373,6 +373,12 @@ QString Util::formatTooltip(const Data::Symbol& symbol, const Data::ItemCost& it
     return QString(QLatin1String("<qt>") + toolTip + QLatin1String("</qt>"));
 }
 
+QString Util::formatTooltip(const Data::FileLine& fileLine, const Data::LocationCost& cost,
+                            const Data::Costs& totalCosts)
+{
+    return Util::formatTooltip(fileLine.toString(), cost, totalCosts);
+}
+
 QString Util::formatTooltip(const QString& location, const Data::LocationCost& cost, const Data::Costs& totalCosts)
 {
     QString toolTip = location;

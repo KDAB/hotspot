@@ -16,6 +16,7 @@ class ResultsCallerCalleePage;
 
 namespace Data {
 struct Symbol;
+struct FileLine;
 }
 
 class QSortFilterProxyModel;
@@ -64,7 +65,7 @@ private:
         int lineNumber = -1;
     };
     SourceMapLocation toSourceMapLocation(const QModelIndex& index) const;
-    SourceMapLocation toSourceMapLocation(const QString& location, const Data::Symbol& symbol) const;
+    SourceMapLocation toSourceMapLocation(const Data::FileLine& fileLine, const Data::Symbol& symbol) const;
 
     QScopedPointer<Ui::ResultsCallerCalleePage> ui;
     CallgraphWidget* m_callgraph;

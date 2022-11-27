@@ -226,7 +226,7 @@ public:
     {
         SortRole = Qt::UserRole,
         TotalCostRole,
-        LocationRole
+        FileLineRole,
     };
 
     QVariant headerCell(int column, int role) const final override
@@ -260,11 +260,12 @@ public:
         return {};
     }
 
-    QVariant cell(int column, int role, const QString& location, const Data::LocationCost& costs) const final override
+    QVariant cell(int column, int role, const Data::FileLine& fileLine,
+                  const Data::LocationCost& costs) const final override
     {
         if (role == SortRole) {
             if (column == Location) {
-                return location;
+                return fileLine.toString();
             }
             column -= NUM_BASE_COLUMNS;
             if (column < m_totalCosts.numTypes()) {
@@ -280,12 +281,11 @@ public:
             return m_totalCosts.totalCost(column);
         } else if (role == Qt::DisplayRole) {
             if (column == Location) {
-                if (location.isEmpty()) {
+                if (!fileLine.isValid()) {
                     return ModelImpl::tr("??");
                 }
                 // only show the file name, not the full path
-                auto slashIdx = location.lastIndexOf(QLatin1Char('/')) + 1;
-                return location.mid(slashIdx);
+                return fileLine.toShortString();
             }
             column -= NUM_BASE_COLUMNS;
             if (column < m_totalCosts.numTypes()) {
@@ -293,10 +293,10 @@ public:
             }
             column -= m_totalCosts.numTypes();
             return Util::formatCostRelative(costs.inclusiveCost[column], m_totalCosts.totalCost(column), true);
-        } else if (role == LocationRole) {
-            return QVariant::fromValue(location);
+        } else if (role == FileLineRole) {
+            return QVariant::fromValue(fileLine);
         } else if (role == Qt::ToolTipRole) {
-            return Util::formatTooltip(location, costs, m_totalCosts);
+            return Util::formatTooltip(fileLine, costs, m_totalCosts);
         }
 
         return {};

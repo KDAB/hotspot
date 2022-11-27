@@ -89,24 +89,78 @@ inline uint qHash(const Symbol& symbol, uint seed = 0)
     return seed;
 }
 
+struct FileLine
+{
+    FileLine() = default;
+    FileLine(const QString& file, int line)
+        : file(file)
+        , line(line)
+    {
+    }
+
+    bool isValid() const
+    {
+        return !file.isEmpty();
+    }
+
+    QString toString() const
+    {
+        return file + QLatin1Char(':') + QString::number(line);
+    }
+
+    QString toShortString() const
+    {
+        auto slashIdx = file.lastIndexOf(QLatin1Char('/')) + 1;
+        return file.midRef(slashIdx) + QLatin1Char(':') + QString::number(line);
+    }
+
+    QString file;
+    int line = -1;
+
+    bool operator<(const FileLine& rhs) const
+    {
+        return std::tie(file, line) < std::tie(rhs.file, rhs.line);
+    }
+};
+
+QDebug operator<<(QDebug stream, const FileLine& fileLine);
+
+inline bool operator==(const FileLine& lhs, const FileLine& rhs)
+{
+    return std::tie(lhs.file, lhs.line) == std::tie(rhs.file, rhs.line);
+}
+
+inline bool operator!=(const FileLine& lhs, const FileLine& rhs)
+{
+    return !(lhs == rhs);
+}
+
+inline uint qHash(const FileLine& fileLine, uint seed = 0)
+{
+    Util::HashCombine hash;
+    seed = hash(seed, fileLine.file);
+    seed = hash(seed, fileLine.line);
+    return seed;
+}
+
 struct Location
 {
-    Location(quint64 address = 0, quint64 relAddr = 0, const QString& location = {})
+    Location() = default;
+    Location(quint64 address, quint64 relAddr, FileLine fileLine)
         : address(address)
         , relAddr(relAddr)
-        , location(location)
+        , fileLine(std::move(fileLine))
     {
     }
 
     quint64 address = 0;
     // relative address, might be 0 for locations in the main executable
     quint64 relAddr = 0;
-    // file + line
-    QString location;
+    FileLine fileLine;
 
     bool operator<(const Location& rhs) const
     {
-        return std::tie(address, relAddr, location) < std::tie(rhs.address, rhs.relAddr, rhs.location);
+        return std::tie(address, relAddr, fileLine) < std::tie(rhs.address, rhs.relAddr, fileLine);
     }
 };
 
@@ -114,7 +168,7 @@ QDebug operator<<(QDebug stream, const Location& location);
 
 inline bool operator==(const Location& lhs, const Location& rhs)
 {
-    return std::tie(lhs.address, lhs.relAddr, lhs.location) == std::tie(rhs.address, rhs.relAddr, rhs.location);
+    return std::tie(lhs.address, lhs.relAddr, lhs.fileLine) == std::tie(rhs.address, rhs.relAddr, rhs.fileLine);
 }
 
 inline bool operator!=(const Location& lhs, const Location& rhs)
@@ -127,7 +181,7 @@ inline uint qHash(const Location& location, uint seed = 0)
     Util::HashCombine hash;
     seed = hash(seed, location.address);
     seed = hash(seed, location.relAddr);
-    seed = hash(seed, location.location);
+    seed = hash(seed, location.fileLine);
     return seed;
 }
 
@@ -524,18 +578,18 @@ struct LocationCost
     ItemCost inclusiveCost;
 };
 
-using SourceLocationCostMap = QHash<QString, LocationCost>;
+using SourceLocationCostMap = QHash<FileLine, LocationCost>;
 using OffsetLocationCostMap = QHash<quint64, LocationCost>;
 
 struct CallerCalleeEntry
 {
     quint32 id = 0;
 
-    LocationCost& source(const QString& location, int numTypes)
+    LocationCost& source(const FileLine& fileLine, int numTypes)
     {
-        auto it = sourceMap.find(location);
+        auto it = sourceMap.find(fileLine);
         if (it == sourceMap.end()) {
-            it = sourceMap.insert(location, {numTypes});
+            it = sourceMap.insert(fileLine, {numTypes});
         } else if (it->inclusiveCost.size() < static_cast<size_t>(numTypes)) {
             it->inclusiveCost.resize(numTypes);
             it->selfCost.resize(numTypes);
@@ -833,6 +887,9 @@ struct ZoomAction
 
 Q_DECLARE_METATYPE(Data::Symbol)
 Q_DECLARE_TYPEINFO(Data::Symbol, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::FileLine)
+Q_DECLARE_TYPEINFO(Data::FileLine, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::Location)
 Q_DECLARE_TYPEINFO(Data::Location, Q_MOVABLE_TYPE);

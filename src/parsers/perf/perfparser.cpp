@@ -538,7 +538,7 @@ void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& loca
     auto recursionIt = recursionGuard->find(symbol);
     if (recursionIt == recursionGuard->end()) {
         auto& entry = callerCalleeResult->entry(symbol);
-        auto& sourceCost = entry.source(location.location, numCosts);
+        auto& sourceCost = entry.source(location.fileLine, numCosts);
         // relAddr can be 0 for symbols in the main executable
         auto& addrCost = entry.offset(location.relAddr ? location.relAddr : location.address, numCosts);
 
@@ -976,15 +976,13 @@ public:
     {
         Q_ASSERT(bottomUpResult.locations.size() == location.id);
         Q_ASSERT(bottomUpResult.symbols.size() == location.id);
-        QString locationString;
+        QString file;
         if (location.location.file.id != -1) {
-            locationString = strings.value(location.location.file.id);
-            if (location.location.line != -1) {
-                locationString += QLatin1Char(':') + QString::number(location.location.line);
-            }
+            file = strings.value(location.location.file.id);
         }
-        bottomUpResult.locations.push_back({location.location.parentLocationId,
-                                            {location.location.address, location.location.relAddr, locationString}});
+        bottomUpResult.locations.push_back(
+            {location.location.parentLocationId,
+             {location.location.address, location.location.relAddr, {file, location.location.line}}});
         bottomUpResult.symbols.push_back({});
     }
 

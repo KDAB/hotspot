@@ -12,11 +12,12 @@
 
 namespace Data {
 struct Symbol;
+struct FileLine;
 }
 
 namespace CallerCalleeProxyDetail {
 bool match(const QSortFilterProxyModel* proxy, const Data::Symbol& symbol);
-bool match(const QSortFilterProxyModel* proxy, const QString& location);
+bool match(const QSortFilterProxyModel* proxy, const Data::FileLine& fileLine);
 }
 
 template<typename Model>

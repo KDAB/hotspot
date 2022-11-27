@@ -345,12 +345,20 @@ QDebug Data::operator<<(QDebug stream, const Symbol& symbol)
     return stream.resetFormat().space();
 }
 
+QDebug Data::operator<<(QDebug stream, const FileLine& fileLine)
+{
+    stream.noquote().nospace() << "FileLine{"
+                               << "file=" << fileLine.file << ", "
+                               << "line=" << fileLine.line << "}";
+    return stream.resetFormat().space();
+}
+
 QDebug Data::operator<<(QDebug stream, const Location& location)
 {
     stream.noquote().nospace() << "Location{"
                                << "address=" << location.address << ", "
                                << "relAddr=" << location.relAddr << ", "
-                               << "location=" << location.location << "}";
+                               << "fileLine=" << location.fileLine << "}";
     return stream.resetFormat().space();
 }
 

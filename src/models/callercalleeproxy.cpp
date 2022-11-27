@@ -25,10 +25,10 @@ bool match(const QSortFilterProxyModel* proxy, const Data::Symbol& symbol)
     return matchImpl(needle, symbol.symbol) || matchImpl(needle, symbol.binary);
 }
 
-bool match(const QSortFilterProxyModel* proxy, const QString& location)
+bool match(const QSortFilterProxyModel* proxy, const Data::FileLine& fileLine)
 {
     const auto needle = proxy->filterRegExp().pattern();
 
-    return matchImpl(needle, location);
+    return matchImpl(needle, fileLine.file);
 }
 }

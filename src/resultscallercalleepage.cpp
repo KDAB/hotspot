@@ -175,22 +175,18 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
 ResultsCallerCalleePage::~ResultsCallerCalleePage() = default;
 
 ResultsCallerCalleePage::SourceMapLocation
-ResultsCallerCalleePage::toSourceMapLocation(const QString& location, const Data::Symbol& symbol) const
+ResultsCallerCalleePage::toSourceMapLocation(const Data::FileLine& fileLine, const Data::Symbol& symbol) const
 {
-    const auto separator = location.lastIndexOf(QLatin1Char(':'));
-    if (separator <= 0) {
+    if (!fileLine.isValid()) {
         return {};
     }
 
-    const auto fileName = location.leftRef(separator);
-    const auto lineNumber = location.midRef(separator + 1).toInt();
-
     SourceMapLocation ret;
-    auto resolvePath = [&ret, fileName, lineNumber](const QString& pathName) -> bool {
-        const QString path = pathName + fileName;
+    auto resolvePath = [&ret, &fileLine](const QString& pathName) -> bool {
+        const QString path = pathName + fileLine.file;
         if (QFileInfo::exists(path)) {
             ret.path = path;
-            ret.lineNumber = lineNumber;
+            ret.lineNumber = fileLine.line;
             return true;
         }
         return false;
@@ -208,10 +204,10 @@ ResultsCallerCalleePage::toSourceMapLocation(const QString& location, const Data
 
 ResultsCallerCalleePage::SourceMapLocation ResultsCallerCalleePage::toSourceMapLocation(const QModelIndex& index) const
 {
-    const auto location = index.data(SourceMapModel::LocationRole).toString();
+    const auto fileLine = index.data(SourceMapModel::FileLineRole).value<Data::FileLine>();
     const auto symbol =
         ui->callerCalleeTableView->currentIndex().data(CallerCalleeModel::SymbolRole).value<Data::Symbol>();
-    return toSourceMapLocation(location, symbol);
+    return toSourceMapLocation(fileLine, symbol);
 }
 
 void ResultsCallerCalleePage::onSourceMapContextMenu(const QPoint& point)
@@ -240,8 +236,8 @@ void ResultsCallerCalleePage::onSourceMapActivated(const QModelIndex& index)
     if (location) {
         emit navigateToCode(location.path, location.lineNumber, 0);
     } else {
-        const auto locationStr = index.data(SourceMapModel::LocationRole).toString();
-        emit navigateToCodeFailed(tr("Failed to find file for location '%1'.").arg(locationStr));
+        const auto fileLine = index.data(SourceMapModel::FileLineRole).value<Data::FileLine>();
+        emit navigateToCodeFailed(tr("Failed to find file for location '%1'.").arg(fileLine.toString()));
     }
 }
 
@@ -271,8 +267,8 @@ void ResultsCallerCalleePage::openEditor(const Data::Symbol& symbol)
     const auto callerCalleeIndex = m_callerCalleeProxy->mapFromSource(m_callerCalleeCostModel->indexForSymbol(symbol));
     const auto map = callerCalleeIndex.data(CallerCalleeModel::SourceMapRole).value<Data::SourceLocationCostMap>();
 
-    auto it = std::find_if(map.keyBegin(), map.keyEnd(), [&symbol, this](const QString& locationStr) {
-        const auto location = toSourceMapLocation(locationStr, symbol);
+    auto it = std::find_if(map.keyBegin(), map.keyEnd(), [&symbol, this](const Data::FileLine& fileLine) {
+        const auto location = toSourceMapLocation(fileLine, symbol);
         if (location) {
             emit navigateToCode(location.path, location.lineNumber, 0);
             return true;

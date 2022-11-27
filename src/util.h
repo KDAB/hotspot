@@ -17,6 +17,7 @@ class QFontMetrics;
 
 namespace Data {
 struct Symbol;
+struct FileLine;
 struct LocationCost;
 class Costs;
 using ItemCost = std::valarray<qint64>;
@@ -60,6 +61,7 @@ QString formatTooltip(int id, const Data::Symbol& symbol, const Data::Costs& cos
 QString formatTooltip(int id, const Data::Symbol& symbol, const Data::Costs& selfCosts,
                       const Data::Costs& inclusiveCosts);
 QString formatTooltip(const Data::Symbol& symbol, const Data::ItemCost& itemCost, const Data::Costs& totalCosts);
+QString formatTooltip(const Data::FileLine& fileLine, const Data::LocationCost& cost, const Data::Costs& totalCosts);
 QString formatTooltip(const QString& location, const Data::LocationCost& cost, const Data::Costs& totalCosts);
 
 QString elideSymbol(const QString& symbolText, const QFontMetrics& metrics, int maxWidth);
