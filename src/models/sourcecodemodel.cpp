@@ -38,7 +38,8 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     beginResetModel();
     auto guard = qScopeGuard([this]() { endResetModel(); });
 
-    m_numTypes = 0;
+    m_selfCosts = {};
+    m_inclusiveCosts = {};
     m_numLines = 0;
 
     if (disassemblyOutput.mainSourceFileName.isEmpty())
@@ -54,11 +55,10 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
 
     m_validLineNumbers.clear();
 
-    m_costs = {};
-    m_costs.initializeCostsFrom(results.selfCosts);
+    m_selfCosts.initializeCostsFrom(results.selfCosts);
+    m_inclusiveCosts.initializeCostsFrom(results.inclusiveCosts);
 
     m_mainSourceFileName = disassemblyOutput.mainSourceFileName;
-    m_numTypes = m_costs.numTypes();
 
     const auto sourceCode = QString::fromUtf8(file.readAll());
 
@@ -84,9 +84,9 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
             const auto it = entry->offsetMap.find(line.addr);
             if (it != entry->offsetMap.end()) {
                 const auto& locationCost = it.value();
-                const auto& costLine = locationCost.selfCost;
 
-                m_costs.add(line.sourceCodeLine, costLine);
+                m_selfCosts.add(line.sourceCodeLine, locationCost.selfCost);
+                m_inclusiveCosts.add(line.sourceCodeLine, locationCost.inclusiveCost);
             }
         }
 
@@ -108,8 +108,9 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
 
 QVariant SourceCodeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (section < 0 || section >= COLUMN_COUNT + m_numTypes)
+    if (section < 0 || section >= COLUMN_COUNT + m_selfCosts.numTypes() + m_inclusiveCosts.numTypes())
         return {};
+
     if (role != Qt::DisplayRole || orientation != Qt::Horizontal)
         return {};
 
@@ -119,11 +120,12 @@ QVariant SourceCodeModel::headerData(int section, Qt::Orientation orientation, i
     if (section == SourceCodeLineNumber)
         return tr("Line");
 
-    if (section - COLUMN_COUNT <= m_numTypes) {
-        return m_costs.typeName(section - COLUMN_COUNT);
-    }
+    section -= COLUMN_COUNT;
+    if (section < m_selfCosts.numTypes())
+        return tr("%1 (self)").arg(m_selfCosts.typeName(section));
 
-    return {};
+    section -= m_selfCosts.numTypes();
+    return tr("%1 (incl.)").arg(m_inclusiveCosts.typeName(section));
 }
 
 QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
@@ -155,9 +157,9 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
             return index.row() + m_lineOffset;
         }
 
-        if (index.column() - COLUMN_COUNT < m_numTypes) {
-            const auto cost = m_costs.cost(index.column() - COLUMN_COUNT, index.row() + m_lineOffset);
-            const auto totalCost = m_costs.totalCost(index.column() - COLUMN_COUNT);
+        auto cost = [role, id = index.row() + m_lineOffset](int type, const Data::Costs& costs) -> QVariant {
+            const auto cost = costs.cost(type, id);
+            const auto totalCost = costs.totalCost(type);
             if (role == CostRole) {
                 return cost;
             }
@@ -166,7 +168,11 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
             }
 
             return Util::formatCostRelative(cost, totalCost, true);
-        }
+        };
+        auto column = index.column() - COLUMN_COUNT;
+        if (column < m_selfCosts.numTypes())
+            return cost(column, m_selfCosts);
+        return cost(column - m_selfCosts.numTypes(), m_inclusiveCosts);
     } else if (role == HighlightRole) {
         return index.row() + m_lineOffset == m_highlightLine;
     } else if (role == RainbowLineNumberRole) {
@@ -180,7 +186,7 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
 
 int SourceCodeModel::columnCount(const QModelIndex& parent) const
 {
-    return parent.isValid() ? 0 : COLUMN_COUNT + m_numTypes;
+    return parent.isValid() ? 0 : COLUMN_COUNT + m_selfCosts.numTypes() + m_inclusiveCosts.numTypes();
 }
 
 int SourceCodeModel::rowCount(const QModelIndex& parent) const

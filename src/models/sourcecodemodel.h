@@ -65,9 +65,9 @@ private:
     QSet<int> m_validLineNumbers;
     QTextDocument* m_document = nullptr;
     Highlighter* m_highlighter = nullptr;
-    Data::Costs m_costs;
+    Data::Costs m_selfCosts;
+    Data::Costs m_inclusiveCosts;
     QString m_mainSourceFileName;
-    int m_numTypes = 0;
     int m_lineOffset = 0;
     int m_startLine = 0;
     int m_numLines = 0;
