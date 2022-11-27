@@ -8,18 +8,34 @@
 
 #include "disassemblyoutput.h"
 #include "data.h"
+
 #include <QApplication>
-#include <QDebug>
+#include <QLoggingCategory>
 #include <QProcess>
 #include <QRegularExpression>
 #include <QStandardPaths>
 
 namespace {
+Q_LOGGING_CATEGORY(disassemblyoutput, "hotspot.disassemblyoutput")
+
 struct ObjectdumpOutput
 {
     QVector<DisassemblyOutput::DisassemblyLine> disassemblyLines;
     QString mainSourceFileName;
 };
+
+bool canVisualizeJumps(const QString& objdump)
+{
+    QProcess process;
+    process.setProcessChannelMode(QProcess::ForwardedErrorChannel);
+    process.start(objdump, {QStringLiteral("-H")});
+    if (!process.waitForFinished(1000)) {
+        qCWarning(disassemblyoutput) << "failed to query objdump help output:" << objdump << process.errorString();
+        return false;
+    }
+    const auto help = process.readAllStandardOutput();
+    return help.contains("--visualize-jumps");
+}
 
 DisassemblyOutput::LinkedFunction extractLinkedFunction(const QString& disassembly)
 {
@@ -153,15 +169,22 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
 
     // Call objdump with arguments: addresses range and binary file
     auto toHex = [](quint64 addr) -> QString { return QLatin1String("0x") + QString::number(addr, 16); };
-    const auto arguments = QStringList {QStringLiteral("-d"), // disassemble
-                                        QStringLiteral("-l"), // include source code lines
-                                        QStringLiteral("--visualize-jumps"),
-                                        QStringLiteral("-C"), // demangle names
-                                        QStringLiteral("--start-address"),
-                                        toHex(symbol.relAddr),
-                                        QStringLiteral("--stop-address"),
-                                        toHex(symbol.relAddr + symbol.size),
-                                        symbol.actualPath};
+    auto arguments = QStringList {QStringLiteral("-d"), // disassemble
+                                  QStringLiteral("-l"), // include source code lines
+                                  QStringLiteral("-C"), // demangle names
+                                  QStringLiteral("--start-address"),
+                                  toHex(symbol.relAddr),
+                                  QStringLiteral("--stop-address"),
+                                  toHex(symbol.relAddr + symbol.size)};
+
+    // only available for objdump 2.34+
+    if (canVisualizeJumps(processPath))
+        arguments.append(QStringLiteral("--visualize-jumps"));
+    else
+        qCInfo(disassemblyoutput) << "objdump binary does not support `--visualize-jumps`:" << processPath;
+
+    arguments.append(symbol.actualPath);
+
     asmProcess.start(objdump, arguments);
 
     if (!asmProcess.waitForStarted()) {
