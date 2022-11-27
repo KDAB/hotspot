@@ -172,6 +172,8 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
                 return totalCost;
             }
 
+            if (!cost)
+                return {};
             return Util::formatCostRelative(cost, totalCost, true);
         };
         auto column = index.column() - COLUMN_COUNT;

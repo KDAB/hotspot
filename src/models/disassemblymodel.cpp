@@ -124,6 +124,8 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
             if (role == Qt::ToolTipRole)
                 return Util::formatTooltip(data.disassembly, locationCost, m_results.selfCosts);
 
+            if (!costLine)
+                return {};
             return Util::formatCostRelative(costLine, totalCost, true);
         } else {
             if (role == Qt::ToolTipRole)
