@@ -137,7 +137,7 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
         }
 
         disassemblyLines.push_back(
-            {addr, asmLine, extractLinkedFunction(asmLine), currentSourceFileName, sourceCodeLine});
+            {addr, asmLine, extractLinkedFunction(asmLine), {currentSourceFileName, sourceCodeLine}});
     }
     return {disassemblyLines, sourceFileName};
 }

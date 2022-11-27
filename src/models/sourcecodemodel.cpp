@@ -68,29 +68,32 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     m_highlighter->setDefinitionForFilename(disassemblyOutput.mainSourceFileName);
 
     for (const auto& line : disassemblyOutput.disassemblyLines) {
-        if (line.sourceCodeLine == 0 || line.sourceFileName != disassemblyOutput.mainSourceFileName) {
+        if (line.fileLine.line == 0 || line.fileLine.file != disassemblyOutput.mainSourceFileName) {
             continue;
         }
 
-        if (line.sourceCodeLine > maxLineNumber) {
-            maxLineNumber = line.sourceCodeLine;
+        if (line.fileLine.line > maxLineNumber) {
+            maxLineNumber = line.fileLine.line;
         }
-        if (line.sourceCodeLine < minLineNumber) {
-            minLineNumber = line.sourceCodeLine;
+        if (line.fileLine.line < minLineNumber) {
+            minLineNumber = line.fileLine.line;
         }
+
+        if (m_validLineNumbers.contains(line.fileLine.line))
+            continue;
 
         const auto entry = results.entries.find(disassemblyOutput.symbol);
         if (entry != results.entries.end()) {
-            const auto it = entry->offsetMap.find(line.addr);
-            if (it != entry->offsetMap.end()) {
+            const auto it = entry->sourceMap.find(line.fileLine);
+            if (it != entry->sourceMap.end()) {
                 const auto& locationCost = it.value();
 
-                m_selfCosts.add(line.sourceCodeLine, locationCost.selfCost);
-                m_inclusiveCosts.add(line.sourceCodeLine, locationCost.inclusiveCost);
+                m_selfCosts.add(line.fileLine.line, locationCost.selfCost);
+                m_inclusiveCosts.add(line.fileLine.line, locationCost.inclusiveCost);
             }
         }
 
-        m_validLineNumbers.insert(line.sourceCodeLine);
+        m_validLineNumbers.insert(line.fileLine.line);
     }
 
     Q_ASSERT(minLineNumber > 0);

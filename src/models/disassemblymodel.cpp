@@ -133,13 +133,13 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
                 return QString();
         }
     } else if (role == DisassemblyModel::HighlightRole) {
-        return data.sourceCodeLine == m_highlightLine;
+        return data.fileLine.line == m_highlightLine;
     } else if (role == LinkedFunctionNameRole) {
         return data.linkedFunction.name;
     } else if (role == LinkedFunctionOffsetRole) {
         return data.linkedFunction.offset;
     } else if (role == RainbowLineNumberRole) {
-        return data.sourceCodeLine;
+        return data.fileLine.line;
     }
 
     return {};
@@ -163,5 +163,5 @@ void DisassemblyModel::updateHighlighting(int line)
 
 int DisassemblyModel::lineForIndex(const QModelIndex& index) const
 {
-    return m_data.disassemblyLines[index.row()].sourceCodeLine;
+    return m_data.disassemblyLines[index.row()].fileLine.line;
 }

@@ -25,8 +25,7 @@ struct DisassemblyOutput
         quint64 addr = 0;
         QString disassembly;
         LinkedFunction linkedFunction;
-        QString sourceFileName;
-        int sourceCodeLine = 0;
+        Data::FileLine fileLine;
     };
     QVector<DisassemblyLine> disassemblyLines;
 
