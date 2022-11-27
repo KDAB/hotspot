@@ -62,15 +62,15 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(QWidget* parent)
     connect(settings, &Settings::sysrootChanged, m_sourceCodeModel, &SourceCodeModel::setSysroot);
 
     auto updateFromDisassembly = [this](const QModelIndex& index) {
-        int line = m_disassemblyModel->lineForIndex(index);
-        m_disassemblyModel->updateHighlighting(line);
-        m_sourceCodeModel->updateHighlighting(line);
+        const auto fileLine = m_disassemblyModel->fileLineForIndex(index);
+        m_disassemblyModel->updateHighlighting(fileLine.line);
+        m_sourceCodeModel->updateHighlighting(fileLine.line);
     };
 
     auto updateFromSource = [this](const QModelIndex& index) {
-        int line = m_sourceCodeModel->lineForIndex(index);
-        m_disassemblyModel->updateHighlighting(line);
-        m_sourceCodeModel->updateHighlighting(line);
+        const auto fileLine = m_sourceCodeModel->fileLineForIndex(index);
+        m_disassemblyModel->updateHighlighting(fileLine.line);
+        m_sourceCodeModel->updateHighlighting(fileLine.line);
     };
 
     connect(ui->assemblyView, &QTreeView::entered, this, updateFromDisassembly);
@@ -90,8 +90,19 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(QWidget* parent)
                          [this, fileLine]() { emit navigateToCode(fileLine.file, fileLine.line, -1); });
         contextMenu.exec(QCursor::pos());
     });
+    connect(ui->sourceCodeView, &QTreeView::activated, this, [this](const QModelIndex& index) {
+        const auto fileLine = m_sourceCodeModel->fileLineForIndex(index);
+        if (fileLine.isValid()) {
+            ui->assemblyView->scrollTo(m_disassemblyModel->indexForFileLine(fileLine));
+        }
+    });
 
     connect(ui->assemblyView, &QTreeView::activated, this, [this](const QModelIndex& index) {
+        const auto fileLine = m_disassemblyModel->fileLineForIndex(index);
+        if (fileLine.isValid()) {
+            ui->sourceCodeView->scrollTo(m_sourceCodeModel->indexForFileLine(fileLine));
+        }
+
         const QString functionName = index.data(DisassemblyModel::LinkedFunctionNameRole).toString();
         if (functionName.isEmpty())
             return;

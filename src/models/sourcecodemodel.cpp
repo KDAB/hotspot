@@ -207,9 +207,19 @@ void SourceCodeModel::updateHighlighting(int line)
     emit dataChanged(createIndex(0, Columns::SourceCodeColumn), createIndex(rowCount(), Columns::SourceCodeColumn));
 }
 
-int SourceCodeModel::lineForIndex(const QModelIndex& index) const
+Data::FileLine SourceCodeModel::fileLineForIndex(const QModelIndex& index) const
 {
-    return index.row() + m_lineOffset;
+    if (!index.isValid())
+        return {};
+    return {m_mainSourceFileName, index.row() + m_lineOffset};
+}
+
+QModelIndex SourceCodeModel::indexForFileLine(const Data::FileLine& fileLine) const
+{
+    if (fileLine.file != m_mainSourceFileName || fileLine.line < m_lineOffset
+        || fileLine.line >= m_lineOffset + m_numLines)
+        return {};
+    return index(fileLine.line - m_lineOffset, 0);
 }
 
 void SourceCodeModel::setSysroot(const QString& sysroot)

@@ -163,7 +163,39 @@ void DisassemblyModel::updateHighlighting(int line)
     emit dataChanged(createIndex(0, Columns::DisassemblyColumn), createIndex(rowCount(), Columns::DisassemblyColumn));
 }
 
-int DisassemblyModel::lineForIndex(const QModelIndex& index) const
+Data::FileLine DisassemblyModel::fileLineForIndex(const QModelIndex& index) const
 {
-    return m_data.disassemblyLines[index.row()].fileLine.line;
+    return m_data.disassemblyLines[index.row()].fileLine;
+}
+
+QModelIndex DisassemblyModel::indexForFileLine(const Data::FileLine& fileLine) const
+{
+    int i = -1;
+    int bestMatch = -1;
+    qint64 bestCost = 0;
+    const auto entry = m_results.entries.value(m_data.symbol);
+    for (const auto& line : m_data.disassemblyLines) {
+        ++i;
+        if (line.fileLine != fileLine) {
+            continue;
+        }
+
+        if (bestMatch == -1) {
+            bestMatch = i;
+        }
+
+        auto it = entry.offsetMap.find(line.addr);
+        if (it != entry.offsetMap.end()) {
+            const auto& locationCost = it.value();
+
+            if (!bestCost || bestCost < locationCost.selfCost[0]) {
+                bestMatch = i;
+                bestCost = locationCost.selfCost[0];
+            }
+        }
+    }
+
+    if (bestMatch == -1)
+        return {};
+    return index(bestMatch, 0);
 }
