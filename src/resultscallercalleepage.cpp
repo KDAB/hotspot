@@ -81,6 +81,11 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
                                    ResultsUtil::CallbackAction::ViewDisassembly});
     ResultsUtil::setupHeaderView(ui->callerCalleeTableView, contextMenu);
     ResultsUtil::setupCostDelegate(m_callerCalleeCostModel, ui->callerCalleeTableView);
+    connect(ui->callerCalleeTableView, &QTreeView::activated, this, [this](const QModelIndex& index) {
+        auto symbol = index.data(CallerCalleeModel::SymbolRole).value<Data::Symbol>();
+        if (symbol.isValid())
+            emit jumpToDisassembly(symbol);
+    });
 
     connect(parser, &PerfParser::callerCalleeDataAvailable, this, [this](const Data::CallerCalleeResults& data) {
         m_callerCalleeCostModel->setResults(data);
