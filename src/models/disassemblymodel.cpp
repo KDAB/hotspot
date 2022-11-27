@@ -97,7 +97,7 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
 
     if (role == Qt::DisplayRole || role == CostRole || role == TotalCostRole || role == SyntaxHighlightRole
         || role == Qt::ToolTipRole) {
-        if (index.column() == DisassemblyColumn) {
+        if (index.column() == DisassemblyColumn && role != Qt::ToolTipRole) {
             const auto block = m_document->findBlockByLineNumber(index.row());
             if (role == SyntaxHighlightRole)
                 return QVariant::fromValue(block.layout()->lineAt(0));
