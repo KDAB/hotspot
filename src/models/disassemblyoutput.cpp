@@ -131,7 +131,7 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
             bool ok = false;
             addr = match.capturedRef(1).toULongLong(&ok, 16);
             if (!ok) {
-                qWarning() << "unhandled asm line format:" << asmLine;
+                qCWarning(disassemblyoutput) << "unhandled asm line format:" << asmLine;
                 continue;
             }
         }
