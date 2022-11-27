@@ -543,11 +543,11 @@ struct CallerCalleeEntry
         return *it;
     }
 
-    LocationCost& offset(quint64 location, int numTypes)
+    LocationCost& offset(quint64 addr, int numTypes)
     {
-        auto it = offsetMap.find(location);
+        auto it = offsetMap.find(addr);
         if (it == offsetMap.end()) {
-            it = offsetMap.insert(location, {numTypes});
+            it = offsetMap.insert(addr, {numTypes});
         } else if (it->inclusiveCost.size() < static_cast<size_t>(numTypes)) {
             it->inclusiveCost.resize(numTypes);
             it->selfCost.resize(numTypes);
