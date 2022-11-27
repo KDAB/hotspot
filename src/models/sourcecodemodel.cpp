@@ -57,6 +57,7 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     m_costs = {};
     m_costs.initializeCostsFrom(results.selfCosts);
 
+    m_mainSourceFileName = disassemblyOutput.mainSourceFileName;
     m_numTypes = m_costs.numTypes();
 
     const auto sourceCode = QString::fromUtf8(file.readAll());
@@ -132,6 +133,12 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
 
     if (index.row() > m_numLines || index.row() < 0)
         return {};
+
+    if (role == FileNameRole) {
+        return m_mainSourceFileName;
+    } else if (role == LineNumberRole) {
+        return index.row() + m_lineOffset;
+    }
 
     if (role == Qt::DisplayRole || role == Qt::ToolTipRole || role == CostRole || role == TotalCostRole
         || role == SyntaxHighlightRole) {

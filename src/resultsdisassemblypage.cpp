@@ -77,6 +77,21 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(QWidget* parent)
 
     connect(ui->sourceCodeView, &QTreeView::entered, this, updateFromSource);
 
+    ui->sourceCodeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->sourceCodeView, &QTreeView::customContextMenuRequested, this, [this](const QPoint& point) {
+        const auto index = ui->sourceCodeView->indexAt(point);
+        const auto file = index.data(SourceCodeModel::FileNameRole).toString();
+        if (file.isEmpty())
+            return;
+        const auto line = index.data(SourceCodeModel::LineNumberRole).toInt();
+
+        QMenu contextMenu;
+        auto* openEditorAction = contextMenu.addAction(QCoreApplication::translate("Util", "Open in Editor"));
+        QObject::connect(openEditorAction, &QAction::triggered, &contextMenu,
+                         [this, file, line]() { emit navigateToCode(file, line, -1); });
+        contextMenu.exec(QCursor::pos());
+    });
+
     connect(ui->assemblyView, &QTreeView::activated, this, [this](const QModelIndex& index) {
         const QString functionName = index.data(DisassemblyModel::LinkedFunctionNameRole).toString();
         if (functionName.isEmpty())

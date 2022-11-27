@@ -49,8 +49,10 @@ public:
     void setCostsMap(const Data::CallerCalleeResults& callerCalleeResults);
     void setObjdump(const QString& objdump);
     void setArch(const QString& arch);
+
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
+    void navigateToCode(const QString& file, int lineNumber, int columnNumber);
 
 private:
     void showDisassembly(const DisassemblyOutput& disassemblyOutput);

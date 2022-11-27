@@ -161,6 +161,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
             &ResultsPage::onJumpToDisassembly);
     connect(m_resultsDisassemblyPage, &ResultsDisassemblyPage::jumpToCallerCallee, this,
             &ResultsPage::onJumpToCallerCallee);
+    connect(m_resultsDisassemblyPage, &ResultsDisassemblyPage::navigateToCode, this, &ResultsPage::navigateToCode);
     connect(m_timeLineWidget, &TimeLineWidget::stacksHovered, m_resultsFlameGraphPage,
             &ResultsFlameGraphPage::setHoveredStacks);
 

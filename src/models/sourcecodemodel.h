@@ -52,6 +52,8 @@ public:
         CostRole,
         TotalCostRole,
         SyntaxHighlightRole,
+        FileNameRole,
+        LineNumberRole,
     };
 
 public slots:
@@ -64,6 +66,7 @@ private:
     QTextDocument* m_document = nullptr;
     Highlighter* m_highlighter = nullptr;
     Data::Costs m_costs;
+    QString m_mainSourceFileName;
     int m_numTypes = 0;
     int m_lineOffset = 0;
     int m_startLine = 0;
