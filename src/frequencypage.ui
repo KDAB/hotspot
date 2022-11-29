@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>435</width>
     <height>300</height>
    </rect>
   </property>
@@ -55,10 +55,52 @@
         <property name="text">
          <string>Show cost:</string>
         </property>
+        <property name="buddy">
+         <cstring>costSelectionCombobox</cstring>
+        </property>
        </widget>
       </item>
       <item>
        <widget class="QComboBox" name="costSelectionCombobox"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="averagingWindowSizeLabel">
+        <property name="toolTip">
+         <string>&lt;qt&gt;&lt;p&gt;The frequency value is computed by dividing the cost difference between two consecutive samples with the time elapsed between the two samples.&lt;/p&gt;
+
+&lt;p&gt;Sometimes, for CPU cycle measurements, this can lead to unexpectedly large values that are unrealistic. This seems to be an error in the sampling frequency auto-adjustment code in the kernel, i.e. when you use &lt;tt&gt;-F 1000&lt;/tt&gt; which is set by default. When &lt;tt&gt;-C 3000000&lt;/tt&gt; or similar is used instead, this issue does not occur.&lt;/p&gt;
+
+&lt;p&gt;By averaging the frequency value over a few more samples, this issue can be workarounded and we should only see realistic CPU cycle values within the expected ranges.&lt;/p&gt;
+&lt;/qt&gt;</string>
+        </property>
+        <property name="text">
+         <string>Averaging Window Size:</string>
+        </property>
+        <property name="buddy">
+         <cstring>averagingWindowSize</cstring>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="averagingWindowSize">
+        <property name="toolTip">
+         <string>&lt;qt&gt;&lt;p&gt;The frequency value is computed by dividing the cost difference between two consecutive samples with the time elapsed between the two samples.&lt;/p&gt;
+
+&lt;p&gt;Sometimes, for CPU cycle measurements, this can lead to unexpectedly large values that are unrealistic. This seems to be an error in the sampling frequency auto-adjustment code in the kernel, i.e. when you use &lt;tt&gt;-F 1000&lt;/tt&gt; which is set by default. When &lt;tt&gt;-C 3000000&lt;/tt&gt; or similar is used instead, this issue does not occur.&lt;/p&gt;
+
+&lt;p&gt;By averaging the frequency value over a few more samples, this issue can be workarounded and we should only see realistic CPU cycle values within the expected ranges.&lt;/p&gt;
+&lt;/qt&gt;</string>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>1000</number>
+        </property>
+        <property name="value">
+         <number>10</number>
+        </property>
+       </widget>
       </item>
       <item>
        <spacer name="horizontalSpacer">

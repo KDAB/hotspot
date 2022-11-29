@@ -72,49 +72,63 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
         }
     });
 
-    connect(
-        m_page->costSelectionCombobox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this, plotData]() {
-            m_plot->clearGraphs();
-            const auto selectedCost = m_page->costSelectionCombobox->currentText();
-            const auto numCores = m_results.cores.size();
-            quint32 core = 0;
-            for (const auto& coreData : m_results.cores) {
-                for (const auto& costData : coreData.costs) {
-                    if (costData.costName != selectedCost) {
-                        continue;
-                    }
-
-                    auto graph = m_plot->addGraph();
-                    graph->setLayer(QStringLiteral("main"));
-                    graph->setLineStyle(QCPGraph::lsNone);
-
-                    auto color =
-                        QColor::fromHsv(static_cast<int>(255. * (static_cast<float>(core) / numCores)), 255, 255, 150);
-                    graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssSquare, color, color, 4));
-                    graph->setAdaptiveSampling(false);
-                    graph->setName(QLatin1String("%1 (CPU #%2)").arg(costData.costName, QString::number(core)));
-                    graph->addToLegend();
-                    graph->setVisible(true);
-
-                    const auto numValues = costData.values.size();
-                    QVector<double> times(numValues);
-                    QVector<double> costs(numValues);
-                    for (int i = 0; i < numValues; ++i) {
-                        const auto value = costData.values[i];
-                        const auto time = static_cast<double>(value.time - plotData->applicationStartTime);
-                        times[i] = time;
-                        costs[i] = value.cost;
-                    }
-                    graph->setData(times, costs, true);
+    auto updateGraphs = [this, plotData]() {
+        m_plot->clearGraphs();
+        const auto averagingWindowSize = m_page->averagingWindowSize->value();
+        const auto selectedCost = m_page->costSelectionCombobox->currentText();
+        const auto numCores = m_results.cores.size();
+        quint32 core = 0;
+        for (const auto& coreData : m_results.cores) {
+            for (const auto& costData : coreData.costs) {
+                if (costData.costName != selectedCost) {
+                    continue;
                 }
 
-                ++core;
+                auto graph = m_plot->addGraph();
+                graph->setLayer(QStringLiteral("main"));
+                graph->setLineStyle(QCPGraph::lsNone);
+
+                auto color =
+                    QColor::fromHsv(static_cast<int>(255. * (static_cast<float>(core) / numCores)), 255, 255, 150);
+                graph->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssSquare, color, color, 4));
+                graph->setAdaptiveSampling(false);
+                graph->setName(QLatin1String("%1 (CPU #%2)").arg(costData.costName, QString::number(core)));
+                graph->addToLegend();
+                graph->setVisible(true);
+
+                const auto numValues = costData.values.size();
+                const auto valuesStart = costData.values.begin();
+                QVector<double> times((numValues + averagingWindowSize - 1) / averagingWindowSize);
+                QVector<double> costs(times.size());
+                for (int i = 0, j = 0; i < numValues; ++j, i += averagingWindowSize) {
+                    const auto averageWindowStart = std::next(valuesStart, i);
+                    const auto windowEndIndex = std::min(numValues, i + averagingWindowSize);
+                    const auto averageWindowEnd = std::next(valuesStart, windowEndIndex);
+                    const auto actualWindowSize = windowEndIndex - i;
+                    const auto value = std::accumulate(averageWindowStart, averageWindowEnd, Data::FrequencyData {},
+                                                       [](Data::FrequencyData lhs, Data::FrequencyData rhs) {
+                                                           lhs.time += rhs.time;
+                                                           lhs.cost += rhs.cost;
+                                                           return lhs;
+                                                       });
+                    const auto time =
+                        static_cast<double>(value.time / actualWindowSize - plotData->applicationStartTime);
+                    times[j] = time;
+                    costs[j] = value.cost / actualWindowSize;
+                }
+                graph->setData(times, costs, true);
             }
-            m_plot->xAxis->rescale();
-            m_plot->yAxis->rescale();
-            m_plot->yAxis->setRangeLower(0.);
-            m_plot->replot(QCustomPlot::rpQueuedRefresh);
-        });
+
+            ++core;
+        }
+        m_plot->xAxis->rescale();
+        m_plot->yAxis->rescale();
+        m_plot->yAxis->setRangeLower(0.);
+        m_plot->replot(QCustomPlot::rpQueuedRefresh);
+    };
+
+    connect(m_page->costSelectionCombobox, qOverload<int>(&QComboBox::currentIndexChanged), this, updateGraphs);
+    connect(m_page->averagingWindowSize, qOverload<int>(&QSpinBox::valueChanged), this, updateGraphs);
 
     m_plot->xAxis->setLabel(tr("Time"));
     m_plot->xAxis->setTicker(QSharedPointer<TimeAxis>(new TimeAxis()));

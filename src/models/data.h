@@ -542,8 +542,8 @@ struct PerLibraryResults
 
 struct FrequencyData
 {
-    quint64 time;
-    qreal cost;
+    quint64 time = 0;
+    double cost = 0;
 };
 
 struct PerCostFrequencyData
