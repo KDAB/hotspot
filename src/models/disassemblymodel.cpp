@@ -21,6 +21,7 @@ DisassemblyModel::DisassemblyModel(QObject* parent)
     , m_document(new QTextDocument(this))
     , m_highlighter(new Highlighter(m_document, this))
 {
+    m_document->setUndoRedoEnabled(false);
     m_highlighter->setDefinitionForName(QStringLiteral("GNU Assembler"));
 }
 
