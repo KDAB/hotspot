@@ -11,7 +11,7 @@
 #include <QUuid>
 
 QHash<Data::Symbol, QString> writeGraph(QTextStream& stream, const Data::Symbol& symbol,
-                                        Data::CallerCalleeResults& results, float thresholdPercent,
+                                        const Data::CallerCalleeResults& results, float thresholdPercent,
                                         const QString& fontColor)
 {
     auto settings = Settings::instance();
@@ -41,7 +41,7 @@ QHash<Data::Symbol, QString> writeGraph(QTextStream& stream, const Data::Symbol&
     return symbolToIdLookup;
 }
 
-void resultsToDot(int height, Direction direction, const Data::Symbol& symbol, Data::CallerCalleeResults& results,
+void resultsToDot(int height, Direction direction, const Data::Symbol& symbol, const Data::CallerCalleeResults& results,
                   const QString& parent, QTextStream& stream, QHash<Data::Symbol, QString>& nodeIdLookup,
                   float thresholdPercent)
 {
@@ -56,7 +56,7 @@ void resultsToDot(int height, Direction direction, const Data::Symbol& symbol, D
         return;
     }
 
-    const auto entry = results.entry(symbol);
+    const auto entry = results.entries[symbol];
 
     auto addNode = [&stream](const QString& id, const QString& label) {
         stream << "node" << id << " [label=\"" << label << "\"]\n";

@@ -20,8 +20,8 @@ enum class Direction
 };
 
 QHash<Data::Symbol, QString> writeGraph(QTextStream& stream, const Data::Symbol& symbol,
-                                        Data::CallerCalleeResults& results, float thresholdPercent,
+                                        const Data::CallerCalleeResults& results, float thresholdPercent,
                                         const QString& fontColor);
-void resultsToDot(int height, Direction direction, const Data::Symbol& symbol, Data::CallerCalleeResults& results,
+void resultsToDot(int height, Direction direction, const Data::Symbol& symbol, const Data::CallerCalleeResults& results,
                   const QString& parent, QTextStream& stream, QHash<Data::Symbol, QString>& nodeIdLookup,
                   float thresholdPercent);
