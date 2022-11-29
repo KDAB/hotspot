@@ -28,7 +28,7 @@ Highlighter::Highlighter(QTextDocument* document, QObject* parent)
 {
     document->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
-    // if qApp is used, upsan complains
+    // if qApp is used, UBSAN complains
     QApplication::instance()->installEventFilter(this);
 
     updateColorTheme();
