@@ -41,6 +41,7 @@ public:
 
     enum Columns
     {
+        AddrColumn,
         DisassemblyColumn,
         COLUMN_COUNT
     };

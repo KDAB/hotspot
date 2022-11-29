@@ -77,9 +77,6 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
     QString asmLine;
     QString sourceFileName;
     QString currentSourceFileName;
-    // detect lines like:
-    // 4f616: 84 c0 test %al,%al
-    static const QRegularExpression disassemblyRegex(QStringLiteral("^[ ]+([0-9a-f]{4,}):\t"));
 
     int sourceCodeLine = 0;
     while (stream.readLineInto(&asmLine)) {
@@ -126,18 +123,26 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
         }
 
         quint64 addr = 0;
-        const auto match = disassemblyRegex.match(asmLine);
-        if (match.hasMatch()) {
+        QString assembly;
+
+        // detect lines like:
+        // 4f616:\t<jumps>84 c0\ttest %al,%al
+        const auto addrEnd = asmLine.indexOf(QLatin1String(":\t"));
+        if (addrEnd != -1) {
             bool ok = false;
-            addr = match.capturedRef(1).toULongLong(&ok, 16);
+            addr = QStringView(asmLine).mid(0, addrEnd).toULongLong(&ok, 16);
             if (!ok) {
                 qCWarning(disassemblyoutput) << "unhandled asm line format:" << asmLine;
                 continue;
             }
+
+            assembly = asmLine.mid(addrEnd + 2);
+        } else {
+            assembly = asmLine;
         }
 
         disassemblyLines.push_back(
-            {addr, asmLine, extractLinkedFunction(asmLine), {currentSourceFileName, sourceCodeLine}});
+            {addr, assembly, extractLinkedFunction(asmLine), {currentSourceFileName, sourceCodeLine}});
     }
     return {disassemblyLines, sourceFileName};
 }

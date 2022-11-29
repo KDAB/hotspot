@@ -76,8 +76,10 @@ QVariant DisassemblyModel::headerData(int section, Qt::Orientation orientation, 
     if (role != Qt::DisplayRole || orientation != Qt::Horizontal)
         return {};
 
-    if (section == DisassemblyColumn)
-        return tr("Assembly");
+    if (section == AddrColumn)
+        return tr("Address");
+    else if (section == DisassemblyColumn)
+        return tr("Assembly / Disassembly");
 
     if (section - COLUMN_COUNT <= m_numTypes)
         return m_results.selfCosts.typeName(section - COLUMN_COUNT);
@@ -94,20 +96,30 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
         return {};
 
     if (role == Qt::FontRole) {
-        if (index.column() == DisassemblyColumn)
+        if (index.column() < COLUMN_COUNT)
             return QFontDatabase::systemFont(QFontDatabase::FixedFont);
         return {};
+    } else if (role == Qt::TextAlignmentRole) {
+        if (index.column() == AddrColumn)
+            return static_cast<int>(Qt::AlignRight | Qt::AlignVCenter);
+        return static_cast<int>(Qt::AlignLeft | Qt::AlignVCenter);
     }
 
     const auto& data = m_data.disassemblyLines.at(index.row());
 
     if (role == Qt::DisplayRole || role == CostRole || role == TotalCostRole || role == SyntaxHighlightRole
         || role == Qt::ToolTipRole) {
-        if (index.column() == DisassemblyColumn && role != Qt::ToolTipRole) {
-            const auto block = m_document->findBlockByLineNumber(index.row());
-            if (role == SyntaxHighlightRole)
-                return QVariant::fromValue(block.layout()->lineAt(0));
-            return block.text();
+        if (role != Qt::ToolTipRole) {
+            if (index.column() == AddrColumn) {
+                if (!data.addr)
+                    return {};
+                return QString::number(data.addr, 16);
+            } else if (index.column() == DisassemblyColumn) {
+                const auto block = m_document->findBlockByLineNumber(index.row());
+                if (role == SyntaxHighlightRole)
+                    return QVariant::fromValue(block.layout()->lineAt(0));
+                return block.text();
+            }
         }
 
         if (data.addr == 0) {
@@ -123,12 +135,15 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
             const auto& costLine = locationCost.selfCost[event];
             const auto totalCost = m_results.selfCosts.totalCost(event);
 
-            if (role == CostRole)
+            if (role == CostRole) {
                 return costLine;
-            if (role == TotalCostRole)
+            } else if (role == TotalCostRole) {
                 return totalCost;
-            if (role == Qt::ToolTipRole)
+            } else if (role == Qt::ToolTipRole) {
+                auto tooltip = tr("addr: <tt>%1</tt><br/>assembly: <tt>%2</tt><br/>disassembly: <tt>%3</tt>")
+                                   .arg(QString::number(data.addr, 16), data.disassembly);
                 return Util::formatTooltip(data.disassembly, locationCost, m_results.selfCosts);
+            }
 
             if (!costLine)
                 return {};

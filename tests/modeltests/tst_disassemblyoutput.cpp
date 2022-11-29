@@ -60,7 +60,7 @@ private slots:
 
         DisassemblyOutput disassemblyOutput = DisassemblyOutput::disassemble("objdump", "x86_64", symbol);
         for (const auto& disassemblyLine : disassemblyOutput.disassemblyLines) {
-            disassemblyStream << QString::number(disassemblyLine.addr) << disassemblyLine.disassembly << '\n';
+            disassemblyStream << Qt::hex << disassemblyLine.addr << '\t' << disassemblyLine.disassembly << '\n';
         }
         actual.close();
 
