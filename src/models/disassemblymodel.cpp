@@ -56,6 +56,8 @@ void DisassemblyModel::setDisassembly(const DisassemblyOutput& disassemblyOutput
     m_results = results;
     m_numTypes = results.selfCosts.numTypes();
 
+    m_document->clear();
+
     QTextCursor cursor(m_document);
     for (const auto& it : disassemblyOutput.disassemblyLines) {
         cursor.insertText(it.disassembly);
