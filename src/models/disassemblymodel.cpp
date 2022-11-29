@@ -60,10 +60,12 @@ void DisassemblyModel::setDisassembly(const DisassemblyOutput& disassemblyOutput
     m_document->clear();
 
     QTextCursor cursor(m_document);
+    cursor.beginEditBlock();
     for (const auto& it : disassemblyOutput.disassemblyLines) {
         cursor.insertText(it.disassembly);
         cursor.insertBlock();
     }
+    cursor.endEditBlock();
 
     m_document->setTextWidth(m_document->idealWidth());
 
