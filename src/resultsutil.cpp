@@ -193,15 +193,30 @@ void setupResultsAggregation(QComboBox* costAggregationComboBox)
     struct AggregationType
     {
         QString name;
+        QString tooltip;
         Settings::CostAggregation aggregation;
     };
 
-    for (const auto& aggregationType : std::initializer_list<AggregationType> {
-             {QCoreApplication::translate("Util", "Symbol"), Settings::CostAggregation::BySymbol},
-             {QCoreApplication::translate("Util", "Thread"), Settings::CostAggregation::ByThread},
-             {QCoreApplication::translate("Util", "Process"), Settings::CostAggregation::ByProcess},
-             {QCoreApplication::translate("Util", "CPU"), Settings::CostAggregation::ByCPU}}) {
+    const AggregationType types[] = {
+        {QCoreApplication::translate("Util", "Symbol"),
+         QCoreApplication::translate("Util",
+                                     "Disable grouping and aggregate costs over all threads, processes and CPUs."),
+         Settings::CostAggregation::BySymbol},
+        {QCoreApplication::translate("Util", "Thread"),
+         QCoreApplication::translate("Util",
+                                     "Group events by thread id and aggregate costs separately for each thread."),
+         Settings::CostAggregation::ByThread},
+        {QCoreApplication::translate("Util", "Process"),
+         QCoreApplication::translate("Util",
+                                     "Group events by process id and aggregate costs separately for each process."),
+         Settings::CostAggregation::ByProcess},
+        {QCoreApplication::translate("Util", "CPU"),
+         QCoreApplication::translate("Util", "Group events by CPU id and aggregate costs separately for each CPU."),
+         Settings::CostAggregation::ByCPU}};
+    for (const auto& aggregationType : types) {
         costAggregationComboBox->addItem(aggregationType.name, QVariant::fromValue(aggregationType.aggregation));
+        costAggregationComboBox->setItemData(costAggregationComboBox->count() - 1, aggregationType.tooltip,
+                                             Qt::ToolTipRole);
     }
 
     auto updateCostAggregation = [costAggregationComboBox](Settings::CostAggregation costAggregation) {
