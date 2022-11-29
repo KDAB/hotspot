@@ -146,7 +146,7 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
         return data.linkedFunction.name;
     } else if (role == LinkedFunctionOffsetRole) {
         return data.linkedFunction.offset;
-    } else if (role == RainbowLineNumberRole) {
+    } else if (role == RainbowLineNumberRole && data.addr) {
         return data.fileLine.line;
     }
 

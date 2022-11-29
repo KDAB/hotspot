@@ -47,9 +47,9 @@ void CodeDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
         painter->drawRect(option.rect);
     }
 
-    int sourceLine = index.data(m_lineNumberRole).toInt();
-
-    if (sourceLine >= 0) {
+    bool ok = false;
+    const auto sourceLine = index.data(m_lineNumberRole).toInt(&ok);
+    if (ok && sourceLine >= 0) {
         painter->setBrush(backgroundColor(sourceLine, index.data(m_highlightRole).toBool()));
         painter->drawRect(option.rect);
     }
