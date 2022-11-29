@@ -21,6 +21,7 @@ DisassemblyModel::DisassemblyModel(QObject* parent)
     , m_document(new QTextDocument(this))
     , m_highlighter(new Highlighter(m_document, this))
 {
+    m_highlighter->setDefinitionForName(QStringLiteral("GNU Assembler"));
 }
 
 DisassemblyModel::~DisassemblyModel() = default;
@@ -62,8 +63,6 @@ void DisassemblyModel::setDisassembly(const DisassemblyOutput& disassemblyOutput
     }
 
     m_document->setTextWidth(m_document->idealWidth());
-
-    m_highlighter->setDefinitionForName(QStringLiteral("GNU Assembler"));
 
     endResetModel();
 }

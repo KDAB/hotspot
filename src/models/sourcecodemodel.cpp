@@ -62,10 +62,11 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
 
     const auto sourceCode = QString::fromUtf8(file.readAll());
 
+    m_document->clear();
+    m_highlighter->setDefinitionForFilename(disassemblyOutput.mainSourceFileName);
+
     m_document->setPlainText(sourceCode);
     m_document->setTextWidth(m_document->idealWidth());
-
-    m_highlighter->setDefinitionForFilename(disassemblyOutput.mainSourceFileName);
 
     for (const auto& line : disassemblyOutput.disassemblyLines) {
         if (line.fileLine.line == 0 || line.fileLine.file != disassemblyOutput.mainSourceFileName) {
