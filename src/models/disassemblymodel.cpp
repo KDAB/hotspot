@@ -6,7 +6,7 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
-#include <QFont>
+#include <QFontDatabase>
 #include <QTextBlock>
 #include <QTextDocument>
 
@@ -21,7 +21,6 @@ DisassemblyModel::DisassemblyModel(QObject* parent)
     , m_document(new QTextDocument(this))
     , m_highlighter(new Highlighter(m_document, this))
 {
-    m_document->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 }
 
 DisassemblyModel::~DisassemblyModel() = default;

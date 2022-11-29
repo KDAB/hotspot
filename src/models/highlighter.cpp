@@ -8,6 +8,7 @@
 #include "highlighter.hpp"
 
 #include <QApplication>
+#include <QFontDatabase>
 #include <QPalette>
 #include <QTextDocument>
 
