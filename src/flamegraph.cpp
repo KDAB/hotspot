@@ -18,6 +18,7 @@
 #include <QDebug>
 #include <QDoubleSpinBox>
 #include <QEvent>
+#include <QFontDatabase>
 #include <QGraphicsRectItem>
 #include <QGraphicsScene>
 #include <QGraphicsView>
@@ -628,7 +629,7 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     m_view->viewport()->installEventFilter(this);
     m_view->viewport()->setMouseTracking(true);
     // fix for  QTBUG-105237 view->setFont does not update fontMetrics only the rendered font
-    m_scene->setFont(QFont(QStringLiteral("monospace")));
+    m_scene->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
     m_backButton = new QPushButton(this);
     m_backButton->setIcon(QIcon::fromTheme(QStringLiteral("go-previous")));
