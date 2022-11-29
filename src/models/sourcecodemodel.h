@@ -68,6 +68,7 @@ private:
     Data::Costs m_selfCosts;
     Data::Costs m_inclusiveCosts;
     QString m_mainSourceFileName;
+    QString m_prettySymbol;
     int m_lineOffset = 0;
     int m_startLine = 0;
     int m_numLines = 0;

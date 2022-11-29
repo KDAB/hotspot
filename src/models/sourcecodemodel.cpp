@@ -100,14 +100,10 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     Q_ASSERT(minLineNumber > 0);
     Q_ASSERT(minLineNumber < maxLineNumber);
 
+    m_prettySymbol = disassemblyOutput.symbol.prettySymbol;
     m_startLine = minLineNumber - 2;
     m_lineOffset = minLineNumber - 1;
     m_numLines = maxLineNumber - m_startLine;
-
-    QTextCursor cursor(m_document->findBlockByLineNumber(m_startLine));
-    cursor.select(QTextCursor::SelectionType::LineUnderCursor);
-    cursor.removeSelectedText();
-    cursor.insertText(disassemblyOutput.symbol.prettySymbol);
 }
 
 QVariant SourceCodeModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -155,6 +151,9 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
 
     if (role == Qt::DisplayRole || role == CostRole || role == TotalCostRole || role == SyntaxHighlightRole) {
         if (index.column() == SourceCodeColumn) {
+            if (index.row() == 0) {
+                return m_prettySymbol;
+            }
             const auto block = m_document->findBlockByLineNumber(index.row() + m_startLine);
             if (!block.isValid())
                 return {};
