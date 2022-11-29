@@ -7,6 +7,7 @@
 
 #include <QAbstractItemModelTester>
 #include <QDebug>
+#include <QFontDatabase>
 #include <QObject>
 #include <QTest>
 #include <QTextStream>
@@ -733,17 +734,17 @@ private slots:
         QTest::addColumn<int>("maxWidth");
         QTest::addColumn<QString>("elidedSymbol");
 
-        QTest::addRow("no eliding")
-            << 1500 << "asdf_namespace::foobar<asdf, yxcvyxcv>::blablub(someotherreallylongnames) const";
-        QTest::addRow("elide arguments")
-            << 1000 << "asdf_namespace::foobar<asdf, yxcvyxcv>::blablub(someotherreallylongn…) const";
-        QTest::addRow("elide templates") << 700 << "asdf_namespace::foobar<…>::blablub(…) const";
-        QTest::addRow("elide symbol") << 350 << "…obar<…>::blablub(…) const";
+        const auto w = monospaceMetrics().averageCharWidth();
+        QTest::addRow("no eliding") << w
+                * 108 << "asdf_namespace::foobar<asdf, yxcvyxcv>::blablub(someotherreallylongnames) const";
+        QTest::addRow("elide arguments") << w
+                * 77 << "asdf_namespace::foobar<asdf, yxcvyxcv>::blablub(someotherreallylongn…) const";
+        QTest::addRow("elide templates") << w * 54 << "asdf_namespace::foobar<…>::blablub(…) const";
+        QTest::addRow("elide symbol") << w * 27 << "…obar<…>::blablub(…) const";
     }
 
     void testSymbolEliding()
     {
-        const QFontMetrics metrics(QFont(QStringLiteral("monospace"), 10));
 
         const QString testSymbol =
             QStringLiteral("asdf_namespace::foobar<asdf, yxcvyxcv>::blablub(someotherreallylongnames) const");
@@ -751,16 +752,27 @@ private slots:
         QFETCH(int, maxWidth);
         QFETCH(QString, elidedSymbol);
 
-        QCOMPARE(Util::elideSymbol(testSymbol, metrics, maxWidth), elidedSymbol);
+        QCOMPARE(Util::elideSymbol(testSymbol, monospaceMetrics(), maxWidth), elidedSymbol);
     }
 
     void testSymbolElidingParanthese()
     {
-        const QFontMetrics metrics(QFont(QStringLiteral("monospace"), 10));
+        auto font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+        font.setPixelSize(10);
 
         const QString symbol = QStringLiteral("Foo<&bar::operator()>::asdf<XYZ>(blabla<&foo::operator(), ')', '('>)");
 
-        QCOMPARE(Util::elideSymbol(symbol, metrics, 700), "Foo<&bar::operator()>::asdf<XYZ>(blabla<&foo::opera…)");
+        const auto metrics = monospaceMetrics();
+        QCOMPARE(Util::elideSymbol(symbol, metrics, metrics.averageCharWidth() * 54),
+                 "Foo<&bar::operator()>::asdf<XYZ>(blabla<&foo::opera…)");
+    }
+
+private:
+    static QFontMetrics monospaceMetrics()
+    {
+        auto font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+        font.setPixelSize(10);
+        return QFontMetrics(font);
     }
 };
 
