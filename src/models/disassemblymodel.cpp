@@ -93,6 +93,12 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
     if (index.row() > m_data.disassemblyLines.count() || index.row() < 0)
         return {};
 
+    if (role == Qt::FontRole) {
+        if (index.column() == DisassemblyColumn)
+            return QFontDatabase::systemFont(QFontDatabase::FixedFont);
+        return {};
+    }
+
     const auto& data = m_data.disassemblyLines.at(index.row());
 
     if (role == Qt::DisplayRole || role == CostRole || role == TotalCostRole || role == SyntaxHighlightRole

@@ -139,12 +139,16 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
     if (index.row() > m_numLines || index.row() < 0)
         return {};
 
+    if (role == Qt::FontRole) {
+        if (index.column() == SourceCodeColumn)
+            return QFontDatabase::systemFont(QFontDatabase::FixedFont);
+        return {};
+    }
+
     const auto fileLine = Data::FileLine(m_mainSourceFileName, index.row() + m_lineOffset);
     if (role == FileLineRole) {
         return QVariant::fromValue(fileLine);
-    }
-
-    if (role == Qt::ToolTipRole) {
+    } else if (role == Qt::ToolTipRole) {
         return Util::formatTooltip(fileLine, m_selfCosts, m_inclusiveCosts);
     }
 

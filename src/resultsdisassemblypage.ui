@@ -49,11 +49,6 @@
       <enum>Qt::Horizontal</enum>
      </property>
      <widget class="QTreeView" name="sourceCodeView">
-      <property name="font">
-       <font>
-        <family>Monospace</family>
-       </font>
-      </property>
       <property name="alternatingRowColors">
        <bool>true</bool>
       </property>
@@ -68,11 +63,6 @@
       </attribute>
      </widget>
      <widget class="QTreeView" name="assemblyView">
-      <property name="font">
-       <font>
-        <family>Monospace</family>
-       </font>
-      </property>
       <property name="alternatingRowColors">
        <bool>true</bool>
       </property>

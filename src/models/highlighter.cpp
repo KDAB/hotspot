@@ -9,6 +9,7 @@
 
 #include <QApplication>
 #include <QPalette>
+#include <QTextDocument>
 
 #if KF5SyntaxHighlighting_FOUND
 #include <KSyntaxHighlighting/Definition>
@@ -24,9 +25,8 @@ Highlighter::Highlighter(QTextDocument* document, QObject* parent)
     , m_highlighter(new KSyntaxHighlighting::SyntaxHighlighter(document))
 #endif
 {
-#if KF5SyntaxHighlighting_FOUND == 0
-    Q_UNUSED(document);
-#endif
+    document->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+
     // if qApp is used, upsan complains
     QApplication::instance()->installEventFilter(this);
 
