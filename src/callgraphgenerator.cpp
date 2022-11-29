@@ -7,6 +7,7 @@
 
 #include "callgraphgenerator.h"
 
+#include <QFontDatabase>
 #include <QTextStream>
 #include <QUuid>
 
@@ -16,10 +17,12 @@ QHash<Data::Symbol, QString> writeGraph(QTextStream& stream, const Data::Symbol&
 {
     auto settings = Settings::instance();
     const auto parentId = QUuid::createUuid().toString(QUuid::Id128);
+    const auto font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 
     stream << "digraph callgraph {\n";
-    stream << "node [shape=box, fontname=\"monospace\", fontcolor=\"" << fontColor << "\", style=filled, color=\""
-           << settings->callgraphColor().name() << "\"]\n";
+    stream << "node [shape=box, fontname=\"" << font.family() << "\", fontsize=\"" << font.pointSize()
+           << "pt\", fontcolor=\"" << fontColor << "\", style=filled, color=\"" << settings->callgraphColor().name()
+           << "\"]\n";
 
     stream << "node" << parentId << " [label=\"";
     if (symbol.prettySymbol.isEmpty()) {
