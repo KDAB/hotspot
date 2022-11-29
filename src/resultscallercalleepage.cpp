@@ -113,7 +113,7 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
 #if KGraphViewerPart_FOUND
     m_callgraph = CallgraphWidget::createCallgraphWidget({}, this);
     if (m_callgraph) {
-        ui->callerCalleeLayout->addWidget(m_callgraph);
+        ui->splitter_2->addWidget(m_callgraph);
     }
 #endif
 
