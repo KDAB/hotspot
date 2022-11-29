@@ -33,6 +33,15 @@ CodeDelegate::CodeDelegate(int lineNumberRole, int highlightRole, int syntaxHigh
 
 CodeDelegate::~CodeDelegate() = default;
 
+QSize CodeDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+    const auto line = index.data(m_syntaxHighlightRole).value<QTextLine>();
+    if (line.isValid()) {
+        return QSize(line.width(), line.height());
+    }
+    return QStyledItemDelegate::sizeHint(option, index);
+}
+
 void CodeDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     const auto brush = painter->brush();
