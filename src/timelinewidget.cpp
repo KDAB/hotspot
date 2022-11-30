@@ -70,7 +70,6 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
     ResultsUtil::connectFilter(ui->timeLineSearch, timeLineProxy);
     ui->timeLineView->setModel(timeLineProxy);
     ui->timeLineView->setSortingEnabled(true);
-    ui->timeLineView->sortByColumn(EventModel::ThreadColumn, Qt::AscendingOrder);
     // ensure the vertical scroll bar is always shown, otherwise the timeline
     // view would get more or less space, which leads to odd jumping when filtering
     // due to the increased width leading to a zoom effect
@@ -92,6 +91,7 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
 
     connect(m_parser, &PerfParser::eventsAvailable, this, [this, eventModel](const Data::EventResults& data) {
         eventModel->setData(data);
+        ui->timeLineView->sortByColumn(EventModel::ThreadColumn, Qt::AscendingOrder);
         m_timeAxisHeaderView->setTimeRange(eventModel->timeRange());
         if (data.offCpuTimeCostId != -1) {
             // remove the off-CPU time event source, we only want normal sched switches
