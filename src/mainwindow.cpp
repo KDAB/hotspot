@@ -393,7 +393,7 @@ void MainWindow::aboutKDAB()
 
 void MainWindow::openSettingsDialog()
 {
-    m_settingsDialog->setWindowTitle(tr("Paths and Architecture Settings"));
+    m_settingsDialog->setWindowTitle(tr("Hotspot configuration"));
     m_settingsDialog->setWindowIcon(windowIcon());
     m_settingsDialog->adjustSize();
     m_settingsDialog->initSettings();
