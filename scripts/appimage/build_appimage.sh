@@ -18,6 +18,10 @@ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
 make -j
 DESTDIR=appdir make install
 
+tar -cjvf /output/hotspot-debuginfo-$(git describe)-x86_64.tar.bz2 \
+    --transform="s#appdir/#hotspot-debuginfo-$(git describe)/#" \
+    appdir/$PREFIX/bin/hotspot appdir/$PREFIX/lib64/libexec/hotspot-perfparser
+
 # FIXME: Do in CMakeLists.txt
 mkdir -p "appdir/$PREFIX/share/applications/"
 cp ../com.kdab.hotspot.desktop "appdir/$PREFIX/share/applications/"

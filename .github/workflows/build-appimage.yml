@@ -34,8 +34,14 @@ jobs:
     - name: Build
       run: /build_appimage.sh
 
-    - name: Upload
+    - name: Upload AppImage
       uses: actions/upload-artifact@v3
       with:
         name: appimage
-        path: /output/hotspot*
+        path: /output/hotspot*.AppImage
+
+    - name: Upload Debug Info
+      uses: actions/upload-artifact@v3
+      with:
+        name: debuginfo
+        path: /output/hotspot-debuginfo-*

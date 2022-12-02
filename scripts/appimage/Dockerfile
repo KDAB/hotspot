@@ -42,7 +42,7 @@ RUN sed -i 's#enabled=1#enabled=0#' /etc/yum/pluginconf.d/fastestmirror.conf && 
         # kgraphviewer
         boost boost-devel graphviz-devel \
         # appimages
-        fuse fuse-libs && \
+        fuse fuse-libs bzip2 && \
     ln -s /usr/bin/cmake3 /usr/bin/cmake && \
     rm -Rf /var/cache/yum && \
     . /opt/rh/devtoolset-11/enable
