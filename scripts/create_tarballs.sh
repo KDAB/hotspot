@@ -28,8 +28,10 @@ git clone --branch $version --recurse-submodules \
 
 tar --exclude="*/.git/*" --exclude="*/.git" -cvzf "hotspot-$version.tar.gz" "hotspot-$version"
 tar --exclude="*/.git/*" --exclude="*/.git" -cvzf "hotspot-perfparser-$version.tar.gz" "hotspot-$version/3rdparty/perfparser"
+tar --exclude="*/.git/*" --exclude="*/.git" -cvzf "hotspot-PrefixTickLabels-$version.tar.gz" "hotspot-$version/3rdparty/PrefixTickLabels"
 zip -r --exclude="*/.git/*" --exclude="*/.git" "hotspot-$version.zip" "hotspot-$version"
 zip -r --exclude="*/.git/*" --exclude="*/.git" "hotspot-perfparser-$version.zip" "hotspot-$version/3rdparty/perfparser"
+zip -r --exclude="*/.git/*" --exclude="*/.git" "hotspot-PrefixTickLabels-$version.zip" "hotspot-$version/3rdparty/PrefixTickLabels"
 
-md5sum "hotspot-$version.tar.gz" "hotspot-$version.zip" "hotspot-perfparser-$version.tar.gz" "hotspot-perfparser-$version.zip"
-sha1sum "hotspot-$version.tar.gz" "hotspot-$version.zip" "hotspot-perfparser-$version.tar.gz" "hotspot-perfparser-$version.zip"
+md5sum "hotspot-$version.tar.gz" "hotspot-$version.zip" "hotspot-perfparser-$version.tar.gz" "hotspot-perfparser-$version.zip" "hotspot-PrefixTickLabels-$version.tar.gz" "hotspot-PrefixTickLabels-$version.zip"
+sha1sum "hotspot-$version.tar.gz" "hotspot-$version.zip" "hotspot-perfparser-$version.tar.gz" "hotspot-perfparser-$version.zip" "hotspot-PrefixTickLabels-$version.tar.gz" "hotspot-PrefixTickLabels-$version.zip"
