@@ -219,6 +219,59 @@ bug and test the latest stable version.
 *Note: Your system libraries or preferences are not altered. In case you'd like to remove Hotspot again,
 simply delete the downloaded file. Learn more about AppImage [here](http://appimage.org/).*
 
+#### Debugging the AppImage
+
+When the AppImage crashes or is excessively slow, please provide a usable backtrace or profile run.
+To do that, you will need to download the debuginfo artifact that matches the AppImage you downloaded.
+Then you can run the `scripts/appimage/run_debuginfod_in_docker.sh` script as such:
+
+```bash
+$ ./scripts/appimage/run_debuginfod_in_docker ~/Downloads/debuginfo.zip
+unpacking debuginfo...
+hotspot-debuginfo-v1.3.0-391-g590f810/usr/bin/hotspot
+hotspot-debuginfo-v1.3.0-391-g590f810/usr/lib64/libexec/hotspot-perfparser
+starting debuginfod in docker...
+to use it on your host system, set:
+
+    export DEBUGINFOD_URLS="127.0.0.1:12345 https://debuginfod.centos.org/ https://debuginfod.archlinux.org"
+
+[Fri Dec  2 19:58:56 2022] (16/16): opened database /opt/app-root/src/.debuginfod.sqlite
+[Fri Dec  2 19:58:56 2022] (16/16): sqlite version 3.7.17
+[Fri Dec  2 19:58:56 2022] (16/16): started http server on IPv4 IPv6 port=12345
+...
+```
+
+Keep that `debuginfod` process running. You can now start using the local debuginfod in combination with
+the official Centos instance to get debug information for all the dependencies and build artifacts of hotspot.
+Here is one example for that using GDB:
+
+```bash
+$ ./hotspot-v1.3.0-391-g590f810-x86_64.AppImage &
+$ export DEBUGINFOD_URLS="127.0.0.1:12345 https://debuginfod.centos.org/ https://debuginfod.archlinux.org"
+$ gdb -p $(pidof hotspot)
+...
+This GDB supports auto-downloading debuginfo from the following URLs:
+127.0.0.1:12345 https://debuginfod.centos.org/ https://debuginfod.archlinux.org
+Enable debuginfod for this session? (y or [n]) y
+Debuginfod has been enabled.
+To make this setting permanent, add 'set debuginfod enabled on' to .gdbinit.
+Downloading 37.95 MB separate debug info for /home/milian/Downloads/squashfs-root/usr/bin/hotspot
+...
+(gdb) bt
+#0  0x00007f70bd5140bf in __GI___poll (fds=0x2c83f40, nfds=5, timeout=0) at ../sysdeps/unix/sysv/linux/poll.c:29
+#1  0x00007f70b7a4c3fc in g_main_context_iterate.isra () from /tmp/.mount_hotspoBCRbef/usr/lib/libglib-2.0.so.0
+#2  0x00007f70b7a4c52c in g_main_context_iteration () from /tmp/.mount_hotspoBCRbef/usr/lib/libglib-2.0.so.0
+#3  0x00007f70bdd08aa4 in QEventDispatcherGlib::processEvents(QFlags<QEventLoop::ProcessEventsFlag>) ()
+   from /tmp/.mount_hotspoBCRbef/usr/lib/libQt5Core.so.5
+#4  0x00007f70bdcb361b in QEventLoop::exec(QFlags<QEventLoop::ProcessEventsFlag>) ()
+   from /tmp/.mount_hotspoBCRbef/usr/lib/libQt5Core.so.5
+#5  0x00007f70bdcbb26c in QCoreApplication::exec() () from /tmp/.mount_hotspoBCRbef/usr/lib/libQt5Core.so.5
+#6  0x000000000043a23e in main (argc=<optimized out>, argv=<optimized out>) at /__w/hotspot/hotspot/src/main.cpp:194
+```
+
+Note that source files are not supported in this way yet, as that would blow up the size of the docker image
+and thereby slow down our CI.
+
 ## Using
 
 First of all, record some data with `perf`. To get backtraces, you will need to enable the dwarf callgraph
