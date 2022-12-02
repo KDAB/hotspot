@@ -223,7 +223,22 @@ simply delete the downloaded file. Learn more about AppImage [here](http://appim
 
 When the AppImage crashes or is excessively slow, please provide a usable backtrace or profile run.
 To do that, you will need to download the debuginfo artifact that matches the AppImage you downloaded.
-Then you can run the `scripts/appimage/run_debuginfod_in_docker.sh` script as such:
+Next, you will need to download the docker image from `ghcr.io/kdab/kdesrc-build:latest`. For that you
+need to authenticate yourself to GitHub. If you have a `ghcr.io` authentication token and use `pass`,
+you can do that with
+
+```bash
+$ scripts/appimage/download_docker.sh
+downloading docker image from ghcr.io
+Login Succeeded
+latest: Pulling from kdab/kdesrc-build
+Digest: sha256:1be0cdbeff1c8c796b77a4244a1f257e02c4a896fd6add93b7b00a9d76db8727
+...
+ghcr.io/kdab/kdesrc-build:latest
+Removing login credentials for ghcr.io
+```
+
+Once that is done, you can run the `scripts/appimage/run_debuginfod_in_docker.sh` script as such:
 
 ```bash
 $ ./scripts/appimage/run_debuginfod_in_docker ~/Downloads/debuginfo.zip
