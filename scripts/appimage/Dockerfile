@@ -19,7 +19,7 @@ RUN sed -i 's#enabled=1#enabled=0#' /etc/yum/pluginconf.d/fastestmirror.conf && 
     yum install -y deltarpm && \
     yum update -y && yum install -y epel-release centos-release-scl && \
     yum install -y \
-        devtoolset-11 devtoolset-11-elfutils-devel flex bison file \
+        devtoolset-11 devtoolset-11-elfutils-devel devtoolset-11-elfutils-debuginfod flex bison file \
         rh-perl530-perl rh-perl530-perl-IO-Socket-SSL rh-perl530-perl-YAML \
         gperf wget cmake3 which rh-git227-git python3 libzstd-devel \
         polkit-devel libxslt-devel docbook-style-xsl \
