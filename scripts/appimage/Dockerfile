@@ -121,5 +121,4 @@ RUN cd /opt && git clone --recursive https://github.com/KDAB/KDDockWidgets.git -
 FROM intermediate
 
 WORKDIR /
-COPY build_appimage.sh /
 RUN mkdir /output

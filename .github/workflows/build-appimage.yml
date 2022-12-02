@@ -32,7 +32,7 @@ jobs:
         submodules: recursive
 
     - name: Build
-      run: /build_appimage.sh
+      run: scripts/appimage/build_appimage.sh "$PWD" "$PWD/build"
 
     - name: Upload AppImage
       uses: actions/upload-artifact@v3

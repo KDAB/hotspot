@@ -5,7 +5,15 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-mkdir -p ../output
+
+set -e
+
+cd "$(dirname $0)"
+
+mkdir -p ../output/build-appimage
+
 docker run -it --privileged --device /dev/fuse --cap-add SYS_ADMIN \
-    -v $PWD/../output:/output ghcr.io/kdab/kdesrc-build:latest \
-    /bin/bash -c "git clone --recurse-submodules -j4 https://github.com/kdab/hotspot && cd hotspot && /build_appimage.sh"
+    -v $PWD/../output:/output \
+    -v $PWD/../../:/hotspot \
+    ghcr.io/kdab/kdesrc-build:latest \
+    /hotspot/scripts/appimage/build_appimage.sh /hotspot /output/build-appimage
