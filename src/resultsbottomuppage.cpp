@@ -79,7 +79,7 @@ ResultsBottomUpPage::ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfPa
                 stackCollapsed->setToolTip(tr("Export data in textual form compatible with <tt>flamegraph.pl</tt>."));
                 for (int i = 0; i < data.costs.numTypes(); ++i) {
                     const auto costName = data.costs.typeName(i);
-                    stackCollapsed->addAction(costName, [this, i, bottomUpCostModel, costName]() {
+                    stackCollapsed->addAction(costName, this, [this, i, bottomUpCostModel, costName]() {
                         const auto fileName = QFileDialog::getSaveFileName(this, tr("Export %1 Data").arg(costName));
                         if (fileName.isEmpty())
                             return;

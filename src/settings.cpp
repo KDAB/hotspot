@@ -218,7 +218,7 @@ void Settings::loadFromFile()
         setArch(currentConfig.readEntry("arch", ""));
         setObjdump(currentConfig.readEntry("objdump", ""));
     }
-    connect(this, &Settings::lastUsedEnvironmentChanged, [sharedConfig, this](const QString& envName) {
+    connect(this, &Settings::lastUsedEnvironmentChanged, this, [sharedConfig](const QString& envName) {
         sharedConfig->group("PerfPaths").writeEntry("lastUsed", envName);
     });
 }

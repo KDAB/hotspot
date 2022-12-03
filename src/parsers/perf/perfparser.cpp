@@ -1643,7 +1643,7 @@ void PerfParser::startParseFile(const QString& path)
                     }
                 });
 
-        connect(&process, &QProcess::errorOccurred, &process, [&d, &process, this](QProcess::ProcessError error) {
+        connect(&process, &QProcess::errorOccurred, &process, [&process, this](QProcess::ProcessError error) {
             if (m_stopRequested) {
                 emit parsingFailed(tr("Parsing stopped."));
                 return;
