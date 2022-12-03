@@ -824,7 +824,8 @@ private:
 
         // Verify that no individual cost in the Caller/Callee data is greater than the total cost of all samples
         for (const auto& entry : qAsConst(m_callerCalleeData.entries)) {
-            VERIFY_OR_THROW(m_callerCalleeData.inclusiveCosts.cost(0, entry.id) <= m_summaryData.costs[0].totalPeriod);
+            VERIFY_OR_THROW(m_callerCalleeData.inclusiveCosts.cost(0, entry.id)
+                            <= static_cast<qint64>(m_summaryData.costs[0].totalPeriod));
         }
 
         // Verify that the events data is not empty and somewhat sane
