@@ -584,6 +584,20 @@ struct SymbolCount
     qint32 total = 0;
     qint32 missing = 0;
 };
+
+QProcessEnvironment perfparserEnvironment(const QStringList& debuginfodUrls)
+{
+    auto env = Util::appImageEnvironment();
+
+    if (!debuginfodUrls.isEmpty()) {
+        const auto envVar = QStringLiteral("DEBUGINFOD_URLS");
+        const auto defaultUrls = env.value(envVar);
+        const auto separator = QLatin1Char(' ');
+        env.insert(envVar, debuginfodUrls.join(separator) + separator + defaultUrls);
+    }
+
+    return env;
+}
 }
 
 Q_DECLARE_TYPEINFO(AttributesDefinition, Q_MOVABLE_TYPE);
@@ -1573,16 +1587,7 @@ void PerfParser::startParseFile(const QString& path)
         }
 
         QProcess process;
-        auto env = Util::appImageEnvironment();
-
-        if (!debuginfodUrls.isEmpty()) {
-            const auto envVar = QStringLiteral("DEBUGINFOD_URLS");
-            const auto defaultUrls = env.value(envVar);
-            const auto separator = QLatin1Char(' ');
-            env.insert(envVar, debuginfodUrls.join(separator) + separator + defaultUrls);
-        }
-
-        process.setProcessEnvironment(env);
+        process.setProcessEnvironment(perfparserEnvironment(debuginfodUrls));
         process.setProcessChannelMode(QProcess::ForwardedErrorChannel);
         connect(this, &PerfParser::stopRequested, &process, &QProcess::kill);
 
@@ -1899,7 +1904,9 @@ void PerfParser::exportResults(const QUrl& url)
     Q_ASSERT(!m_parserArgs.isEmpty());
 
     using namespace ThreadWeaver;
-    stream() << make_job([this, url, parserBinary = m_parserBinary, parserArgs = m_parserArgs]() {
+
+    auto debuginfodUrls = Settings::instance()->debuginfodUrls();
+    stream() << make_job([this, url, parserBinary = m_parserBinary, parserArgs = m_parserArgs, debuginfodUrls]() {
         QProcess perfParser;
         QSharedPointer<QTemporaryFile> tmpFile;
 
@@ -1918,7 +1925,9 @@ void PerfParser::exportResults(const QUrl& url)
             perfParser.setStandardOutputFile(tmpFile->fileName());
         }
 
-        perfParser.setStandardErrorFile(QProcess::nullDevice());
+        perfParser.setProcessEnvironment(perfparserEnvironment(debuginfodUrls));
+        perfParser.setProcessChannelMode(QProcess::ForwardedErrorChannel);
+
         perfParser.start(parserBinary, parserArgs);
         if (!perfParser.waitForFinished(-1)) {
             emit exportFailed(tr("File export failed: %1").arg(perfParser.errorString()));
