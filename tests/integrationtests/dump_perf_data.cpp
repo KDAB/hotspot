@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     }
 
     int runningParsers = 0;
-    for (const auto& arg : args) {
+    for (const auto& arg : qAsConst(args)) {
         auto parser = new PerfParser(&app);
         parser->startParseFile(arg);
         ++runningParsers;

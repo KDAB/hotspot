@@ -1818,7 +1818,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                 }
 
                 // add event data to cpus, bottom up and caller callee sets
-                for (const auto& event : thread.events) {
+                for (const auto& event : qAsConst(thread.events)) {
                     // only add non-time events to the cpu line, context switches shouldn't show up there
                     if (event.type == events.lostEventCostId) {
                         // the lost event never has a valid cpu set, add to all CPUs

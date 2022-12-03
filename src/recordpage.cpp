@@ -591,7 +591,8 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
             QItemSelectionModel* selectionModel = ui->processesTableView->selectionModel();
             QStringList pids;
 
-            for (const auto& item : selectionModel->selectedIndexes()) {
+            const auto selection = selectionModel->selectedIndexes();
+            for (const auto& item : selection) {
                 if (item.column() == 0) {
                     pids.append(item.data(ProcessModel::PIDRole).toString());
                 }

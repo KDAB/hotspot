@@ -280,7 +280,7 @@ private slots:
         QTextStream(stdout) << "\nActual Model:\n" << printCallerCalleeModel(model).join("\n") << "\n";
         QCOMPARE(printCallerCalleeModel(model), expectedMap);
 
-        for (const auto& entry : results.entries) {
+        for (const auto& entry : qAsConst(results.entries)) {
             {
                 CallerModel model;
                 QAbstractItemModelTester tester(&model);

@@ -62,7 +62,7 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
         m_page->costSelectionCombobox->clear();
 
         QSet<QString> costs;
-        for (const auto& coreData : m_results.cores) {
+        for (const auto& coreData : qAsConst(m_results.cores)) {
             for (const auto& costData : coreData.costs) {
                 if (!costs.contains(costData.costName)) {
                     costs.insert(costData.costName);
@@ -78,7 +78,7 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
         const auto selectedCost = m_page->costSelectionCombobox->currentText();
         const auto numCores = m_results.cores.size();
         quint32 core = 0;
-        for (const auto& coreData : m_results.cores) {
+        for (const auto& coreData : qAsConst(m_results.cores)) {
             for (const auto& costData : coreData.costs) {
                 if (costData.costName != selectedCost) {
                     continue;

@@ -503,7 +503,8 @@ SearchResults applySearch(FrameGraphicsItem* item, const QString& searchValue)
     }
 
     // recurse into the child items, we always need to update all items
-    for (auto* child : item->childItems()) {
+    const auto children = item->childItems();
+    for (auto* child : children) {
         auto* childFrame = static_cast<FrameGraphicsItem*>(child);
         auto childMatch = applySearch(childFrame, searchValue);
         if (result.matchType != DirectMatch

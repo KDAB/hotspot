@@ -58,7 +58,7 @@ private slots:
 
         QTextStream disassemblyStream(&actual);
 
-        DisassemblyOutput disassemblyOutput = DisassemblyOutput::disassemble("objdump", "x86_64", symbol);
+        const auto disassemblyOutput = DisassemblyOutput::disassemble("objdump", "x86_64", symbol);
         for (const auto& disassemblyLine : disassemblyOutput.disassemblyLines) {
             disassemblyStream << Qt::hex << disassemblyLine.addr << '\t' << disassemblyLine.disassembly << '\n';
         }
