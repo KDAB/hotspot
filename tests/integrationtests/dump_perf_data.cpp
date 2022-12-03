@@ -28,17 +28,19 @@ int main(int argc, char** argv)
         auto parser = new PerfParser(&app);
         parser->startParseFile(arg);
         ++runningParsers;
-        QObject::connect(parser, &PerfParser::parsingFinished, parser, [&runningParsers, &app]() {
-            --runningParsers;
-            if (!runningParsers)
-                app.quit();
-        });
-        QObject::connect(parser, &PerfParser::parsingFailed, parser, [&runningParsers, &app](const QString& error) {
-            qWarning() << error;
-            --runningParsers;
-            if (!runningParsers)
-                app.quit();
-        });
+        QObject::connect(parser, &PerfParser::parsingFinished, parser,
+                         [&runningParsers, &app]() { // clazy:exclude=lambda-in-connect
+                             --runningParsers;
+                             if (!runningParsers)
+                                 app.quit();
+                         });
+        QObject::connect(parser, &PerfParser::parsingFailed, parser,
+                         [&runningParsers, &app](const QString& error) { // clazy:exclude=lambda-in-connect
+                             qWarning() << error;
+                             --runningParsers;
+                             if (!runningParsers)
+                                 app.quit();
+                         });
         QObject::connect(parser, &PerfParser::bottomUpDataAvailable, parser, [arg](const Data::BottomUpResults& data) {
             qDebug() << arg;
             dumpList(printTree(data));
