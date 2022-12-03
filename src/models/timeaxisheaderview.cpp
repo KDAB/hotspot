@@ -58,7 +58,7 @@ void TimeAxisHeaderView::setTimeRange(const Data::TimeRange& timeRange)
 
 void TimeAxisHeaderView::emitHeaderDataChanged()
 {
-    emit headerDataChanged(this->orientation(), EventModel::EventsColumn, EventModel::EventsColumn);
+    headerDataChanged(this->orientation(), EventModel::EventsColumn, EventModel::EventsColumn);
 }
 
 bool TimeAxisHeaderView::event(QEvent* event)
