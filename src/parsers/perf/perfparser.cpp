@@ -1450,28 +1450,26 @@ PerfParser::PerfParser(QObject* parent)
 
 PerfParser::~PerfParser() = default;
 
-void PerfParser::startParseFile(const QString& path)
+bool PerfParser::initParserArgs(const QString& path)
 {
-    Q_ASSERT(!m_isParsing);
-
     QFileInfo info(path);
     if (!info.exists()) {
         emit parsingFailed(tr("File '%1' does not exist.").arg(path));
-        return;
+        return false;
     }
     if (!info.isFile()) {
         emit parsingFailed(tr("'%1' is not a file.").arg(path));
-        return;
+        return false;
     }
     if (!info.isReadable()) {
         emit parsingFailed(tr("File '%1' is not readable.").arg(path));
-        return;
+        return false;
     }
 
     auto parserBinary = Util::perfParserBinaryPath();
     if (parserBinary.isEmpty()) {
         emit parsingFailed(tr("Failed to find hotspot-perfparser binary."));
-        return;
+        return false;
     }
 
     auto parserArgs = [this](const QString& filename) {
@@ -1505,8 +1503,20 @@ void PerfParser::startParseFile(const QString& path)
         return parserArgs;
     };
 
-    // reset the data to ensure filtering will pick up the new data
     m_parserArgs = parserArgs(path);
+    m_parserBinary = parserBinary;
+    return true;
+}
+
+void PerfParser::startParseFile(const QString& path)
+{
+    Q_ASSERT(!m_isParsing);
+
+    // reset the data to ensure filtering will pick up the new data
+    if (!initParserArgs(path)) {
+        return;
+    }
+
     m_bottomUpResults = {};
     m_callerCalleeResults = {};
     m_tracepointResults = {};
@@ -1518,7 +1528,8 @@ void PerfParser::startParseFile(const QString& path)
 
     emit parsingStarted();
     using namespace ThreadWeaver;
-    stream() << make_job([path, parserBinary, debuginfodUrls, costAggregation, this]() {
+    stream() << make_job([path, parserBinary = m_parserBinary, parserArgs = m_parserArgs, debuginfodUrls,
+                          costAggregation, this]() {
         PerfParserPrivate d(costAggregation);
         connect(&d, &PerfParserPrivate::progress, this, &PerfParser::progress);
         connect(&d, &PerfParserPrivate::debugInfoDownloadProgress, this, &PerfParser::debugInfoDownloadProgress);
@@ -1638,7 +1649,7 @@ void PerfParser::startParseFile(const QString& path)
             emit parsingFailed(process.errorString());
         });
 
-        process.start(parserBinary, m_parserArgs);
+        process.start(parserBinary, parserArgs);
         if (!process.waitForStarted()) {
             emit parsingFailed(tr("Failed to start the hotspot-perfparser process"));
             return;
@@ -1875,12 +1886,20 @@ void PerfParser::stop()
     emit stopRequested();
 }
 
+void PerfParser::exportResults(const QString& path, const QUrl& url)
+{
+    if (!initParserArgs(path))
+        return;
+    exportResults(url);
+}
+
 void PerfParser::exportResults(const QUrl& url)
 {
+    Q_ASSERT(!m_parserBinary.isEmpty());
     Q_ASSERT(!m_parserArgs.isEmpty());
 
     using namespace ThreadWeaver;
-    stream() << make_job([this, url]() {
+    stream() << make_job([this, url, parserBinary = m_parserBinary, parserArgs = m_parserArgs]() {
         QProcess perfParser;
         QSharedPointer<QTemporaryFile> tmpFile;
 
@@ -1891,7 +1910,7 @@ void PerfParser::exportResults(const QUrl& url)
         } else {
             tmpFile = QSharedPointer<QTemporaryFile>::create();
             if (!tmpFile->open()) {
-                emit parserWarning(
+                emit exportFailed(
                     tr("File export failed: Failed to create temporary file %1.").arg(tmpFile->errorString()));
                 return;
             }
@@ -1900,9 +1919,9 @@ void PerfParser::exportResults(const QUrl& url)
         }
 
         perfParser.setStandardErrorFile(QProcess::nullDevice());
-        perfParser.start(Util::perfParserBinaryPath(), m_parserArgs);
+        perfParser.start(parserBinary, parserArgs);
         if (!perfParser.waitForFinished(-1)) {
-            emit parserWarning(tr("File export failed: %1").arg(perfParser.errorString()));
+            emit exportFailed(tr("File export failed: %1").arg(perfParser.errorString()));
             return;
         }
 
@@ -1916,7 +1935,7 @@ void PerfParser::exportResults(const QUrl& url)
             auto* job = KIO::file_move(QUrl::fromLocalFile(tmpFile->fileName()), url, -1, KIO::Overwrite);
             connect(job, &KIO::FileCopyJob::result, this, [this, url, job, tmpFile]() {
                 if (job->error())
-                    emit parserWarning(tr("File export failed: %1").arg(job->errorString()));
+                    emit exportFailed(tr("File export failed: %1").arg(job->errorString()));
                 else
                     emit exportFinished(url);
                 // we need to keep the file alive until the copy job has finished

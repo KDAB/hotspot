@@ -157,7 +157,9 @@ MainWindow::MainWindow(QWidget* parent)
         notification->setUrls({url});
         notification->setText(tr("Processed data saved"));
         notification->sendEvent();
+        emit exportFinished(url);
     });
+    connect(m_parser, &PerfParser::exportFailed, this, &MainWindow::exportFailed);
     connect(m_parser, &PerfParser::parsingFailed, this,
             [this](const QString& errorMessage) { emit openFileError(errorMessage); });
 
@@ -367,8 +369,19 @@ void MainWindow::saveAs()
                                                  tr("PerfParser (*.perfparser)"));
     if (!url.isValid())
         return;
+    saveAs(url);
+}
+
+void MainWindow::saveAs(const QUrl& url)
+{
     m_exportAction->setEnabled(false);
     m_parser->exportResults(url);
+}
+
+void MainWindow::saveAs(const QString& path, const QUrl& url)
+{
+    m_exportAction->setEnabled(false);
+    m_parser->exportResults(path, url);
 }
 
 void MainWindow::aboutKDAB()

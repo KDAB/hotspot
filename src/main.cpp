@@ -8,9 +8,11 @@
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QDebug>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QProcessEnvironment>
+#include <QUrl>
 
 #include "dockwidgetsetup.h"
 #include "hotspot-config.h"
@@ -124,6 +126,14 @@ int main(int argc, char** argv)
                             QLatin1String("path"));
     parser.addOption(arch);
 
+    QCommandLineOption exportTo(
+        QStringLiteral("exportTo"),
+        QCoreApplication::translate("main",
+                                    "Path to .perfparser output file to which the input data should be exported. A "
+                                    "single input file has to be given too."),
+        QStringLiteral("path"));
+    parser.addOption(exportTo);
+
     parser.addPositionalArgument(
         QStringLiteral("files"),
         QCoreApplication::translate("main", "Optional input files to open on startup, i.e. perf.data files."),
@@ -159,6 +169,16 @@ int main(int argc, char** argv)
     applyCliArgs(settings);
 
     auto files = parser.positionalArguments();
+    if (files.size() != 1 && parser.isSet(exportTo)) {
+        QTextStream err(stderr);
+        err << QCoreApplication::translate("main", "Error: expected a single input file to convert, instead of %1.",
+                                           nullptr, files.size())
+                   .arg(files.size())
+            << "\n\n"
+            << parser.helpText();
+        return 1;
+    }
+
     const auto originalArguments = app.arguments();
     // remove leading executable name and trailing positional arguments
     const auto minimalArguments = originalArguments.mid(1, originalArguments.size() - 1 - files.size());
@@ -174,10 +194,29 @@ int main(int argc, char** argv)
 
     auto window = new MainWindow;
     if (!files.isEmpty()) {
-        const auto file = files.constFirst();
-        QFileInfo info(file);
-        if (info.isDir()) {
-            window->openFile(file + QStringLiteral("/perf.data"));
+        auto file = files.constFirst();
+        if (QFileInfo(file).isDir()) {
+            file.append(QLatin1String("/perf.data"));
+        }
+
+        if (parser.isSet(exportTo)) {
+            auto showErrorAndQuit = [&app, file](const QString& errorMessage) {
+                QTextStream err(stderr);
+                err << errorMessage << Qt::endl;
+                app.exit(1);
+            };
+            QObject::connect(window, &MainWindow::openFileError, &app, showErrorAndQuit);
+            QObject::connect(window, &MainWindow::exportFailed, &app, showErrorAndQuit);
+            QObject::connect(window, &MainWindow::exportFinished, &app, [&app, file](const QUrl& url) {
+                QTextStream out(stdout);
+                out << QCoreApplication::translate("main", "Input file %1 exported to %2")
+                           .arg(file, url.toDisplayString(QUrl::PrettyDecoded | QUrl::PreferLocalFile))
+                    << Qt::endl;
+                app.exit(0);
+            });
+            auto destination = QUrl::fromUserInput(parser.value(exportTo), QDir::currentPath(), QUrl::AssumeLocalFile);
+            window->saveAs(file, destination);
+            return app.exec();
         } else {
             window->openFile(file);
         }
