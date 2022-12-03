@@ -85,8 +85,6 @@ std::pair<QString, QString> elideArguments(const QString symbolText)
         return {symbolText, {}};
     }
 
-    // QLatin1String does not work with …
-    const auto elideSymbol = QStringLiteral("…");
     return {symbolText.left(startEliding + 1), symbolText.right(symbolText.length() - endEliding)};
 }
 }
