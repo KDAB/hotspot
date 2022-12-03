@@ -30,8 +30,8 @@ jobs:
 
     - name: Configure
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -G Ninja >
-          -DCMAKE_CXX_FLAGS_DEBUG="-g -fsanitize=address,undefined -Werror" >
-          -DCMAKE_C_FLAGS_DEBUG="-g -fsanitize=address,undefined -Werror"
+          -DCMAKE_CXX_FLAGS_INIT="-g -fsanitize=address,undefined -Werror" >
+          -DCMAKE_C_FLAGS_INIT="-g -fsanitize=address,undefined -Werror"
 
     - name: Build
       run: cmake --build build
@@ -98,8 +98,8 @@ jobs:
 
     - name: Configure
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -G Ninja >
-          -DCMAKE_CXX_FLAGS_DEBUG="-g -fsanitize=address,undefined -Werror" >
-          -DCMAKE_C_FLAGS_DEBUG="-g -fsanitize=address,undefined -Werror"
+          -DCMAKE_CXX_FLAGS_INIT="-g -fsanitize=address,undefined -Werror" >
+          -DCMAKE_C_FLAGS_INIT="-g -fsanitize=address,undefined -Werror"
 
     - name: Build
       run: cmake --build build
