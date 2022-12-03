@@ -20,7 +20,7 @@
 #include <unistd.h>
 
 #include <KUser>
-#include <KWindowSystem>
+#include <kx11extras.h>
 
 #include "util.h"
 
@@ -65,7 +65,7 @@ static QStringList sudoOptions(const QString& sudoBinary)
     if (sudoBinary.endsWith(QLatin1String("/kdesudo")) || sudoBinary.endsWith(QLatin1String("/kdesu"))) {
         // make the dialog transient for the current window
         options.append(QStringLiteral("--attach"));
-        options.append(QString::number(KWindowSystem::activeWindow()));
+        options.append(QString::number(KX11Extras::activeWindow()));
     }
     if (sudoBinary.endsWith(QLatin1String("/kdesu"))) {
         // show text output
