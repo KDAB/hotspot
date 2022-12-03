@@ -132,6 +132,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
         m_resultsDisassemblyPage->setArch(data.cpuArchitecture);
     });
     connect(parser, &PerfParser::parserWarning, this, &ResultsPage::showError);
+    connect(parser, &PerfParser::exportFailed, this, &ResultsPage::showError);
 
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode, this, &ResultsPage::navigateToCode);
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCodeFailed, this, &ResultsPage::showError);

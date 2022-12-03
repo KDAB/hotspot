@@ -32,6 +32,9 @@ public:
 
     void exportResults(const QUrl& url);
 
+    // used when directly exporting without parsing for visualization purposes
+    void exportResults(const QString& path, const QUrl& url);
+
     Data::BottomUpResults bottomUpResults() const
     {
         return m_bottomUpResults;
@@ -57,6 +60,7 @@ signals:
     void eventsAvailable(const Data::EventResults& events);
     void parsingFinished();
     void parsingFailed(const QString& errorMessage);
+    void exportFailed(const QString& errorMessage);
     void progress(float progress);
     void debugInfoDownloadProgress(const QString& url, qint64 numerator, qint64 denominator);
     void stopRequested();
@@ -65,10 +69,13 @@ signals:
     void exportFinished(const QUrl& url);
 
 private:
+    bool initParserArgs(const QString& path);
+
     friend class TestPerfParser;
     QString decompressIfNeeded(const QString& path);
 
     // only set once after the initial startParseFile finished
+    QString m_parserBinary;
     QStringList m_parserArgs;
     Data::BottomUpResults m_bottomUpResults;
     Data::CallerCalleeResults m_callerCalleeResults;

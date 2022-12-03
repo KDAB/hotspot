@@ -42,6 +42,8 @@ public slots:
     void openFile(const QUrl& url);
     void reload();
     void saveAs();
+    void saveAs(const QUrl& url);
+    void saveAs(const QString& path, const QUrl& url);
 
     void onOpenFileButtonClicked();
     void onRecordButtonClicked();
@@ -58,6 +60,8 @@ public slots:
 
 signals:
     void openFileError(const QString& errorMessage);
+    void exportFinished(const QUrl& url);
+    void exportFailed(const QString& errorMessage);
 
 private:
     void clear(bool isReload);
