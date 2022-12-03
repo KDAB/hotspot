@@ -30,8 +30,8 @@ jobs:
 
     - name: Configure
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -G Ninja >
-          -DCMAKE_CXX_FLAGS_DEBUG="-g -fsanitize=address,undefined" >
-          -DCMAKE_C_FLAGS_DEBUG="-g -fsanitize=address,undefined"
+          -DCMAKE_CXX_FLAGS_DEBUG="-g -fsanitize=address,undefined -Werror" >
+          -DCMAKE_C_FLAGS_DEBUG="-g -fsanitize=address,undefined -Werror"
 
     - name: Build
       run: cmake --build build
@@ -53,7 +53,7 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-asan
+      run: cmake --preset dev-asan -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
 
     - name: Build
       run: cmake --build build-dev-asan
@@ -75,7 +75,7 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-asan
+      run: cmake --preset dev-asan -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
 
     - name: Build
       run: cmake --build --preset dev-asan
@@ -98,8 +98,8 @@ jobs:
 
     - name: Configure
       run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -G Ninja >
-          -DCMAKE_CXX_FLAGS_DEBUG="-g -fsanitize=address,undefined" >
-          -DCMAKE_C_FLAGS_DEBUG="-g -fsanitize=address,undefined"
+          -DCMAKE_CXX_FLAGS_DEBUG="-g -fsanitize=address,undefined -Werror" >
+          -DCMAKE_C_FLAGS_DEBUG="-g -fsanitize=address,undefined -Werror"
 
     - name: Build
       run: cmake --build build
@@ -121,7 +121,7 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-asan
+      run: cmake --preset dev-asan -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
 
     - name: Build
       run: cmake --build --preset dev-asan
