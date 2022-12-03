@@ -4,4 +4,4 @@
 #        url = git://code.qt.io/qt-creator/perfparser.git
 [submodule "3rdparty/PrefixTickLabels"]
 	path = 3rdparty/PrefixTickLabels
-	url = https://github.com/koenpoppe/PrefixTickLabels
+	url = https://github.com/KDAB/PrefixTickLabels
