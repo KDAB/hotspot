@@ -121,25 +121,27 @@ char* toString(const ComparableSymbol& symbol)
     if (symbol.isPattern) {
         QStringList patterns;
         for (const auto& pattern : symbol.pattern)
-            patterns.append("{" + pattern.first + ", " + pattern.second + "}");
-        return toString("ComparableSymbol{[" + patterns.join(", ") + "]}");
+            patterns.append(QLatin1Char('{') + pattern.first + QLatin1String(", ") + pattern.second + QLatin1Char('}'));
+        return toString(QLatin1String("ComparableSymbol{[") + patterns.join(QLatin1String(", ")) + QLatin1String("]}"));
     } else {
-        return toString("ComparableSymbol{" + symbol.symbol.symbol + ", " + symbol.symbol.binary + "}");
+        return toString(QLatin1String("ComparableSymbol{") + symbol.symbol.symbol + QLatin1String(", ")
+                        + symbol.symbol.binary + QLatin1Char('}'));
     }
 }
 }
 
-ComparableSymbol cppInliningTopSymbol(QString binary = "cpp-inlining")
+ComparableSymbol cppInliningTopSymbol(const QString& binary = QStringLiteral("cpp-inlining"))
 {
     // depending on libstdc++ version, we either get the slow libm
     // or it's fully inlined
-    return ComparableSymbol(QVector<QPair<QString, QString>> {{"hypot", "libm"}, {"std::generate_canonical", binary}});
+    return ComparableSymbol(QVector<QPair<QString, QString>> {{QStringLiteral("hypot"), QStringLiteral("libm")},
+                                                              {QStringLiteral("std::generate_canonical"), binary}});
 }
 
-ComparableSymbol cppRecursionTopSymbol(QString binary = "cpp-recursion")
+ComparableSymbol cppRecursionTopSymbol(const QString& binary = QStringLiteral("cpp-recursion"))
 {
     // recursion is notoriously hard to handle, we currently often fail
-    return ComparableSymbol(QVector<QPair<QString, QString>> {{"fibonacci", binary}, {{}, binary}});
+    return ComparableSymbol(QVector<QPair<QString, QString>> {{QStringLiteral("fibonacci"), binary}, {{}, binary}});
 }
 
 void dump(const Data::BottomUp& bottomUp, QTextStream& stream, const QByteArray& prefix)
@@ -179,7 +181,7 @@ private slots:
         const QStringList perfOptions;
         QStringList exeOptions;
 
-        const QString exePath = findExe("cpp-inlining");
+        const QString exePath = findExe(QStringLiteral("cpp-inlining"));
         QTemporaryFile tempFile;
         tempFile.open();
 
@@ -203,42 +205,45 @@ private slots:
 
         QTest::addRow("normal") << QStringList();
         if (PerfRecord::canUseAio())
-            QTest::addRow("aio") << QStringList("--aio");
+            QTest::addRow("aio") << QStringList(QStringLiteral("--aio"));
         if (PerfRecord::canCompress())
-            QTest::addRow("zstd") << QStringList("-z");
+            QTest::addRow("zstd") << QStringList(QStringLiteral("-z"));
     }
 
     void testCppInliningCallGraphDwarf()
     {
         QFETCH(QStringList, otherOptions);
 
-        QStringList perfOptions = {"--call-graph", "dwarf"};
+        QStringList perfOptions = {QStringLiteral("--call-graph"), QStringLiteral("dwarf")};
         perfOptions + otherOptions;
 
         QStringList exeOptions;
 
-        const QString exePath = findExe("cpp-inlining");
+        const QString exePath = findExe(QStringLiteral("cpp-inlining"));
         QTemporaryFile tempFile;
         tempFile.open();
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-            testPerfData(cppInliningTopSymbol(), {"start", "cpp-inlining"}, tempFile.fileName());
+            testPerfData(cppInliningTopSymbol(), {QStringLiteral("start"), QStringLiteral("cpp-inlining")},
+                         tempFile.fileName());
         } catch (...) {
         }
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
 
-        QVERIFY(searchForChildSymbol(m_bottomUpData.root.children.at(maxElementTopIndex(m_bottomUpData)), "main"));
-        QVERIFY(searchForChildSymbol(m_topDownData.root.children.at(maxElementTopIndex(m_topDownData)), "main"));
+        QVERIFY(searchForChildSymbol(m_bottomUpData.root.children.at(maxElementTopIndex(m_bottomUpData)),
+                                     QStringLiteral("main")));
+        QVERIFY(searchForChildSymbol(m_topDownData.root.children.at(maxElementTopIndex(m_topDownData)),
+                                     QStringLiteral("main")));
     }
 
     void testCppInliningEventCycles()
     {
-        const QStringList perfOptions = {"--event", "cycles"};
+        const QStringList perfOptions = {QStringLiteral("--event"), QStringLiteral("cycles")};
         QStringList exeOptions;
 
-        const QString exePath = findExe("cpp-inlining");
+        const QString exePath = findExe(QStringLiteral("cpp-inlining"));
         QTemporaryFile tempFile;
         tempFile.open();
 
@@ -254,16 +259,18 @@ private slots:
     void testCppInliningEventCyclesInstructions()
     {
         QFETCH(QString, eventSpec);
-        const QStringList perfOptions = {"--call-graph", "dwarf", "--event", eventSpec};
+        const QStringList perfOptions = {QStringLiteral("--call-graph"), QStringLiteral("dwarf"),
+                                         QStringLiteral("--event"), eventSpec};
         QStringList exeOptions;
 
-        const QString exePath = findExe("cpp-inlining");
+        const QString exePath = findExe(QStringLiteral("cpp-inlining"));
         QTemporaryFile tempFile;
         tempFile.open();
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-            testPerfData(cppInliningTopSymbol(), {"start", "cpp-inlining"}, tempFile.fileName());
+            testPerfData(cppInliningTopSymbol(), {QStringLiteral("start"), QStringLiteral("cpp-inlining")},
+                         tempFile.fileName());
         } catch (...) {
         }
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
@@ -303,9 +310,9 @@ private slots:
     void testCppRecursionNoOptions()
     {
         const QStringList perfOptions;
-        const QStringList exeOptions = {"40"};
+        const QStringList exeOptions = {QStringLiteral("40")};
 
-        const QString exePath = findExe("cpp-recursion");
+        const QString exePath = findExe(QStringLiteral("cpp-recursion"));
         QTemporaryFile tempFile;
         tempFile.open();
         try {
@@ -319,36 +326,38 @@ private slots:
 
     void testCppRecursionCallGraphDwarf()
     {
-        const QStringList perfOptions = {"--call-graph", "dwarf"};
-        const QStringList exeOptions = {"40"};
+        const QStringList perfOptions = {QStringLiteral("--call-graph"), QStringLiteral("dwarf")};
+        const QStringList exeOptions = {QStringLiteral("40")};
 
-        const QString exePath = findExe("cpp-recursion");
+        const QString exePath = findExe(QStringLiteral("cpp-recursion"));
         QTemporaryFile tempFile;
         tempFile.open();
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-            testPerfData(cppRecursionTopSymbol(), {"start", "cpp-recursion"}, tempFile.fileName());
+            testPerfData(cppRecursionTopSymbol(), {QStringLiteral("start"), QStringLiteral("cpp-recursion")},
+                         tempFile.fileName());
         } catch (...) {
         }
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
         QVERIFY(!m_topDownData.root.children.isEmpty());
 
-        QVERIFY(searchForChildSymbol(m_bottomUpData.root.children.at(maxElementTopIndex(m_bottomUpData)), "main"));
+        QVERIFY(searchForChildSymbol(m_bottomUpData.root.children.at(maxElementTopIndex(m_bottomUpData)),
+                                     QStringLiteral("main")));
         const auto maxTop = m_topDownData.root.children.at(maxElementTopIndex(m_topDownData));
         if (!maxTop.symbol.isValid()) {
             QSKIP("unwinding failed from the fibonacci function, unclear why - increasing the stack dump size doesn't "
                   "help");
         }
-        QVERIFY(searchForChildSymbol(maxTop, "main"));
+        QVERIFY(searchForChildSymbol(maxTop, QStringLiteral("main")));
     }
 
     void testCppRecursionEventCycles()
     {
-        const QStringList perfOptions = {"--event", "cycles"};
-        const QStringList exeOptions = {"40"};
+        const QStringList perfOptions = {QStringLiteral("--event"), QStringLiteral("cycles")};
+        const QStringList exeOptions = {QStringLiteral("40")};
 
-        const QString exePath = findExe("cpp-recursion");
+        const QString exePath = findExe(QStringLiteral("cpp-recursion"));
         QTemporaryFile tempFile;
         tempFile.open();
 
@@ -363,16 +372,18 @@ private slots:
 
     void testCppRecursionEventCyclesInstructions()
     {
-        const QStringList perfOptions = {"--call-graph", "dwarf", "--event", "cycles,instructions"};
-        const QStringList exeOptions = {"40"};
+        const QStringList perfOptions = {QStringLiteral("--call-graph"), QStringLiteral("dwarf"),
+                                         QStringLiteral("--event"), QStringLiteral("cycles,instructions")};
+        const QStringList exeOptions = {QStringLiteral("40")};
 
-        const QString exePath = findExe("cpp-recursion");
+        const QString exePath = findExe(QStringLiteral("cpp-recursion"));
         QTemporaryFile tempFile;
         tempFile.open();
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
-            testPerfData(cppRecursionTopSymbol(), {"start", "cpp-recursion"}, tempFile.fileName());
+            testPerfData(cppRecursionTopSymbol(), {QStringLiteral("start"), QStringLiteral("cpp-recursion")},
+                         tempFile.fileName());
         } catch (...) {
         }
         QVERIFY(!m_bottomUpData.root.children.isEmpty());
@@ -396,10 +407,11 @@ private slots:
 
     void testSendStdIn()
     {
-        const QStringList perfOptions = {"--call-graph", "dwarf", "--event", "cycles,instructions"};
-        const QStringList exeOptions = {"40"};
+        const QStringList perfOptions = {QStringLiteral("--call-graph"), QStringLiteral("dwarf"),
+                                         QStringLiteral("--event"), QStringLiteral("cycles,instructions")};
+        const QStringList exeOptions = {QStringLiteral("40")};
 
-        const QString exePath = findExe("cpp-stdin");
+        const QString exePath = findExe(QStringLiteral("cpp-stdin"));
 
         QTemporaryFile tempFile;
         tempFile.open();
@@ -418,16 +430,18 @@ private slots:
 
     void testSwitchEvents()
     {
-        const QStringList perfOptions = {"--call-graph", "dwarf", "--switch-events"};
+        const QStringList perfOptions = {QStringLiteral("--call-graph"), QStringLiteral("dwarf"),
+                                         QStringLiteral("--switch-events")};
 
-        const QString exePath = findExe("cpp-sleep");
+        const QString exePath = findExe(QStringLiteral("cpp-sleep"));
 
         QTemporaryFile tempFile;
         tempFile.open();
 
         try {
             perfRecord(perfOptions, exePath, {}, tempFile.fileName());
-            testPerfData(cppInliningTopSymbol("cpp-sleep"), {"start", "cpp-sleep"}, tempFile.fileName(), false);
+            testPerfData(cppInliningTopSymbol(QStringLiteral("cpp-sleep")),
+                         {QStringLiteral("start"), QStringLiteral("cpp-sleep")}, tempFile.fileName(), false);
         } catch (...) {
         }
 
@@ -438,9 +452,10 @@ private slots:
 
     void testThreadNames()
     {
-        const QStringList perfOptions = {"--call-graph", "dwarf", "--switch-events"};
+        const QStringList perfOptions = {QStringLiteral("--call-graph"), QStringLiteral("dwarf"),
+                                         QStringLiteral("--switch-events")};
 
-        const QString exePath = findExe("cpp-threadnames");
+        const QString exePath = findExe(QStringLiteral("cpp-threadnames"));
 
         QTemporaryFile tempFile;
         tempFile.open();
@@ -470,7 +485,7 @@ private slots:
                 QCOMPARE(thread.name, QStringLiteral("cpp-threadnames"));
                 QVERIFY(thread.offCpuTime > 1E9); // sleeps about 1s in total
             } else {
-                QCOMPARE(thread.name, QString("threadname%1").arg(i - 1));
+                QCOMPARE(thread.name, QStringLiteral("threadname%1").arg(i - 1));
                 QVERIFY(thread.offCpuTime > 1E8);
                 QVERIFY(thread.offCpuTime < 1E9);
             }
@@ -485,17 +500,19 @@ private slots:
                   "    sudo mount -o remount,mode=755 /sys/kernel/debug{,/tracing} with mode=755");
         }
 
-        QStringList perfOptions = {"--call-graph", "dwarf", "-e", "cycles"};
+        QStringList perfOptions = {QStringLiteral("--call-graph"), QStringLiteral("dwarf"), QStringLiteral("-e"),
+                                   QStringLiteral("cycles")};
         perfOptions += PerfRecord::offCpuProfilingOptions();
 
-        const QString exePath = findExe("cpp-sleep");
+        const QString exePath = findExe(QStringLiteral("cpp-sleep"));
 
         QTemporaryFile tempFile;
         tempFile.open();
 
         try {
             perfRecord(perfOptions, exePath, {}, tempFile.fileName());
-            testPerfData(cppInliningTopSymbol("cpp-sleep"), {"start", "cpp-sleep"}, tempFile.fileName(), false);
+            testPerfData(cppInliningTopSymbol(QStringLiteral("cpp-sleep")),
+                         {QStringLiteral("start"), QStringLiteral("cpp-sleep")}, tempFile.fileName(), false);
         } catch (...) {
         }
 
@@ -512,8 +529,10 @@ private slots:
         QCOMPARE(bottomUpTopIndex, maxElementTopIndex(m_bottomUpData, 2));
 
         const auto topBottomUp = m_bottomUpData.root.children[bottomUpTopIndex];
-        QCOMPARE(ComparableSymbol(topBottomUp.symbol), ComparableSymbol({{"schedule", "kernel"}, {"__schedule", ""}}));
-        QVERIFY(searchForChildSymbol(topBottomUp, "std::this_thread::sleep_for", false));
+        QCOMPARE(ComparableSymbol(topBottomUp.symbol),
+                 ComparableSymbol({{QStringLiteral("schedule"), QStringLiteral("kernel")},
+                                   {QStringLiteral("__schedule"), QString()}}));
+        QVERIFY(searchForChildSymbol(topBottomUp, QStringLiteral("std::this_thread::sleep_for"), false));
 
         QVERIFY(m_bottomUpData.costs.cost(1, topBottomUp.id) >= 10); // at least 10 sched switches
         QVERIFY(m_bottomUpData.costs.cost(2, topBottomUp.id) >= 1E9); // at least 1s sleep time
@@ -521,7 +540,7 @@ private slots:
 
     void testOffCpuSleep()
     {
-        const auto sleep = QStandardPaths::findExecutable("sleep");
+        const auto sleep = QStandardPaths::findExecutable(QStringLiteral("sleep"));
         if (sleep.isEmpty()) {
             QSKIP("no sleep command available");
         }
@@ -531,14 +550,15 @@ private slots:
                   "    sudo mount -o remount,mode=755 /sys/kernel/debug{,/tracing} with mode=755");
         }
 
-        QStringList perfOptions = {"--call-graph", "dwarf", "-e", "cycles"};
+        QStringList perfOptions = {QStringLiteral("--call-graph"), QStringLiteral("dwarf"), QStringLiteral("-e"),
+                                   QStringLiteral("cycles")};
         perfOptions += PerfRecord::offCpuProfilingOptions();
 
         QTemporaryFile tempFile;
         tempFile.open();
 
         try {
-            perfRecord(perfOptions, sleep, {".5"}, tempFile.fileName());
+            perfRecord(perfOptions, sleep, {QStringLiteral(".5")}, tempFile.fileName());
             testPerfData({}, {}, tempFile.fileName(), false);
         } catch (...) {
         }
@@ -553,12 +573,13 @@ private slots:
 
     void testSampleCpu()
     {
-        QStringList perfOptions = {"--call-graph", "dwarf", "--sample-cpu", "-e", "cycles"};
+        QStringList perfOptions = {QStringLiteral("--call-graph"), QStringLiteral("dwarf"),
+                                   QStringLiteral("--sample-cpu"), QStringLiteral("-e"), QStringLiteral("cycles")};
         if (PerfRecord::canProfileOffCpu()) {
             perfOptions += PerfRecord::offCpuProfilingOptions();
         }
 
-        const QString exePath = findExe("cpp-parallel");
+        const QString exePath = findExe(QStringLiteral("cpp-parallel"));
         const int numThreads = QThread::idealThreadCount();
         const QStringList exeArgs = {QString::number(numThreads)};
 
@@ -610,16 +631,16 @@ private slots:
         QFETCH(Settings::CostAggregation, aggregation);
         QFETCH(QString, filename);
 
-        QFile expectedData(QFINDTESTDATA("custom_cost_aggregation_testfiles/" + filename));
+        QFile expectedData(QFINDTESTDATA(QLatin1String("custom_cost_aggregation_testfiles/") + filename));
         QVERIFY(expectedData.open(QIODevice::ReadOnly | QIODevice::Text));
         const auto expected = expectedData.readAll();
 
         Settings::instance()->setCostAggregation(aggregation);
-        m_perfCommand = "perf record --call-graph dwarf --sample-cpu --switch-events --event sched:sched_switch -c "
-                        "1000000 /tmp/cpp-threadnames";
-        m_cpuArchitecture = "x86_64";
-        m_linuxKernelVersion = "5.17.5-arch1-1";
-        m_machineHostName = "Sparrow";
+        m_perfCommand = QStringLiteral("perf record --call-graph dwarf --sample-cpu --switch-events --event "
+                                       "sched:sched_switch -c 1000000 /tmp/cpp-threadnames");
+        m_cpuArchitecture = QStringLiteral("x86_64");
+        m_linuxKernelVersion = QStringLiteral("5.17.5-arch1-1");
+        m_machineHostName = QStringLiteral("Sparrow");
 
         const auto perfData = QFINDTESTDATA("custom_cost_aggregation_testfiles/custom_cost_aggregation.perfparser");
         QVERIFY(!perfData.isEmpty() && QFile::exists(perfData));
@@ -636,13 +657,13 @@ private slots:
         }
 
         if (expected != actual) {
-            QFile actualData(expectedData.fileName() + ".actual");
+            QFile actualData(expectedData.fileName() + QLatin1String(".actual"));
             QVERIFY(actualData.open(QIODevice::WriteOnly | QIODevice::Text));
             actualData.write(actual);
 
-            const auto diff = QStandardPaths::findExecutable("diff");
+            const auto diff = QStandardPaths::findExecutable(QStringLiteral("diff"));
             if (!diff.isEmpty()) {
-                QProcess::execute(diff, {"-u", expectedData.fileName(), actualData.fileName()});
+                QProcess::execute(diff, {QStringLiteral("-u"), expectedData.fileName(), actualData.fileName()});
             }
         }
         QCOMPARE(actual, expected);
@@ -779,7 +800,8 @@ private:
         if (checkFrequency) {
             // Verify the sample frequency is acceptable, greater than 500Hz
             double frequency = (1E9 * m_summaryData.sampleCount) / m_summaryData.applicationTime.delta();
-            VERIFY_OR_THROW2(frequency > 500, qPrintable("Low Frequency: " + QString::number(frequency)));
+            VERIFY_OR_THROW2(frequency > 500,
+                             qPrintable(QLatin1String("Low Frequency: ") + QString::number(frequency)));
         }
 
         // Verify the top Bottom-Up symbol result contains the expected data
@@ -793,7 +815,7 @@ private:
             int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData);
             const auto actualTopBottomUpSymbol =
                 ComparableSymbol(m_bottomUpData.root.children[bottomUpTopIndex].symbol);
-            if (actualTopBottomUpSymbol == ComparableSymbol("__FRAME_END__", {})) {
+            if (actualTopBottomUpSymbol == ComparableSymbol(QStringLiteral("__FRAME_END__"), {})) {
                 QEXPECT_FAIL("", "bad symbol offsets - bug in mmap handling or symbol cache?", Continue);
             }
             COMPARE_OR_THROW(actualTopBottomUpSymbol, topBottomUpSymbol);
@@ -806,11 +828,11 @@ private:
         VERIFY_OR_THROW(m_topDownData.root.children.count() > 0);
 
         if (topTopDownSymbol.isValid()
-            && QTest::currentTestFunction() != QLatin1String("testCppRecursionCallGraphDwarf")) {
+            && QLatin1String(QTest::currentTestFunction()) != QLatin1String("testCppRecursionCallGraphDwarf")) {
             int topDownTopIndex = maxElementTopIndex(m_topDownData);
             const auto actualTopTopDownSymbol = ComparableSymbol(m_topDownData.root.children[topDownTopIndex].symbol);
 
-            if (actualTopTopDownSymbol == ComparableSymbol("__FRAME_END__", {})) {
+            if (actualTopTopDownSymbol == ComparableSymbol(QStringLiteral("__FRAME_END__"), {})) {
                 QEXPECT_FAIL("", "bad symbol offsets - bug in mmap handling or symbol cache?", Continue);
             }
             COMPARE_OR_THROW(actualTopTopDownSymbol, topTopDownSymbol);

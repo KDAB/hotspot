@@ -22,8 +22,8 @@ namespace {
 Data::BottomUpResults buildBottomUpTree(const QByteArray& stacks)
 {
     Data::BottomUpResults ret;
-    ret.costs.addType(0, "samples", Data::Costs::Unit::Unknown);
-    ret.root.symbol = {"<root>", {}};
+    ret.costs.addType(0, QStringLiteral("samples"), Data::Costs::Unit::Unknown);
+    ret.root.symbol = {QStringLiteral("<root>"), {}};
     const auto& lines = stacks.split('\n');
     QHash<quint32, Data::Symbol> ids;
     quint32 maxId = 0;
@@ -36,7 +36,7 @@ Data::BottomUpResults buildBottomUpTree(const QByteArray& stacks)
         auto* parent = &ret.root;
         for (auto it = frames.rbegin(), end = frames.rend(); it != end; ++it) {
             const auto& frame = *it;
-            const auto symbol = Data::Symbol {frame, {}};
+            const auto symbol = Data::Symbol {QString::fromUtf8(frame), {}};
             auto node = parent->entryForSymbol(symbol, &maxId);
             Q_ASSERT(!ids.contains(node->id) || ids[node->id] == symbol);
             ids[node->id] = symbol;
@@ -104,11 +104,12 @@ private slots:
         QCOMPARE(tree.costs.totalCost(0), qint64(9));
 
         const auto expectedTree = QStringList {
-            // clang-format: off
-            "C=5",  " B=1",  "  A=1", " E=1", "  C=1", "   B=1", "    A=1", " C=1",   "  B=1",   "   A=1",  "D=2",
-            " B=2", "  A=2", "E=2",   " C=2", "  B=1", "   A=1", "  E=1",   "   C=1", "    B=1", "     A=1"
-            //clang-format on
-        };
+            QStringLiteral("C=5"),     QStringLiteral(" B=1"),   QStringLiteral("  A=1"),   QStringLiteral(" E=1"),
+            QStringLiteral("  C=1"),   QStringLiteral("   B=1"), QStringLiteral("    A=1"), QStringLiteral(" C=1"),
+            QStringLiteral("  B=1"),   QStringLiteral("   A=1"), QStringLiteral("D=2"),     QStringLiteral(" B=2"),
+            QStringLiteral("  A=2"),   QStringLiteral("E=2"),    QStringLiteral(" C=2"),    QStringLiteral("  B=1"),
+            QStringLiteral("   A=1"),  QStringLiteral("  E=1"),  QStringLiteral("   C=1"),  QStringLiteral("    B=1"),
+            QStringLiteral("     A=1")};
         QCOMPARE(printTree(tree), expectedTree);
 
         BottomUpModel model;
@@ -194,7 +195,10 @@ private slots:
 
         const auto expectedModelData = QStringList {
             // clang-format: off
-            "1", " 2", " ↪3", "  4", "  5", "6", " 7", "  8", "   9", "  10", "   11", "  12", " 13", "14",
+            QStringLiteral("1"),    QStringLiteral(" 2"),   QStringLiteral(" ↪3"),   QStringLiteral("  4"),
+            QStringLiteral("  5"),  QStringLiteral("6"),    QStringLiteral(" 7"),    QStringLiteral("  8"),
+            QStringLiteral("   9"), QStringLiteral("  10"), QStringLiteral("   11"), QStringLiteral("  12"),
+            QStringLiteral(" 13"),  QStringLiteral("14"),
             // clang-format: on
         };
         QCOMPARE(modelData, expectedModelData);
@@ -205,16 +209,23 @@ private slots:
         QTest::addColumn<bool>("skipFirstLevel");
         QTest::addColumn<QStringList>("expectedTree");
 
-        QTest::addRow("normal") << false << QStringList {"A=s:0,i:7",    " B=s:0,i:7",    "  C=s:1,i:5",
-                                                         "   E=s:1,i:3", "    C=s:1,i:2", "     E=s:1,i:1",
-                                                         "   C=s:1,i:1", "  D=s:2,i:2",   "C=s:2,i:2"};
+        QTest::addRow("normal") << false
+                                << QStringList {QStringLiteral("A=s:0,i:7"),     QStringLiteral(" B=s:0,i:7"),
+                                                QStringLiteral("  C=s:1,i:5"),   QStringLiteral("   E=s:1,i:3"),
+                                                QStringLiteral("    C=s:1,i:2"), QStringLiteral("     E=s:1,i:1"),
+                                                QStringLiteral("   C=s:1,i:1"),  QStringLiteral("  D=s:2,i:2"),
+                                                QStringLiteral("C=s:2,i:2")};
 
         QTest::addRow("skipFirstLevel") << true
                                         << QStringList {
-                                               "T1=s:0,i:7",    " A=s:0,i:6",     "  B=s:0,i:6",     "   C=s:1,i:5",
-                                               "    E=s:1,i:3", "     C=s:1,i:2", "      E=s:1,i:1", "    C=s:1,i:1",
-                                               "   D=s:1,i:1",  " C=s:1,i:1",     "T2=s:0,i:2",      " A=s:0,i:1",
-                                               "  B=s:0,i:1",   "   D=s:1,i:1",   " C=s:1,i:1",
+                                               QStringLiteral("T1=s:0,i:7"),      QStringLiteral(" A=s:0,i:6"),
+                                               QStringLiteral("  B=s:0,i:6"),     QStringLiteral("   C=s:1,i:5"),
+                                               QStringLiteral("    E=s:1,i:3"),   QStringLiteral("     C=s:1,i:2"),
+                                               QStringLiteral("      E=s:1,i:1"), QStringLiteral("    C=s:1,i:1"),
+                                               QStringLiteral("   D=s:1,i:1"),    QStringLiteral(" C=s:1,i:1"),
+                                               QStringLiteral("T2=s:0,i:2"),      QStringLiteral(" A=s:0,i:1"),
+                                               QStringLiteral("  B=s:0,i:1"),     QStringLiteral("   D=s:1,i:1"),
+                                               QStringLiteral(" C=s:1,i:1"),
                                            };
     }
 
@@ -229,8 +240,8 @@ private slots:
         QCOMPARE(tree.selfCosts.totalCost(0), qint64(9));
 
         QTextStream(stdout) << "Actual:\n"
-                            << printTree(tree).join("\n") << "\nExpected:\n"
-                            << expectedTree.join("\n") << "\n";
+                            << printTree(tree).join(QLatin1Char('\n')) << "\nExpected:\n"
+                            << expectedTree.join(QLatin1Char('\n')) << "\n";
         QCOMPARE(printTree(tree), expectedTree);
 
         TopDownModel model;
@@ -266,18 +277,21 @@ private slots:
         Data::CallerCalleeResults results;
         Data::callerCalleesFromBottomUpData(tree, &results);
         const QStringList expectedMap = {
-            "A=s:0,i:7", "A>B=7", "B=s:0,i:7", "B<A=7",     "B>C=5", "B>D=2",     "C=s:5,i:7", "C<B=5", "C<C=1",
-            "C<E=2",     "C>C=1", "C>E=3",     "D=s:2,i:2", "D<B=2", "E=s:2,i:3", "E<C=3",     "E>C=2",
+            QStringLiteral("A=s:0,i:7"), QStringLiteral("A>B=7"), QStringLiteral("B=s:0,i:7"), QStringLiteral("B<A=7"),
+            QStringLiteral("B>C=5"),     QStringLiteral("B>D=2"), QStringLiteral("C=s:5,i:7"), QStringLiteral("C<B=5"),
+            QStringLiteral("C<C=1"),     QStringLiteral("C<E=2"), QStringLiteral("C>C=1"),     QStringLiteral("C>E=3"),
+            QStringLiteral("D=s:2,i:2"), QStringLiteral("D<B=2"), QStringLiteral("E=s:2,i:3"), QStringLiteral("E<C=3"),
+            QStringLiteral("E>C=2"),
         };
         QTextStream(stdout) << "Actual:\n"
-                            << printMap(results).join("\n") << "\n\nExpected:\n"
-                            << expectedMap.join("\n") << "\n";
+                            << printMap(results).join(QLatin1Char('\n')) << "\n\nExpected:\n"
+                            << expectedMap.join(QLatin1Char('\n')) << "\n";
         QCOMPARE(printMap(results), expectedMap);
 
         CallerCalleeModel model;
         QAbstractItemModelTester tester(&model);
         model.setResults(results);
-        QTextStream(stdout) << "\nActual Model:\n" << printCallerCalleeModel(model).join("\n") << "\n";
+        QTextStream(stdout) << "\nActual Model:\n" << printCallerCalleeModel(model).join(QLatin1Char('\n')) << "\n";
         QCOMPARE(printCallerCalleeModel(model), expectedMap);
 
         for (const auto& entry : qAsConst(results.entries)) {
@@ -302,14 +316,14 @@ private slots:
     void testDisassemblyModel_data()
     {
         QTest::addColumn<Data::Symbol>("symbol");
-        Data::Symbol symbol = {"__cos_fma",
+        Data::Symbol symbol = {QStringLiteral("__cos_fma"),
                                4294544,
                                2093,
-                               "vector_static_gcc/vector_static_gcc_v9.1.0",
-                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/"
-                               "vector_static_gcc/vector_static_gcc_v9.1.0",
-                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/"
-                               "vector_static_gcc/vector_static_gcc_v9.1.0"};
+                               QStringLiteral("vector_static_gcc/vector_static_gcc_v9.1.0"),
+                               QStringLiteral("/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/"
+                                              "perfdata/vector_static_gcc/vector_static_gcc_v9.1.0"),
+                               QStringLiteral("/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/"
+                                              "perfdata/vector_static_gcc/vector_static_gcc_v9.1.0")};
 
         QTest::newRow("curSymbol") << symbol;
     }
@@ -337,7 +351,8 @@ private slots:
         QCOMPARE(model.columnCount(), DisassemblyModel::COLUMN_COUNT);
         QCOMPARE(model.rowCount(), 0);
 
-        DisassemblyOutput disassemblyOutput = DisassemblyOutput::disassemble("objdump", "x86_64", symbol);
+        DisassemblyOutput disassemblyOutput =
+            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), symbol);
         model.setDisassembly(disassemblyOutput, results);
         QCOMPARE(model.columnCount(), DisassemblyModel::COLUMN_COUNT + results.selfCosts.numTypes());
         QCOMPARE(model.rowCount(), disassemblyOutput.disassemblyLines.size());
@@ -346,14 +361,14 @@ private slots:
     void testSourceCodeModelNoFileName_data()
     {
         QTest::addColumn<Data::Symbol>("symbol");
-        Data::Symbol symbol = {"__cos_fma",
+        Data::Symbol symbol = {QStringLiteral("__cos_fma"),
                                4294544,
                                2093,
-                               "vector_static_gcc/vector_static_gcc_v9.1.0",
-                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/"
-                               "vector_static_gcc/vector_static_gcc_v9.1.0",
-                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/"
-                               "vector_static_gcc/vector_static_gcc_v9.1.0"};
+                               QStringLiteral("vector_static_gcc/vector_static_gcc_v9.1.0"),
+                               QStringLiteral("/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/"
+                                              "perfdata/vector_static_gcc/vector_static_gcc_v9.1.0"),
+                               QStringLiteral("/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/"
+                                              "perfdata/vector_static_gcc/vector_static_gcc_v9.1.0")};
 
         QTest::newRow("curSymbol") << symbol;
     }
@@ -374,7 +389,8 @@ private slots:
         QCOMPARE(model.columnCount(), SourceCodeModel::COLUMN_COUNT);
         QCOMPARE(model.rowCount(), 0);
 
-        DisassemblyOutput disassemblyOutput = DisassemblyOutput::disassemble("objdump", "x86_64", symbol);
+        DisassemblyOutput disassemblyOutput =
+            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), symbol);
         model.setDisassembly(disassemblyOutput, results);
 
         // no source file name
@@ -400,31 +416,31 @@ private slots:
             thread1.pid = 1234;
             thread1.tid = 1234;
             thread1.time = {0, endTime};
-            thread1.name = "foobar";
+            thread1.name = QStringLiteral("foobar");
         }
         auto& thread2 = events.threads[1];
         {
             thread2.pid = 1234;
             thread2.tid = 1235;
             thread2.time = {deltaTime, endTime - deltaTime};
-            thread2.name = "asdf";
+            thread2.name = QStringLiteral("asdf");
         }
         auto& thread3 = events.threads[2];
         {
             thread3.pid = 5678;
             thread3.tid = 5678;
             thread3.time = {0, endTime};
-            thread3.name = "barfoo";
+            thread3.name = QStringLiteral("barfoo");
         }
         auto& thread4 = events.threads[3];
         {
             thread4.pid = 5678;
             thread4.tid = 5679;
             thread4.time = {endTime - deltaTime, endTime};
-            thread4.name = "blub";
+            thread4.name = QStringLiteral("blub");
         }
 
-        Data::CostSummary costSummary("cycles", 0, 0, Data::Costs::Unit::Unknown);
+        Data::CostSummary costSummary(QStringLiteral("cycles"), 0, 0, Data::Costs::Unit::Unknown);
         auto generateEvent = [&costSummary, &events](quint64 time, quint32 cpuId) -> Data::Event {
             Data::Event event;
             event.cost = 10;
@@ -486,7 +502,7 @@ private slots:
                 // let's only look at the first process
                 parent = model.index(0, EventModel::ThreadColumn, parent);
                 verifyCommonData(parent);
-                QCOMPARE(parent.data().toString(), "foobar (#1234)");
+                QCOMPARE(parent.data().toString(), QLatin1String("foobar (#1234)"));
                 numRows = model.rowCount(parent);
                 QCOMPARE(numRows, 2);
             }
@@ -764,7 +780,7 @@ private slots:
 
         const auto metrics = monospaceMetrics();
         QCOMPARE(Util::elideSymbol(symbol, metrics, metrics.averageCharWidth() * 54),
-                 "Foo<&bar::operator()>::asdf<XYZ>(blabla<&foo::opera…)");
+                 QStringLiteral("Foo<&bar::operator()>::asdf<XYZ>(blabla<&foo::opera…)"));
     }
 
 private:

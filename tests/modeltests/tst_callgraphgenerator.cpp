@@ -17,10 +17,10 @@ class TestCallgraphGenerator : public QObject
 private slots:
     void initTestCase()
     {
-        const QStringList perfOptions = {"--call-graph", "dwarf"};
+        const QStringList perfOptions = {QStringLiteral("--call-graph"), QStringLiteral("dwarf")};
         QStringList exeOptions;
 
-        const QString exePath = findExe("callgraph");
+        const QString exePath = findExe(QStringLiteral("callgraph"));
         m_file.open();
 
         perfRecord(perfOptions, exePath, exeOptions, m_file.fileName());
@@ -34,7 +34,7 @@ private slots:
 
         auto key = Data::Symbol();
         for (auto it = results.entries.cbegin(); it != results.entries.cend(); it++) {
-            if (it.key().symbol == "test") {
+            if (it.key().symbol == QLatin1String("test")) {
                 key = it.key();
                 break;
             }
@@ -43,11 +43,11 @@ private slots:
         QString test;
         QTextStream stream(&test);
         QHash<Data::Symbol, QString> lookup;
-        resultsToDot(3, Direction::Caller, key, results, 0, stream, lookup, 0.4 / 100.f);
+        resultsToDot(3, Direction::Caller, key, results, {}, stream, lookup, 0.4 / 100.f);
 
-        int parent3Pos = test.indexOf("parent3");
-        int parent2Pos = test.indexOf("parent2");
-        int parent1Pos = test.indexOf("parent1");
+        int parent3Pos = test.indexOf(QLatin1String("parent3"));
+        int parent2Pos = test.indexOf(QLatin1String("parent2"));
+        int parent1Pos = test.indexOf(QLatin1String("parent1"));
 
         QVERIFY(parent3Pos < parent2Pos);
         QVERIFY(parent2Pos < parent1Pos);
@@ -61,7 +61,7 @@ private slots:
 
         auto key = Data::Symbol();
         for (auto it = results.entries.cbegin(); it != results.entries.cend(); it++) {
-            if (it.key().symbol == "test") {
+            if (it.key().symbol == QLatin1String("test")) {
                 key = it.key();
                 break;
             }
@@ -70,10 +70,10 @@ private slots:
         QString test;
         QTextStream stream(&test);
         QHash<Data::Symbol, QString> lookup;
-        resultsToDot(3, Direction::Callee, key, results, 0, stream, lookup, 0.4 / 100.f);
+        resultsToDot(3, Direction::Callee, key, results, {}, stream, lookup, 0.4 / 100.f);
 
-        int child1Pos = test.indexOf("child1");
-        int child2Pos = test.indexOf("child2");
+        int child1Pos = test.indexOf(QLatin1String("child1"));
+        int child2Pos = test.indexOf(QLatin1String("child2"));
 
         QVERIFY(child1Pos < child2Pos);
     }

@@ -31,14 +31,14 @@ private slots:
     void testSymbol_data()
     {
         QTest::addColumn<Data::Symbol>("symbol");
-        Data::Symbol symbol = {"__cos_fma",
+        Data::Symbol symbol = {QStringLiteral("__cos_fma"),
                                4294544,
                                2093,
-                               "vector_static_gcc/vector_static_gcc_v9.1.0",
-                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/"
-                               "vector_static_gcc/vector_static_gcc_v9.1.0",
-                               "/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/perfdata/"
-                               "vector_static_gcc/vector_static_gcc_v9.1.0"};
+                               QStringLiteral("vector_static_gcc/vector_static_gcc_v9.1.0"),
+                               QStringLiteral("/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/"
+                                              "perfdata/vector_static_gcc/vector_static_gcc_v9.1.0"),
+                               QStringLiteral("/home/milian/projects/kdab/rnd/hotspot/3rdparty/perfparser/tests/auto/"
+                                              "perfdata/vector_static_gcc/vector_static_gcc_v9.1.0")};
 
         QTest::newRow("curSymbol") << symbol;
     }
@@ -51,14 +51,15 @@ private slots:
         symbol.actualPath = actualBinaryFile;
 
         QVERIFY(!actualBinaryFile.isEmpty() && QFile::exists(actualBinaryFile));
-        const auto actualOutputFile = actualBinaryFile + ".actual.txt";
+        const auto actualOutputFile = actualBinaryFile + QLatin1String(".actual.txt");
 
         QFile actual(actualOutputFile);
         QVERIFY(actual.open(QIODevice::WriteOnly | QIODevice::Text));
 
         QTextStream disassemblyStream(&actual);
 
-        const auto disassemblyOutput = DisassemblyOutput::disassemble("objdump", "x86_64", symbol);
+        const auto disassemblyOutput =
+            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), symbol);
         for (const auto& disassemblyLine : disassemblyOutput.disassemblyLines) {
             disassemblyStream << Qt::hex << disassemblyLine.addr << '\t' << disassemblyLine.disassembly << '\n';
         }
@@ -79,9 +80,9 @@ private slots:
         }
 
         if (actualText != expectedText) {
-            const auto diff = QStandardPaths::findExecutable("diff");
+            const auto diff = QStandardPaths::findExecutable(QStringLiteral("diff"));
             if (!diff.isEmpty()) {
-                QProcess::execute(diff, {"-u", expectedOutputFile, actualOutputFile});
+                QProcess::execute(diff, {QStringLiteral("-u"), expectedOutputFile, actualOutputFile});
             }
         }
         QCOMPARE(actualText, expectedText);
@@ -89,11 +90,11 @@ private slots:
 
     QString patch_expected_file(const QString& actualText, const QString& actualBinaryFile)
     {
-        bool jmpPatch = !actualText.contains("jmpq");
-        bool nopwPatch = !actualText.contains("cs nopw");
+        bool jmpPatch = !actualText.contains(QLatin1String("jmpq"));
+        bool nopwPatch = !actualText.contains(QLatin1String("cs nopw"));
 
         if (!jmpPatch && !nopwPatch) {
-            return actualBinaryFile + ".expected.txt";
+            return actualBinaryFile + QLatin1String(".expected.txt");
         }
 
         auto file = new QTemporaryFile(this);
@@ -102,13 +103,13 @@ private slots:
         auto text = actualText;
 
         if (jmpPatch) {
-            text.replace("jmpq", "jmp");
-            text.replace("retq", "ret");
-            text.replace("callq", "call");
+            text.replace(QLatin1String("jmpq"), QLatin1String("jmp"));
+            text.replace(QLatin1String("retq"), QLatin1String("ret"));
+            text.replace(QLatin1String("callq"), QLatin1String("call"));
         }
 
         if (nopwPatch) {
-            text.replace("cs nopw 0x", "nopw   %cs:0x");
+            text.replace(QLatin1String("cs nopw 0x"), QLatin1String("nopw   %cs:0x"));
         }
 
         file->write(text.toUtf8());

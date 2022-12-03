@@ -138,6 +138,12 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/hotspot-config.h.cmake ${CMAKE_CURREN
 add_subdirectory(3rdparty)
 add_subdirectory(scripts)
 
+add_definitions(-DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII)
+add_compile_options(-Wall -pedantic -Wextra)
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-Wno-gnu-zero-variadic-macro-arguments)
+endif()
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_subdirectory(src)
 
