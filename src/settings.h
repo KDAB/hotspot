@@ -145,8 +145,8 @@ signals:
     void prettifySymbolsChanged(bool);
     void collapseTemplatesChanged(bool);
     void collapseDepthChanged(int);
-    void colorSchemeChanged(ColorScheme);
-    void costAggregationChanged(CostAggregation);
+    void colorSchemeChanged(Settings::ColorScheme);
+    void costAggregationChanged(Settings::CostAggregation);
     void pathsChanged();
     void debuginfodUrlsChanged();
     void sysrootChanged(const QString& path);
@@ -163,7 +163,7 @@ public slots:
     void setPrettifySymbols(bool prettifySymbols);
     void setCollapseTemplates(bool collapseTemplates);
     void setCollapseDepth(int depth);
-    void setColorScheme(ColorScheme scheme);
+    void setColorScheme(Settings::ColorScheme scheme);
     void setPaths(const QStringList& userPaths, const QStringList& systemPaths);
     void setDebuginfodUrls(const QStringList& urls);
     void setSysroot(const QString& path);
@@ -176,7 +176,7 @@ public slots:
     void setCallgraphParentDepth(int parent);
     void setCallgraphChildDepth(int child);
     void setCallgraphColors(const QColor& active, const QColor& inactive);
-    void setCostAggregation(CostAggregation costAggregation);
+    void setCostAggregation(Settings::CostAggregation costAggregation);
     void setLastUsedEnvironment(const QString& envName);
 
 private:
