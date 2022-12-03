@@ -25,7 +25,6 @@
 #include <PrefixTickLabels.h>
 
 namespace {
-// TODO: c++17 constexpr
 auto xForTimeFactory(const Data::TimeRange& timeRange, const Data::TimeRange& zoomTime, int width, int pos)
 {
     const double oneNanoSecond = 1.0e-9;
