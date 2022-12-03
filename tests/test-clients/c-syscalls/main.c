@@ -10,6 +10,8 @@
 
 int main(int argc, char** argv)
 {
+    (void)argc;
+
     FILE* file;
     long fileSize;
     char* buffer;
@@ -28,5 +30,9 @@ int main(int argc, char** argv)
 
         fclose(file);
     }
+
+    (void)fileSize;
+    (void)buffer;
+
     return 0;
 }
