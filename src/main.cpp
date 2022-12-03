@@ -174,12 +174,12 @@ int main(int argc, char** argv)
 
     auto window = new MainWindow;
     if (!files.isEmpty()) {
-        const auto file = files.front();
+        const auto file = files.constFirst();
         QFileInfo info(file);
-        if (info.isFile()) {
-            window->openFile(file);
-        } else if (info.isDir()) {
+        if (info.isDir()) {
             window->openFile(file + QStringLiteral("/perf.data"));
+        } else {
+            window->openFile(file);
         }
     } else {
         // open perf.data in current CWD, if it exists
