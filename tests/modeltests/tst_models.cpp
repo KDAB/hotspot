@@ -792,6 +792,6 @@ private:
     }
 };
 
-HOTSPOT_GUITEST_MAIN(TestModels);
+HOTSPOT_GUITEST_MAIN(TestModels)
 
 #include "tst_models.moc"

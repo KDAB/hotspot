@@ -47,7 +47,7 @@ void printTree(const Tree& tree, const Results& results, QStringList* entries, i
         entries->push_back(indent + entry.symbol.symbol + QLatin1Char('=') + printCost(entry, results));
         printTree(entry, results, entries, indentLevel + 1);
     }
-};
+}
 
 template<typename Results>
 QStringList printTree(const Results& results)
@@ -55,7 +55,7 @@ QStringList printTree(const Results& results)
     QStringList list;
     printTree(results.root, results, &list, 0);
     return list;
-};
+}
 
 inline QStringList printMap(const Data::CallerCalleeResults& results)
 {
@@ -94,7 +94,7 @@ inline QStringList printMap(const Data::CallerCalleeResults& results)
         return symbolSubString(lhs) < symbolSubString(rhs);
     });
     return list;
-};
+}
 
 inline QStringList printCallerCalleeModel(const CallerCalleeModel& model)
 {
@@ -135,7 +135,7 @@ inline QStringList printCallerCalleeModel(const CallerCalleeModel& model)
         return symbolSubString(lhs) < symbolSubString(rhs);
     });
     return list;
-};
+}
 
 void dumpList(const QStringList& list)
 {

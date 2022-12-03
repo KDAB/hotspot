@@ -86,6 +86,6 @@ private slots:
     }
 };
 
-QTEST_GUILESS_MAIN(TestTimeLineDelegate);
+QTEST_GUILESS_MAIN(TestTimeLineDelegate)
 
 #include "tst_timelinedelegate.moc"

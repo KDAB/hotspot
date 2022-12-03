@@ -873,6 +873,6 @@ private:
     }
 };
 
-QTEST_GUILESS_MAIN(TestPerfParser);
+QTEST_GUILESS_MAIN(TestPerfParser)
 
 #include "tst_perfparser.moc"

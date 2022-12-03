@@ -118,6 +118,6 @@ private slots:
     }
 };
 
-QTEST_GUILESS_MAIN(TestDisassemblyOutput);
+QTEST_GUILESS_MAIN(TestDisassemblyOutput)
 
 #include "tst_disassemblyoutput.moc"

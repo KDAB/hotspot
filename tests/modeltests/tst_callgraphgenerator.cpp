@@ -117,6 +117,6 @@ private:
     QTemporaryFile m_file;
 };
 
-QTEST_GUILESS_MAIN(TestCallgraphGenerator);
+QTEST_GUILESS_MAIN(TestCallgraphGenerator)
 
 #include "tst_callgraphgenerator.moc"
