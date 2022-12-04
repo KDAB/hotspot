@@ -59,7 +59,7 @@ void TimeLineData::zoom(Data::TimeRange t)
 
 template<typename Callback>
 void TimeLineData::findSamples(int mappedX, int costType, int lostEventCostId, bool contains,
-                               const Data::Events::const_iterator start, const Callback& callback) const
+                               const Data::Events::const_iterator& start, const Callback& callback) const
 {
     if (events.isEmpty()) {
         return;
@@ -120,8 +120,8 @@ TimeLineData dataFromIndex(const QModelIndex& index, QRect rect, Data::ZoomActio
     return data;
 }
 
-Data::Events::const_iterator findEvent(Data::Events::const_iterator begin, Data::Events::const_iterator end,
-                                       quint64 time)
+Data::Events::const_iterator findEvent(const Data::Events::const_iterator& begin,
+                                       const Data::Events::const_iterator& end, quint64 time)
 {
     auto byTime = [](const Data::Event& event, quint64 time) { return event.time < time; };
     auto it = std::lower_bound(begin, end, time, byTime);

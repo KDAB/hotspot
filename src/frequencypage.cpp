@@ -54,7 +54,7 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
     auto plotData = QSharedPointer<PlotData>::create();
 
     connect(parser, &PerfParser::summaryDataAvailable,
-            [plotData](const Data::Summary data) { plotData->applicationStartTime = data.applicationTime.start; });
+            [plotData](const Data::Summary& data) { plotData->applicationStartTime = data.applicationTime.start; });
 
     connect(parser, &PerfParser::frequencyDataAvailable, this, [this](const Data::FrequencyResults& results) {
         m_results = results;

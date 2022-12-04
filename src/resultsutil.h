@@ -66,7 +66,7 @@ Q_DECLARE_FLAGS(CallbackActions, CallbackAction)
 
 void setupContextMenu(QTreeView* view, CostContextMenu* costContextMenu, int symbolRole,
                       FilterAndZoomStack* filterStack, CallbackActions actions,
-                      std::function<void(CallbackAction action, const Data::Symbol&)> callback);
+                      const std::function<void(CallbackAction action, const Data::Symbol&)>& callback);
 
 template<typename Model, typename Context>
 void setupContextMenu(QTreeView* view, CostContextMenu* costContextMenu, Model* /*model*/,

@@ -35,7 +35,7 @@ struct TimeLineData
 
     template<typename Callback>
     void findSamples(int mappedX, int costType, int lostEventCostId, bool contains,
-                     const Data::Events::const_iterator start, const Callback& callback) const;
+                     const Data::Events::const_iterator& start, const Callback& callback) const;
 
     static const constexpr int padding = 2;
     Data::Events events;

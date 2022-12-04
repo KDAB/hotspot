@@ -34,7 +34,7 @@
 #include <KParts/ReadOnlyPart>
 
 namespace {
-std::pair<QString, QString> elideArguments(const QString symbolText)
+std::pair<QString, QString> elideArguments(const QString& symbolText)
 {
     QChar quoteChar = QLatin1Char('"');
     int numQuotes = 0;
