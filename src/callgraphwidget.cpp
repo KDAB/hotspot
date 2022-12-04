@@ -47,8 +47,10 @@ CallgraphWidget::CallgraphWidget(const Data::CallerCalleeResults& results, KPart
     updateColors();
     m_interface->setLayoutMethod(KGraphViewer::KGraphViewerInterface::LayoutMethod::InternalLibrary);
 
-    connect(m_graphview, SIGNAL(hoverEnter(QString)), this, SLOT(hoverEnter(QString)));
-    connect(m_graphview, SIGNAL(hoverLeave(QString)), this, SLOT(hoverLeave(QString)));
+    connect(m_graphview, SIGNAL(hoverEnter(QString)), this,
+            SLOT(hoverEnter(QString))); // clazy:exclude=old-style-connect
+    connect(m_graphview, SIGNAL(hoverLeave(QString)), this,
+            SLOT(hoverLeave(QString))); // clazy:exclude=old-style-connect
 
     // used to find mouseclicks in the kgraphviewer part
     qApp->installEventFilter(this);
