@@ -29,6 +29,20 @@
       ]
     },
     {
+      "name": "dev-clazy",
+      "displayName": "clazy with sanitizers",
+      "description": "Preset for compiling with clang/clazy and asan and ubsan enabled",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clazy",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_FLAGS": "-Xclang -plugin-arg-clazy -Xclang level0,level1,level2,no-strict-iterators,no-ctor-missing-parent-argument -Werror",
+        "CMAKE_C_FLAGS": "-Werror"
+      },
+      "inherits": [
+        "dev-asan"
+      ]
+    },
+    {
       "name": "dev-opt",
       "displayName": "dev with optimizations",
       "description": "Preset for developers with compiler optimizations enabled",
@@ -66,6 +80,10 @@
     {
       "name": "dev-opt-asan",
       "configurePreset": "dev-opt-asan"
+    },
+    {
+      "name": "dev-clazy",
+      "configurePreset": "dev-clazy"
     }
   ],
   "testPresets": [
@@ -93,6 +111,11 @@
     {
       "name": "dev-opt-asan",
       "configurePreset": "dev-opt-asan",
+      "inherits": "base"
+    },
+    {
+      "name": "dev-clazy",
+      "configurePreset": "dev-clazy",
       "inherits": "base"
     }
   ]
