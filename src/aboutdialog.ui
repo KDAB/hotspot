@@ -72,22 +72,4 @@
   </layout>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>AboutDialog</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>261</x>
-     <y>302</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>310</x>
-     <y>98</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
 </ui>
