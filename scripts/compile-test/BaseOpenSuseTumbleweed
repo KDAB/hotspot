@@ -5,7 +5,7 @@ FROM opensuse/tumbleweed:latest
 RUN zypper --non-interactive update && \
     zypper --non-interactive install \
     cmake gcc-c++ glibc-devel-static git ninja binutils gettext \
-    libzstd-devel libelf-devel libdw-devel qcustomplot-devel \
+    libzstd-devel libelf-devel libdw-devel libdebuginfod-devel qcustomplot-devel \
     libqt5-qtx11extras-devel libQt5Widgets-devel libqt5-qtbase-devel libqt5-qtsvg-devel \
     libQt5Widgets-private-headers-devel \
     extra-cmake-modules threadweaver-devel kio-devel \
