@@ -90,40 +90,40 @@ int main(int argc, char** argv)
     parser.addHelpOption();
     parser.addVersionOption();
 
-    QCommandLineOption sysroot(QLatin1String("sysroot"),
+    QCommandLineOption sysroot(QStringLiteral("sysroot"),
                                QCoreApplication::translate("main", "Path to sysroot which is used to find libraries."),
-                               QLatin1String("path"));
+                               QStringLiteral("path"));
     parser.addOption(sysroot);
 
     QCommandLineOption kallsyms(
-        QLatin1String("kallsyms"),
+        QStringLiteral("kallsyms"),
         QCoreApplication::translate("main", "Path to kallsyms file which is used to resolve kernel symbols."),
-        QLatin1String("path"));
+        QStringLiteral("path"));
     parser.addOption(kallsyms);
 
     QCommandLineOption debugPaths(
-        QLatin1String("debugPaths"),
+        QStringLiteral("debugPaths"),
         QCoreApplication::translate("main",
                                     "Colon separated list of paths that contain debug information. These paths are "
                                     "relative to the executable and not to the current working directory."),
-        QLatin1String("paths"));
+        QStringLiteral("paths"));
     parser.addOption(debugPaths);
 
     QCommandLineOption extraLibPaths(
-        QLatin1String("extraLibPaths"),
+        QStringLiteral("extraLibPaths"),
         QCoreApplication::translate("main", "Colon separated list of extra paths to find libraries."),
-        QLatin1String("paths"));
+        QStringLiteral("paths"));
     parser.addOption(extraLibPaths);
 
     QCommandLineOption appPath(
-        QLatin1String("appPath"),
+        QStringLiteral("appPath"),
         QCoreApplication::translate("main", "Path to folder containing the application executable and libraries."),
-        QLatin1String("path"));
+        QStringLiteral("path"));
     parser.addOption(appPath);
 
-    QCommandLineOption arch(QLatin1String("arch"),
+    QCommandLineOption arch(QStringLiteral("arch"),
                             QCoreApplication::translate("main", "Architecture to use for unwinding."),
-                            QLatin1String("path"));
+                            QStringLiteral("path"));
     parser.addOption(arch);
 
     QCommandLineOption exportTo(
