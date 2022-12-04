@@ -56,7 +56,7 @@ void StartPage::onOpenFileError(const QString& errorMessage)
 void StartPage::onParseFileProgress(float percent)
 {
     const int scale = 1000;
-    if (!ui->openFileProgressBar->maximum()) {
+    if (ui->openFileProgressBar->maximum() == 0) {
         ui->openFileProgressBar->setMaximum(scale);
     }
     ui->openFileProgressBar->setValue(static_cast<int>(percent * scale));
@@ -71,7 +71,7 @@ void StartPage::onDebugInfoDownloadProgress(const QString& url, qint64 numerator
 
     ui->loadStack->setCurrentWidget(ui->downloadDebugInfoProgressPage);
     ui->downloadDebugInfoProgressLabel->setText(tr("Downloading Debug Information from %1...").arg(url));
-    if (!denominator) {
+    if (denominator == 0) {
         ui->downloadDebugInfoProgressBar->setRange(0, 0);
         ui->downloadDebugInfoProgressBar->setValue(-1);
     } else {
