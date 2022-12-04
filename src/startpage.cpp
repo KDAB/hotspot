@@ -71,12 +71,12 @@ void StartPage::onDebugInfoDownloadProgress(const QString& url, qint64 numerator
 
     ui->loadStack->setCurrentWidget(ui->downloadDebugInfoProgressPage);
     ui->downloadDebugInfoProgressLabel->setText(tr("Downloading Debug Information from %1...").arg(url));
-    if (denominator == 0) {
+    if (denominator == 0 || denominator > std::numeric_limits<int>::max()) {
         ui->downloadDebugInfoProgressBar->setRange(0, 0);
         ui->downloadDebugInfoProgressBar->setValue(-1);
     } else {
-        ui->downloadDebugInfoProgressBar->setRange(0, denominator);
-        ui->downloadDebugInfoProgressBar->setValue(numerator);
+        ui->downloadDebugInfoProgressBar->setRange(0, static_cast<int>(denominator));
+        ui->downloadDebugInfoProgressBar->setValue(static_cast<int>(numerator));
     }
 }
 
