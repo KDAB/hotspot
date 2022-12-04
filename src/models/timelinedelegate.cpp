@@ -343,11 +343,11 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     const bool isHover = event->type() == QEvent::HoverEnter || event->type() == QEvent::HoverMove
         || event->type() == QEvent::HoverLeave;
     if (!isButtonRelease && !isButtonPress && !isMove && !isHover) {
-        return false;
+        return QStyledItemDelegate::eventFilter(watched, event);
     }
 
     if (watched != m_view->viewport() || !m_view->isEnabled()) {
-        return false;
+        return QStyledItemDelegate::eventFilter(watched, event);
     }
 
     const auto pos = isHover ? static_cast<QHoverEvent*>(event)->pos() : static_cast<QMouseEvent*>(event)->localPos();
@@ -551,7 +551,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                            m_view);
     }
 
-    return false;
+    return QStyledItemDelegate::eventFilter(watched, event);
 }
 
 void TimeLineDelegate::setEventType(int type)

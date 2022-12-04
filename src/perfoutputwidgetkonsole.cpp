@@ -100,7 +100,7 @@ bool PerfOutputWidgetKonsole::eventFilter(QObject* watched, QEvent* event)
             return true;
         }
     }
-    return false;
+    return PerfOutputWidget::eventFilter(watched, event);
 }
 
 void PerfOutputWidgetKonsole::addOutput(const QString& output)
