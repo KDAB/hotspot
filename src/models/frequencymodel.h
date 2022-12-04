@@ -13,6 +13,7 @@
 
 class FrequencyModel : public QAbstractTableModel
 {
+    Q_OBJECT
 public:
     explicit FrequencyModel(QObject* parent = nullptr);
     ~FrequencyModel();
