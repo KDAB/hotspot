@@ -11,4 +11,4 @@ RUN cd hotspot && \
         -DCMAKE_INSTALL_PREFIX=/usr/ \
         -DCMAKE_CXX_FLAGS_DEBUG="-g -fsanitize=address,undefined" \
         -DCMAKE_C_FLAGS_DEBUG="-g -fsanitize=address,undefined" .. && \
-    cmake --build .
+    cmake --build build
