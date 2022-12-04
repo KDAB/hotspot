@@ -96,7 +96,7 @@ void FilterAndZoomStack::clear()
     m_zoomStack.clear();
 }
 
-void FilterAndZoomStack::filterInByTime(const Data::TimeRange& time)
+void FilterAndZoomStack::filterInByTime(Data::TimeRange time)
 {
     zoomIn(time);
 
@@ -215,7 +215,7 @@ void FilterAndZoomStack::filterOut()
     emit filterChanged(filter());
 }
 
-void FilterAndZoomStack::zoomIn(const Data::TimeRange& time)
+void FilterAndZoomStack::zoomIn(Data::TimeRange time)
 {
     m_zoomStack.append({time.normalized()});
     emit zoomChanged(m_zoomStack.constLast());

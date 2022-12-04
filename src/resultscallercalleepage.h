@@ -44,7 +44,7 @@ public:
     void openEditor(const Data::Symbol& symbol);
 
 private slots:
-    void onSourceMapContextMenu(const QPoint& pos);
+    void onSourceMapContextMenu(QPoint pos);
     void onSourceMapActivated(const QModelIndex& index);
 
 signals:

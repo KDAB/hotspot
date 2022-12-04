@@ -78,7 +78,7 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(QWidget* parent)
     connect(ui->sourceCodeView, &QTreeView::entered, this, updateFromSource);
 
     ui->sourceCodeView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->sourceCodeView, &QTreeView::customContextMenuRequested, this, [this](const QPoint& point) {
+    connect(ui->sourceCodeView, &QTreeView::customContextMenuRequested, this, [this](QPoint point) {
         const auto index = ui->sourceCodeView->indexAt(point);
         const auto fileLine = index.data(SourceCodeModel::FileLineRole).value<Data::FileLine>();
         if (!fileLine.isValid())

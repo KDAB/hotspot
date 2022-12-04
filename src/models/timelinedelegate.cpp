@@ -23,13 +23,8 @@
 
 #include <algorithm>
 
-TimeLineData::TimeLineData()
-    : TimeLineData({}, 0, {}, {}, {})
-{
-}
-
-TimeLineData::TimeLineData(const Data::Events& events, quint64 maxCost, const Data::TimeRange& time,
-                           const Data::TimeRange& threadTime, QRect rect)
+TimeLineData::TimeLineData(const Data::Events& events, quint64 maxCost, Data::TimeRange time,
+                           Data::TimeRange threadTime, QRect rect)
     : events(events)
     , maxCost(maxCost)
     , time(time)
@@ -56,7 +51,7 @@ int TimeLineData::mapCostToY(quint64 cost) const
     return double(cost) * yMultiplicator;
 }
 
-void TimeLineData::zoom(const Data::TimeRange& t)
+void TimeLineData::zoom(Data::TimeRange t)
 {
     time = t;
     xMultiplicator = double(w) / time.delta();
@@ -111,7 +106,7 @@ QColor toHoverColor(QColor color)
     return color;
 }
 
-TimeLineData dataFromIndex(const QModelIndex& index, QRect rect, const Data::ZoomAction& zoom)
+TimeLineData dataFromIndex(const QModelIndex& index, QRect rect, Data::ZoomAction zoom)
 {
     TimeLineData data(
         index.data(EventModel::EventsRole).value<Data::Events>(), index.data(EventModel::MaxCostRole).value<quint64>(),

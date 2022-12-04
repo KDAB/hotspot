@@ -41,7 +41,7 @@ public:
     void clear();
 
 public slots:
-    void filterInByTime(const Data::TimeRange& time);
+    void filterInByTime(Data::TimeRange time);
     void filterInByProcess(qint32 processId);
     void filterOutByProcess(qint32 processId);
     void filterInByThread(qint32 threadId);
@@ -55,14 +55,14 @@ public slots:
     void applyFilter(Data::FilterAction filter);
     void resetFilter();
     void filterOut();
-    void zoomIn(const Data::TimeRange& time);
+    void zoomIn(Data::TimeRange time);
     void resetZoom();
     void zoomOut();
     void resetFilterAndZoom();
 
 signals:
     void filterChanged(const Data::FilterAction& filter);
-    void zoomChanged(const Data::ZoomAction& zoom);
+    void zoomChanged(Data::ZoomAction zoom);
 
 private:
     void updateActions();

@@ -210,7 +210,7 @@ ResultsCallerCalleePage::SourceMapLocation ResultsCallerCalleePage::toSourceMapL
     return toSourceMapLocation(fileLine, symbol);
 }
 
-void ResultsCallerCalleePage::onSourceMapContextMenu(const QPoint& point)
+void ResultsCallerCalleePage::onSourceMapContextMenu(QPoint point)
 {
     const auto index = ui->sourceMapView->indexAt(point);
     if (!index.isValid()) {

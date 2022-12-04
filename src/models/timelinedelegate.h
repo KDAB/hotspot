@@ -20,10 +20,10 @@ class FilterAndZoomStack;
 
 struct TimeLineData
 {
-    TimeLineData();
+    TimeLineData() = default;
 
-    TimeLineData(const Data::Events& events, quint64 maxCost, const Data::TimeRange& time,
-                 const Data::TimeRange& threadTime, QRect rect);
+    TimeLineData(const Data::Events& events, quint64 maxCost, Data::TimeRange time, Data::TimeRange threadTime,
+                 QRect rect);
 
     int mapTimeToX(quint64 time) const;
 
@@ -31,7 +31,7 @@ struct TimeLineData
 
     int mapCostToY(quint64 cost) const;
 
-    void zoom(const Data::TimeRange& time);
+    void zoom(Data::TimeRange time);
 
     template<typename Callback>
     void findSamples(int mappedX, int costType, int lostEventCostId, bool contains,
@@ -39,13 +39,13 @@ struct TimeLineData
 
     static const constexpr int padding = 2;
     Data::Events events;
-    quint64 maxCost;
+    quint64 maxCost = 0;
     Data::TimeRange time;
     Data::TimeRange threadTime;
-    int h;
-    int w;
-    double xMultiplicator;
-    double yMultiplicator;
+    int h = 0;
+    int w = 0;
+    double xMultiplicator = 0;
+    double yMultiplicator = 0;
 };
 Q_DECLARE_METATYPE(TimeLineData)
 

@@ -90,7 +90,7 @@ void setupContextMenu(QTreeView* view, CostContextMenu* costContextMenu, int sym
                      [view, costContextMenu] { costContextMenu->hideColumns(view); });
 
     view->setContextMenuPolicy(Qt::CustomContextMenu);
-    QObject::connect(view, &QTreeView::customContextMenuRequested, view, [=](const QPoint& point) {
+    QObject::connect(view, &QTreeView::customContextMenuRequested, view, [=](QPoint point) {
         const auto index = view->indexAt(point);
         const auto symbol = index.data(symbolRole).value<Data::Symbol>();
 

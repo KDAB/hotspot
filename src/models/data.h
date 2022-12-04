@@ -26,7 +26,7 @@ QString prettifySymbol(const QString& symbol);
 
 struct Symbol
 {
-    Symbol(const QString& symbol = {}, const quint64& relAddr = 0, const quint64& size = 0, const QString& binary = {},
+    Symbol(const QString& symbol = {}, quint64 relAddr = 0, quint64 size = 0, const QString& binary = {},
            const QString& path = {}, const QString& actualPath = {}, bool isKernel = false)
         : symbol(symbol)
         , prettySymbol(Data::prettifySymbol(symbol))
@@ -717,12 +717,12 @@ struct TimeRange
         return *this;
     }
 
-    bool operator==(const TimeRange& rhs) const
+    bool operator==(TimeRange rhs) const
     {
         return std::tie(start, end) == std::tie(rhs.start, rhs.end);
     }
 
-    bool operator!=(const TimeRange& rhs) const
+    bool operator!=(TimeRange rhs) const
     {
         return !operator==(rhs);
     }

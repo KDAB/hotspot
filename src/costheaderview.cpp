@@ -59,7 +59,7 @@ CostHeaderView::CostHeaderView(CostContextMenu* contextMenu, QWidget* parent)
     });
 
     setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(this, &QHeaderView::customContextMenuRequested, this, [this, contextMenu](const QPoint& pos) {
+    connect(this, &QHeaderView::customContextMenuRequested, this, [this, contextMenu](QPoint pos) {
         const auto numSections = count();
 
         QMenu menu;

@@ -443,7 +443,7 @@ FrameGraphicsItem* findItemBySymbol(const QList<QGraphicsItem*>& items, const Da
  */
 template<typename Tree>
 void toGraphicsItems(const Data::Costs& costs, int type, const QVector<Tree>& data, FrameGraphicsItem* parent,
-                     const double costThreshold, const Settings::ColorScheme& colorScheme, bool collapseRecursion)
+                     const double costThreshold, Settings::ColorScheme colorScheme, bool collapseRecursion)
 {
     foreach (const auto& row, data) {
         if (collapseRecursion && !row.symbol.symbol.isEmpty() && row.symbol == parent->symbol()) {
@@ -468,7 +468,7 @@ void toGraphicsItems(const Data::Costs& costs, int type, const QVector<Tree>& da
 
 template<typename Tree>
 FrameGraphicsItem* parseData(const Data::Costs& costs, int type, const QVector<Tree>& topDownData, double costThreshold,
-                             const Settings::ColorScheme& colorScheme, bool collapseRecursion)
+                             Settings::ColorScheme colorScheme, bool collapseRecursion)
 {
     const auto totalCost = costs.totalCost(type);
 

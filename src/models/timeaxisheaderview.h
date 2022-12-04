@@ -23,7 +23,7 @@ public:
     static const int s_tickHeight = 4;
 
 public:
-    void setTimeRange(const Data::TimeRange& timeRange);
+    void setTimeRange(Data::TimeRange timeRange);
     void setTracepoints(const Data::TracepointResults& tracepoints);
 
 protected slots:

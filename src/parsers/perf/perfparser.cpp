@@ -73,7 +73,7 @@ QDataStream& operator>>(QDataStream& stream, StringId& stringId)
     return stream >> stringId.id;
 }
 
-QDebug operator<<(QDebug stream, const StringId& stringId)
+QDebug operator<<(QDebug stream, StringId stringId)
 {
     stream.noquote().nospace() << "String{"
                                << "id=" << stringId.id << "}";
@@ -278,7 +278,7 @@ QDataStream& operator>>(QDataStream& stream, SampleCost& sampleCost)
     return stream >> sampleCost.attributeId >> sampleCost.cost;
 }
 
-QDebug operator<<(QDebug stream, const SampleCost& sampleCost)
+QDebug operator<<(QDebug stream, SampleCost sampleCost)
 {
     stream.noquote().nospace() << "SampleCost{"
                                << "attributeId=" << sampleCost.attributeId << ", "
@@ -1120,7 +1120,7 @@ public:
         }
     }
 
-    void addSampleToBottomUp(const Sample& sample, const SampleCost& sampleCost)
+    void addSampleToBottomUp(const Sample& sample, SampleCost sampleCost)
     {
         if (perfScriptOutput) {
             *perfScriptOutput << commands.value(sample.pid).value(sample.pid) << '\t' << sample.pid << '\t'
@@ -1769,7 +1769,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
 
                         auto frequencyIt = std::remove_if(
                             costType.values.begin(), costType.values.end(),
-                            [filter](const Data::FrequencyData& point) { return !filter.time.contains(point.time); });
+                            [filter](Data::FrequencyData point) { return !filter.time.contains(point.time); });
                         costType.values.erase(frequencyIt, costType.values.end());
                     }
                 }

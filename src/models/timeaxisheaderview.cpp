@@ -25,7 +25,7 @@
 #include <PrefixTickLabels.h>
 
 namespace {
-auto xForTimeFactory(const Data::TimeRange& timeRange, const Data::TimeRange& zoomTime, int width, int pos)
+auto xForTimeFactory(Data::TimeRange timeRange, Data::TimeRange zoomTime, int width, int pos)
 {
     const double oneNanoSecond = 1.0e-9;
     const double start = (zoomTime.start - timeRange.start) * oneNanoSecond;
@@ -50,7 +50,7 @@ TimeAxisHeaderView::TimeAxisHeaderView(const FilterAndZoomStack* filterAndZoomSt
     connect(filterAndZoomStack, &FilterAndZoomStack::zoomChanged, this, &TimeAxisHeaderView::emitHeaderDataChanged);
 }
 
-void TimeAxisHeaderView::setTimeRange(const Data::TimeRange& timeRange)
+void TimeAxisHeaderView::setTimeRange(Data::TimeRange timeRange)
 {
     m_timeRange = timeRange;
     emitHeaderDataChanged();
