@@ -51,7 +51,7 @@ private slots:
         symbol.actualPath = actualBinaryFile;
 
         QVERIFY(!actualBinaryFile.isEmpty() && QFile::exists(actualBinaryFile));
-        const auto actualOutputFile = actualBinaryFile + QLatin1String(".actual.txt");
+        const auto actualOutputFile = QString(actualBinaryFile + QLatin1String(".actual.txt"));
 
         QFile actual(actualOutputFile);
         QVERIFY(actual.open(QIODevice::WriteOnly | QIODevice::Text));
