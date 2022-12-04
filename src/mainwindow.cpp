@@ -177,8 +177,7 @@ MainWindow::MainWindow(QWidget* parent)
     auto openNewWindow = new QAction(QIcon::fromTheme(QStringLiteral("document-open")), tr("Open in new window"), this);
     openNewWindow->setShortcut(Qt::Key_O | Qt::ControlModifier | Qt::ShiftModifier);
     connect(openNewWindow, &QAction::triggered, this, [this] {
-        const auto fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(),
-                                                           tr("Data Files (perf*.data perf.data.*);;All Files (*)"));
+        const auto fileName = queryOpenDataFile();
         if (!fileName.isEmpty())
             openInNewWindow(fileName);
     });
@@ -279,10 +278,18 @@ void MainWindow::closeEvent(QCloseEvent* event)
     QMainWindow::closeEvent(event);
 }
 
+QString MainWindow::queryOpenDataFile()
+{
+    const auto filter = tr("Hotspot data Files (perf*.data perf.data.* *.perfparser);;"
+                           "Linux Perf Files (perf*.data perf.data.*);;"
+                           "Perfparser Files (*.perfparser);;"
+                           "All Files (*)");
+    return QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(), filter);
+}
+
 void MainWindow::onOpenFileButtonClicked()
 {
-    const auto fileName = QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(),
-                                                       tr("Data Files (perf*.data perf.data.*);;All Files (*)"));
+    const auto fileName = queryOpenDataFile();
     if (fileName.isEmpty()) {
         return;
     }
