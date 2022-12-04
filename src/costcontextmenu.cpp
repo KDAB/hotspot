@@ -41,7 +41,7 @@ void CostContextMenu::addToMenu(QHeaderView* view, QMenu* menu)
 
 void CostContextMenu::hideColumns(QTreeView* view)
 {
-    const auto model = view->model();
+    const auto* model = view->model();
     for (int i = 1, size = model->columnCount(); i < size; i++) {
         const auto name = model->headerData(i, Qt::Orientation::Horizontal).toString();
         view->setColumnHidden(i, m_hiddenColumns.contains(name));

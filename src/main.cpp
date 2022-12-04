@@ -187,7 +187,7 @@ int main(int argc, char** argv)
         applyArg(sourcePath, &Settings::setSourceCodePaths);
     };
 
-    const auto settings = Settings::instance();
+    auto* settings = Settings::instance();
     settings->loadFromFile();
     applyCliArgs(settings);
 
