@@ -128,7 +128,7 @@ bug and test the latest stable version.
 *Note: Your system libraries or preferences are not altered. In case you'd like to remove Hotspot again,
 simply delete the downloaded file. Learn more about AppImage [here](http://appimage.org/).*
 
-To find out how to debug the Appimage, see [HACKING#debugging-the-appimage].
+To find out how to debug the Appimage, see [HACKING](HACKING.md#debugging-the-appimage).
 
 ## Building Hotspot
 
@@ -137,7 +137,7 @@ dependencies are available. Most users should probably [install hotspot](#gettin
 package manager or as an [AppImage](#for-any-linux-distro-appimage).
 
 For everyone that wants to contribute to Hotspot or use the newest version without the Appimage detailed
-notes are found at [HACKING](HACKING#table-of-contents).
+notes are found at [HACKING](HACKING.md#table-of-contents).
 
 ## Using
 
