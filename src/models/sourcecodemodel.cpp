@@ -15,10 +15,10 @@
 
 #include "highlighter.hpp"
 
-SourceCodeModel::SourceCodeModel(QObject* parent)
+SourceCodeModel::SourceCodeModel(KSyntaxHighlighting::Repository* repository, QObject* parent)
     : QAbstractTableModel(parent)
     , m_document(new QTextDocument(this))
-    , m_highlighter(new Highlighter(m_document, this))
+    , m_highlighter(new Highlighter(m_document, repository, this))
 {
     m_document->setUndoRedoEnabled(false);
     qRegisterMetaType<QTextLine>();
@@ -64,7 +64,6 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     const auto sourceCode = QString::fromUtf8(file.readAll());
 
     m_document->clear();
-    m_highlighter->setDefinitionForFilename(disassemblyOutput.mainSourceFileName);
 
     m_document->setPlainText(sourceCode);
     m_document->setTextWidth(m_document->idealWidth());

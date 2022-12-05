@@ -16,13 +16,12 @@
 #include "highlighter.hpp"
 #include "sourcecodemodel.h"
 
-DisassemblyModel::DisassemblyModel(QObject* parent)
+DisassemblyModel::DisassemblyModel(KSyntaxHighlighting::Repository* repository, QObject* parent)
     : QAbstractTableModel(parent)
     , m_document(new QTextDocument(this))
-    , m_highlighter(new Highlighter(m_document, this))
+    , m_highlighter(new Highlighter(m_document, repository, this))
 {
     m_document->setUndoRedoEnabled(false);
-    m_highlighter->setDefinitionForName(QStringLiteral("GNU Assembler"));
 }
 
 DisassemblyModel::~DisassemblyModel() = default;

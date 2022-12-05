@@ -9,6 +9,7 @@
 #pragma once
 
 #include "data.h"
+#include "hotspot-config.h"
 #include "models/costdelegate.h"
 #include <QWidget>
 
@@ -34,6 +35,10 @@ struct DisassemblyOutput;
 class DisassemblyModel;
 class SourceCodeModel;
 
+namespace KSyntaxHighlighting {
+class Repository;
+}
+
 class ResultsDisassemblyPage : public QWidget
 {
     Q_OBJECT
@@ -58,6 +63,9 @@ private:
     void showDisassembly(const DisassemblyOutput& disassemblyOutput);
 
     QScopedPointer<Ui::ResultsDisassemblyPage> ui;
+#if KF5SyntaxHighlighting_FOUND
+    QScopedPointer<KSyntaxHighlighting::Repository> m_repository;
+#endif
     // Model
     DisassemblyModel* m_disassemblyModel;
     SourceCodeModel* m_sourceCodeModel;

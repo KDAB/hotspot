@@ -19,13 +19,16 @@
 #include <KSyntaxHighlighting/Theme>
 #endif
 
-Highlighter::Highlighter(QTextDocument* document, QObject* parent)
+Highlighter::Highlighter(QTextDocument* document, KSyntaxHighlighting::Repository* repository, QObject* parent)
     : QObject(parent)
 #if KF5SyntaxHighlighting_FOUND
-    , m_repository(std::make_unique<KSyntaxHighlighting::Repository>())
     , m_highlighter(new KSyntaxHighlighting::SyntaxHighlighter(document))
+    , m_repository(repository)
 #endif
 {
+#if !KF5SyntaxHighlighting_FOUND
+    Q_UNUSED(repository);
+#endif
     document->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
     // if qApp is used, UBSAN complains
@@ -36,23 +39,18 @@ Highlighter::Highlighter(QTextDocument* document, QObject* parent)
 
 Highlighter::~Highlighter() = default;
 
-void Highlighter::setDefinitionForFilename(const QString& filename)
+void Highlighter::setDefinition(const KSyntaxHighlighting::Definition& definition)
 {
 #if KF5SyntaxHighlighting_FOUND
-    const auto def = m_repository->definitionForFileName(filename);
-    m_highlighter->setDefinition(def);
-#else
-    Q_UNUSED(filename);
-#endif
-}
+    // don't reparse if definition hasn't changed
+    if (m_currentDefinition == definition.name())
+        return;
 
-void Highlighter::setDefinitionForName(const QString& name)
-{
-#if KF5SyntaxHighlighting_FOUND
-    const auto def = m_repository->definitionForName(name);
-    m_highlighter->setDefinition(def);
+    m_highlighter->setDefinition(definition);
+    m_currentDefinition = definition.name();
+    emit definitionChanged(m_currentDefinition);
 #else
-    Q_UNUSED(name);
+    Q_UNUSED(definition);
 #endif
 }
 
@@ -68,6 +66,10 @@ bool Highlighter::eventFilter(QObject* /*watched*/, QEvent* event)
 void Highlighter::updateColorTheme()
 {
 #if KF5SyntaxHighlighting_FOUND
+    if (!m_repository) {
+        return;
+    }
+
     KSyntaxHighlighting::Repository::DefaultTheme theme;
     if (QPalette().base().color().lightness() < 128) {
         theme = KSyntaxHighlighting::Repository::DarkTheme;

@@ -28,6 +28,14 @@
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
 
+#if KF5SyntaxHighlighting_FOUND
+#include "highlighter.hpp"
+#include <KSyntaxHighlighting/definition.h>
+#include <KSyntaxHighlighting/repository.h>
+#include <QCompleter>
+#include <QStringListModel>
+#endif
+
 #include "data.h"
 #include "models/codedelegate.h"
 #include "models/costdelegate.h"
@@ -41,8 +49,14 @@
 ResultsDisassemblyPage::ResultsDisassemblyPage(QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsDisassemblyPage)
-    , m_disassemblyModel(new DisassemblyModel(this))
-    , m_sourceCodeModel(new SourceCodeModel(this))
+#if KF5SyntaxHighlighting_FOUND
+    , m_repository(new KSyntaxHighlighting::Repository)
+    , m_disassemblyModel(new DisassemblyModel(m_repository.get(), this))
+    , m_sourceCodeModel(new SourceCodeModel(m_repository.get(), this))
+#else
+    , m_disassemblyModel(new DisassemblyModel(nullptr, this))
+    , m_sourceCodeModel(new SourceCodeModel(nullptr, this))
+#endif
     , m_disassemblyCostDelegate(new CostDelegate(DisassemblyModel::CostRole, DisassemblyModel::TotalCostRole, this))
     , m_sourceCodeCostDelegate(new CostDelegate(SourceCodeModel::CostRole, SourceCodeModel::TotalCostRole, this))
     , m_disassemblyDelegate(new CodeDelegate(DisassemblyModel::RainbowLineNumberRole, DisassemblyModel::HighlightRole,
@@ -123,6 +137,42 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(QWidget* parent)
             }
         }
     });
+
+#if KF5SyntaxHighlighting_FOUND
+    QStringList schemes;
+
+    const auto definitions = m_repository->definitions();
+    schemes.reserve(definitions.size());
+
+    std::transform(definitions.begin(), definitions.end(), std::back_inserter(schemes),
+                   [](const auto& definition) { return definition.name(); });
+
+    auto definitionModel = new QStringListModel(this);
+    definitionModel->setStringList(schemes);
+
+    auto connectCompletion = [definitionModel, schemes, this](QComboBox* box, auto* model) {
+        auto completer = new QCompleter(this);
+        completer->setModel(definitionModel);
+        completer->setCaseSensitivity(Qt::CaseInsensitive);
+        completer->setCompletionMode(QCompleter::PopupCompletion);
+        box->setCompleter(completer);
+        box->setModel(definitionModel);
+        box->setCurrentText(model->highlighter()->definition());
+
+        connect(box, qOverload<int>(&QComboBox::activated), this, [this, model, box]() {
+            model->highlighter()->setDefinition(m_repository->definitionForName(box->currentText()));
+        });
+
+        connect(model->highlighter(), &Highlighter::definitionChanged,
+                [box](const QString& definition) { box->setCurrentText(definition); });
+    };
+
+    connectCompletion(ui->sourceCodeComboBox, m_sourceCodeModel);
+    connectCompletion(ui->assemblyComboBox, m_disassemblyModel);
+#else
+    ui->customSourceCodeHighlighting->setVisible(false);
+    ui->customAssemblyHighlighting->setVisible(false);
+#endif
 }
 
 ResultsDisassemblyPage::~ResultsDisassemblyPage() = default;
@@ -185,6 +235,12 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
 {
     m_disassemblyModel->clear();
     m_sourceCodeModel->clear();
+
+#if KF5SyntaxHighlighting_FOUND
+    m_sourceCodeModel->highlighter()->setDefinition(
+        m_repository->definitionForFileName(disassemblyOutput.mainSourceFileName));
+    m_disassemblyModel->highlighter()->setDefinition(m_repository->definitionForName(QStringLiteral("GNU Assembler")));
+#endif
 
     const auto& entry = m_callerCalleeResults.entry(m_curSymbol);
 

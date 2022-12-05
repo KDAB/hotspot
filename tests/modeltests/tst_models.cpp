@@ -345,7 +345,7 @@ private slots:
         locationCost.inclusiveCost[0] += 200;
         locationCost.selfCost[0] += 200;
 
-        DisassemblyModel model;
+        DisassemblyModel model(nullptr);
 
         // no disassembly data yet
         QCOMPARE(model.columnCount(), DisassemblyModel::COLUMN_COUNT);
@@ -385,7 +385,7 @@ private slots:
         Data::CallerCalleeResults results;
         Data::callerCalleesFromBottomUpData(tree, &results);
 
-        SourceCodeModel model;
+        SourceCodeModel model(nullptr);
         QCOMPARE(model.columnCount(), SourceCodeModel::COLUMN_COUNT);
         QCOMPARE(model.rowCount(), 0);
 

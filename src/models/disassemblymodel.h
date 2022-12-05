@@ -18,11 +18,16 @@
 class QTextDocument;
 class Highlighter;
 
+namespace KSyntaxHighlighting {
+class Definition;
+class Repository;
+}
+
 class DisassemblyModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    explicit DisassemblyModel(QObject* parent = nullptr);
+    explicit DisassemblyModel(KSyntaxHighlighting::Repository* repository, QObject* parent = nullptr);
     ~DisassemblyModel();
 
     void setDisassembly(const DisassemblyOutput& disassemblyOutput, const Data::CallerCalleeResults& results);
@@ -38,6 +43,11 @@ public:
 
     Data::FileLine fileLineForIndex(const QModelIndex& index) const;
     QModelIndex indexForFileLine(const Data::FileLine& line) const;
+
+    Highlighter* highlighter() const
+    {
+        return m_highlighter;
+    }
 
     enum Columns
     {
