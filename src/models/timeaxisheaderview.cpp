@@ -88,7 +88,7 @@ bool TimeAxisHeaderView::event(QEvent* event)
 
         return true;
     }
-    return QWidget::event(event);
+    return QHeaderView::event(event);
 }
 
 void TimeAxisHeaderView::setTracepoints(const Data::TracepointResults& tracepoints)
