@@ -1794,21 +1794,15 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                 }
 
                 if (filterByTime || filterByCpu || excludeByCpu || filterByStack) {
-                    auto it = std::remove_if(
-                        thread.events.begin(), thread.events.end(),
-                        [filter, filterByTime, filterByCpu, excludeByCpu, filterByStack,
-                         filterStacks](const Data::Event& event) {
-                            if (filterByTime && !filter.time.contains(event.time)) {
-                                return true;
-                            } else if (filterByCpu && event.cpuId != filter.cpuId) {
-                                return true;
-                            } else if (excludeByCpu && filter.excludeCpuIds.contains(event.cpuId)) {
-                                return true;
-                            } else if (filterByStack && event.stackId != -1 && !filterStacks[event.stackId]) {
-                                return true;
-                            }
-                            return false;
-                        });
+                    auto it = std::remove_if(thread.events.begin(), thread.events.end(),
+                                             [filter, filterByTime, filterByCpu, excludeByCpu, filterByStack,
+                                              filterStacks](const Data::Event& event) {
+                                                 return (filterByTime && !filter.time.contains(event.time))
+                                                     || (filterByCpu && event.cpuId != filter.cpuId)
+                                                     || (excludeByCpu && filter.excludeCpuIds.contains(event.cpuId))
+                                                     || (filterByStack && event.stackId != -1
+                                                         && !filterStacks[event.stackId]);
+                                             });
                     thread.events.erase(it, thread.events.end());
                 }
 
