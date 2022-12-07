@@ -35,7 +35,7 @@ bool searchForChildSymbol(const T& root, const QString& searchString, bool exact
     } else if (!exact && root.symbol.symbol.contains(searchString)) {
         return true;
     } else {
-        for (auto entry : root.children) {
+        for (const auto& entry : root.children) {
             if (searchForChildSymbol(entry, searchString, exact)) {
                 return true;
             }
