@@ -280,6 +280,30 @@ void buildPerLibrary(const TopDown* node, PerLibraryResults& results, QHash<QStr
         buildPerLibrary(&child, results, binaryToResultIndex, costs);
     }
 }
+
+template<typename ResultType, bool addResultNode = true>
+void diffResults(const ResultType& a, const ResultType* b, ResultType* result_node, const Costs& costs_a,
+                 const Costs& costs_b, Costs* costs_result)
+{
+    for (const auto& node : a.children) {
+        const auto sibling = b->entryForSymbol(node.symbol);
+        if (sibling) {
+            ResultType diffed;
+            diffed.id = node.id;
+            diffed.symbol = node.symbol;
+
+            for (int i = 0; i < costs_a.numTypes(); i++) {
+                costs_result->add(2 * i, diffed.id, costs_a.cost(i, node.id));
+                costs_result->add(2 * i + 1, diffed.id, costs_b.cost(i, sibling->id));
+            }
+
+            if (addResultNode) {
+                result_node->children.push_back(diffed);
+            }
+            diffResults(node, sibling, &result_node->children.back(), costs_a, costs_b, costs_result);
+        }
+    }
+}
 }
 
 QString Data::prettifySymbol(const QString& name)
@@ -396,4 +420,76 @@ Data::ThreadEvents* Data::EventResults::findThread(qint32 pid, qint32 tid)
 const Data::ThreadEvents* Data::EventResults::findThread(qint32 pid, qint32 tid) const
 {
     return const_cast<Data::EventResults*>(this)->findThread(pid, tid);
+}
+
+Data::BottomUpResults BottomUpResults::diffBottomUpResults(const Data::BottomUpResults& a,
+                                                           const Data::BottomUpResults& b)
+{
+    if (a.costs.numTypes() != b.costs.numTypes()) {
+        return {};
+    }
+
+    BottomUpResults results;
+
+    // mimic perf diff -c ratio
+    for (int i = 0; i < a.costs.numTypes(); i++) {
+        // only diff same type of costs
+        if (a.costs.typeName(i) != b.costs.typeName(i)) {
+            return {};
+        }
+
+        results.costs.addType(2 * i, QLatin1String("baseline %1").arg(a.costs.typeName(i)), a.costs.unit(i));
+        results.costs.addTotalCost(2 * i, a.costs.totalCost(i));
+
+        const auto costBType = 2 * i + 1;
+        results.costs.addType(costBType, QLatin1String("ratio of %1").arg(b.costs.typeName(i)), Costs::Unit::Unknown);
+        results.costs.addTotalCost(costBType, b.costs.totalCost(0));
+    }
+
+    diffResults(a.root, &b.root, &results.root, a.costs, b.costs, &results.costs);
+
+    BottomUp::initializeParents(&results.root);
+
+    return results;
+}
+
+TopDownResults TopDownResults::diffTopDownResults(const TopDownResults& a, const TopDownResults& b)
+{
+    if (a.selfCosts.numTypes() != b.selfCosts.numTypes()) {
+        return {};
+    }
+
+    TopDownResults results;
+
+    for (int i = 0; i < a.selfCosts.numTypes(); i++) {
+        // only diff same type of costs
+        if (a.selfCosts.typeName(i) != b.selfCosts.typeName(i)) {
+            return {};
+        }
+
+        results.selfCosts.addType(2 * i, QLatin1String("baseline %1").arg(a.selfCosts.typeName(i)),
+                                  a.selfCosts.unit(i));
+        results.selfCosts.addTotalCost(2 * i, a.selfCosts.totalCost(i));
+
+        results.inclusiveCosts.addType(2 * i, QLatin1String("baseline %1").arg(a.inclusiveCosts.typeName(i)),
+                                       a.inclusiveCosts.unit(i));
+        results.inclusiveCosts.addTotalCost(2 * i, a.inclusiveCosts.totalCost(i));
+
+        const auto costBType = 2 * i + 1;
+        results.selfCosts.addType(costBType, QLatin1String("ratio of %1").arg(b.selfCosts.typeName(i)),
+                                  Costs::Unit::Unknown);
+        results.selfCosts.addTotalCost(costBType, b.selfCosts.totalCost(0));
+
+        results.inclusiveCosts.addType(costBType, QLatin1String("ratio of %1").arg(b.inclusiveCosts.typeName(i)),
+                                       Costs::Unit::Unknown);
+        results.inclusiveCosts.addTotalCost(costBType, b.inclusiveCosts.totalCost(0));
+    }
+
+    diffResults(a.root, &b.root, &results.root, a.selfCosts, b.selfCosts, &results.selfCosts);
+    diffResults<TopDown, false>(a.root, &b.root, &results.root, a.inclusiveCosts, b.inclusiveCosts,
+                                &results.inclusiveCosts);
+
+    Data::TopDown::initializeParents(&results.root);
+
+    return results;
 }
