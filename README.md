@@ -141,6 +141,8 @@ notes are found at [HACKING](HACKING.md#table-of-contents).
 
 ## Using
 
+### General
+
 First of all, record some data with `perf`. To get backtraces, you will need to enable the dwarf callgraph
 mode:
 
@@ -153,10 +155,47 @@ perf record --call-graph dwarf <your application>
 
 Now, if you have hotspot available on the same machine, all you need to do is launch it.
 It will automatically open the `perf.data` file in the current directory (similar to `perf report`).
+
 Alternatively, you can specify the path to the data file on the console:
 
 ```bash
 hotspot /path/to/perf.data
+```
+
+### Command Line options
+
+Depending on your needs you may want to pass additional command line options to hotspot.
+This allows to one-time set configuration options that are found in the GUI under "Settings"
+and also allows to convert Linux perf data files into the smaller and portable perfdata format
+(see [Import / Export](#import-export) for details on that).
+All command line options are shown with `--help`:
+
+```text
+Usage: hotspot [options] [files...]
+Linux perf GUI for performance analysis.
+
+Options:
+  -h, --help               Displays help on commandline options.
+  --help-all               Displays help including Qt specific options.
+  -v, --version            Displays version information.
+  --sysroot <path>         Path to sysroot which is used to find libraries.
+  --kallsyms <path>        Path to kallsyms file which is used to resolve
+                           kernel symbols.
+  --debugPaths <paths>     Colon separated list of paths that contain debug
+                           information. These paths are relative to the
+                           executable and not to the current working directory.
+  --extraLibPaths <paths>  Colon separated list of extra paths to find
+                           libraries.
+  --appPath <path>         Path to folder containing the application executable
+                           and libraries.
+  --arch <path>            Architecture to use for unwinding.
+  --exportTo <path>        Path to .perfparser output file to which the input
+                           data should be exported. A single input file has to
+                           be given too.
+
+Arguments:
+  files                    Optional input files to open on startup, i.e.
+                           perf.data files.
 ```
 
 ### Off-CPU Profiling
