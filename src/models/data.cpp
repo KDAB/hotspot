@@ -312,7 +312,7 @@ QString Data::prettifySymbol(const QString& name)
     return result == name ? name : result;
 }
 
-TopDownResults TopDownResults::fromBottomUp(const BottomUpResults& bottomUpData, bool skipFirstLevel)
+TopDownResults Data::TopDownResults::fromBottomUp(const BottomUpResults& bottomUpData, bool skipFirstLevel)
 {
     TopDownResults results;
     results.selfCosts.initializeCostsFrom(bottomUpData.costs);

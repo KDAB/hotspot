@@ -16,6 +16,7 @@ class ResultsTopDownPage;
 
 namespace Data {
 struct Symbol;
+struct TopDownResults;
 }
 
 class QTreeView;
@@ -23,6 +24,7 @@ class QTreeView;
 class PerfParser;
 class FilterAndZoomStack;
 class CostContextMenu;
+class TopDownModel;
 
 class ResultsTopDownPage : public QWidget
 {
@@ -34,6 +36,9 @@ public:
 
     void clear();
 
+public slots:
+    void setTopDownResults(const Data::TopDownResults& data);
+
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
     void openEditor(const Data::Symbol& symbol);
@@ -41,5 +46,6 @@ signals:
     void jumpToDisassembly(const Data::Symbol& symbol);
 
 private:
+    TopDownModel* m_model = nullptr;
     QScopedPointer<Ui::ResultsTopDownPage> ui;
 };
