@@ -18,13 +18,18 @@ class QTextDocument;
 
 class Highlighter;
 
+namespace KSyntaxHighlighting {
+class Repository;
+class Definition;
+}
+
 Q_DECLARE_METATYPE(QTextLine)
 
 class SourceCodeModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    explicit SourceCodeModel(QObject* parent = nullptr);
+    explicit SourceCodeModel(KSyntaxHighlighting::Repository* repository, QObject* parent = nullptr);
     ~SourceCodeModel();
 
     void clear();
@@ -38,6 +43,11 @@ public:
 
     Data::FileLine fileLineForIndex(const QModelIndex& index) const;
     QModelIndex indexForFileLine(const Data::FileLine& line) const;
+
+    Highlighter* highlighter() const
+    {
+        return m_highlighter;
+    }
 
     enum Columns
     {
