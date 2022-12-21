@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(
     hotspot
-    VERSION 1.4.0
+    VERSION 1.4.1
     LANGUAGES CXX C
 )
 
