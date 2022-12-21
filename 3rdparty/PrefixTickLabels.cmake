@@ -1,3 +1,5 @@
+check_submodule_exists(PrefixTickLabels PrefixTickLabels/src/PrefixTickLabels.h)
+
 add_library(PrefixTickLabels STATIC
     PrefixTickLabels/src/PrefixTickLabels.cpp
     )
