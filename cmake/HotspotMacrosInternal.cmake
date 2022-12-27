@@ -1,6 +1,6 @@
 # Submodule handling
 function(check_submodule_exists name path)
-    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${path}/.git")
+    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${path}")
         if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
             message(
                 FATAL_ERROR

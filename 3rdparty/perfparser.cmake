@@ -1,3 +1,5 @@
+check_submodule_exists(perfparser perfparser/app/perfdata.h)
+
 include(CheckSymbolExists)
 set(CMAKE_REQUIRED_INCLUDES ${LIBELF_INCLUDE_DIRS} ${LIBDW_INCLUDE_DIR}/elfutils ${LIBDWARF_INCLUDE_DIRS})
 set(CMAKE_REQUIRED_LIBRARIES ${LIBDW_LIBRARIES} ${LIBELF_LIBRARIES})
