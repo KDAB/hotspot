@@ -8,6 +8,8 @@
 
 #include "perfrecord.h"
 
+#include "recordhost.h"
+
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>
@@ -19,19 +21,12 @@
 #include <csignal>
 #include <unistd.h>
 
-#include <KUser>
-
 #include <kwindowsystem_version.h>
 #if KWINDOWSYSTEM_VERSION >= QT_VERSION_CHECK(5, 101, 0)
 #include <KX11Extras>
 #else
 #include <KWindowSystem>
 #endif
-
-#include <hotspot-config.h>
-
-#include <fstream>
-#include <sys/stat.h>
 
 namespace {
 void createOutputFile(const QString& outputPath)
@@ -44,17 +39,11 @@ void createOutputFile(const QString& outputPath)
     QFile::rename(outputPath, bakPath);
     QFile(outputPath).open(QIODevice::WriteOnly);
 }
-
-QString findPkexec()
-{
-    return QStandardPaths::findExecutable(QStringLiteral("pkexec"));
-}
 }
 
-PerfRecord::PerfRecord(QObject* parent)
+PerfRecord::PerfRecord(const RecordHost* host, QObject* parent)
     : QObject(parent)
-    , m_perfRecordProcess(nullptr)
-    , m_userTerminated(false)
+    , m_host(host)
 {
     connect(&m_perfControlFifo, &PerfControlFifoWrapper::started, this,
             [this]() { m_targetProcessForPrivilegedPerf.continueStoppedProcess(); });
@@ -70,38 +59,6 @@ PerfRecord::~PerfRecord()
         m_perfRecordProcess->waitForFinished(100);
         delete m_perfRecordProcess;
     }
-}
-
-static bool privsAlreadyElevated()
-{
-    auto readSysctl = [](const char* path) {
-        std::ifstream ifs {path};
-        int i = std::numeric_limits<int>::min();
-        if (ifs) {
-            ifs >> i;
-        }
-        return i;
-    };
-
-    bool isElevated = readSysctl("/proc/sys/kernel/kptr_restrict") == 0;
-    if (!isElevated) {
-        return false;
-    }
-
-    isElevated = readSysctl("/proc/sys/kernel/perf_event_paranoid") == -1;
-    if (!isElevated) {
-        return false;
-    }
-
-    auto checkPerms = [](const char* path) {
-        const mode_t required = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH; // 755
-        struct stat buf;
-        return stat(path, &buf) == 0 && ((buf.st_mode & 07777) & required) == required;
-    };
-    static const auto paths = {"/sys/kernel/debug", "/sys/kernel/debug/tracing"};
-    isElevated = std::all_of(paths.begin(), paths.end(), checkPerms);
-
-    return isElevated;
 }
 
 bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
@@ -176,14 +133,14 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
     perfCommand += perfOptions;
 
     if (elevatePrivileges) {
-        const auto pkexec = findPkexec();
+        const auto pkexec = RecordHost::pkexecBinaryPath();
         if (pkexec.isEmpty()) {
             emit recordingFailed(tr("The pkexec utility was not found, cannot elevate privileges."));
             return false;
         }
 
         auto options = QStringList();
-        options.append(perfBinaryPath());
+        options.append(m_host->perfBinaryPath());
         options += perfCommand;
 
         if (!m_perfControlFifo.open()) {
@@ -198,7 +155,7 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
 
         m_perfRecordProcess->start(pkexec, options);
     } else {
-        m_perfRecordProcess->start(perfBinaryPath(), perfCommand);
+        m_perfRecordProcess->start(m_host->perfBinaryPath(), perfCommand);
     }
 
     return true;
@@ -295,106 +252,13 @@ void PerfRecord::sendInput(const QByteArray& input)
     m_perfRecordProcess->write(input);
 }
 
-QString PerfRecord::currentUsername()
-{
-    return KUser().loginName();
-}
-
-bool PerfRecord::canTrace(const QString& path)
-{
-    const auto info = QFileInfo(QLatin1String("/sys/kernel/debug/tracing/") + path);
-    if (!info.isDir() || !info.isReadable()) {
-        return false;
-    }
-    QFile paranoid(QStringLiteral("/proc/sys/kernel/perf_event_paranoid"));
-    return paranoid.open(QIODevice::ReadOnly) && paranoid.readAll().trimmed() == "-1";
-}
-
-static QByteArray perfOutput(const QStringList& arguments)
-{
-    QProcess process;
-
-    auto reportError = [&]() {
-        qWarning() << "Failed to run perf" << process.arguments() << process.error() << process.errorString()
-                   << process.readAllStandardError();
-    };
-
-    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-    env.insert(QStringLiteral("LANG"), QStringLiteral("C"));
-    process.setProcessEnvironment(env);
-
-    QObject::connect(&process, &QProcess::errorOccurred, &process, reportError);
-    process.start(PerfRecord::perfBinaryPath(), arguments);
-    if (!process.waitForFinished(1000) || process.exitCode() != 0)
-        reportError();
-    return process.readAllStandardOutput();
-}
-
-static QByteArray perfRecordHelp()
-{
-    static const QByteArray recordHelp = []() {
-        static QByteArray help = perfOutput({QStringLiteral("record"), QStringLiteral("--help")});
-        if (help.isEmpty()) {
-            // no man page installed, assume the best
-            help = "--sample-cpu --switch-events";
-        }
-        return help;
-    }();
-    return recordHelp;
-}
-
-static QByteArray perfBuildOptions()
-{
-    static const QByteArray buildOptions = perfOutput({QStringLiteral("version"), QStringLiteral("--build-options")});
-    return buildOptions;
-}
-
-bool PerfRecord::canProfileOffCpu()
-{
-    return canTrace(QStringLiteral("events/sched/sched_switch"));
-}
-
 QStringList PerfRecord::offCpuProfilingOptions()
 {
     return {QStringLiteral("--switch-events"), QStringLiteral("--event"), QStringLiteral("sched:sched_switch")};
 }
 
-bool PerfRecord::canSampleCpu()
+bool PerfRecord::actuallyElevatePrivileges(bool elevatePrivileges) const
 {
-    return perfRecordHelp().contains("--sample-cpu");
-}
-
-bool PerfRecord::canSwitchEvents()
-{
-    return perfRecordHelp().contains("--switch-events");
-}
-
-bool PerfRecord::canUseAio()
-{
-    return perfBuildOptions().contains("aio: [ on  ]");
-}
-
-bool PerfRecord::canCompress()
-{
-    return Zstd_FOUND && perfBuildOptions().contains("zstd: [ on  ]");
-}
-
-bool PerfRecord::canElevatePrivileges()
-{
-    return !findPkexec().isEmpty();
-}
-
-QString PerfRecord::perfBinaryPath()
-{
-    return QStandardPaths::findExecutable(QStringLiteral("perf"));
-}
-
-bool PerfRecord::isPerfInstalled()
-{
-    return !perfBinaryPath().isEmpty();
-}
-
-bool PerfRecord::actuallyElevatePrivileges(bool elevatePrivileges)
-{
-    return elevatePrivileges && canElevatePrivileges() && geteuid() != 0 && !privsAlreadyElevated();
+    const auto capabilities = m_host->perfCapabilities();
+    return elevatePrivileges && capabilities.canElevatePrivileges && !capabilities.privilegesAlreadyElevated;
 }

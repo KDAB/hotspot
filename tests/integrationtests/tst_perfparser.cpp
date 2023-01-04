@@ -18,6 +18,7 @@
 #include "data.h"
 #include "perfparser.h"
 #include "perfrecord.h"
+#include "recordhost.h"
 #include "unistd.h"
 #include "util.h"
 
@@ -157,9 +158,18 @@ class TestPerfParser : public QObject
 private slots:
     void initTestCase()
     {
-        if (!PerfRecord::isPerfInstalled()) {
+        RecordHost host;
+        QSignalSpy capabilitiesSpy(&host, &RecordHost::perfCapabilitiesChanged);
+        QSignalSpy installedSpy(&host, &RecordHost::isPerfInstalledChanged);
+        QVERIFY(installedSpy.wait());
+        if (!host.isPerfInstalled()) {
             QSKIP("perf is not available, cannot run integration tests.");
         }
+
+        if (capabilitiesSpy.count() == 0) {
+            QVERIFY(capabilitiesSpy.wait());
+        }
+        m_capabilities = host.perfCapabilities();
     }
 
     void init()
@@ -202,9 +212,9 @@ private slots:
         QTest::addColumn<QStringList>("otherOptions");
 
         QTest::addRow("normal") << QStringList();
-        if (PerfRecord::canUseAio())
+        if (m_capabilities.canUseAio)
             QTest::addRow("aio") << QStringList(QStringLiteral("--aio"));
-        if (PerfRecord::canCompress())
+        if (m_capabilities.canCompress)
             QTest::addRow("zstd") << QStringList(QStringLiteral("-z"));
     }
 
@@ -414,7 +424,8 @@ private slots:
         QTemporaryFile tempFile;
         tempFile.open();
 
-        PerfRecord perf;
+        RecordHost host;
+        PerfRecord perf(&host);
         QSignalSpy recordingFinishedSpy(&perf, &PerfRecord::recordingFinished);
         QSignalSpy recordingFailedSpy(&perf, &PerfRecord::recordingFailed);
 
@@ -493,7 +504,7 @@ private slots:
 
     void testOffCpu()
     {
-        if (!PerfRecord::canProfileOffCpu()) {
+        if (!m_capabilities.canProfileOffCpu) {
             QSKIP("cannot access sched_switch trace points. execute the following to run this test:\n"
                   "    sudo mount -o remount,mode=755 /sys/kernel/debug{,/tracing} with mode=755");
         }
@@ -543,7 +554,7 @@ private slots:
             QSKIP("no sleep command available");
         }
 
-        if (!PerfRecord::canProfileOffCpu()) {
+        if (!m_capabilities.canProfileOffCpu) {
             QSKIP("cannot access sched_switch trace points. execute the following to run this test:\n"
                   "    sudo mount -o remount,mode=755 /sys/kernel/debug{,/tracing} with mode=755");
         }
@@ -573,7 +584,7 @@ private slots:
     {
         QStringList perfOptions = {QStringLiteral("--call-graph"), QStringLiteral("dwarf"),
                                    QStringLiteral("--sample-cpu"), QStringLiteral("-e"), QStringLiteral("cycles")};
-        if (PerfRecord::canProfileOffCpu()) {
+        if (m_capabilities.canProfileOffCpu) {
             perfOptions += PerfRecord::offCpuProfilingOptions();
         }
 
@@ -593,7 +604,7 @@ private slots:
         QCOMPARE(m_eventData.threads.size(), numThreads + 1);
         QCOMPARE(m_eventData.cpus.size(), numThreads);
 
-        if (PerfRecord::canProfileOffCpu()) {
+        if (m_capabilities.canProfileOffCpu) {
             QCOMPARE(m_bottomUpData.costs.numTypes(), 3);
             QCOMPARE(m_bottomUpData.costs.typeName(0), QStringLiteral("cycles"));
             QCOMPARE(m_bottomUpData.costs.typeName(1), QStringLiteral("sched:sched_switch"));
@@ -714,11 +725,13 @@ private:
     QString m_cpuArchitecture;
     QString m_linuxKernelVersion;
     QString m_machineHostName;
+    RecordHost::PerfCapabilities m_capabilities;
 
     void perfRecord(const QStringList& perfOptions, const QString& exePath, const QStringList& exeOptions,
                     const QString& fileName)
     {
-        PerfRecord perf(this);
+        RecordHost host;
+        PerfRecord perf(&host);
         QSignalSpy recordingFinishedSpy(&perf, &PerfRecord::recordingFinished);
         QSignalSpy recordingFailedSpy(&perf, &PerfRecord::recordingFailed);
 

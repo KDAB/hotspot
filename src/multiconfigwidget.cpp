@@ -76,6 +76,9 @@ void MultiConfigWidget::setConfig(const KConfigGroup& group)
     m_comboBox->clear();
     m_config = group;
 
+    if (!m_config.isValid())
+        return;
+
     const auto groups = m_config.groupList();
     for (const auto& config : groups) {
         if (m_config.hasGroup(config)) {

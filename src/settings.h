@@ -144,6 +144,11 @@ public:
         return m_sourceCodePaths;
     }
 
+    QString perfPath() const
+    {
+        return m_perfPath;
+    }
+
     void loadFromFile();
 
 signals:
@@ -164,6 +169,7 @@ signals:
     void callgraphChanged();
     void lastUsedEnvironmentChanged(const QString& envName);
     void sourceCodePathsChanged(const QString& paths);
+    void perfPathChanged(const QString& perfPath);
 
 public slots:
     void setPrettifySymbols(bool prettifySymbols);
@@ -185,6 +191,7 @@ public slots:
     void setCostAggregation(Settings::CostAggregation costAggregation);
     void setLastUsedEnvironment(const QString& envName);
     void setSourceCodePaths(const QString& paths);
+    void setPerfPath(const QString& path);
 
 private:
     Settings() = default;
@@ -214,4 +221,6 @@ private:
     int m_callgraphChildDepth = 2;
     QColor m_callgraphActiveColor;
     QColor m_callgraphColor;
+
+    QString m_perfPath;
 };

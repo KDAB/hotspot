@@ -13,6 +13,7 @@
 #include <QWidget>
 
 #include "processlist.h"
+#include "recordhost.h"
 
 #include <memory>
 
@@ -33,15 +34,6 @@ namespace KParts {
 class ReadOnlyPart;
 }
 
-enum RecordType
-{
-    LaunchApplication = 0,
-    AttachToProcess,
-    ProfileSystem,
-    NUM_RECORD_TYPES
-};
-Q_DECLARE_METATYPE(RecordType)
-
 class RecordPage : public QWidget
 {
     Q_OBJECT
@@ -59,12 +51,9 @@ signals:
 private slots:
     void onApplicationNameChanged(const QString& filePath);
     void onStartRecordingButtonClicked(bool checked);
-    void onWorkingDirectoryNameChanged(const QString& folderPath);
-    void onViewPerfRecordResultsButtonClicked();
     void onOutputFileNameChanged(const QString& filePath);
     void onOutputFileUrlChanged(const QUrl& fileUrl);
     void onOutputFileNameSelected(const QString& filePath);
-    void updateOffCpuCheckboxState();
 
     void updateProcesses();
     void updateProcessesFinished();
@@ -77,6 +66,7 @@ private:
 
     std::unique_ptr<Ui::RecordPage> ui;
 
+    RecordHost* m_recordHost;
     PerfRecord* m_perfRecord;
     QString m_resultsFile;
     QElapsedTimer m_recordTimer;
