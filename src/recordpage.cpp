@@ -177,17 +177,14 @@ RecordPage::RecordPage(QWidget* parent)
         ui->setupUi(contents);
     }
 
-    auto completion = ui->applicationName->completionObject();
     ui->applicationName->comboBox()->setEditable(true);
-    // NOTE: workaround until https://phabricator.kde.org/D7966 has landed and we bump the required version
-    ui->applicationName->comboBox()->setCompletionObject(completion);
     ui->applicationName->setMode(KFile::File | KFile::ExistingOnly | KFile::LocalOnly);
-#if KIO_VERSION >= QT_VERSION_CHECK(5, 31, 0)
+
     // we are only interested in executable files, so set the mime type filter accordingly
     // note that exe's build with PIE are actually "shared libs"...
     ui->applicationName->setMimeTypeFilters(
         {QStringLiteral("application/x-executable"), QStringLiteral("application/x-sharedlib")});
-#endif
+
     ui->workingDirectory->setMode(KFile::Directory | KFile::LocalOnly);
     ui->outputFile->setText(QDir::currentPath() + QDir::separator() + QStringLiteral("perf.data"));
     ui->outputFile->setMode(KFile::File | KFile::LocalOnly);
@@ -234,9 +231,6 @@ RecordPage::RecordPage(QWidget* parent)
 
     connect(ui->homeButton, &QPushButton::clicked, this, &RecordPage::homeButtonClicked);
     connect(ui->applicationName, &KUrlRequester::textChanged, this, &RecordPage::onApplicationNameChanged);
-    // NOTE: workaround until https://phabricator.kde.org/D7968 has landed and we bump the required version
-    connect(ui->applicationName->comboBox()->lineEdit(), &QLineEdit::textChanged, this,
-            &RecordPage::onApplicationNameChanged);
     connect(ui->startRecordingButton, &QPushButton::toggled, this, &RecordPage::onStartRecordingButtonClicked);
     connect(ui->workingDirectory, &KUrlRequester::textChanged, this, &RecordPage::onWorkingDirectoryNameChanged);
     connect(ui->viewPerfRecordResultsButton, &QPushButton::clicked, this,

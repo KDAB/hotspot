@@ -92,7 +92,7 @@ set_package_properties(
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
 find_package(
-    KF${QT_MAJOR_VERSION}
+    KF${QT_MAJOR_VERSION} 5.42.0
     COMPONENTS ThreadWeaver
                ConfigWidgets
                CoreAddons
