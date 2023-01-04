@@ -37,7 +37,7 @@ jobs:
       run: cmake --build build
 
     - name: Test
-      run: ctest --test-dir build --output-on-failure -E tst_perfdata
+      run: cd build && ctest --output-on-failure -E tst_perfdata
 
   ubuntu-2204:
     needs: pre_job
