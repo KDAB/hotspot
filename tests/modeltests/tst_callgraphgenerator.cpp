@@ -8,6 +8,7 @@
 
 #include "../../src/parsers/perf/perfparser.h"
 #include "../../src/perfrecord.h"
+#include "../../src/recordhost.h"
 #include "../testutils.h"
 #include "data.h"
 
@@ -99,7 +100,8 @@ private:
     void perfRecord(const QStringList& perfOptions, const QString& exePath, const QStringList& exeOptions,
                     const QString& fileName)
     {
-        PerfRecord perf(this);
+        RecordHost host;
+        PerfRecord perf(&host);
         QSignalSpy recordingFinishedSpy(&perf, &PerfRecord::recordingFinished);
         QSignalSpy recordingFailedSpy(&perf, &PerfRecord::recordingFailed);
 

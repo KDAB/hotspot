@@ -53,6 +53,7 @@ set(HOTSPOT_SRCS
     initiallystoppedprocess.cpp
     perfcontrolfifowrapper.cpp
     errnoutil.cpp
+    recordhost.cpp
     # ui files:
     mainwindow.ui
     aboutdialog.ui
@@ -73,6 +74,7 @@ set(HOTSPOT_SRCS
     callgraphsettingspage.ui
     frequencypage.ui
     sourcepathsettings.ui
+    perfsettingspage.ui
     # resources:
     resources.qrc
 )

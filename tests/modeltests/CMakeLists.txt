@@ -55,6 +55,7 @@ ecm_add_test(
     ../../src/initiallystoppedprocess.cpp
     ../../src/perfcontrolfifowrapper.cpp
     ../../src/perfrecord.cpp
+    ../../src/recordhost.cpp
     ../../src/callgraphgenerator.cpp
     ../../src/errnoutil.cpp
     LINK_LIBRARIES

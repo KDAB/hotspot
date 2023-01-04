@@ -6,6 +6,7 @@ ecm_add_test(
     ../../src/initiallystoppedprocess.cpp
     ../../src/perfcontrolfifowrapper.cpp
     ../../src/perfrecord.cpp
+    ../../src/recordhost.cpp
     ../../src/settings.cpp
     ../../src/util.cpp
     ../../src/errnoutil.cpp

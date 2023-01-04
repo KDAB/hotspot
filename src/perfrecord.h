@@ -15,12 +15,13 @@
 #include <QPointer>
 
 class QProcess;
+class RecordHost;
 
 class PerfRecord : public QObject
 {
     Q_OBJECT
 public:
-    explicit PerfRecord(QObject* parent = nullptr);
+    explicit PerfRecord(const RecordHost* host, QObject* parent = nullptr);
     ~PerfRecord();
 
     void record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
@@ -33,20 +34,7 @@ public:
     void stopRecording();
     void sendInput(const QByteArray& input);
 
-    static QString currentUsername();
-
-    static bool canTrace(const QString& path);
-    static bool canProfileOffCpu();
-    static bool canSampleCpu();
-    static bool canSwitchEvents();
-    static bool canUseAio();
-    static bool canCompress();
-    static bool canElevatePrivileges();
-
     static QStringList offCpuProfilingOptions();
-
-    static QString perfBinaryPath();
-    static bool isPerfInstalled();
 
 signals:
     void recordingStarted(const QString& perfBinary, const QStringList& arguments);
@@ -56,13 +44,14 @@ signals:
     void debuggeeCrashed();
 
 private:
+    const RecordHost* m_host = nullptr;
     QPointer<QProcess> m_perfRecordProcess;
     InitiallyStoppedProcess m_targetProcessForPrivilegedPerf;
     PerfControlFifoWrapper m_perfControlFifo;
     QString m_outputPath;
-    bool m_userTerminated;
+    bool m_userTerminated = false;
 
-    static bool actuallyElevatePrivileges(bool elevatePrivileges);
+    bool actuallyElevatePrivileges(bool elevatePrivileges) const;
 
     bool runPerf(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
                  const QString& workingDirectory = QString());
