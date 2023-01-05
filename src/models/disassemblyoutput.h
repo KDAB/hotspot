@@ -40,6 +40,7 @@ struct DisassemblyOutput
         return errorMessage.isEmpty();
     }
 
-    static DisassemblyOutput disassemble(const QString& objdump, const QString& arch, const Data::Symbol& symbol);
+    static DisassemblyOutput disassemble(const QString& objdump, const QString& arch, const QStringList& debugPaths,
+                                         const QStringList& extraLibPaths, const Data::Symbol& symbol);
 };
 Q_DECLARE_TYPEINFO(DisassemblyOutput::DisassemblyLine, Q_MOVABLE_TYPE);

@@ -10,6 +10,9 @@
 #include "data.h"
 
 #include <QApplication>
+#include <QDir>
+#include <QDirIterator>
+#include <QFileInfo>
 #include <QLoggingCategory>
 #include <QProcess>
 #include <QRegularExpression>
@@ -66,6 +69,56 @@ DisassemblyOutput::LinkedFunction extractLinkedFunction(const QString& disassemb
         }
     }
     return function;
+}
+
+QString findInSubdirRecursive(const QString& path, const QString& filename)
+{
+    // find filename in path
+    // some distros (Ubuntu) use subdirs to store their debug files
+    QString filepath = path + QDir::separator() + filename;
+    if (QFileInfo::exists(filepath)) {
+        return filepath;
+    }
+
+    QDirIterator it(path, {filename}, QDir::NoFilter, QDirIterator::Subdirectories);
+    if (it.hasNext()) {
+        return it.next();
+    }
+
+    return {};
+}
+
+QString findBinaryForSymbol(const QStringList& debugPaths, const QStringList& extraLibPaths, const Data::Symbol& symbol)
+{
+    // file in .debug
+    if (QFileInfo::exists(symbol.actualPath)) {
+        return symbol.actualPath;
+    }
+
+    auto findBinary = [](const QStringList& paths, const QString& binary) -> QString {
+        for (const auto& path : paths) {
+            auto result = findInSubdirRecursive(path, binary);
+            if (!result.isEmpty()) {
+                return result;
+            }
+        }
+        return {};
+    };
+
+    auto result = findBinary(debugPaths, symbol.binary);
+    if (!result.isEmpty())
+        return result;
+
+    result = findBinary(extraLibPaths, symbol.binary);
+    if (!result.isEmpty())
+        return result;
+
+    // disassemble the binary if no debug file was found
+    if (QFileInfo::exists(symbol.path)) {
+        return symbol.path;
+    }
+
+    return {};
 }
 }
 
@@ -155,6 +208,7 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
 }
 
 DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const QString& arch,
+                                                 const QStringList& debugPaths, const QStringList& extraLibPaths,
                                                  const Data::Symbol& symbol)
 {
     DisassemblyOutput disassemblyOutput;
@@ -195,17 +249,24 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
     else
         qCInfo(disassemblyoutput) << "objdump binary does not support `--visualize-jumps`:" << processPath;
 
-    arguments.append(symbol.actualPath);
+    auto binary = findBinaryForSymbol(debugPaths, extraLibPaths, symbol);
+    if (binary.isEmpty()) {
+        disassemblyOutput.errorMessage +=
+            QApplication::translate("DisassemblyOutput", "Could not find %1").arg(symbol.binary);
+        return disassemblyOutput;
+    }
+    arguments.append(binary);
 
     asmProcess.start(objdump, arguments);
 
     if (!asmProcess.waitForStarted()) {
-        disassemblyOutput.errorMessage += QApplication::tr("Process was not started.");
+        disassemblyOutput.errorMessage += QApplication::translate("DisassemblyOutput", "Process was not started.");
         return disassemblyOutput;
     }
 
     if (!asmProcess.waitForFinished()) {
-        disassemblyOutput.errorMessage += QApplication::tr("Process was not finished. Stopped by timeout");
+        disassemblyOutput.errorMessage +=
+            QApplication::translate("DisassemblyOutput", "Process was not finished. Stopped by timeout");
         return disassemblyOutput;
     }
 
