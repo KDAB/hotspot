@@ -1,5 +1,10 @@
 include_directories(../../src)
 
+add_library(
+    fib SHARED
+    disassembly/fib.cpp
+)
+
 ecm_add_test(
     tst_models.cpp
     LINK_LIBRARIES
@@ -37,6 +42,7 @@ ecm_add_test(
     PrefixTickLabels
     TEST_NAME
     tst_disassemblyoutput
+    ../../src/settings.cpp
 )
 
 set_target_properties(

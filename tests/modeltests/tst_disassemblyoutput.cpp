@@ -19,6 +19,12 @@
 #include <data.h>
 #include <models/disassemblyoutput.h>
 
+inline QString findLib(const QString& name)
+{
+    QFileInfo lib(QCoreApplication::applicationDirPath() + QLatin1String("/../tests/modeltests/%1").arg(name));
+    return lib.canonicalFilePath();
+}
+
 class TestDisassemblyOutput : public QObject
 {
     Q_OBJECT
@@ -59,7 +65,7 @@ private slots:
         QTextStream disassemblyStream(&actual);
 
         const auto disassemblyOutput =
-            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), symbol);
+            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), {}, {}, symbol);
         for (const auto& disassemblyLine : disassemblyOutput.disassemblyLines) {
             disassemblyStream << Qt::hex << disassemblyLine.addr << '\t' << disassemblyLine.disassembly << '\n';
         }
@@ -115,6 +121,41 @@ private slots:
         file->write(text.toUtf8());
 
         return file->fileName();
+    }
+
+    void testCustomDebugPath_data()
+    {
+        QTest::addColumn<QStringList>("searchPath");
+
+        QFileInfo lib = findLib(QStringLiteral("libfib.so"));
+        QVERIFY(lib.exists());
+
+        QTest::newRow("file in dir") << QStringList(lib.absolutePath());
+        QDir parentDir(lib.dir().path() + QDir::separator() + QStringLiteral(".."));
+        QTest::newRow("find file in subdir") << QStringList(parentDir.absolutePath());
+    }
+
+    void testCustomDebugPath()
+    {
+        const QString objdump = QStandardPaths::findExecutable(QStringLiteral("objdump"));
+
+        if (objdump.isEmpty()) {
+            QSKIP("objdump not found");
+        }
+
+        const Data::Symbol symbol = {QStringLiteral("fib(int)"), 4361, 67, QStringLiteral("libfib.so")};
+
+        auto result = DisassemblyOutput::disassemble(objdump, {}, {}, {}, symbol);
+        QVERIFY(!result.errorMessage.isEmpty());
+        QVERIFY(result.errorMessage.contains(QLatin1String("Could not find libfib.so")));
+
+        QFETCH(QStringList, searchPath);
+
+        result = DisassemblyOutput::disassemble(objdump, {}, QStringList(searchPath), {}, symbol);
+        QVERIFY(result.errorMessage.isEmpty());
+
+        result = DisassemblyOutput::disassemble(objdump, {}, {}, QStringList(searchPath), symbol);
+        QVERIFY(result.errorMessage.isEmpty());
     }
 };
 

@@ -228,7 +228,7 @@ void ResultsDisassemblyPage::showDisassembly()
         return isArm ? QStringLiteral("arm-linux-gnueabi-objdump") : QStringLiteral("objdump");
     };
 
-    showDisassembly(DisassemblyOutput::disassemble(objdump(), m_arch, m_curSymbol));
+    showDisassembly(DisassemblyOutput::disassemble(objdump(), m_arch, {}, {}, m_curSymbol));
 }
 
 void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassemblyOutput)
