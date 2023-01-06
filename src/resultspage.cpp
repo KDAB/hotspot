@@ -56,7 +56,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     , m_resultsTopDownPage(new ResultsTopDownPage(m_filterAndZoomStack, parser, m_costContextMenu, this))
     , m_resultsFlameGraphPage(new ResultsFlameGraphPage(m_filterAndZoomStack, parser, m_exportMenu, this))
     , m_resultsCallerCalleePage(new ResultsCallerCalleePage(m_filterAndZoomStack, parser, m_costContextMenu, this))
-    , m_resultsDisassemblyPage(new ResultsDisassemblyPage(this))
+    , m_resultsDisassemblyPage(new ResultsDisassemblyPage(m_costContextMenu, this))
     , m_timeLineWidget(new TimeLineWidget(parser, m_filterMenu, m_filterAndZoomStack, this))
 #if QCustomPlot_FOUND
     , m_frequencyPage(new FrequencyPage(parser, this))
