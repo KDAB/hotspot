@@ -36,6 +36,7 @@
 #include <QStringListModel>
 #endif
 
+#include "costheaderview.h"
 #include "data.h"
 #include "models/codedelegate.h"
 #include "models/costdelegate.h"
@@ -46,7 +47,7 @@
 #include "models/treemodel.h"
 #include "settings.h"
 
-ResultsDisassemblyPage::ResultsDisassemblyPage(QWidget* parent)
+ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsDisassemblyPage)
 #if KF5SyntaxHighlighting_FOUND
@@ -67,8 +68,10 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(QWidget* parent)
     ui->setupUi(this);
     ui->assemblyView->setModel(m_disassemblyModel);
     ui->assemblyView->setMouseTracking(true);
+    ui->assemblyView->setHeader(new CostHeaderView(costContextMenu, this));
     ui->sourceCodeView->setModel(m_sourceCodeModel);
     ui->sourceCodeView->setMouseTracking(true);
+    ui->sourceCodeView->setHeader(new CostHeaderView(costContextMenu, this));
 
     auto settings = Settings::instance();
     m_sourceCodeModel->setSysroot(settings->sysroot());
@@ -259,6 +262,14 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
 
     m_disassemblyModel->setDisassembly(disassemblyOutput, m_callerCalleeResults);
     m_sourceCodeModel->setDisassembly(disassemblyOutput, m_callerCalleeResults);
+
+    ResultsUtil::hideEmptyColumns(m_callerCalleeResults.selfCosts, ui->assemblyView, DisassemblyModel::COLUMN_COUNT);
+
+    ResultsUtil::hideEmptyColumns(m_callerCalleeResults.inclusiveCosts, ui->sourceCodeView,
+                                  SourceCodeModel::COLUMN_COUNT);
+
+    ResultsUtil::hideEmptyColumns(m_callerCalleeResults.selfCosts, ui->sourceCodeView,
+                                  SourceCodeModel::COLUMN_COUNT + m_callerCalleeResults.inclusiveCosts.numTypes());
 
     setupAsmViewModel();
 }

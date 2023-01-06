@@ -34,6 +34,7 @@ class DisassemblyDelegate;
 struct DisassemblyOutput;
 class DisassemblyModel;
 class SourceCodeModel;
+class CostContextMenu;
 
 namespace KSyntaxHighlighting {
 class Repository;
@@ -43,7 +44,7 @@ class ResultsDisassemblyPage : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ResultsDisassemblyPage(QWidget* parent = nullptr);
+    explicit ResultsDisassemblyPage(CostContextMenu* costContextMenu, QWidget* parent = nullptr);
     ~ResultsDisassemblyPage();
 
     void clear();
