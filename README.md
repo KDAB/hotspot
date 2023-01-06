@@ -32,6 +32,7 @@ performance data formats under this umbrella.
   - [Embedded Systems](#embedded-systems)
   - [Import Export](#import-export)
   - [tracepoints](#tracepoints)
+  - [Disassembler](#disassembler)
 - [Known Issues](#known-issues)
   - [Broken Backtraces](#broken-backtraces)
   - [debuginfod](#debuginfod)
@@ -313,6 +314,17 @@ resolved in the future, as time permits.
 hotspot currently only shows the name of the tracepoints in the timeline.
 
 ![hotspot tracepoints](screenshots/tracepoints.png?raw=true "hotspot tracepoints")
+
+### Disassembler
+
+![hotspot disassembler page](screenshots/disassembler.png?raw=true "hotspot disassembler page")
+
+Hotspot includes an disassembler, which can show you the cost per instruction.
+The disassembler uses colors to indicate which assembly lines correspond to
+which source code line.
+For easier navigation, you can simply click on a line and the other view will jump to it.
+You can follow function calls with a double click.
+In the sourcecode view you can press ctrl+f or press the search icon to open a search window.
 
 ## Known Issues
 
