@@ -20,7 +20,13 @@
 #include <unistd.h>
 
 #include <KUser>
+
+#include <kwindowsystem_version.h>
+#if KWINDOWSYSTEM_VERSION >= QT_VERSION_CHECK(5, 101, 0)
+#include <KX11Extras>
+#else
 #include <KWindowSystem>
+#endif
 
 #include "util.h"
 
@@ -63,9 +69,14 @@ static QStringList sudoOptions(const QString& sudoBinary)
 {
     QStringList options;
     if (sudoBinary.endsWith(QLatin1String("/kdesudo")) || sudoBinary.endsWith(QLatin1String("/kdesu"))) {
+#if KWINDOWSYSTEM_VERSION >= QT_VERSION_CHECK(5, 101, 0)
+        auto activeWindowId = KX11Extras::activeWindow();
+#else
+        auto activeWindowId = KWindowSystem::activeWindow();
+#endif
         // make the dialog transient for the current window
         options.append(QStringLiteral("--attach"));
-        options.append(QString::number(KWindowSystem::activeWindow()));
+        options.append(QString::number(activeWindowId));
     }
     if (sudoBinary.endsWith(QLatin1String("/kdesu"))) {
         // show text output
