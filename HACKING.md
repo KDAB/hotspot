@@ -18,7 +18,9 @@
   - [Arch Linux](#arch-linux)
   - [OpenSUSE](#opensuse)
   - [Building Hotspot itself](#building-hotspot-itself)
-  - [Debugging the AppImage](#debugging-the-appimage)
+- [Debugging the AppImage](#debugging-the-appimage)
+  - [AppImage-Debugging using manual symbol loading](#appimage-debugging-using-manual-symbol-loading)
+  - [AppImage-Debugging using debuginfod](#appimage-debugging-using-debuginfod)
 
 <!-- tocstop -->
 
@@ -125,18 +127,94 @@ make
 If you want to use KAuth, you need to add `-DCMAKE_INSTALL_PREFIX=/usr/` to the cmake call. Otherwise KAuth won't work.
 If you need help building this project for your platform, [contact us for help](https://www.kdab.com/about/contact/).
 
-### Debugging the AppImage
+## Debugging the AppImage
+
+When the AppImage crashes or is excessively slow, please provide a usable backtrace or profile run.
 
 If you're building Hotspot yourself you have the debugging symbols availalbe, when using a distro version
 you can check with your distribution documentation how to install the debug symbols.
 
-But debugging is also possible when using the [AppImage](README#for-any-linux-distro-appimage) as follows:
+But debugging is also possible when using the [AppImage](README#for-any-linux-distro-appimage) using debuginfod or
+manual symbol loading.
 
-When the AppImage crashes or is excessively slow, please provide a usable backtrace or profile run.
 To do that, you will need to download the debuginfo artifact that matches the AppImage you downloaded.
-Next, you will need to download the docker image from `ghcr.io/kdab/kdesrc-build:latest`. For that you
-need to authenticate yourself to GitHub. If you have a `ghcr.io` authentication token and use `pass`,
-you can do that with
+
+### AppImage-Debugging using manual symbol loading
+
+For using this approach you need to first unpack the debug information:
+
+```bash
+$ unzip debuginfo.zip
+Archive:  debuginfo.zip
+  inflating: hotspot-debuginfo-v1.4.0-43-g02fd82c-x86_64.tar.bz2
+$ tar -xvf hotspot-debuginfo-*.tar.bz2
+hotspot-debuginfo-v1.4.0-43-g02fd82c/usr/bin/hotspot
+hotspot-debuginfo-v1.4.0-43-g02fd82c/usr/lib64/libexec/hotspot-perfparser
+```
+
+Starting the debugger is possible directly with executing the AppImage as follows:
+
+```bash
+$ ./hotspot-v1.4.0-43-g02fd82c-x86_64.AppImage &
+$ gdb -q -p $(pidof hotspot) -ex "add-symbol-file hotspot-debuginfo-v1.4.0-43-g02fd82c/usr/bin/hotspot"
+Attaching to process 123456
+```
+
+with a GDB session of
+
+```txt
+Reading symbols from /tmp/.mount_hotspoBCRbef/squashfs-root/usr/bin/hotspot...
+
+(No debugging symbols found in /tmp/.mount_hotspoBCRbef/squashfs-root/usr/bin/hotspot)
+Reading symbols from /tmp/.mount_hotspoBCRbef/squashfs-root/usr/bin/../lib/libKF5ThreadWeaver.so.5...
+(No debugging symbols found in /tmp/.mount_hotspoBCRbef/squashfs-root/usr/bin/../lib/libKF5ThreadWeaver.so.5)
+...
+0x00007fea98ae0a38 in poll () from /usr/lib64/libc.so.6
+add symbol table from file "hotspot-debuginfo-v1.4.0-43-g02fd82c/usr/bin/hotspot"
+(y or n) y
+Reading symbols from hotspot-debuginfo-v1.4.0-43-g02fd82c/usr/bin/hotspot...
+(gdb) bt
+#0  0x00007ff72544ca38 in poll () from /usr/lib64/libc.so.6
+#1  0x00007ff7246777d7 in _xcb_in_read_block () from /usr/lib64/libxcb.so.1
+#2  0x00007ff7246754e9 in xcb_connect_to_fd () from /usr/lib64/libxcb.so.1
+#3  0x00007ff72467943c in xcb_connect_to_display_with_auth_info () from /usr/lib64/libxcb.so.1
+#4  0x00007ff7283a95ea in _XConnectXCB () from /usr/lib64/libX11.so.6
+#5  0x00007ff728399d89 in XOpenDisplay () from /usr/lib64/libX11.so.6
+#6  0x00007ff70f181527 in QXcbBasicConnection::QXcbBasicConnection(char const*) () from /tmp/squashfs-root/usr/plugins/platforms/../../lib/libQt5XcbQpa.so.5
+#7  0x00007ff70f15b072 in QXcbConnection::QXcbConnection(QXcbNativeInterface*, bool, unsigned int, char const*) ()
+   from /tmp/squashfs-root/usr/plugins/platforms/../../lib/libQt5XcbQpa.so.5
+#8  0x00007ff70f15e588 in QXcbIntegration::QXcbIntegration(QStringList const&, int&, char**) ()
+   from /tmp/squashfs-root/usr/plugins/platforms/../../lib/libQt5XcbQpa.so.5
+#9  0x00007ff7286ad41f in ?? () from /tmp/squashfs-root/usr/plugins/platforms/libqxcb.so
+#10 0x00007ff7267686cf in QGuiApplicationPrivate::createPlatformIntegration() () from /tmp/squashfs-root/usr/bin/../lib/libQt5Gui.so.5
+#11 0x00007ff726769c40 in QGuiApplicationPrivate::createEventDispatcher() () from /tmp/squashfs-root/usr/bin/../lib/libQt5Gui.so.5
+#12 0x00007ff72630c0d7 in QCoreApplicationPrivate::init() () from /tmp/squashfs-root/usr/bin/../lib/libQt5Core.so.5
+#13 0x00007ff72676c639 in QGuiApplicationPrivate::init() () from /tmp/squashfs-root/usr/bin/../lib/libQt5Gui.so.5
+#14 0x00007ff726e12a69 in QApplicationPrivate::init() () from /tmp/squashfs-root/usr/bin/../lib/libQt5Widgets.so.5
+#15 0x000000000043a929 in main (argc=<optimized out>, argv=<optimized out>) at /__w/hotspot/hotspot/src/main.cpp:69
+(gdb) continue
+
+```
+
+or with an extracted image:
+
+```bash
+$ ./hotspot-v1.4.0-43-g02fd82c-x86_64.AppImage --appimage-extract
+$ PATH=./squashfs-root/usr/bin:$PATH LD_LIBRARY_PATH=./squashfs-root/usr/lib64:/usr/local/lib64:/usr/lib64:./squashfs-root/usr/lib:$LD_LIBRARY_PATH gdb -q --exec=hotspot --symbols hotspot-debuginfo-v1.4.0-43-g02fd82c/usr/bin/hotspot -ex run
+Reading symbols from hotspot-debuginfo-v1.4.0-43-g02fd82c/usr/bin/hotspot...
+Starting program: /tmp/squashfs-root/usr/bin/hotspot
+
+```
+
+Note that source files matching the commit the AppImage was created from needs to be manually downloaded
+or inspected in the git repo for this approach. Also note that you cannot debug any QT (or other system) parts
+this way, only Hotspot itself.
+
+### AppImage-Debugging using debuginfod
+
+To use debuginfod, you will need to additionally download the docker image from `ghcr.io/kdab/kdesrc-build:latest`.
+For that you need to authenticate yourself to GitHub. If you have a `ghcr.io` authentication token and
+use `pass`, you can do that with
 
 ```bash
 $ scripts/appimage/download_docker.sh
@@ -174,14 +252,21 @@ Here is one example for that using GDB:
 ```bash
 $ ./hotspot-v1.3.0-391-g590f810-x86_64.AppImage &
 $ export DEBUGINFOD_URLS="127.0.0.1:12345 https://debuginfod.centos.org/ https://debuginfod.archlinux.org"
-$ gdb -p $(pidof hotspot)
+$ gdb -q -p $(pidof hotspot)
+Attaching to process 123456
+...
+```
+
+with a GDB session of
+
+```txt
 ...
 This GDB supports auto-downloading debuginfo from the following URLs:
 127.0.0.1:12345 https://debuginfod.centos.org/ https://debuginfod.archlinux.org
 Enable debuginfod for this session? (y or [n]) y
 Debuginfod has been enabled.
 To make this setting permanent, add 'set debuginfod enabled on' to .gdbinit.
-Downloading 37.95 MB separate debug info for /home/milian/Downloads/squashfs-root/usr/bin/hotspot
+Downloading 37.95 MB separate debug info for /home/user/Downloads/squashfs-root/usr/bin/hotspot
 ...
 (gdb) bt
 #0  0x00007f70bd5140bf in __GI___poll (fds=0x2c83f40, nfds=5, timeout=0) at ../sysdeps/unix/sysv/linux/poll.c:29
@@ -193,6 +278,7 @@ Downloading 37.95 MB separate debug info for /home/milian/Downloads/squashfs-roo
    from /tmp/.mount_hotspoBCRbef/usr/lib/libQt5Core.so.5
 #5  0x00007f70bdcbb26c in QCoreApplication::exec() () from /tmp/.mount_hotspoBCRbef/usr/lib/libQt5Core.so.5
 #6  0x000000000043a23e in main (argc=<optimized out>, argv=<optimized out>) at /__w/hotspot/hotspot/src/main.cpp:194
+(gdb) continue
 ```
 
 Note that source files are not supported in this way yet, as that would blow up the size of the docker image
