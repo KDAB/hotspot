@@ -113,7 +113,10 @@
     </widget>
    </item>
    <item>
-    <widget class="QWidget" name="widget" native="true">
+     <widget class="QSplitter" name="widget">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <property name="spacing">
        <number>0</number>
@@ -216,24 +219,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="customAssemblyHighlighting" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
-         <property name="spacing">
-          <number>0</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
+
           <widget class="QWidget" name="customAssemblyHighlighting" native="true">
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <property name="spacing">
@@ -252,7 +238,17 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QTreeView" name="assemblyView"/>
+             <widget class="KMessageWidget" name="symbolNotFound"/>
+            </item>
+            <item>
+             <widget class="QTreeView" name="assemblyView">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+              <property name="rootIsDecorated">
+               <bool>false</bool>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QWidget" name="widget_5" native="true">
@@ -304,9 +300,7 @@
             </item>
            </layout>
           </widget>
-         </item>
-        </layout>
-       </widget>
+
       </item>
      </layout>
     </widget>
