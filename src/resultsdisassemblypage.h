@@ -50,7 +50,6 @@ public:
     void clear();
     void setupAsmViewModel();
     void showDisassembly();
-    void setAppPath(const QString& path);
     void setSymbol(const Data::Symbol& data);
     void setCostsMap(const Data::CallerCalleeResults& callerCalleeResults);
     void setObjdump(const QString& objdump);
