@@ -44,7 +44,7 @@ if (Zstd_FOUND)
     target_compile_definitions(libhotspot-perfparser PUBLIC HAVE_ZSTD=1)
 endif()
 
-if (HAVE_DWFL_GET_DEBUGINFOD_CLIENT)
+if (HAVE_DWFL_GET_DEBUGINFOD_CLIENT AND LIBDEBUGINFOD_LIBRARIES)
     target_link_libraries(libhotspot-perfparser PRIVATE ${LIBDEBUGINFOD_LIBRARIES})
     target_compile_definitions(libhotspot-perfparser PRIVATE HAVE_DWFL_GET_DEBUGINFOD_CLIENT=1)
 endif()
