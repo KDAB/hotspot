@@ -1,4 +1,4 @@
-<img width="50%" src="src/images/hotspot-logo.png">
+<img width="100%" src="src/images/hotspot-logo.png">
 
 # Hotspot - the Linux perf GUI for performance analysis
 
