@@ -8,6 +8,7 @@
 
 #include "callercalleeproxy.h"
 
+#include "callercalleemodel.h"
 #include "data.h"
 
 namespace {
@@ -31,4 +32,21 @@ bool match(const QSortFilterProxyModel* proxy, const Data::FileLine& fileLine)
 
     return matchImpl(needle, fileLine.file);
 }
+}
+
+SourceMapProxy::SourceMapProxy(QObject* parent)
+    : CallerCalleeProxy<SourceMapModel>(parent)
+{
+}
+
+SourceMapProxy::~SourceMapProxy() = default;
+
+bool SourceMapProxy::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
+{
+    if (source_left.column() == source_right.column() && source_left.column() == SourceMapModel::Location) {
+        const auto left = source_left.data(SourceMapModel::SortRole).value<Data::FileLine>();
+        const auto right = source_right.data(SourceMapModel::SortRole).value<Data::FileLine>();
+        return left < right;
+    }
+    return QSortFilterProxyModel::lessThan(source_left, source_right);
 }

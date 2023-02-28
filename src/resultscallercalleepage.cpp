@@ -36,11 +36,22 @@
 #endif
 
 namespace {
+QSortFilterProxyModel* createProxy(SourceMapModel* model)
+{
+    return new SourceMapProxy(model);
+}
+
+template<typename Model>
+QSortFilterProxyModel* createProxy(Model* model)
+{
+    return new CallerCalleeProxy<Model>(model);
+}
+
 template<typename Model>
 Model* setupModelAndProxyForView(QTreeView* view, CostContextMenu* contextMenu)
 {
     auto model = new Model(view);
-    auto proxy = new CallerCalleeProxy<Model>(model);
+    auto proxy = createProxy(model);
     proxy->setSourceModel(model);
     proxy->setSortRole(Model::SortRole);
     view->setModel(proxy);

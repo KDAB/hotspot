@@ -20,6 +20,8 @@ bool match(const QSortFilterProxyModel* proxy, const Data::Symbol& symbol);
 bool match(const QSortFilterProxyModel* proxy, const Data::FileLine& fileLine);
 }
 
+class SourceMapModel;
+
 template<typename Model>
 class CallerCalleeProxy : public QSortFilterProxyModel
 {
@@ -43,6 +45,15 @@ protected:
 
         return CallerCalleeProxyDetail::match(this, key);
     }
+};
 
-private:
+class SourceMapProxy : public CallerCalleeProxy<SourceMapModel>
+{
+    Q_OBJECT
+public:
+    SourceMapProxy(QObject* parent = nullptr);
+    ~SourceMapProxy();
+
+protected:
+    bool lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const override;
 };

@@ -265,7 +265,7 @@ public:
     {
         if (role == SortRole) {
             if (column == Location) {
-                return fileLine.toString();
+                return QVariant::fromValue(fileLine);
             }
             column -= NUM_BASE_COLUMNS;
             if (column < m_totalCosts.numTypes()) {
