@@ -21,6 +21,8 @@
 #include <KAuth>
 #endif
 
+#include <hotspot-config.h>
+
 class AuthHelper : public QObject
 {
     Q_OBJECT
@@ -31,7 +33,9 @@ public slots:
     KAuth::ActionReply elevate(const QVariantMap& args)
     {
         // make install installs the helper to /usr/lib/kauth/ and the elevate script to /usr/lib/libexec
-        const QString script = qApp->applicationDirPath() + QLatin1String("/../libexec/elevate_perf_privileges.sh");
+        // but the paths can be modified, see e.g.: https://github.com/KDAB/hotspot/issues/469
+        // as such we use the absolute path here to ensure we find the elevate script
+        const QString script = QLatin1String(HOTSPOT_LIBEXEC_ABS_PATH) + QLatin1String("/elevate_perf_privileges.sh");
 
         if (!QFile::exists(script)) {
             return KAuth::ActionReply::HelperErrorReply();
