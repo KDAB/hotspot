@@ -15,7 +15,6 @@
 #include <QFileInfo>
 #include <QLoggingCategory>
 #include <QProcess>
-#include <QRegularExpression>
 #include <QStandardPaths>
 
 namespace {

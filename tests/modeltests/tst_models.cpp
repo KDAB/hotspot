@@ -9,6 +9,8 @@
 #include <QDebug>
 #include <QFontDatabase>
 #include <QObject>
+#include <QProcess>
+#include <QRegularExpression>
 #include <QTest>
 #include <QTextStream>
 
@@ -396,6 +398,76 @@ private slots:
         // no source file name
         QCOMPARE(model.columnCount(), SourceCodeModel::COLUMN_COUNT);
         QCOMPARE(model.rowCount(), 0);
+    }
+
+    void testSourceCodeModelSourceCodeLineAssociation()
+    {
+        const QString binary =
+            QFINDTESTDATA(".") + QStringLiteral("/../tests/test-clients/cpp-recursion/cpp-recursion");
+
+        // use readelf to get address and size of main
+        // different compilers create different locations and sizes
+        QRegularExpression regex(QStringLiteral("[ ]+[0-9]+: ([0-9a-f]+)[ ]+([0-9]+)[0-9 a-zA-Z]+main\\n"));
+
+        QProcess readelf;
+        readelf.setProgram(QStringLiteral("readelf"));
+        readelf.setArguments({QStringLiteral("-s"), binary});
+
+        readelf.start();
+        readelf.waitForFinished();
+
+        const auto output = readelf.readAllStandardOutput();
+        Q_ASSERT(!output.isEmpty());
+
+        auto match = regex.match(QString::fromUtf8(output));
+
+        Q_ASSERT(match.hasMatch());
+
+        bool ok = false;
+        const quint64 address = match.captured(1).toInt(&ok, 16);
+        Q_ASSERT(ok);
+        const quint64 size = match.captured(2).toInt(&ok, 10);
+        Q_ASSERT(ok);
+
+        Data::Symbol symbol = {QStringLiteral("main"), address, size, QStringLiteral("cpp-recursion"), {}, binary};
+
+        SourceCodeModel model(nullptr);
+        QCOMPARE(model.columnCount(), SourceCodeModel::COLUMN_COUNT);
+        QCOMPARE(model.rowCount(), 0);
+
+        auto disassemblyOutput =
+            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), symbol);
+        QVERIFY(disassemblyOutput.errorMessage.isEmpty());
+        model.setDisassembly(disassemblyOutput, {});
+
+        QCOMPARE(model.columnCount(), SourceCodeModel::COLUMN_COUNT);
+        QCOMPARE(model.rowCount(), 11);
+
+        // check source code boundary
+        QCOMPARE(model.index(1, SourceCodeModel::SourceCodeLineNumber)
+                     .data(SourceCodeModel::FileLineRole)
+                     .value<Data::FileLine>()
+                     .line,
+                 19);
+        QCOMPARE(model.index(7, SourceCodeModel::SourceCodeLineNumber)
+                     .data(SourceCodeModel::FileLineRole)
+                     .value<Data::FileLine>()
+                     .line,
+                 25);
+        QCOMPARE(model.index(10, SourceCodeModel::SourceCodeLineNumber)
+                     .data(SourceCodeModel::FileLineRole)
+                     .value<Data::FileLine>()
+                     .line,
+                 28);
+
+        // check associated lines
+        QCOMPARE(model.index(1, SourceCodeModel::SourceCodeColumn).data(SourceCodeModel::RainbowLineNumberRole).toInt(),
+                 19);
+        QCOMPARE(model.index(7, SourceCodeModel::SourceCodeColumn).data(SourceCodeModel::RainbowLineNumberRole).toInt(),
+                 25);
+        QCOMPARE(
+            model.index(10, SourceCodeModel::SourceCodeColumn).data(SourceCodeModel::RainbowLineNumberRole).toInt(),
+            28);
     }
 
     void testEventModel()
