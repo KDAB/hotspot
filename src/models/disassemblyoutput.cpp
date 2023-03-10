@@ -12,7 +12,6 @@
 #include <QApplication>
 #include <QLoggingCategory>
 #include <QProcess>
-#include <QRegularExpression>
 #include <QStandardPaths>
 
 namespace {
