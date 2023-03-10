@@ -23,6 +23,12 @@ class Repository;
 class Definition;
 }
 
+struct SourceCodeLine
+{
+    QString text;
+    QTextLine line;
+};
+
 Q_DECLARE_METATYPE(QTextLine)
 
 class SourceCodeModel : public QAbstractTableModel
@@ -74,12 +80,12 @@ private:
     QString m_sysroot;
     QSet<int> m_validLineNumbers;
     QTextDocument* m_document = nullptr;
+    QVector<SourceCodeLine> m_sourceCodeLines;
     Highlighter* m_highlighter = nullptr;
     Data::Costs m_selfCosts;
     Data::Costs m_inclusiveCosts;
     QString m_mainSourceFileName;
     QString m_prettySymbol;
-    int m_lineOffset = 0;
     int m_startLine = 0;
     int m_numLines = 0;
     int m_highlightLine = 0;

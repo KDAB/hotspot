@@ -51,6 +51,14 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
 
+    QString sourceCode = QString::fromUtf8(file.readAll());
+
+    m_sourceCodeLines.clear();
+    m_document->clear();
+
+    m_document->setPlainText(sourceCode);
+    m_document->setTextWidth(m_document->idealWidth());
+
     int maxLineNumber = 0;
     int minLineNumber = INT_MAX;
 
@@ -60,13 +68,6 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     m_inclusiveCosts.initializeCostsFrom(results.inclusiveCosts);
 
     m_mainSourceFileName = disassemblyOutput.mainSourceFileName;
-
-    const auto sourceCode = QString::fromUtf8(file.readAll());
-
-    m_document->clear();
-
-    m_document->setPlainText(sourceCode);
-    m_document->setTextWidth(m_document->idealWidth());
 
     for (const auto& line : disassemblyOutput.disassemblyLines) {
         if (line.fileLine.line == 0 || line.fileLine.file != disassemblyOutput.mainSourceFileName) {
@@ -101,9 +102,18 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     Q_ASSERT(minLineNumber < maxLineNumber);
 
     m_prettySymbol = disassemblyOutput.symbol.prettySymbol;
-    m_startLine = minLineNumber - 2;
-    m_lineOffset = minLineNumber - 1;
-    m_numLines = maxLineNumber - m_startLine;
+    m_startLine = minLineNumber - 1; // convert to index
+    m_numLines = maxLineNumber - minLineNumber + 1; // include minLineNumber
+
+    m_sourceCodeLines.reserve(m_numLines);
+
+    for (int i = m_startLine; i < m_startLine + m_numLines; i++) {
+        auto block = m_document->findBlockByLineNumber(i);
+        if (!block.isValid())
+            continue;
+
+        m_sourceCodeLines.push_back({block.text(), block.layout()->lineAt(0)});
+    }
 }
 
 QVariant SourceCodeModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -142,7 +152,7 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
         return {};
     }
 
-    const auto fileLine = Data::FileLine(m_mainSourceFileName, index.row() + m_lineOffset);
+    const auto fileLine = Data::FileLine(m_mainSourceFileName, index.row() + m_startLine);
     if (role == FileLineRole) {
         return QVariant::fromValue(fileLine);
     } else if (role == Qt::ToolTipRole) {
@@ -154,19 +164,17 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
             if (index.row() == 0) {
                 return m_prettySymbol;
             }
-            const auto block = m_document->findBlockByLineNumber(index.row() + m_startLine);
-            if (!block.isValid())
-                return {};
+
             if (role == SyntaxHighlightRole)
-                return QVariant::fromValue(block.layout()->lineAt(0));
-            return block.text();
+                return QVariant::fromValue(m_sourceCodeLines[index.row() - 1].line);
+            return m_sourceCodeLines[index.row() - 1].text;
         }
 
         if (index.column() == SourceCodeLineNumber) {
             return fileLine.line;
         }
 
-        auto cost = [role, id = index.row() + m_lineOffset](int type, const Data::Costs& costs) -> QVariant {
+        auto cost = [role, id = index.row() + m_startLine](int type, const Data::Costs& costs) -> QVariant {
             const auto cost = costs.cost(type, id);
             const auto totalCost = costs.totalCost(type);
             if (role == CostRole) {
@@ -185,9 +193,9 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
             return cost(column, m_selfCosts);
         return cost(column - m_selfCosts.numTypes(), m_inclusiveCosts);
     } else if (role == HighlightRole) {
-        return index.row() + m_lineOffset == m_highlightLine;
+        return index.row() + m_startLine == m_highlightLine;
     } else if (role == RainbowLineNumberRole) {
-        int line = index.row() + m_lineOffset;
+        int line = index.row() + m_startLine;
         if (m_validLineNumbers.contains(line))
             return line;
         return -1;
@@ -202,7 +210,12 @@ int SourceCodeModel::columnCount(const QModelIndex& parent) const
 
 int SourceCodeModel::rowCount(const QModelIndex& parent) const
 {
-    return parent.isValid() ? 0 : m_numLines;
+    // don't show the function name, when we have no source code
+    if (m_numLines == 0)
+        return 0;
+
+    // 1 line for the function name + source codes lines
+    return parent.isValid() ? 0 : m_numLines + 1;
 }
 
 void SourceCodeModel::updateHighlighting(int line)
@@ -215,15 +228,15 @@ Data::FileLine SourceCodeModel::fileLineForIndex(const QModelIndex& index) const
 {
     if (!index.isValid())
         return {};
-    return {m_mainSourceFileName, index.row() + m_lineOffset};
+    return {m_mainSourceFileName, index.row() + m_startLine};
 }
 
 QModelIndex SourceCodeModel::indexForFileLine(const Data::FileLine& fileLine) const
 {
-    if (fileLine.file != m_mainSourceFileName || fileLine.line < m_lineOffset
-        || fileLine.line >= m_lineOffset + m_numLines)
+    if (fileLine.file != m_mainSourceFileName || fileLine.line < m_startLine
+        || fileLine.line > m_startLine + m_numLines)
         return {};
-    return index(fileLine.line - m_lineOffset, 0);
+    return index(fileLine.line - m_startLine, 0);
 }
 
 void SourceCodeModel::setSysroot(const QString& sysroot)
