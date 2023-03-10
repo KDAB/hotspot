@@ -69,6 +69,8 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
 
     m_mainSourceFileName = disassemblyOutput.mainSourceFileName;
 
+    const auto entry = results.entries.find(disassemblyOutput.symbol);
+
     for (const auto& line : disassemblyOutput.disassemblyLines) {
         if (line.fileLine.line == 0 || line.fileLine.file != disassemblyOutput.mainSourceFileName) {
             continue;
@@ -84,7 +86,6 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
         if (m_validLineNumbers.contains(line.fileLine.line))
             continue;
 
-        const auto entry = results.entries.find(disassemblyOutput.symbol);
         if (entry != results.entries.end()) {
             const auto it = entry->sourceMap.find(line.fileLine);
             if (it != entry->sourceMap.end()) {
