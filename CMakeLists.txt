@@ -26,6 +26,8 @@ endif()
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(APPIMAGE_BUILD "configure build for bundling in an appimage" OFF)
+
 # Enable the test harness
 enable_testing()
 
