@@ -29,3 +29,5 @@
 #cmakedefine01 KGraphViewerPart_FOUND
 
 #cmakedefine01 KF5SyntaxHighlighting_FOUND
+
+#cmakedefine01 ALLOW_PRIVILEGE_ESCALATION
