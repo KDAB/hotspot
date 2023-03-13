@@ -39,6 +39,7 @@ public:
     static bool canSwitchEvents();
     static bool canUseAio();
     static bool canCompress();
+    static bool canElevatePrivileges();
 
     static QStringList offCpuProfilingOptions();
 
