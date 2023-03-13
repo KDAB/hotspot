@@ -371,7 +371,7 @@ RecordPage::RecordPage(QWidget* parent)
     if (m_perfRecord->currentUsername() == QLatin1String("root")) {
         ui->elevatePrivilegesCheckBox->setChecked(true);
         ui->elevatePrivilegesCheckBox->setEnabled(false);
-    } else if (m_perfRecord->sudoUtil().isEmpty() && !KF5Auth_FOUND) {
+    } else if (!PerfRecord::canElevatePrivileges()) {
         ui->elevatePrivilegesCheckBox->setChecked(false);
         ui->elevatePrivilegesCheckBox->setEnabled(false);
         ui->elevatePrivilegesCheckBox->setText(
@@ -383,7 +383,8 @@ RecordPage::RecordPage(QWidget* parent)
     restoreCombobox(config(), QStringLiteral("applications"), ui->applicationName->comboBox());
     restoreCombobox(config(), QStringLiteral("eventType"), ui->eventTypeBox, {ui->eventTypeBox->currentText()});
     restoreCombobox(config(), QStringLiteral("customOptions"), ui->perfParams);
-    ui->elevatePrivilegesCheckBox->setChecked(config().readEntry(QStringLiteral("elevatePrivileges"), false));
+    ui->elevatePrivilegesCheckBox->setChecked(PerfRecord::canElevatePrivileges()
+                                              && config().readEntry(QStringLiteral("elevatePrivileges"), false));
     ui->offCpuCheckBox->setChecked(config().readEntry(QStringLiteral("offCpuProfiling"), false));
     ui->sampleCpuCheckBox->setChecked(config().readEntry(QStringLiteral("sampleCpu"), true));
     ui->mmapPagesSpinBox->setValue(config().readEntry(QStringLiteral("mmapPages"), 0));
@@ -754,10 +755,12 @@ void RecordPage::updateRecordType()
 
     m_perfOutput->setInputVisible(recordType == LaunchApplication);
     m_perfOutput->clear();
-    ui->elevatePrivilegesCheckBox->setEnabled(recordType != ProfileSystem);
+    ui->elevatePrivilegesCheckBox->setEnabled(PerfRecord::canElevatePrivileges() && recordType != ProfileSystem);
     ui->sampleCpuCheckBox->setEnabled(recordType != ProfileSystem && PerfRecord::canSampleCpu());
     if (recordType == ProfileSystem) {
-        ui->elevatePrivilegesCheckBox->setChecked(true);
+        if (PerfRecord::canElevatePrivileges()) {
+            ui->elevatePrivilegesCheckBox->setChecked(true);
+        }
         ui->sampleCpuCheckBox->setChecked(true && PerfRecord::canSampleCpu());
     }
 

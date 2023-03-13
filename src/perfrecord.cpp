@@ -109,7 +109,7 @@ static bool privsAlreadyElevated()
 void PerfRecord::startRecording(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
                                 const QStringList& recordOptions, const QString& workingDirectory)
 {
-    if (elevatePrivileges && geteuid() != 0 && !privsAlreadyElevated()) {
+    if (canElevatePrivileges() && elevatePrivileges && geteuid() != 0 && !privsAlreadyElevated()) {
         // elevate privileges temporarily as root
         // use kauth/kdesudo to start the elevate_perf_privileges.sh script
         // then parse its output and once we get the "waiting..." line the privileges got elevated
@@ -493,6 +493,11 @@ bool PerfRecord::canUseAio()
 bool PerfRecord::canCompress()
 {
     return Zstd_FOUND && perfBuildOptions().contains("zstd: [ on  ]");
+}
+
+bool PerfRecord::canElevatePrivileges()
+{
+    return ALLOW_PRIVILEGE_ESCALATION && (!sudoUtil().isEmpty() || KF5Auth_FOUND);
 }
 
 bool PerfRecord::isPerfInstalled()
