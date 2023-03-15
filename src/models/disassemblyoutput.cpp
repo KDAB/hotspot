@@ -80,8 +80,15 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
 
     int sourceCodeLine = 0;
     while (stream.readLineInto(&asmLine)) {
-        if (asmLine.isEmpty() || asmLine.startsWith(QLatin1String("Disassembly")))
+        if (asmLine.isEmpty())
             continue;
+
+        if (asmLine.startsWith(QLatin1String("Disassembly"))) {
+            // when the binary is given with an absolute path, we don't want to interpret
+            // that as a source file, so clear it once we get to the Disassembly part
+            sourceFileName.clear();
+            continue;
+        }
 
         // skip lines like these: 0000000000001265 <main>:
         const int colonIndex = asmLine.indexOf(QLatin1Char(':'));
