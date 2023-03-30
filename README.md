@@ -1,5 +1,7 @@
 <img width="100%" src="src/images/hotspot-logo.png">
 
+re
+
 # Hotspot - the Linux perf GUI for performance analysis
 
 This project is a [KDAB](http://www.kdab.com) R&D effort to create a standalone
