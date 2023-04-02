@@ -239,6 +239,14 @@ MainWindow::MainWindow(QWidget* parent)
     }
 
     ui->viewMenu->addSeparator();
+    auto* restoreDefaultLayout = new QAction(tr("Restore Default Layout"), this);
+    connect(restoreDefaultLayout, &QAction::triggered, [&] {
+        KDDockWidgets::LayoutSaver serializer(KDDockWidgets::RestoreOption_RelativeToMainWindow);
+        serializer.restoreFromFile(QStringLiteral(":/default-dockwidget-layout.json"));
+    });
+    ui->viewMenu->addAction(restoreDefaultLayout);
+    ui->viewMenu->addSeparator();
+
     ui->viewMenu->addActions(m_resultsPage->filterMenu()->actions());
     ui->viewMenu->addSeparator();
     ui->viewMenu->addMenu(m_resultsPage->exportMenu());
