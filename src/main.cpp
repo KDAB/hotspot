@@ -18,6 +18,7 @@
 #include "hotspot-config.h"
 #include "mainwindow.h"
 #include "models/data.h"
+#include "parsers/perf/perfparser.h"
 #include "settings.h"
 #include "util.h"
 
@@ -57,6 +58,15 @@ void Q_DECL_UNUSED initRCCIconTheme()
 }
 #endif
 
+std::unique_ptr<QCoreApplication> createApplication(int& argc, char* argv[])
+{
+    for (int i = 1; i < argc; ++i) {
+        if (!qstrcmp(argv[i], "--exportTo"))
+            return std::make_unique<QCoreApplication>(argc, argv);
+    }
+    return std::make_unique<QApplication>(argc, argv);
+}
+
 int main(int argc, char** argv)
 {
     KLocalizedString::setApplicationDomain("hotspot");
@@ -66,7 +76,7 @@ int main(int argc, char** argv)
     QCoreApplication::setApplicationVersion(QStringLiteral(HOTSPOT_VERSION_STRING));
     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
 
-    QApplication app(argc, argv);
+    auto app = createApplication(argc, argv);
 
     // init
     Util::appImageEnvironment();
@@ -83,7 +93,11 @@ int main(int argc, char** argv)
     initRCCIconTheme();
 #endif
 
-    app.setWindowIcon(QIcon(QStringLiteral(":/images/icons/512-hotspot_app_icon.png")));
+    QApplication* guiApp = qobject_cast<QApplication*>(app.get());
+    auto window = guiApp ? new MainWindow : nullptr;
+    if (guiApp) {
+        guiApp->setWindowIcon(QIcon(QStringLiteral(":/images/icons/512-hotspot_app_icon.png")));
+    }
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("Linux perf GUI for performance analysis."));
@@ -139,7 +153,7 @@ int main(int argc, char** argv)
         QCoreApplication::translate("main", "Optional input files to open on startup, i.e. perf.data files."),
         QStringLiteral("[files...]"));
 
-    parser.process(app);
+    parser.process(*app);
 
     setupDockWidgets();
 
@@ -179,7 +193,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    const auto originalArguments = app.arguments();
+    const auto originalArguments = app->arguments();
     // remove leading executable name and trailing positional arguments
     const auto minimalArguments = originalArguments.mid(1, originalArguments.size() - 1 - files.size());
 
@@ -192,7 +206,6 @@ int main(int argc, char** argv)
     // we now only have at most one file
     Q_ASSERT(files.size() <= 1);
 
-    auto window = new MainWindow;
     if (!files.isEmpty()) {
         auto file = files.constFirst();
         if (QFileInfo(file).isDir()) {
@@ -200,35 +213,40 @@ int main(int argc, char** argv)
         }
 
         if (parser.isSet(exportTo)) {
+            PerfParser perfParser;
             auto showErrorAndQuit = [&app, file](const QString& errorMessage) {
                 QTextStream err(stderr);
                 err << errorMessage << Qt::endl;
-                app.exit(1);
+                app->exit(1);
             };
-            QObject::connect(window, &MainWindow::openFileError, &app, showErrorAndQuit);
-            QObject::connect(window, &MainWindow::exportFailed, &app, showErrorAndQuit);
-            QObject::connect(window, &MainWindow::exportFinished, &app, [&app, file](const QUrl& url) {
+            QObject::connect(&perfParser, &PerfParser::exportFailed, app.get(), showErrorAndQuit);
+            QObject::connect(&perfParser, &PerfParser::exportFinished, app.get(), [&app, file](const QUrl& url) {
                 QTextStream out(stdout);
                 out << QCoreApplication::translate("main", "Input file %1 exported to %2")
                            .arg(file, url.toDisplayString(QUrl::PrettyDecoded | QUrl::PreferLocalFile))
                     << Qt::endl;
-                app.exit(0);
+                app->exit(0);
             });
             auto destination = QUrl::fromUserInput(parser.value(exportTo), QDir::currentPath(), QUrl::AssumeLocalFile);
-            window->saveAs(file, destination);
-            return app.exec();
-        } else {
+            QObject::connect(&perfParser, &PerfParser::parsingFinished, app.get(),
+                             [&perfParser, destination] { perfParser.exportResults(destination); });
+            perfParser.startParseFile(file);
+            return app->exec();
+        }
+
+        if (window) {
             window->openFile(file);
         }
     } else {
         // open perf.data in current CWD, if it exists
         // this brings hotspot closer to the behavior of "perf report"
         const auto perfDataFile = QStringLiteral("perf.data");
-        if (QFile::exists(perfDataFile)) {
+        if (QFile::exists(perfDataFile) && window) {
             window->openFile(perfDataFile);
         }
     }
-    window->show();
+    if (window)
+        window->show();
 
-    return app.exec();
+    return app->exec();
 }
