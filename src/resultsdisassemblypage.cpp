@@ -107,26 +107,27 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
                          [this, fileLine]() { emit navigateToCode(fileLine.file, fileLine.line, -1); });
         contextMenu.exec(QCursor::pos());
     });
-    connect(ui->sourceCodeView, &QTreeView::activated, this, [this](const QModelIndex& index) {
-        const auto fileLine = m_sourceCodeModel->fileLineForIndex(index);
-        if (fileLine.isValid()) {
-            ui->assemblyView->scrollTo(m_disassemblyModel->indexForFileLine(fileLine));
-        }
-    });
 
-    connect(ui->assemblyView, &QTreeView::activated, this, [this](const QModelIndex& index) {
-        const auto fileLine = m_disassemblyModel->fileLineForIndex(index);
-        if (fileLine.isValid()) {
-            ui->sourceCodeView->scrollTo(m_sourceCodeModel->indexForFileLine(fileLine));
-        }
+    auto addScrollTo = [](QTreeView* sourceView, QTreeView* destView, auto sourceModel, auto destModel) {
+        connect(sourceView, &QTreeView::clicked, sourceView, [=](const QModelIndex& index) {
+            const auto fileLine = sourceModel->fileLineForIndex(index);
+            if (fileLine.isValid()) {
+                destView->scrollTo(destModel->indexForFileLine(fileLine));
+            }
+        });
+    };
 
+    addScrollTo(ui->sourceCodeView, ui->assemblyView, m_sourceCodeModel, m_disassemblyModel);
+    addScrollTo(ui->assemblyView, ui->sourceCodeView, m_disassemblyModel, m_sourceCodeModel);
+
+    connect(ui->assemblyView, &QTreeView::doubleClicked, this, [this](const QModelIndex& index) {
         const QString functionName = index.data(DisassemblyModel::LinkedFunctionNameRole).toString();
         if (functionName.isEmpty())
             return;
 
         int functionOffset = index.data(DisassemblyModel::LinkedFunctionOffsetRole).toInt();
 
-        if (m_curSymbol.symbol == functionName) {
+        if (m_symbolStack[m_stackIndex].symbol == functionName) {
             ui->assemblyView->scrollTo(m_disassemblyModel->findIndexWithOffset(functionOffset),
                                        QAbstractItemView::ScrollHint::PositionAtTop);
         } else {
@@ -135,10 +136,39 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
                              [functionName](const Data::Symbol& symbol) { return symbol.symbol == functionName; });
 
             if (symbol != m_callerCalleeResults.entries.keyEnd()) {
-                setSymbol(*symbol);
-                showDisassembly();
+                m_symbolStack.push_back(*symbol);
+                m_stackIndex++;
+                emit stackChanged();
+            } else {
+                ui->symbolNotFound->setText(tr("unkown symbol %1").arg(functionName));
+                ui->symbolNotFound->show();
             }
         }
+    });
+
+    connect(ui->stackBackButton, &QPushButton::pressed, this, [this] {
+        m_stackIndex--;
+        if (m_stackIndex < 0)
+            m_stackIndex = m_symbolStack.size() - 1;
+
+        emit stackChanged();
+    });
+
+    connect(ui->stackNextButton, &QPushButton::pressed, this, [this] {
+        m_stackIndex++;
+        if (m_stackIndex >= m_symbolStack.size())
+            m_stackIndex = 0;
+
+        emit stackChanged();
+    });
+
+    connect(this, &ResultsDisassemblyPage::stackChanged, this, [this] {
+        ui->stackBackButton->setEnabled(m_stackIndex > 0);
+        ui->stackNextButton->setEnabled(m_stackIndex < m_symbolStack.size() - 1);
+
+        ui->stackEntry->setText(m_symbolStack[m_stackIndex].prettySymbol);
+
+        showDisassembly();
     });
 
 #if KF5SyntaxHighlighting_FOUND
@@ -214,8 +244,13 @@ void ResultsDisassemblyPage::setupAsmViewModel()
 
 void ResultsDisassemblyPage::showDisassembly()
 {
+    if (m_symbolStack.isEmpty())
+        return;
+
+    const auto& curSymbol = m_symbolStack[m_stackIndex];
+
     // Show empty tab when selected symbol is not valid
-    if (m_curSymbol.symbol.isEmpty()) {
+    if (curSymbol.symbol.isEmpty()) {
         clear();
     }
 
@@ -231,7 +266,13 @@ void ResultsDisassemblyPage::showDisassembly()
         return isArm ? QStringLiteral("arm-linux-gnueabi-objdump") : QStringLiteral("objdump");
     };
 
-    showDisassembly(DisassemblyOutput::disassemble(objdump(), m_arch, {}, {}, m_curSymbol));
+    ui->symbolNotFound->hide();
+
+    auto settings = Settings::instance();
+    const auto colon = QLatin1Char(':');
+
+    showDisassembly(DisassemblyOutput::disassemble(objdump(), m_arch, settings->debugPaths().split(colon),
+                                                   settings->extraLibPaths().split(colon), curSymbol));
 }
 
 void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassemblyOutput)
@@ -239,17 +280,21 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
     m_disassemblyModel->clear();
     m_sourceCodeModel->clear();
 
+    // this function is only called if m_symbolStack is non empty (see above)
+    Q_ASSERT(!m_symbolStack.isEmpty());
+    const auto& curSymbol = m_symbolStack[m_stackIndex];
+
 #if KF5SyntaxHighlighting_FOUND
     m_sourceCodeModel->highlighter()->setDefinition(
         m_repository->definitionForFileName(disassemblyOutput.mainSourceFileName));
     m_disassemblyModel->highlighter()->setDefinition(m_repository->definitionForName(QStringLiteral("GNU Assembler")));
 #endif
 
-    const auto& entry = m_callerCalleeResults.entry(m_curSymbol);
+    const auto& entry = m_callerCalleeResults.entry(curSymbol);
 
     ui->filenameLabel->setText(disassemblyOutput.mainSourceFileName);
     // don't set tooltip on symbolLabel, as that will be called internally and then get overwritten
-    setToolTip(Util::formatTooltip(entry.id, m_curSymbol, m_callerCalleeResults.selfCosts,
+    setToolTip(Util::formatTooltip(entry.id, curSymbol, m_callerCalleeResults.selfCosts,
                                    m_callerCalleeResults.inclusiveCosts));
 
     if (!disassemblyOutput) {
@@ -276,7 +321,10 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
 
 void ResultsDisassemblyPage::setSymbol(const Data::Symbol& symbol)
 {
-    m_curSymbol = symbol;
+    m_stackIndex = 0;
+    m_symbolStack.clear();
+    m_symbolStack.push_back(symbol);
+    emit stackChanged();
 }
 
 void ResultsDisassemblyPage::setCostsMap(const Data::CallerCalleeResults& callerCalleeResults)
