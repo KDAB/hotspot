@@ -59,6 +59,7 @@ public:
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
     void navigateToCode(const QString& file, int lineNumber, int columnNumber);
+    void stackChanged();
 
 private:
     void showDisassembly(const DisassemblyOutput& disassemblyOutput);
@@ -70,8 +71,6 @@ private:
     // Model
     DisassemblyModel* m_disassemblyModel;
     SourceCodeModel* m_sourceCodeModel;
-    // Current chosen function symbol
-    Data::Symbol m_curSymbol;
     // Architecture
     QString m_arch;
     // Objdump binary name
@@ -83,4 +82,7 @@ private:
     CostDelegate* m_sourceCodeCostDelegate;
     CodeDelegate* m_disassemblyDelegate;
     CodeDelegate* m_sourceCodeDelegate;
+
+    QVector<Data::Symbol> m_symbolStack;
+    int m_stackIndex = 0;
 };
