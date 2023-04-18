@@ -13,7 +13,10 @@
 #include <QTextBlock>
 #include <QTextDocument>
 
+#include <algorithm>
+
 #include "highlighter.hpp"
+#include "search.h"
 
 SourceCodeModel::SourceCodeModel(KSyntaxHighlighting::Repository* repository, QObject* parent)
     : QAbstractTableModel(parent)
@@ -243,4 +246,20 @@ QModelIndex SourceCodeModel::indexForFileLine(const Data::FileLine& fileLine) co
 void SourceCodeModel::setSysroot(const QString& sysroot)
 {
     m_sysroot = sysroot;
+}
+
+void SourceCodeModel::find(const QString& search, Direction direction, int offset)
+{
+    auto searchFunc = [&search](const SourceCodeLine& line) {
+        return line.text.indexOf(search, 0, Qt::CaseInsensitive) != -1;
+    };
+
+    int resultIndex = ::search(
+        m_sourceCodeLines, searchFunc, [this] { emit resultFound({}); }, direction, offset);
+
+    if (resultIndex >= 0) {
+        emit resultFound(createIndex(resultIndex + 1, SourceCodeColumn));
+    } else {
+        emit resultFound({});
+    }
 }

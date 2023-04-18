@@ -14,6 +14,7 @@
 #include "hotspot-config.h"
 
 #include "highlighter.hpp"
+#include "search.h"
 #include "sourcecodemodel.h"
 
 DisassemblyModel::DisassemblyModel(KSyntaxHighlighting::Repository* repository, QObject* parent)
@@ -221,4 +222,20 @@ QModelIndex DisassemblyModel::indexForFileLine(const Data::FileLine& fileLine) c
     if (bestMatch == -1)
         return {};
     return index(bestMatch, 0);
+}
+
+void DisassemblyModel::find(const QString& search, Direction direction, int offset)
+{
+    auto searchFunc = [&search](const DisassemblyOutput::DisassemblyLine& line) {
+        return line.disassembly.indexOf(search, 0, Qt::CaseInsensitive) != -1;
+    };
+
+    int resultIndex = ::search(
+        m_data.disassemblyLines, searchFunc, [this] { emit resultFound({}); }, direction, offset);
+
+    if (resultIndex >= 0) {
+        emit resultFound(createIndex(resultIndex, DisassemblyColumn));
+    } else {
+        emit resultFound({});
+    }
 }

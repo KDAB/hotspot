@@ -70,6 +70,7 @@ private:
     // Model
     DisassemblyModel* m_disassemblyModel;
     SourceCodeModel* m_sourceCodeModel;
+    QModelIndex m_currentSearchIndex;
     // Architecture
     QString m_arch;
     // Objdump binary name
