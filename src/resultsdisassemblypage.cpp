@@ -23,7 +23,9 @@
 #include <QTemporaryFile>
 #include <QTextStream>
 
+#include <KColorScheme>
 #include <KRecursiveFilterProxyModel>
+#include <KStandardAction>
 
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
@@ -42,10 +44,20 @@
 #include "models/costdelegate.h"
 #include "models/disassemblymodel.h"
 #include "models/hashmodel.h"
+#include "models/search.h"
 #include "models/sourcecodemodel.h"
 #include "models/topproxy.h"
 #include "models/treemodel.h"
 #include "settings.h"
+
+namespace {
+template<typename ModelType, typename ResultFound, typename EndReached>
+void connectModel(ModelType* model, ResultFound resultFound, EndReached endReached)
+{
+    QObject::connect(model, &ModelType::resultFound, model, resultFound);
+    QObject::connect(model, &ModelType::searchEndReached, model, endReached);
+}
+}
 
 ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu, QWidget* parent)
     : QWidget(parent)
@@ -170,6 +182,76 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
 
         showDisassembly();
     });
+
+    ui->searchEndWidget->hide();
+    ui->disasmEndReachedWidget->hide();
+
+    auto setupSearchShortcuts = [this](QPushButton* search, QPushButton* next, QPushButton* prev, QPushButton* close,
+                                       QWidget* searchWidget, QLineEdit* edit, QAbstractItemView* view,
+                                       KMessageWidget* endReached, auto* model, int additionalRows) {
+        searchWidget->hide();
+
+        auto actions = new QActionGroup(view);
+
+        auto findAction = KStandardAction::find(
+            this,
+            [searchWidget, edit] {
+                searchWidget->show();
+                edit->setFocus();
+            },
+            actions);
+        findAction->setShortcutContext(Qt::ShortcutContext::WidgetWithChildrenShortcut);
+        view->addAction(findAction);
+
+        auto searchNext = [this, model, edit, additionalRows] {
+            int offset = m_currentSearchIndex.isValid() ? m_currentSearchIndex.row() - additionalRows + 1 : 0;
+            model->find(edit->text(), Direction::Forward, offset);
+        };
+
+        auto searchPrev = [this, model, edit, additionalRows] {
+            int offset = m_currentSearchIndex.isValid() ? m_currentSearchIndex.row() - additionalRows - 1 : 0;
+
+            model->find(edit->text(), Direction::Backward, offset);
+        };
+
+        auto findNextAction = KStandardAction::findNext(this, searchNext, actions);
+        findNextAction->setShortcutContext(Qt::ShortcutContext::WidgetWithChildrenShortcut);
+        searchWidget->addAction(findNextAction);
+        auto findPrevAction = KStandardAction::findPrev(this, searchPrev, actions);
+        findPrevAction->setShortcutContext(Qt::ShortcutContext::WidgetWithChildrenShortcut);
+        searchWidget->addAction(findPrevAction);
+
+        connect(edit, &QLineEdit::returnPressed, findNextAction, &QAction::trigger);
+        connect(next, &QPushButton::clicked, findNextAction, &QAction::trigger);
+        connect(prev, &QPushButton::clicked, findPrevAction, &QAction::trigger);
+
+        connect(search, &QPushButton::clicked, findAction, &QAction::trigger);
+        connect(close, &QPushButton::clicked, this, [searchWidget] { searchWidget->hide(); });
+
+        KColorScheme colorScheme;
+
+        connectModel(
+            model,
+            [this, edit, view, colorScheme](const QModelIndex& index) {
+                auto palette = edit->palette();
+                m_currentSearchIndex = index;
+                palette.setBrush(QPalette::Text,
+                                 index.isValid() ? colorScheme.foreground()
+                                                 : colorScheme.foreground(KColorScheme::NegativeText));
+                edit->setPalette(palette);
+                view->setCurrentIndex(index);
+
+                if (!index.isValid())
+                    view->clearSelection();
+            },
+            [endReached] { endReached->show(); });
+    };
+
+    setupSearchShortcuts(ui->searchButton, ui->nextResult, ui->prevResult, ui->closeButton, ui->searchWidget,
+                         ui->searchEdit, ui->sourceCodeView, ui->searchEndWidget, m_sourceCodeModel, 1);
+    setupSearchShortcuts(ui->disasmSearchButton, ui->disasmNextButton, ui->disasmPrevButton, ui->disasmCloseButton,
+                         ui->disasmSearchWidget, ui->disasmSearchEdit, ui->assemblyView, ui->disasmEndReachedWidget,
+                         m_disassemblyModel, 0);
 
 #if KF5SyntaxHighlighting_FOUND
     QStringList schemes;

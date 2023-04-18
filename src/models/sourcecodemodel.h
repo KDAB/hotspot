@@ -28,6 +28,9 @@ struct SourceCodeLine
     QString text;
     QTextLine line;
 };
+Q_DECLARE_TYPEINFO(SourceCodeLine, Q_MOVABLE_TYPE);
+
+enum class Direction;
 
 Q_DECLARE_METATYPE(QTextLine)
 
@@ -72,9 +75,15 @@ public:
         FileLineRole,
     };
 
+signals:
+    void resultFound(QModelIndex index);
+    void searchEndReached();
+
 public slots:
     void updateHighlighting(int line);
     void setSysroot(const QString& sysroot);
+
+    void find(const QString& search, Direction direction, int offset);
 
 private:
     QString m_sysroot;

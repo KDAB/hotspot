@@ -23,6 +23,8 @@ class Definition;
 class Repository;
 }
 
+enum class Direction;
+
 class DisassemblyModel : public QAbstractTableModel
 {
     Q_OBJECT
@@ -67,8 +69,13 @@ public:
         SyntaxHighlightRole,
     };
 
+signals:
+    void resultFound(QModelIndex index);
+    void searchEndReached();
+
 public slots:
     void updateHighlighting(int line);
+    void find(const QString& search, Direction direction, int offset);
 
 private:
     QTextDocument* m_document;
