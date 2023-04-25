@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>435</width>
+    <width>452</width>
     <height>300</height>
    </rect>
   </property>
@@ -99,6 +99,16 @@
         </property>
         <property name="value">
          <number>10</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="hideOutliers">
+        <property name="text">
+         <string>Hide Outliers</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </item>

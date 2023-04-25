@@ -34,4 +34,6 @@ private:
     QCustomPlot* m_plot = nullptr;
     QScopedPointer<Ui::FrequencyPage> m_page;
     Data::FrequencyResults m_results;
+
+    double m_upperWithoutOutliers = 0;
 };

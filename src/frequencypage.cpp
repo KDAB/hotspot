@@ -72,12 +72,30 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
         }
     });
 
-    auto updateGraphs = [this, plotData]() {
+    auto updateYAxis = [this]() {
+        const auto hideOutliers = m_page->hideOutliers->isChecked();
+        if (hideOutliers && m_upperWithoutOutliers) {
+            m_plot->yAxis->setRangeUpper(m_upperWithoutOutliers);
+        } else {
+            m_plot->yAxis->rescale();
+        }
+
+        m_plot->yAxis->setRangeLower(0.);
+
+        m_plot->replot(QCustomPlot::rpQueuedRefresh);
+    };
+
+    auto updateGraphs = [this, plotData, updateYAxis]() {
         m_plot->clearGraphs();
         const auto averagingWindowSize = m_page->averagingWindowSize->value();
         const auto selectedCost = m_page->costSelectionCombobox->currentText();
         const auto numCores = m_results.cores.size();
         quint32 core = 0;
+        m_upperWithoutOutliers = 0;
+
+        double sumCost = 0;
+        double numEntries = 0;
+
         for (const auto& coreData : qAsConst(m_results.cores)) {
             for (const auto& costData : coreData.costs) {
                 if (costData.costName != selectedCost) {
@@ -115,6 +133,8 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
                         static_cast<double>(value.time / actualWindowSize - plotData->applicationStartTime);
                     times[j] = time;
                     costs[j] = value.cost / actualWindowSize;
+                    numEntries += actualWindowSize;
+                    sumCost += value.cost;
                 }
                 graph->setData(times, costs, true);
             }
@@ -122,13 +142,16 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
             ++core;
         }
         m_plot->xAxis->rescale();
-        m_plot->yAxis->rescale();
-        m_plot->yAxis->setRangeLower(0.);
-        m_plot->replot(QCustomPlot::rpQueuedRefresh);
+
+        const auto avgCost = sumCost / numEntries;
+        m_upperWithoutOutliers = avgCost * 1.1;
+
+        updateYAxis();
     };
 
     connect(m_page->costSelectionCombobox, qOverload<int>(&QComboBox::currentIndexChanged), this, updateGraphs);
     connect(m_page->averagingWindowSize, qOverload<int>(&QSpinBox::valueChanged), this, updateGraphs);
+    connect(m_page->hideOutliers, &QCheckBox::toggled, this, updateYAxis);
 
     m_plot->xAxis->setLabel(tr("Time"));
     m_plot->xAxis->setTicker(QSharedPointer<TimeAxis>(new TimeAxis()));
