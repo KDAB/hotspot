@@ -111,7 +111,7 @@ QVariant SourceCodeModel::headerData(int section, Qt::Orientation orientation, i
     if (section < 0 || section >= COLUMN_COUNT + m_selfCosts.numTypes() + m_inclusiveCosts.numTypes())
         return {};
 
-    if (role != Qt::DisplayRole || orientation != Qt::Horizontal)
+    if ((role != Qt::DisplayRole && role != Qt::ToolTipRole) || orientation != Qt::Horizontal)
         return {};
 
     if (section == SourceCodeColumn)
