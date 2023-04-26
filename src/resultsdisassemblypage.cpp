@@ -310,11 +310,11 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
 
     ResultsUtil::hideEmptyColumns(m_callerCalleeResults.selfCosts, ui->assemblyView, DisassemblyModel::COLUMN_COUNT);
 
-    ResultsUtil::hideEmptyColumns(m_callerCalleeResults.inclusiveCosts, ui->sourceCodeView,
+    ResultsUtil::hideEmptyColumns(m_callerCalleeResults.selfCosts, ui->sourceCodeView,
                                   SourceCodeModel::COLUMN_COUNT);
 
-    ResultsUtil::hideEmptyColumns(m_callerCalleeResults.selfCosts, ui->sourceCodeView,
-                                  SourceCodeModel::COLUMN_COUNT + m_callerCalleeResults.inclusiveCosts.numTypes());
+    ResultsUtil::hideEmptyColumns(m_callerCalleeResults.inclusiveCosts, ui->sourceCodeView,
+                                  SourceCodeModel::COLUMN_COUNT + m_callerCalleeResults.selfCosts.numTypes());
 
     setupAsmViewModel();
 }
