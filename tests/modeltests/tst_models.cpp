@@ -436,7 +436,7 @@ private slots:
         QCOMPARE(model.rowCount(), 0);
 
         auto disassemblyOutput =
-            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), symbol);
+            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), {}, {}, symbol);
         QVERIFY(disassemblyOutput.errorMessage.isEmpty());
         model.setDisassembly(disassemblyOutput, {});
 
