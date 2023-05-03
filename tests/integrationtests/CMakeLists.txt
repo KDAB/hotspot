@@ -21,10 +21,6 @@ ecm_add_test(
     tst_perfparser
 )
 
-if(KF5Auth_FOUND)
-    target_link_libraries(tst_perfparser KF5::Auth)
-endif()
-
 if(KF5Archive_FOUND)
     target_link_libraries(tst_perfparser KF5::Archive)
 endif()

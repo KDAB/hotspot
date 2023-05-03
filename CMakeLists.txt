@@ -97,7 +97,6 @@ find_package(
 )
 
 find_package(KF5Archive 5.85.0 CONFIG)
-find_package(KF5Auth CONFIG)
 find_package(KF5SyntaxHighlighting CONFIG)
 find_package(KDDockWidgets CONFIG)
 set_package_properties(

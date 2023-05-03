@@ -375,7 +375,7 @@ RecordPage::RecordPage(QWidget* parent)
         ui->elevatePrivilegesCheckBox->setChecked(false);
         ui->elevatePrivilegesCheckBox->setEnabled(false);
         ui->elevatePrivilegesCheckBox->setText(
-            tr("(Note: Install pkexec, kdesudo, kdesu or KAuth to temporarily elevate perf privileges.)"));
+            tr("(Note: Install pkexec, kdesudo or kdesu to temporarily elevate perf privileges.)"));
     }
 
     connect(ui->elevatePrivilegesCheckBox, &QCheckBox::toggled, this, &RecordPage::updateOffCpuCheckboxState);

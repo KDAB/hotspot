@@ -55,7 +55,6 @@ As of now, you will need the following dependencies to build this project:
   - iconthemes
   - parts
   - archive (optional)
-  - kauth (optional)
 - [KDDockWidgets](https://github.com/KDAB/KDDockWidgets)
   - this library is not yet packaged on most distributions, you'll have to compile it yourself from source
 
@@ -124,7 +123,6 @@ make
 # or `make install` it and launch it from your $PATH
 ```
 
-If you want to use KAuth, you need to add `-DCMAKE_INSTALL_PREFIX=/usr/` to the cmake call. Otherwise KAuth won't work.
 If you need help building this project for your platform, [contact us for help](https://www.kdab.com/about/contact/).
 
 ## Debugging the AppImage
