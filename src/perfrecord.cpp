@@ -316,7 +316,6 @@ void PerfRecord::startRecording(const QStringList& perfOptions, const QString& o
     });
 
     m_outputPath = outputPath;
-    auto perfBinary = QStringLiteral("perf");
 
     if (!workingDirectory.isEmpty()) {
         m_perfRecordProcess->setWorkingDirectory(workingDirectory);
@@ -327,8 +326,8 @@ void PerfRecord::startRecording(const QStringList& perfOptions, const QString& o
     perfCommand += recordOptions;
 
     connect(m_perfRecordProcess.data(), &QProcess::started, this,
-            [this, perfBinary, perfCommand] { emit recordingStarted(perfBinary, perfCommand); });
-    m_perfRecordProcess->start(perfBinary, perfCommand);
+            [this] { emit recordingStarted(m_perfRecordProcess->program(), m_perfRecordProcess->arguments()); });
+    m_perfRecordProcess->start(perfBinaryPath(), perfCommand);
 
     m_userTerminated = false;
 }
@@ -384,7 +383,7 @@ void PerfRecord::recordSystem(const QStringList& perfOptions, const QString& out
 const QString PerfRecord::perfCommand()
 {
     if (m_perfRecordProcess) {
-        return QStringLiteral("perf ") + m_perfRecordProcess->arguments().join(QLatin1Char(' '));
+        return m_perfRecordProcess->program() + QLatin1Char(' ') + m_perfRecordProcess->arguments().join(QLatin1Char(' '));
     } else {
         return {};
     }
@@ -451,7 +450,7 @@ static QByteArray perfOutput(const QStringList& arguments)
     process.setProcessEnvironment(env);
 
     QObject::connect(&process, &QProcess::errorOccurred, &process, reportError);
-    process.start(QStringLiteral("perf"), arguments);
+    process.start(PerfRecord::perfBinaryPath(), arguments);
     if (!process.waitForFinished(1000) || process.exitCode() != 0)
         reportError();
     return process.readAllStandardOutput();
@@ -511,7 +510,12 @@ bool PerfRecord::canElevatePrivileges()
     return ALLOW_PRIVILEGE_ESCALATION && (!sudoUtil().isEmpty() || KF5Auth_FOUND);
 }
 
+QString PerfRecord::perfBinaryPath()
+{
+    return QStandardPaths::findExecutable(QStringLiteral("perf"));
+}
+
 bool PerfRecord::isPerfInstalled()
 {
-    return !QStandardPaths::findExecutable(QStringLiteral("perf")).isEmpty();
+    return !perfBinaryPath().isEmpty();
 }
