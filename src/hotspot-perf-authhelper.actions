@@ -1,5 +1,0 @@
-[com.kdab.hotspot.perf.elevate]
-Name=Elevate Privileges
-Description=allows to run perf as root
-Policy=auth_admin
-Persistence=session

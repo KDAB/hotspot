@@ -20,8 +20,6 @@
 
 #cmakedefine01 Zstd_FOUND
 
-#cmakedefine01 KF5Auth_FOUND
-
 #cmakedefine01 KF5Archive_FOUND
 
 #cmakedefine01 QCustomPlot_FOUND
