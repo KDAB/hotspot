@@ -43,6 +43,7 @@ public:
 
     static QStringList offCpuProfilingOptions();
 
+    static QString perfBinaryPath();
     static bool isPerfInstalled();
 
 signals:
