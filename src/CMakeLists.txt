@@ -50,6 +50,8 @@ set(HOTSPOT_SRCS
     perfoutputwidgettext.cpp
     perfoutputwidgetkonsole.cpp
     costcontextmenu.cpp
+    initiallystoppedprocess.cpp
+    perfcontrolfifowrapper.cpp
     # ui files:
     mainwindow.ui
     aboutdialog.ui

@@ -53,6 +53,8 @@ if(KGraphViewerPart_FOUND)
     ecm_add_test(
         tst_callgraphgenerator.cpp
         ../../src/parsers/perf/perfparser.cpp
+        ../../src/initiallystoppedprocess.cpp
+        ../../src/perfcontrolfifowrapper.cpp
         ../../src/perfrecord.cpp
         ../../src/callgraphgenerator.cpp
         LINK_LIBRARIES

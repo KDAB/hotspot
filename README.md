@@ -407,12 +407,7 @@ Consider tweaking /proc/sys/kernel/perf_event_paranoid:
    2 - Disallow kernel profiling for unpriv
 ```
 
-To workaround this limitation, hotspot can temporarily elevate the perf privileges.
-This is achieved by applying
-[these steps](https://superuser.com/questions/980632/run-perf-without-root-right),
-bundled into [a script](scripts/elevate_perf_privileges.sh) that is run via `pkexec`, `kdesudo` or `kdesu`.
-The resulting elevated privileges are also required for kernel tracing in general and Off-CPU profiling in
-particular.
+To workaround this limitation, hotspot can run perf itself with elevated privileges.
 
 ### Export File Format
 
