@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "elevateprivilegeshelper.h"
+
 #include <QObject>
 #include <QPointer>
 
@@ -55,12 +57,13 @@ signals:
 
 private:
     QPointer<QProcess> m_perfRecordProcess;
-    QPointer<QProcess> m_elevatePrivilegesProcess;
+    InitiallyStoppedProcess m_targetProcessForPrivilegedPerf;
+    PerfControlFifoWrapper m_perfControlFifo;
     QString m_outputPath;
     bool m_userTerminated;
 
-    void startRecording(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
-                        const QStringList& recordOptions, const QString& workingDirectory = QString());
-    void startRecording(const QStringList& perfOptions, const QString& outputPath, const QStringList& recordOptions,
-                        const QString& workingDirectory = QString());
+    static bool actuallyElevatePrivileges(bool elevatePrivileges);
+
+    bool runPerf(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
+                 const QString& workingDirectory = QString());
 };

@@ -53,6 +53,7 @@ if(KGraphViewerPart_FOUND)
     ecm_add_test(
         tst_callgraphgenerator.cpp
         ../../src/parsers/perf/perfparser.cpp
+        ../../src/elevateprivilegeshelper.cpp
         ../../src/perfrecord.cpp
         ../../src/callgraphgenerator.cpp
         LINK_LIBRARIES

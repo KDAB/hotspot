@@ -50,6 +50,7 @@ set(HOTSPOT_SRCS
     perfoutputwidgettext.cpp
     perfoutputwidgetkonsole.cpp
     costcontextmenu.cpp
+    elevateprivilegeshelper.cpp
     # ui files:
     mainwindow.ui
     aboutdialog.ui

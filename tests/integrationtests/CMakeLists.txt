@@ -3,6 +3,7 @@ include_directories(../../src/models)
 include_directories(../../src/parsers/perf)
 
 ecm_add_test(
+    ../../src/elevateprivilegeshelper.cpp
     ../../src/perfrecord.cpp
     ../../src/settings.cpp
     ../../src/util.cpp

@@ -144,7 +144,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 add_subdirectory(3rdparty)
-add_subdirectory(scripts)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_subdirectory(src)
