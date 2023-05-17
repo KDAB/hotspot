@@ -185,6 +185,10 @@ void Settings::loadFromFile()
         sharedConfig->group("PathSettings").writeEntry("userPaths", this->userPaths());
         sharedConfig->group("PathSettings").writeEntry("systemPaths", this->systemPaths());
     });
+    m_sourceCodePaths = sharedConfig->group("PathSettings").readEntry("sourceCodePaths", QStringList());
+    connect(this, &Settings::sourceCodePathsChanged, this, [sharedConfig](const QStringList& paths) {
+        sharedConfig->group("PathSettings").writeEntry("sourceCodePaths", paths);
+    });
 
     // fix build error in app image build
     const auto colorScheme = KColorScheme(QPalette::Normal, KColorScheme::View, sharedConfig);
@@ -221,4 +225,12 @@ void Settings::loadFromFile()
     connect(this, &Settings::lastUsedEnvironmentChanged, this, [sharedConfig](const QString& envName) {
         sharedConfig->group("PerfPaths").writeEntry("lastUsed", envName);
     });
+}
+
+void Settings::setSourceCodePaths(const QStringList& paths)
+{
+    if (m_sourceCodePaths != paths) {
+        m_sourceCodePaths = paths;
+        emit sourceCodePathsChanged(m_sourceCodePaths);
+    }
 }

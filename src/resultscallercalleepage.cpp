@@ -22,6 +22,7 @@
 #include "models/callercalleemodel.h"
 #include "models/callercalleeproxy.h"
 #include "models/costdelegate.h"
+#include "models/disassemblyoutput.h"
 #include "models/filterandzoomstack.h"
 #include "models/hashmodel.h"
 #include "models/treemodel.h"
@@ -281,7 +282,10 @@ void ResultsCallerCalleePage::openEditor(const Data::Symbol& symbol)
     auto it = std::find_if(map.keyBegin(), map.keyEnd(), [&symbol, this](const Data::FileLine& fileLine) {
         const auto location = toSourceMapLocation(fileLine, symbol);
         if (location) {
-            emit navigateToCode(location.path, location.lineNumber, 0);
+            auto settings = Settings::instance();
+            auto remappedSourceFile =
+                findSourceCodeFile(location.path, settings->sourceCodePaths(), settings->sysroot());
+            emit navigateToCode(remappedSourceFile, location.lineNumber, 0);
             return true;
         }
         return false;

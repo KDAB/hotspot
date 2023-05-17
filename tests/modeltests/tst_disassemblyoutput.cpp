@@ -65,7 +65,7 @@ private slots:
         QTextStream disassemblyStream(&actual);
 
         const auto disassemblyOutput =
-            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), {}, {}, symbol);
+            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), {}, {}, {}, {}, symbol);
         for (const auto& disassemblyLine : disassemblyOutput.disassemblyLines) {
             disassemblyStream << Qt::hex << disassemblyLine.addr << '\t' << disassemblyLine.disassembly << '\n';
         }
@@ -145,17 +145,49 @@ private slots:
 
         const Data::Symbol symbol = {QStringLiteral("fib(int)"), 4361, 67, QStringLiteral("libfib.so")};
 
-        auto result = DisassemblyOutput::disassemble(objdump, {}, {}, {}, symbol);
+        auto result = DisassemblyOutput::disassemble(objdump, {}, {}, {}, {}, {}, symbol);
         QVERIFY(!result.errorMessage.isEmpty());
         QVERIFY(result.errorMessage.contains(QLatin1String("Could not find libfib.so")));
 
         QFETCH(QStringList, searchPath);
 
-        result = DisassemblyOutput::disassemble(objdump, {}, QStringList(searchPath), {}, symbol);
+        result = DisassemblyOutput::disassemble(objdump, {}, QStringList(searchPath), {}, {}, {}, symbol);
         QVERIFY(result.errorMessage.isEmpty());
 
-        result = DisassemblyOutput::disassemble(objdump, {}, {}, QStringList(searchPath), symbol);
+        result = DisassemblyOutput::disassemble(objdump, {}, {}, QStringList(searchPath), {}, {}, symbol);
         QVERIFY(result.errorMessage.isEmpty());
+    }
+
+    void testCustomSourceCodePath()
+    {
+        QTemporaryDir tempDir;
+
+        QVERIFY(tempDir.isValid());
+
+        QDir parent(tempDir.path());
+        QVERIFY(parent.mkdir(QStringLiteral("liba")));
+        QVERIFY(parent.mkdir(QStringLiteral("libb")));
+
+        auto createFile = [tempPath = tempDir.path()](const QString& path) {
+            QFile file(tempPath + QDir::separator() + path);
+            file.open(QIODevice::WriteOnly);
+            file.write("test");
+            file.close();
+        };
+        createFile(QStringLiteral("liba/lib.c"));
+        createFile(QStringLiteral("libb/lib.c"));
+
+        // check if the correct lib.c is found in sourceCodePaths
+        QCOMPARE(findSourceCodeFile(QStringLiteral("/home/test/liba/lib.c"), {tempDir.path()}, QString()),
+                 tempDir.path() + QDir::separator() + QStringLiteral("liba/lib.c"));
+
+        // check if fallback is working if it is not found
+        QCOMPARE(findSourceCodeFile(QStringLiteral("/home/test/liba/lib.c"), {}, QString()),
+                 QStringLiteral("/home/test/liba/lib.c"));
+
+        // test if relative paths are working
+        QCOMPARE(findSourceCodeFile(QStringLiteral("./liba/lib.c"), {tempDir.path()}, QString()),
+                 tempDir.path() + QDir::separator() + QStringLiteral("liba/lib.c"));
     }
 };
 

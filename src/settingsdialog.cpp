@@ -11,6 +11,7 @@
 #include "ui_callgraphsettingspage.h"
 #include "ui_debuginfodpage.h"
 #include "ui_flamegraphsettingspage.h"
+#include "ui_sourcepathsettings.h"
 #include "ui_unwindsettingspage.h"
 
 #include "multiconfigwidget.h"
@@ -32,6 +33,22 @@ KConfigGroup config()
 {
     return KSharedConfig::openConfig()->group("PerfPaths");
 }
+
+QPushButton* setupMultiPath(KEditListWidget* listWidget, QLabel* buddy, QWidget* previous)
+{
+    auto editor = new KUrlRequester(listWidget);
+    editor->setPlaceholderText(QObject::tr("auto-detect"));
+    editor->setMode(KFile::LocalOnly | KFile::Directory | KFile::ExistingOnly);
+    buddy->setBuddy(editor);
+    listWidget->setCustomEditor(editor->customEditor());
+    QWidget::setTabOrder(previous, editor);
+    QWidget::setTabOrder(editor, listWidget->listView());
+    QWidget::setTabOrder(listWidget->listView(), listWidget->addButton());
+    QWidget::setTabOrder(listWidget->addButton(), listWidget->removeButton());
+    QWidget::setTabOrder(listWidget->removeButton(), listWidget->upButton());
+    QWidget::setTabOrder(listWidget->upButton(), listWidget->downButton());
+    return listWidget->downButton();
+}
 }
 
 SettingsDialog::SettingsDialog(QWidget* parent)
@@ -39,6 +56,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     , unwindPage(new Ui::UnwindSettingsPage)
     , flamegraphPage(new Ui::FlamegraphSettingsPage)
     , debuginfodPage(new Ui::DebuginfodPage)
+    , sourcePathPage(new Ui::SourcePathSettingsPage)
 #if KGraphViewerPart_FOUND
     , callgraphPage(new Ui::CallgraphSettingsPage)
 #endif
@@ -49,6 +67,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
 #if KGraphViewerPart_FOUND
     addCallgraphPage();
 #endif
+    addSourcePathPage();
 }
 
 SettingsDialog::~SettingsDialog() = default;
@@ -132,20 +151,6 @@ void SettingsDialog::addPathSettingsPage()
 
     unwindPage->setupUi(page);
 
-    auto setupMultiPath = [](KEditListWidget* listWidget, QLabel* buddy, QWidget* previous) {
-        auto editor = new KUrlRequester(listWidget);
-        editor->setPlaceholderText(tr("auto-detect"));
-        editor->setMode(KFile::LocalOnly | KFile::Directory | KFile::ExistingOnly);
-        buddy->setBuddy(editor);
-        listWidget->setCustomEditor(editor->customEditor());
-        QWidget::setTabOrder(previous, editor);
-        QWidget::setTabOrder(editor, listWidget->listView());
-        QWidget::setTabOrder(listWidget->listView(), listWidget->addButton());
-        QWidget::setTabOrder(listWidget->addButton(), listWidget->removeButton());
-        QWidget::setTabOrder(listWidget->removeButton(), listWidget->upButton());
-        QWidget::setTabOrder(listWidget->upButton(), listWidget->downButton());
-        return listWidget->downButton();
-    };
     auto lastExtraLibsWidget = setupMultiPath(unwindPage->extraLibraryPaths, unwindPage->extraLibraryPathsLabel,
                                               unwindPage->lineEditApplicationPath);
     setupMultiPath(unwindPage->debugPaths, unwindPage->debugPathsLabel, lastExtraLibsWidget);
@@ -219,20 +224,6 @@ void SettingsDialog::addFlamegraphPage()
 
     flamegraphPage->setupUi(page);
 
-    auto setupMultiPath = [](KEditListWidget* listWidget, QLabel* buddy, QWidget* previous) {
-        auto editor = new KUrlRequester(listWidget);
-        editor->setMode(KFile::LocalOnly | KFile::Directory | KFile::ExistingOnly);
-        buddy->setBuddy(editor);
-        listWidget->setCustomEditor(editor->customEditor());
-        QWidget::setTabOrder(previous, editor);
-        QWidget::setTabOrder(editor, listWidget->listView());
-        QWidget::setTabOrder(listWidget->listView(), listWidget->addButton());
-        QWidget::setTabOrder(listWidget->addButton(), listWidget->removeButton());
-        QWidget::setTabOrder(listWidget->removeButton(), listWidget->upButton());
-        QWidget::setTabOrder(listWidget->upButton(), listWidget->downButton());
-        return listWidget->downButton();
-    };
-
     auto lastUserPath = setupMultiPath(flamegraphPage->userPaths, flamegraphPage->userPathsLabel, nullptr);
     setupMultiPath(flamegraphPage->systemPaths, flamegraphPage->systemPathsLabel, lastUserPath);
 
@@ -295,4 +286,22 @@ void SettingsDialog::addCallgraphPage()
         settings->setCallgraphColors(callgraphPage->currentFunctionColor->color().name(),
                                      callgraphPage->functionColor->color().name());
     });
+}
+
+void SettingsDialog::addSourcePathPage()
+{
+    auto page = new QWidget(this);
+    auto item = addPage(page, tr("Source Path"));
+    item->setHeader(tr("Source Path Settings"));
+    item->setIcon(QIcon::fromTheme(QStringLiteral("preferences-system-windows-behavior")));
+
+    sourcePathPage->setupUi(page);
+
+    connect(Settings::instance(), &Settings::sourceCodePathsChanged, this,
+            [this](const QStringList& paths) { sourcePathPage->sourcePaths->setItems(paths); });
+
+    setupMultiPath(sourcePathPage->sourcePaths, sourcePathPage->label, buttonBox()->button(QDialogButtonBox::Ok));
+
+    connect(buttonBox(), &QDialogButtonBox::accepted, this,
+            [this] { Settings::instance()->setSourceCodePaths(sourcePathPage->sourcePaths->items()); });
 }

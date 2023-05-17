@@ -272,7 +272,8 @@ void ResultsDisassemblyPage::showDisassembly()
     const auto colon = QLatin1Char(':');
 
     showDisassembly(DisassemblyOutput::disassemble(objdump(), m_arch, settings->debugPaths().split(colon),
-                                                   settings->extraLibPaths().split(colon), curSymbol));
+                                                   settings->extraLibPaths().split(colon), settings->sourceCodePaths(),
+                                                   settings->sysroot(), curSymbol));
 }
 
 void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassemblyOutput)
