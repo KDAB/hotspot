@@ -41,6 +41,10 @@ struct DisassemblyOutput
     }
 
     static DisassemblyOutput disassemble(const QString& objdump, const QString& arch, const QStringList& debugPaths,
-                                         const QStringList& extraLibPaths, const Data::Symbol& symbol);
+                                         const QStringList& extraLibPaths, const QStringList& sourceCodePaths,
+                                         const QString& sysroot, const Data::Symbol& symbol);
 };
+
+QString findSourceCodeFile(const QString& originalPath, const QStringList& sourceCodePaths, const QString& sysroot);
+
 Q_DECLARE_TYPEINFO(DisassemblyOutput::DisassemblyLine, Q_MOVABLE_TYPE);

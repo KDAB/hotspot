@@ -121,6 +121,32 @@ QString findBinaryForSymbol(const QStringList& debugPaths, const QStringList& ex
 }
 }
 
+// not in an anonymous namespace so we can test this
+QString findSourceCodeFile(const QString& originalPath, const QStringList& sourceCodePaths, const QString& sysroot)
+{
+    if (QFile::exists(originalPath)) {
+        return originalPath;
+    }
+
+    QString sysrootPath = sysroot + QDir::separator() + originalPath;
+    if (QFile::exists(sysrootPath)) {
+        return sysrootPath;
+    }
+
+    for (const auto& sourcePath : sourceCodePaths) {
+        for (auto it = originalPath.begin(); it != originalPath.end();
+             it = std::find(++it, originalPath.end(), QDir::separator())) {
+            QString path = sourcePath + QDir::separator() + QString(it, std::distance(it, originalPath.end()));
+            QFileInfo info(path);
+            if (info.exists()) {
+                return info.canonicalFilePath();
+            }
+        }
+    }
+
+    return originalPath; // fallback
+}
+
 static ObjectdumpOutput objdumpParse(const QByteArray& output)
 {
     QVector<DisassemblyOutput::DisassemblyLine> disassemblyLines;
@@ -208,6 +234,7 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
 
 DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const QString& arch,
                                                  const QStringList& debugPaths, const QStringList& extraLibPaths,
+                                                 const QStringList& sourceCodePaths, const QString& sysroot,
                                                  const Data::Symbol& symbol)
 {
     DisassemblyOutput disassemblyOutput;
@@ -276,6 +303,7 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
 
     const auto objdumpOutput = objdumpParse(output);
     disassemblyOutput.disassemblyLines = objdumpOutput.disassemblyLines;
-    disassemblyOutput.mainSourceFileName = objdumpOutput.mainSourceFileName;
+    disassemblyOutput.mainSourceFileName =
+        findSourceCodeFile(objdumpOutput.mainSourceFileName, sourceCodePaths, sysroot);
     return disassemblyOutput;
 }

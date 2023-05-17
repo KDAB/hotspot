@@ -354,7 +354,7 @@ private slots:
         QCOMPARE(model.rowCount(), 0);
 
         DisassemblyOutput disassemblyOutput =
-            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), {}, {}, symbol);
+            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), {}, {}, {}, {}, symbol);
         model.setDisassembly(disassemblyOutput, results);
         QCOMPARE(model.columnCount(), DisassemblyModel::COLUMN_COUNT + results.selfCosts.numTypes());
         QCOMPARE(model.rowCount(), disassemblyOutput.disassemblyLines.size());
@@ -392,7 +392,7 @@ private slots:
         QCOMPARE(model.rowCount(), 0);
 
         DisassemblyOutput disassemblyOutput =
-            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), {}, {}, symbol);
+            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), {}, {}, {}, {}, symbol);
         model.setDisassembly(disassemblyOutput, results);
 
         // no source file name
@@ -436,7 +436,7 @@ private slots:
         QCOMPARE(model.rowCount(), 0);
 
         auto disassemblyOutput =
-            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), {}, {}, symbol);
+            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), {}, {}, {}, {}, symbol);
         QVERIFY(disassemblyOutput.errorMessage.isEmpty());
         model.setDisassembly(disassemblyOutput, {});
 
