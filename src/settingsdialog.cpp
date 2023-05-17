@@ -297,11 +297,13 @@ void SettingsDialog::addSourcePathPage()
 
     sourcePathPage->setupUi(page);
 
+    const auto colon = QLatin1Char(':');
     connect(Settings::instance(), &Settings::sourceCodePathsChanged, this,
-            [this](const QStringList& paths) { sourcePathPage->sourcePaths->setItems(paths); });
+            [this, colon](const QString& paths) { sourcePathPage->sourcePaths->setItems(paths.split(colon)); });
 
     setupMultiPath(sourcePathPage->sourcePaths, sourcePathPage->label, buttonBox()->button(QDialogButtonBox::Ok));
 
-    connect(buttonBox(), &QDialogButtonBox::accepted, this,
-            [this] { Settings::instance()->setSourceCodePaths(sourcePathPage->sourcePaths->items()); });
+    connect(buttonBox(), &QDialogButtonBox::accepted, this, [this, colon] {
+        Settings::instance()->setSourceCodePaths(sourcePathPage->sourcePaths->items().join(colon));
+    });
 }

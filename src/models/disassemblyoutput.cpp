@@ -303,7 +303,8 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
 
     const auto objdumpOutput = objdumpParse(output);
     disassemblyOutput.disassemblyLines = objdumpOutput.disassemblyLines;
-    disassemblyOutput.mainSourceFileName =
+    disassemblyOutput.mainSourceFileName = objdumpOutput.mainSourceFileName;
+    disassemblyOutput.realSourceFileName =
         findSourceCodeFile(objdumpOutput.mainSourceFileName, sourceCodePaths, sysroot);
     return disassemblyOutput;
 }

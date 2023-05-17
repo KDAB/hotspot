@@ -185,8 +185,8 @@ void Settings::loadFromFile()
         sharedConfig->group("PathSettings").writeEntry("userPaths", this->userPaths());
         sharedConfig->group("PathSettings").writeEntry("systemPaths", this->systemPaths());
     });
-    m_sourceCodePaths = sharedConfig->group("PathSettings").readEntry("sourceCodePaths", QStringList());
-    connect(this, &Settings::sourceCodePathsChanged, this, [sharedConfig](const QStringList& paths) {
+    m_sourceCodePaths = sharedConfig->group("PathSettings").readEntry("sourceCodePaths", QString());
+    connect(this, &Settings::sourceCodePathsChanged, this, [sharedConfig](const QString& paths) {
         sharedConfig->group("PathSettings").writeEntry("sourceCodePaths", paths);
     });
 
@@ -227,7 +227,7 @@ void Settings::loadFromFile()
     });
 }
 
-void Settings::setSourceCodePaths(const QStringList& paths)
+void Settings::setSourceCodePaths(const QString& paths)
 {
     if (m_sourceCodePaths != paths) {
         m_sourceCodePaths = paths;
