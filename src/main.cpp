@@ -137,6 +137,12 @@ int main(int argc, char** argv)
         QStringLiteral("path"));
     parser.addOption(appPath);
 
+    QCommandLineOption sourcePath(
+        QStringLiteral("sourcePaths"),
+        QCoreApplication::translate("main", "Colon separated list of extra paths to the source code."),
+        QStringLiteral("paths"));
+    parser.addOption(sourcePath);
+
     QCommandLineOption arch(QStringLiteral("arch"),
                             QCoreApplication::translate("main", "Architecture to use for unwinding."),
                             QStringLiteral("path"));
@@ -176,6 +182,7 @@ int main(int argc, char** argv)
         applyArg(extraLibPaths, &Settings::setExtraLibPaths);
         applyArg(appPath, &Settings::setAppPath);
         applyArg(arch, &Settings::setArch);
+        applyArg(sourcePath, &Settings::setSourceCodePaths);
     };
 
     const auto settings = Settings::instance();

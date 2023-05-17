@@ -9,14 +9,18 @@
 
 #include <QDir>
 #include <QFile>
+#include <QLoggingCategory>
 #include <QScopeGuard>
 #include <QTextBlock>
 #include <QTextDocument>
 
 #include <algorithm>
+#include <limits>
 
 #include "highlighter.hpp"
 #include "search.h"
+
+Q_LOGGING_CATEGORY(sourcecodemodel, "hotspot.sourcecodemodel", QtWarningMsg)
 
 SourceCodeModel::SourceCodeModel(KSyntaxHighlighting::Repository* repository, QObject* parent)
     : QAbstractTableModel(parent)
@@ -49,7 +53,7 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     if (disassemblyOutput.mainSourceFileName.isEmpty())
         return;
 
-    QFile file(m_sysroot + QDir::separator() + disassemblyOutput.mainSourceFileName);
+    QFile file(m_sysroot + QDir::separator() + disassemblyOutput.realSourceFileName);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
@@ -63,7 +67,7 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     m_document->setTextWidth(m_document->idealWidth());
 
     int maxLineNumber = 0;
-    int minLineNumber = INT_MAX;
+    int minLineNumber = std::numeric_limits<int>::max();
 
     m_validLineNumbers.clear();
 
@@ -101,6 +105,13 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
 
         m_validLineNumbers.insert(line.fileLine.line);
     }
+
+    if (maxLineNumber == 0) {
+        qCWarning(sourcecodemodel) << "failed to parse line numbers from disassembly output";
+        return;
+    }
+
+    qCDebug(sourcecodemodel) << disassemblyOutput.mainSourceFileName << minLineNumber << maxLineNumber;
 
     Q_ASSERT(minLineNumber > 0);
     Q_ASSERT(minLineNumber < maxLineNumber);

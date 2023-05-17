@@ -283,8 +283,9 @@ void ResultsCallerCalleePage::openEditor(const Data::Symbol& symbol)
         const auto location = toSourceMapLocation(fileLine, symbol);
         if (location) {
             auto settings = Settings::instance();
+            const auto colon = QLatin1Char(':');
             auto remappedSourceFile =
-                findSourceCodeFile(location.path, settings->sourceCodePaths(), settings->sysroot());
+                findSourceCodeFile(location.path, settings->sourceCodePaths().split(colon), settings->sysroot());
             emit navigateToCode(remappedSourceFile, location.lineNumber, 0);
             return true;
         }

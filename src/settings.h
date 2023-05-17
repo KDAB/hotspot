@@ -139,7 +139,7 @@ public:
         return m_lastUsedEnvironment;
     }
 
-    QStringList sourceCodePaths() const
+    QString sourceCodePaths() const
     {
         return m_sourceCodePaths;
     }
@@ -163,7 +163,7 @@ signals:
     void objdumpChanged(const QString& objdump);
     void callgraphChanged();
     void lastUsedEnvironmentChanged(const QString& envName);
-    void sourceCodePathsChanged(const QStringList& paths);
+    void sourceCodePathsChanged(const QString& paths);
 
 public slots:
     void setPrettifySymbols(bool prettifySymbols);
@@ -184,7 +184,7 @@ public slots:
     void setCallgraphColors(const QColor& active, const QColor& inactive);
     void setCostAggregation(Settings::CostAggregation costAggregation);
     void setLastUsedEnvironment(const QString& envName);
-    void setSourceCodePaths(const QStringList& paths);
+    void setSourceCodePaths(const QString& paths);
 
 private:
     Settings() = default;
@@ -198,7 +198,6 @@ private:
     QStringList m_userPaths;
     QStringList m_systemPaths;
     QStringList m_debuginfodUrls;
-    QStringList m_sourceCodePaths;
 
     QString m_sysroot;
     QString m_kallsyms;
@@ -207,6 +206,7 @@ private:
     QString m_appPath;
     QString m_arch;
     QString m_objdump;
+    QString m_sourceCodePaths;
 
     QString m_lastUsedEnvironment;
 

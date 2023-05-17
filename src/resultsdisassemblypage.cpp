@@ -102,6 +102,8 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
         m_sourceCodeModel->updateHighlighting(fileLine.line);
     };
 
+    connect(settings, &Settings::sourceCodePathsChanged, this, [this](const QString&) { showDisassembly(); });
+
     connect(ui->assemblyView, &QTreeView::entered, this, updateFromDisassembly);
 
     connect(ui->sourceCodeView, &QTreeView::entered, this, updateFromSource);
@@ -353,9 +355,9 @@ void ResultsDisassemblyPage::showDisassembly()
     auto settings = Settings::instance();
     const auto colon = QLatin1Char(':');
 
-    showDisassembly(DisassemblyOutput::disassemble(objdump(), m_arch, settings->debugPaths().split(colon),
-                                                   settings->extraLibPaths().split(colon), settings->sourceCodePaths(),
-                                                   settings->sysroot(), curSymbol));
+    showDisassembly(DisassemblyOutput::disassemble(
+        objdump(), m_arch, settings->debugPaths().split(colon), settings->extraLibPaths().split(colon),
+        settings->sourceCodePaths().split(colon), settings->sysroot(), curSymbol));
 }
 
 void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassemblyOutput)
