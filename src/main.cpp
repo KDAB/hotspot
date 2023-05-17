@@ -94,8 +94,10 @@ int main(int argc, char** argv)
 #endif
 
     QApplication* guiApp = qobject_cast<QApplication*>(app.get());
-    auto window = guiApp ? new MainWindow : nullptr;
+    MainWindow* window = nullptr;
     if (guiApp) {
+        setupDockWidgets();
+        window = new MainWindow();
         guiApp->setWindowIcon(QIcon(QStringLiteral(":/images/icons/512-hotspot_app_icon.png")));
     }
 
@@ -154,8 +156,6 @@ int main(int argc, char** argv)
         QStringLiteral("[files...]"));
 
     parser.process(*app);
-
-    setupDockWidgets();
 
     ThreadWeaver::Queue::instance()->setMaximumNumberOfThreads(QThread::idealThreadCount());
 
