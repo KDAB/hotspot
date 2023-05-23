@@ -79,15 +79,21 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     const auto entry = results.entries.find(disassemblyOutput.symbol);
 
     for (const auto& line : disassemblyOutput.disassemblyLines) {
-        if (line.fileLine.line == 0 || line.fileLine.file != disassemblyOutput.mainSourceFileName) {
+        // symbol not empty -> inlined function
+        // skip all lines that are not part of the function (happens due to inlining)
+        if (line.fileLine.line == 0 || !line.symbol.isEmpty()) {
             continue;
         }
 
-        if (line.fileLine.line > maxLineNumber) {
-            maxLineNumber = line.fileLine.line;
-        }
-        if (line.fileLine.line < minLineNumber) {
-            minLineNumber = line.fileLine.line;
+        // maxLineNumber and minLineNumber are used to show the source code so we only update them when we are in the
+        // current file
+        if (line.fileLine.file == disassemblyOutput.mainSourceFileName) {
+            if (line.fileLine.line > maxLineNumber) {
+                maxLineNumber = line.fileLine.line;
+            }
+            if (line.fileLine.line < minLineNumber) {
+                minLineNumber = line.fileLine.line;
+            }
         }
 
         if (m_validLineNumbers.contains(line.fileLine.line))

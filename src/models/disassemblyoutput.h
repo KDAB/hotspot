@@ -19,6 +19,10 @@ struct DisassemblyOutput
         QString name;
         int offset = 0; // offset from the entrypoint of the function
     };
+    friend bool operator==(const LinkedFunction& a, const LinkedFunction& b)
+    {
+        return a.name == b.name && a.offset == b.offset;
+    }
 
     struct DisassemblyLine
     {
@@ -26,7 +30,15 @@ struct DisassemblyOutput
         QString disassembly;
         LinkedFunction linkedFunction;
         Data::FileLine fileLine;
+        QString symbol; // used to show which function was inlined
     };
+
+    friend bool operator==(const DisassemblyLine& a, const DisassemblyLine& b)
+    {
+        return std::tie(a.addr, a.disassembly, a.linkedFunction, a.fileLine, a.symbol)
+            == std::tie(b.addr, b.disassembly, b.linkedFunction, b.fileLine, b.symbol);
+    }
+
     QVector<DisassemblyLine> disassemblyLines;
 
     quint64 baseAddress = 0;

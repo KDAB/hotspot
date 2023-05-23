@@ -126,7 +126,8 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
         connect(sourceView, &QTreeView::clicked, sourceView, [=](const QModelIndex& index) {
             const auto fileLine = sourceModel->fileLineForIndex(index);
             if (fileLine.isValid()) {
-                destView->scrollTo(destModel->indexForFileLine(fileLine));
+                auto index = destModel->indexForFileLine(fileLine);
+                destView->scrollTo(index);
             }
         });
     };
@@ -142,8 +143,9 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
         int functionOffset = index.data(DisassemblyModel::LinkedFunctionOffsetRole).toInt();
 
         if (m_symbolStack[m_stackIndex].symbol == functionName) {
-            ui->assemblyView->scrollTo(m_disassemblyModel->findIndexWithOffset(functionOffset),
-                                       QAbstractItemView::ScrollHint::PositionAtTop);
+            auto index = m_disassemblyModel->findIndexWithOffset(functionOffset);
+            ui->assemblyView->setExpanded(index, true);
+            ui->assemblyView->scrollTo(index, QAbstractItemView::ScrollHint::PositionAtTop);
         } else {
             const auto symbol =
                 std::find_if(m_callerCalleeResults.entries.keyBegin(), m_callerCalleeResults.entries.keyEnd(),

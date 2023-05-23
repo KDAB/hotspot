@@ -7,6 +7,7 @@ add_library(
     codedelegate.cpp
     costdelegate.cpp
     data.cpp
+    disassemblyentry.cpp
     disassemblymodel.cpp
     disassemblyoutput.cpp
     eventmodel.cpp

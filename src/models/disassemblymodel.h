@@ -9,10 +9,11 @@
 #pragma once
 
 #include <memory>
-#include <QAbstractTableModel>
+#include <QAbstractItemModel>
 #include <QTextLine>
 
 #include "data.h"
+#include "disassemblyentry.h"
 #include "disassemblyoutput.h"
 
 class QTextDocument;
@@ -25,7 +26,7 @@ class Repository;
 
 enum class Direction;
 
-class DisassemblyModel : public QAbstractTableModel
+class DisassemblyModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
@@ -36,6 +37,9 @@ public:
 
     void clear();
     QModelIndex findIndexWithOffset(int offset);
+
+    QModelIndex parent(const QModelIndex& index) const override;
+    QModelIndex index(int row, int column, const QModelIndex& parent) const override;
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -78,8 +82,11 @@ public slots:
     void find(const QString& search, Direction direction, int offset);
 
 private:
+    QModelIndex indexFromEntry(DisassemblyEntry* entry) const;
+
     QTextDocument* m_document;
     Highlighter* m_highlighter;
+    DisassemblyEntry m_disassemblyLines;
     DisassemblyOutput m_data;
     Data::CallerCalleeResults m_results;
     int m_numTypes = 0;
