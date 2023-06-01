@@ -310,17 +310,18 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
 
     ResultsUtil::hideEmptyColumns(m_callerCalleeResults.selfCosts, ui->assemblyView, DisassemblyModel::COLUMN_COUNT);
 
-    ResultsUtil::hideEmptyColumns(m_callerCalleeResults.selfCosts, ui->sourceCodeView,
-                                  SourceCodeModel::COLUMN_COUNT);
+    ResultsUtil::hideEmptyColumns(m_callerCalleeResults.selfCosts, ui->sourceCodeView, SourceCodeModel::COLUMN_COUNT);
 
     ResultsUtil::hideEmptyColumns(m_callerCalleeResults.inclusiveCosts, ui->sourceCodeView,
                                   SourceCodeModel::COLUMN_COUNT + m_callerCalleeResults.selfCosts.numTypes());
 
     // hide self cost for tracepoints in assembly view, this is basically always zero
-    ResultsUtil::hideTracepointColumns(m_callerCalleeResults.selfCosts, ui->assemblyView, DisassemblyModel::COLUMN_COUNT);
+    ResultsUtil::hideTracepointColumns(m_callerCalleeResults.selfCosts, ui->assemblyView,
+                                       DisassemblyModel::COLUMN_COUNT);
 
     // hide self cost for tracepoints - only show inclusive times instead here
-    ResultsUtil::hideTracepointColumns(m_callerCalleeResults.selfCosts, ui->sourceCodeView, SourceCodeModel::COLUMN_COUNT);
+    ResultsUtil::hideTracepointColumns(m_callerCalleeResults.selfCosts, ui->sourceCodeView,
+                                       SourceCodeModel::COLUMN_COUNT);
 
     setupAsmViewModel();
 }
