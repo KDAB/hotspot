@@ -105,7 +105,7 @@ hotspot is available in AUR (https://aur.archlinux.org/packages/hotspot).
 ### Debian / Ubuntu
 
 hotspot is available in Debian (https://packages.debian.org/hotspot) and Ubuntu
-(https://packages.ubuntu.com/hotspot)
+(https://packages.ubuntu.com/hotspot).
 
 ### Gentoo
 
@@ -113,7 +113,7 @@ hotspot ebuilds are available from our overlay (https://github.com/KDAB/kdab-ove
 
 ### Fedora
 
-hotspot is available in Fedora repositories.
+hotspot is available in Fedora (https://packages.fedoraproject.org/pkgs/hotspot/hotspot/).
 
 ### For any Linux distro: AppImage
 
