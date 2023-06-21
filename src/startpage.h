@@ -40,6 +40,7 @@ signals:
     void recordButtonClicked();
     void stopParseButtonClicked();
     void pathSettingsButtonClicked();
+    void createDiffReportButtonClicked();
 
 private:
     void updateBackground();

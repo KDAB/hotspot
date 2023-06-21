@@ -11,11 +11,14 @@
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QHeaderView>
+#include <QLabel>
 #include <QLineEdit>
 #include <QMenu>
+#include <QProgressBar>
 #include <QSortFilterProxyModel>
 #include <QTimer>
 #include <QTreeView>
+#include <QVBoxLayout>
 
 #include "models/costdelegate.h"
 #include "models/data.h"
@@ -234,5 +237,35 @@ void setupResultsAggregation(QComboBox* costAggregationComboBox)
                              costAggregationComboBox->currentData().value<Settings::CostAggregation>();
                          Settings::instance()->setCostAggregation(aggregation);
                      });
+}
+
+void setupMenues(FilterAndZoomStack* filterAndZoomStack, QMenu* exportMenu, QMenu* filterMenu)
+{
+    exportMenu->setIcon(QIcon::fromTheme(QStringLiteral("document-export")));
+    const auto actions = filterAndZoomStack->actions();
+    filterMenu->addAction(actions.filterOut);
+    filterMenu->addAction(actions.resetFilter);
+    filterMenu->addSeparator();
+    filterMenu->addAction(actions.zoomOut);
+    filterMenu->addAction(actions.resetZoom);
+    filterMenu->addSeparator();
+    filterMenu->addAction(actions.resetFilterAndZoom);
+}
+
+QWidget* createBusyIndicator(QWidget* parent)
+{
+    auto filterBusyIndicator = new QWidget(parent);
+    filterBusyIndicator->setMinimumHeight(100);
+    filterBusyIndicator->setVisible(false);
+    filterBusyIndicator->setToolTip(QObject::tr("Filtering in progress, please wait..."));
+    auto layout = new QVBoxLayout(filterBusyIndicator);
+    layout->setAlignment(Qt::AlignCenter);
+    auto progressBar = new QProgressBar(filterBusyIndicator);
+    layout->addWidget(progressBar);
+    progressBar->setMaximum(0);
+    auto label = new QLabel(filterBusyIndicator->toolTip(), filterBusyIndicator);
+    label->setAlignment(Qt::AlignCenter);
+    layout->addWidget(label);
+    return filterBusyIndicator;
 }
 }

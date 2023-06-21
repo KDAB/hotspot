@@ -18,6 +18,7 @@ class ResultsBottomUpPage;
 
 namespace Data {
 struct Symbol;
+struct BottomUpResults;
 }
 
 class QTreeView;
@@ -25,6 +26,7 @@ class QTreeView;
 class PerfParser;
 class FilterAndZoomStack;
 class CostContextMenu;
+class BottomUpModel;
 
 class ResultsBottomUpPage : public QWidget
 {
@@ -36,6 +38,9 @@ public:
 
     void clear();
 
+public slots:
+    void setBottomUpResults(const Data::BottomUpResults& results);
+
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
     void jumpToDisassembly(const Data::Symbol& symbol);
@@ -43,5 +48,7 @@ signals:
     void selectSymbol(const Data::Symbol& symbol);
 
 private:
+    BottomUpModel* m_model = nullptr;
+    QMenu* m_exportMenu;
     QScopedPointer<Ui::ResultsBottomUpPage> ui;
 };

@@ -7,7 +7,10 @@
 
 #include "dockwidgetsetup.h"
 
+#include <QAction>
+
 #include <kddockwidgets/Config.h>
+#include <kddockwidgets/DockWidget.h>
 #include <kddockwidgets/FrameworkWidgetFactory.h>
 #include <kddockwidgets/MainWindow.h>
 
@@ -51,6 +54,15 @@ KDDockWidgets::MainWindow* createDockingArea(const QString& id, QWidget* parent)
     ret->setWindowFlag(Qt::Window, false);
     ret->centralWidget()->installEventFilter(ret);
     return ret;
+}
+
+KDDockWidgets::DockWidget* dockify(QWidget* widget, const QString& id, const QString& title, const QString& shortcut)
+{
+    auto* dock = new KDDockWidgets::DockWidget(id);
+    dock->setWidget(widget);
+    dock->setTitle(title);
+    dock->toggleAction()->setShortcut(shortcut);
+    return dock;
 }
 
 #include "dockwidgetsetup.moc"

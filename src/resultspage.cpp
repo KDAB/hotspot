@@ -63,31 +63,13 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
 #endif
     , m_timelineVisible(true)
 {
-    m_exportMenu->setIcon(QIcon::fromTheme(QStringLiteral("document-export")));
-    {
-        const auto actions = m_filterAndZoomStack->actions();
-        m_filterMenu->addAction(actions.filterOut);
-        m_filterMenu->addAction(actions.resetFilter);
-        m_filterMenu->addSeparator();
-        m_filterMenu->addAction(actions.zoomOut);
-        m_filterMenu->addAction(actions.resetZoom);
-        m_filterMenu->addSeparator();
-        m_filterMenu->addAction(actions.resetFilterAndZoom);
-    }
+    ResultsUtil::setupMenues(m_filterAndZoomStack, m_exportMenu, m_filterMenu);
 
     ui->setupUi(this);
     ui->verticalLayout->addWidget(m_contents);
 
     ui->errorWidget->hide();
     ui->lostMessage->hide();
-
-    auto dockify = [](QWidget* widget, const QString& id, const QString& title, const QString& shortcut) {
-        auto* dock = new KDDockWidgets::DockWidget(id);
-        dock->setWidget(widget);
-        dock->setTitle(title);
-        dock->toggleAction()->setShortcut(shortcut);
-        return dock;
-    };
 
     m_summaryPageDock = dockify(m_resultsSummaryPage, QStringLiteral("summary"), tr("Summar&y"), tr("Ctrl+Y"));
     m_contents->addDockWidget(m_summaryPageDock, KDDockWidgets::Location_OnTop);
@@ -180,21 +162,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
         m_filterBusyIndicator->setVisible(false);
     });
 
-    {
-        // create a busy indicator
-        m_filterBusyIndicator = new QWidget(this);
-        m_filterBusyIndicator->setMinimumHeight(100);
-        m_filterBusyIndicator->setVisible(false);
-        m_filterBusyIndicator->setToolTip(i18n("Filtering in progress, please wait..."));
-        auto layout = new QVBoxLayout(m_filterBusyIndicator);
-        layout->setAlignment(Qt::AlignCenter);
-        auto progressBar = new QProgressBar(m_filterBusyIndicator);
-        layout->addWidget(progressBar);
-        progressBar->setMaximum(0);
-        auto label = new QLabel(m_filterBusyIndicator->toolTip(), m_filterBusyIndicator);
-        label->setAlignment(Qt::AlignCenter);
-        layout->addWidget(label);
-    }
+    m_filterBusyIndicator = ResultsUtil::createBusyIndicator(this);
 
     connect(Settings::instance(), &Settings::costAggregationChanged, this,
             [this, parser] { parser->filterResults(m_filterAndZoomStack->filter()); });

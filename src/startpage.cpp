@@ -23,6 +23,7 @@ StartPage::StartPage(QWidget* parent)
     connect(ui->recordDataButton, &QAbstractButton::clicked, this, &StartPage::recordButtonClicked);
     connect(ui->stopParseButton, &QAbstractButton::clicked, this, &StartPage::stopParseButtonClicked);
     connect(ui->pathSettings, &QAbstractButton::clicked, this, &StartPage::pathSettingsButtonClicked);
+    connect(ui->diffButton, &QAbstractButton::clicked, this, &StartPage::createDiffReportButtonClicked);
     ui->openFileButton->setFocus();
 
     updateBackground();

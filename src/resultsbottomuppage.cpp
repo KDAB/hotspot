@@ -58,43 +58,18 @@ void stackCollapsedExport(QFile& file, int type, const Data::BottomUpResults& re
 ResultsBottomUpPage::ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfParser* parser,
                                          CostContextMenu* contextMenu, QMenu* exportMenu, QWidget* parent)
     : QWidget(parent)
+    , m_model(new BottomUpModel(this))
+    , m_exportMenu(exportMenu)
     , ui(new Ui::ResultsBottomUpPage)
 {
     ui->setupUi(this);
 
-    auto bottomUpCostModel = new BottomUpModel(this);
-    ResultsUtil::setupTreeView(ui->bottomUpTreeView, contextMenu, ui->bottomUpSearch, bottomUpCostModel);
-    ResultsUtil::setupCostDelegate(bottomUpCostModel, ui->bottomUpTreeView);
-    ResultsUtil::setupContextMenu(ui->bottomUpTreeView, contextMenu, bottomUpCostModel, filterStack, this);
+    ResultsUtil::setupTreeViewDiff(ui->bottomUpTreeView, contextMenu, ui->bottomUpSearch, m_model);
+    ResultsUtil::setupCostDelegate(m_model, ui->bottomUpTreeView);
+    ResultsUtil::setupContextMenu(ui->bottomUpTreeView, contextMenu, m_model, filterStack, this);
 
-    connect(
-        parser, &PerfParser::bottomUpDataAvailable, this,
-        [this, bottomUpCostModel, exportMenu](const Data::BottomUpResults& data) {
-            bottomUpCostModel->setData(data);
-            ResultsUtil::hideEmptyColumns(data.costs, ui->bottomUpTreeView, BottomUpModel::NUM_BASE_COLUMNS);
-
-            {
-                auto stackCollapsed =
-                    exportMenu->addMenu(QIcon::fromTheme(QStringLiteral("text-plain")), tr("Stack Collapsed"));
-                stackCollapsed->setToolTip(tr("Export data in textual form compatible with <tt>flamegraph.pl</tt>."));
-                for (int i = 0; i < data.costs.numTypes(); ++i) {
-                    const auto costName = data.costs.typeName(i);
-                    stackCollapsed->addAction(costName, this, [this, i, bottomUpCostModel, costName]() {
-                        const auto fileName = QFileDialog::getSaveFileName(this, tr("Export %1 Data").arg(costName));
-                        if (fileName.isEmpty())
-                            return;
-                        QFile file(fileName);
-                        if (!file.open(QIODevice::Text | QIODevice::WriteOnly)) {
-                            QMessageBox::warning(
-                                this, tr("Failed to export data"),
-                                tr("Failed to export stack collapsed data:\n%1").arg(file.errorString()));
-                            return;
-                        }
-                        stackCollapsedExport(file, i, bottomUpCostModel->results());
-                    });
-                }
-            }
-        });
+    if (parser)
+        connect(parser, &PerfParser::bottomUpDataAvailable, this, &ResultsBottomUpPage::setBottomUpResults);
 
     ResultsUtil::setupResultsAggregation(ui->costAggregationComboBox);
 }
@@ -104,4 +79,28 @@ ResultsBottomUpPage::~ResultsBottomUpPage() = default;
 void ResultsBottomUpPage::clear()
 {
     ui->bottomUpSearch->setText({});
+}
+
+void ResultsBottomUpPage::setBottomUpResults(const Data::BottomUpResults& results)
+{
+    m_model->setData(results);
+    ResultsUtil::hideEmptyColumns(results.costs, ui->bottomUpTreeView, BottomUpModel::NUM_BASE_COLUMNS);
+
+    auto stackCollapsed = m_exportMenu->addMenu(QIcon::fromTheme(QStringLiteral("text-plain")), tr("Stack Collapsed"));
+    stackCollapsed->setToolTip(tr("Export data in textual form compatible with <tt>flamegraph.pl</tt>."));
+    for (int i = 0; i < results.costs.numTypes(); ++i) {
+        const auto costName = results.costs.typeName(i);
+        stackCollapsed->addAction(costName, this, [this, i, costName]() {
+            const auto fileName = QFileDialog::getSaveFileName(this, tr("Export %1 Data").arg(costName));
+            if (fileName.isEmpty())
+                return;
+            QFile file(fileName);
+            if (!file.open(QIODevice::Text | QIODevice::WriteOnly)) {
+                QMessageBox::warning(this, tr("Failed to export data"),
+                                     tr("Failed to export stack collapsed data:\n%1").arg(file.errorString()));
+                return;
+            }
+            stackCollapsedExport(file, i, m_model->results());
+        });
+    }
 }

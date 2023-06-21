@@ -41,6 +41,7 @@ set(HOTSPOT_SRCS
     resultscallercalleepage.cpp
     resultsdisassemblypage.cpp
     resultsutil.cpp
+    resultspagediff.cpp
     costheaderview.cpp
     timelinewidget.cpp
     dockwidgetsetup.cpp
@@ -50,6 +51,7 @@ set(HOTSPOT_SRCS
     perfoutputwidgettext.cpp
     perfoutputwidgetkonsole.cpp
     costcontextmenu.cpp
+    diffreportdialog.cpp
     # ui files:
     mainwindow.ui
     aboutdialog.ui
@@ -62,6 +64,7 @@ set(HOTSPOT_SRCS
     resultsflamegraphpage.ui
     resultscallercalleepage.ui
     resultsdisassemblypage.ui
+    resultspagediff.ui
     timelinewidget.ui
     unwindsettingspage.ui
     flamegraphsettingspage.ui
@@ -69,6 +72,7 @@ set(HOTSPOT_SRCS
     callgraphwidget.ui
     callgraphsettingspage.ui
     frequencypage.ui
+    diffreportdialog.ui
     # resources:
     resources.qrc
 )
