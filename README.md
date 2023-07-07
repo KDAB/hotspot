@@ -189,6 +189,8 @@ Options:
                            libraries.
   --appPath <path>         Path to folder containing the application executable
                            and libraries.
+  --sourcePaths <paths>    Colon separated list of extra paths to the source
+                           code.
   --arch <path>            Architecture to use for unwinding.
   --exportTo <path>        Path to .perfparser output file to which the input
                            data should be exported. A single input file has to
@@ -325,6 +327,9 @@ which source code line.
 For easier navigation, you can simply click on a line and the other view will jump to it.
 You can follow function calls with a double click.
 In the sourcecode view you can press ctrl+f or press the search icon to open a search window.
+
+If you have the sources in different directory, you can use `--sourcePaths` or the settings to
+select tell the disassembler to search there for the source code.
 
 ## Known Issues
 
