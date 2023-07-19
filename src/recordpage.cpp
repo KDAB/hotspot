@@ -197,7 +197,7 @@ RecordPage::RecordPage(QWidget* parent)
     if (!m_perfOutput) {
         m_perfOutput = new PerfOutputWidgetText(this);
     }
-    ui->recordOutputBoxLayout->insertWidget(1, m_perfOutput);
+    ui->recordOutputBoxLayout->addWidget(m_perfOutput);
 
     connect(m_perfOutput, &PerfOutputWidget::sendInput, this,
             [this](const QByteArray& input) { m_perfRecord->sendInput(input); });
