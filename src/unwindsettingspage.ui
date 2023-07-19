@@ -2,9 +2,6 @@
 <ui version="4.0">
  <class>UnwindSettingsPage</class>
  <widget class="QWidget" name="UnwindSettingsPage">
-  <property name="modal" stdset="0">
-   <bool>false</bool>
-  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
