@@ -412,7 +412,7 @@ bool PerfRecord::canCompress()
 
 bool PerfRecord::canElevatePrivileges()
 {
-    return ALLOW_PRIVILEGE_ESCALATION && (!sudoUtil().isEmpty());
+    return !sudoUtil().isEmpty();
 }
 
 QString PerfRecord::perfBinaryPath()
