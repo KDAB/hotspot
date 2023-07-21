@@ -33,7 +33,6 @@ public:
     void stopRecording();
     void sendInput(const QByteArray& input);
 
-    static QString sudoUtil();
     static QString currentUsername();
 
     static bool canTrace(const QString& path);

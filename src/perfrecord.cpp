@@ -44,6 +44,11 @@ void createOutputFile(const QString& outputPath)
     QFile::rename(outputPath, bakPath);
     QFile(outputPath).open(QIODevice::WriteOnly);
 }
+
+QString findPkexec()
+{
+    return QStandardPaths::findExecutable(QStringLiteral("pkexec"));
+}
 }
 
 PerfRecord::PerfRecord(QObject* parent)
@@ -66,26 +71,6 @@ PerfRecord::~PerfRecord()
         m_perfRecordProcess->waitForFinished(100);
         delete m_perfRecordProcess;
     }
-}
-
-static QStringList sudoOptions(const QString& sudoBinary)
-{
-    QStringList options;
-    if (sudoBinary.endsWith(QLatin1String("/kdesudo")) || sudoBinary.endsWith(QLatin1String("/kdesu"))) {
-#if KWINDOWSYSTEM_VERSION >= QT_VERSION_CHECK(5, 101, 0)
-        auto activeWindowId = KX11Extras::activeWindow();
-#else
-        auto activeWindowId = KWindowSystem::activeWindow();
-#endif
-        // make the dialog transient for the current window
-        options.append(QStringLiteral("--attach"));
-        options.append(QString::number(activeWindowId));
-    }
-    if (sudoBinary.endsWith(QLatin1String("/kdesu"))) {
-        // show text output
-        options.append(QStringLiteral("-t"));
-    }
-    return options;
 }
 
 static bool privsAlreadyElevated()
@@ -192,13 +177,13 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
     perfCommand += perfOptions;
 
     if (elevatePrivileges) {
-        const auto sudoBinary = sudoUtil();
-        if (sudoBinary.isEmpty()) {
-            emit recordingFailed(tr("No sudo utility found. Please install pkexec, kdesudo or kdesu."));
+        const auto pkexec = findPkexec();
+        if (pkexec.isEmpty()) {
+            emit recordingFailed(tr("The pkexec utility was not found, cannot elevate privileges."));
             return false;
         }
 
-        auto options = sudoOptions(sudoBinary);
+        auto options = QStringList();
         options.append(perfBinaryPath());
         options += perfCommand;
 
@@ -212,7 +197,7 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
 
         createOutputFile(outputPath);
 
-        m_perfRecordProcess->start(sudoBinary, options);
+        m_perfRecordProcess->start(pkexec, options);
     } else {
         m_perfRecordProcess->start(perfBinaryPath(), perfCommand);
     }
@@ -312,20 +297,6 @@ void PerfRecord::sendInput(const QByteArray& input)
     m_perfRecordProcess->write(input);
 }
 
-QString PerfRecord::sudoUtil()
-{
-    const auto commands = {
-        QStringLiteral("pkexec"),
-    };
-    for (const auto& cmd : commands) {
-        QString util = QStandardPaths::findExecutable(cmd);
-        if (!util.isEmpty()) {
-            return util;
-        }
-    }
-    return {};
-}
-
 QString PerfRecord::currentUsername()
 {
     return KUser().loginName();
@@ -412,7 +383,7 @@ bool PerfRecord::canCompress()
 
 bool PerfRecord::canElevatePrivileges()
 {
-    return !sudoUtil().isEmpty();
+    return !findPkexec().isEmpty();
 }
 
 QString PerfRecord::perfBinaryPath()
