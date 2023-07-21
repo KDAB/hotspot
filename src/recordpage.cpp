@@ -374,11 +374,7 @@ RecordPage::RecordPage(QWidget* parent)
     } else if (!PerfRecord::canElevatePrivileges()) {
         ui->elevatePrivilegesCheckBox->setChecked(false);
         ui->elevatePrivilegesCheckBox->setEnabled(false);
-#if ALLOW_PRIVILEGE_ESCALATION
         ui->elevatePrivilegesCheckBox->setText(tr("(Note: this requires pkexec installed"));
-#else
-        ui->elevatePrivilegesCheckBox->setText(tr("(Note: hotspot is not build with ALLOW_PRIVILEGE_ESCALATION=ON)"));
-#endif
     }
 
     connect(ui->elevatePrivilegesCheckBox, &QCheckBox::toggled, this, &RecordPage::updateOffCpuCheckboxState);
