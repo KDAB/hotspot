@@ -19,7 +19,7 @@ ecm_install_icons(
     ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/64-apps-hotspot.png
     ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/128-apps-hotspot.png
     DESTINATION
-    ${ICON_INSTALL_DIR}
+    ${KDE_INSTALL_ICONDIR}
     THEME
     hicolor
 )
