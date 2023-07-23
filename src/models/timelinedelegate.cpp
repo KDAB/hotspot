@@ -146,6 +146,7 @@ TimeLineDelegate::TimeLineDelegate(FilterAndZoomStack* filterAndZoomStack, QAbst
     , m_view(view)
 {
     m_view->viewport()->installEventFilter(this);
+    m_view->viewport()->setAttribute(Qt::WA_Hover);
 
     connect(filterAndZoomStack, &FilterAndZoomStack::filterChanged, this, &TimeLineDelegate::updateView);
     connect(filterAndZoomStack, &FilterAndZoomStack::zoomChanged, this, &TimeLineDelegate::updateZoomState);
