@@ -13,6 +13,7 @@
 #include <QHeaderView>
 #include <QLineEdit>
 #include <QMenu>
+#include <QRegularExpression>
 #include <QSortFilterProxyModel>
 #include <QTimer>
 #include <QTreeView>
@@ -43,8 +44,9 @@ void connectFilter(QLineEdit* filter, QSortFilterProxyModel* proxy)
     proxy->setFilterKeyColumn(-1);
     proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
-    QObject::connect(timer, &QTimer::timeout, proxy,
-                     [filter, proxy]() { proxy->setFilterFixedString(filter->text()); });
+    QObject::connect(timer, &QTimer::timeout, proxy, [filter, proxy]() {
+        proxy->setFilterRegularExpression(QRegularExpression::escape(filter->text()));
+    });
     QObject::connect(filter, &QLineEdit::textChanged, timer, [timer]() { timer->start(300); });
 }
 

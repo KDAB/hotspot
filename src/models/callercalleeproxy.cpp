@@ -11,26 +11,28 @@
 #include "callercalleemodel.h"
 #include "data.h"
 
+#include <QRegularExpression>
+
 namespace {
-bool matchImpl(const QString& needle, const QString& haystack)
+bool matchImpl(const QRegularExpression& pattern, const QString& haystack)
 {
-    return haystack.contains(needle, Qt::CaseInsensitive);
+    return pattern.match(haystack).hasMatch();
 }
 }
 
 namespace CallerCalleeProxyDetail {
 bool match(const QSortFilterProxyModel* proxy, const Data::Symbol& symbol)
 {
-    const auto needle = proxy->filterRegExp().pattern();
+    const auto pattern = proxy->filterRegularExpression();
 
-    return matchImpl(needle, symbol.symbol) || matchImpl(needle, symbol.binary);
+    return matchImpl(pattern, symbol.symbol) || matchImpl(pattern, symbol.binary);
 }
 
 bool match(const QSortFilterProxyModel* proxy, const Data::FileLine& fileLine)
 {
-    const auto needle = proxy->filterRegExp().pattern();
+    const auto pattern = proxy->filterRegularExpression();
 
-    return matchImpl(needle, fileLine.file);
+    return matchImpl(pattern, fileLine.file);
 }
 }
 
