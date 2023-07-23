@@ -23,6 +23,15 @@
 
 #include <algorithm>
 
+static QPoint globalPos(const QMouseEvent* event)
+{
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    return event->globalPos();
+#else
+    return event->globalPosition().toPoint();
+#endif
+}
+
 TimeLineData::TimeLineData(const Data::Events& events, quint64 maxCost, Data::TimeRange time,
                            Data::TimeRange threadTime, QRect rect)
     : events(events)
@@ -350,7 +359,13 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         return QStyledItemDelegate::eventFilter(watched, event);
     }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     const auto pos = isHover ? static_cast<QHoverEvent*>(event)->pos() : static_cast<QMouseEvent*>(event)->localPos();
+#else
+    const auto pos =
+        isHover ? static_cast<QHoverEvent*>(event)->position() : static_cast<QMouseEvent*>(event)->position();
+#endif
+
     // the pos may lay outside any valid index, but for the code below we need
     // to query for some values that require any valid index. use the first rows index
     const auto alwaysValidIndex = m_view->model()->index(0, EventModel::EventsColumn);
@@ -515,7 +530,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
             contextMenu->addSeparator();
             contextMenu->addAction(m_filterAndZoomStack->actions().resetFilterAndZoom);
         }
-        contextMenu->popup(mouseEvent->globalPos());
+        contextMenu->popup(globalPos(mouseEvent));
         return true;
     } else if (isTimeSpanSelected && isLeftButtonEvent) {
         const auto& data = alwaysValidIndex.data(EventModel::EventResultsRole).value<Data::EventResults>();
@@ -540,7 +555,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
             }
         }
 
-        QToolTip::showText(mouseEvent->globalPos(),
+        QToolTip::showText(globalPos(mouseEvent),
                            tr("ΔT: %1\n"
                               "Events: %2 (%3) from %4 thread(s), %5 process(es)\n"
                               "sum of %6: %7 (%8)")
