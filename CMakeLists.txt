@@ -27,6 +27,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(APPIMAGE_BUILD "configure build for bundling in an appimage" OFF)
+option(QT6_BUILD "configure build to use Qt6/KF6" OFF)
 
 # Enable the test harness
 enable_testing()
@@ -37,15 +38,26 @@ set(HOTSPOT_VERSION_STRING "${hotspot_VERSION}")
 include(HotspotMacrosInternal)
 include(FeatureSummary)
 
+if (QT6_BUILD)
+    set(QT_MAJOR_VERSION 6)
+    set(QT_MIN_VERSION 6.4)
+    set(KDDW_SUFFIX "-qt6")
+else()
+    set(QT_MAJOR_VERSION 5)
+    set(QT_MIN_VERSION 5.15)
+    set(KDDW_SUFFIX "")
+endif()
+
 find_package(
-    Qt5 5.15
+    Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION}
     COMPONENTS Core
-               Widgets
-               Network
-               Test
-               Svg
+                Widgets
+                Network
+                Test
+                Svg
     REQUIRED
 )
+
 find_package(LibElf REQUIRED)
 find_package(ElfUtils REQUIRED)
 find_package(ECM 1.0.0 NO_MODULE REQUIRED)
@@ -80,7 +92,7 @@ set_package_properties(
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
 find_package(
-    KF5
+    KF${QT_MAJOR_VERSION}
     COMPONENTS ThreadWeaver
                ConfigWidgets
                CoreAddons
@@ -95,11 +107,14 @@ find_package(
     REQUIRED
 )
 
-find_package(KF5Archive 5.85.0 CONFIG)
-find_package(KF5SyntaxHighlighting CONFIG)
-find_package(KDDockWidgets CONFIG)
+find_package(KF${QT_MAJOR_VERSION}Archive 5.85.0 CONFIG)
+set(KFArchive_FOUND ${KF${QT_MAJOR_VERSION}Archive_FOUND})
+find_package(KF${QT_MAJOR_VERSION}SyntaxHighlighting CONFIG)
+set(KFSyntaxHighlighting_FOUND ${KF${QT_MAJOR_VERSION}SyntaxHighlighting_FOUND})
+
+find_package(KDDockWidgets${KDDW_SUFFIX} CONFIG)
 set_package_properties(
-    KDDockWidgets PROPERTIES
+    KDDockWidgets${KDDW_SUFFIX} PROPERTIES
     PURPOSE
         "KDDockWidgets is a Qt dock widget library written by KDAB, suitable for replacing QDockWidget and implementing
  advanced functionalities missing in Qt. https://github.com/KDAB/KDDockWidgets"

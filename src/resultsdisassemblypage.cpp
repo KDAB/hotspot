@@ -30,7 +30,7 @@
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
 
-#if KF5SyntaxHighlighting_FOUND
+#if KFSyntaxHighlighting_FOUND
 #include "highlighter.hpp"
 #include <KSyntaxHighlighting/definition.h>
 #include <KSyntaxHighlighting/repository.h>
@@ -62,7 +62,7 @@ void connectModel(ModelType* model, ResultFound resultFound, EndReached endReach
 ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::ResultsDisassemblyPage)
-#if KF5SyntaxHighlighting_FOUND
+#if KFSyntaxHighlighting_FOUND
     , m_repository(new KSyntaxHighlighting::Repository)
     , m_disassemblyModel(new DisassemblyModel(m_repository.get(), this))
     , m_sourceCodeModel(new SourceCodeModel(m_repository.get(), this))
@@ -255,7 +255,7 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
                          ui->disasmSearchWidget, ui->disasmSearchEdit, ui->assemblyView, ui->disasmEndReachedWidget,
                          m_disassemblyModel, 0);
 
-#if KF5SyntaxHighlighting_FOUND
+#if KFSyntaxHighlighting_FOUND
     QStringList schemes;
 
     const auto definitions = m_repository->definitions();
@@ -369,7 +369,7 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
     Q_ASSERT(!m_symbolStack.isEmpty());
     const auto& curSymbol = m_symbolStack[m_stackIndex];
 
-#if KF5SyntaxHighlighting_FOUND
+#if KFSyntaxHighlighting_FOUND
     m_sourceCodeModel->highlighter()->setDefinition(
         m_repository->definitionForFileName(disassemblyOutput.mainSourceFileName));
     m_disassemblyModel->highlighter()->setDefinition(m_repository->definitionForName(QStringLiteral("GNU Assembler")));

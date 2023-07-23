@@ -64,7 +64,7 @@ private:
     void showDisassembly(const DisassemblyOutput& disassemblyOutput);
 
     QScopedPointer<Ui::ResultsDisassemblyPage> ui;
-#if KF5SyntaxHighlighting_FOUND
+#if KFSyntaxHighlighting_FOUND
     QScopedPointer<KSyntaxHighlighting::Repository> m_repository;
 #endif
     // Model

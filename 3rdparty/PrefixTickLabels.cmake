@@ -7,5 +7,5 @@ target_include_directories(PrefixTickLabels PUBLIC
     PrefixTickLabels/src
     )
 target_link_libraries(PrefixTickLabels PUBLIC
-    Qt5::Core
+    Qt::Core
     )

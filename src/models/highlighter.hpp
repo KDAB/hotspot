@@ -32,7 +32,7 @@ public:
 
     QString definition() const
     {
-#if KF5SyntaxHighlighting_FOUND
+#if KFSyntaxHighlighting_FOUND
         return m_currentDefinition;
 #else
         return {};
@@ -48,7 +48,7 @@ protected:
 private:
     void updateColorTheme();
 
-#if KF5SyntaxHighlighting_FOUND
+#if KFSyntaxHighlighting_FOUND
     KSyntaxHighlighting::SyntaxHighlighter* m_highlighter = nullptr;
     KSyntaxHighlighting::Repository* m_repository = nullptr;
     QString m_currentDefinition;

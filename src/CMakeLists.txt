@@ -96,29 +96,28 @@ add_executable(
 
 target_link_libraries(
     hotspot
-    Qt5::Widgets
-    Qt5::Svg
-    KF5::ThreadWeaver
-    KF5::ConfigWidgets
-    KF5::CoreAddons
-    KF5::ItemViews
-    KF5::ItemModels
-    KF5::KIOCore
-    KF5::KIOFileWidgets
-    KF5::KIOWidgets
-    KF5::KIONTLM
-    KF5::Solid
-    KF5::WindowSystem
-    KF5::Notifications
-    KF5::IconThemes
-    KF5::Parts
+    Qt::Widgets
+    Qt::Svg
+    KF${QT_MAJOR_VERSION}::ThreadWeaver
+    KF${QT_MAJOR_VERSION}::ConfigWidgets
+    KF${QT_MAJOR_VERSION}::CoreAddons
+    KF${QT_MAJOR_VERSION}::ItemViews
+    KF${QT_MAJOR_VERSION}::ItemModels
+    KF${QT_MAJOR_VERSION}::KIOCore
+    KF${QT_MAJOR_VERSION}::KIOFileWidgets
+    KF${QT_MAJOR_VERSION}::KIOWidgets
+    KF${QT_MAJOR_VERSION}::Solid
+    KF${QT_MAJOR_VERSION}::WindowSystem
+    KF${QT_MAJOR_VERSION}::Notifications
+    KF${QT_MAJOR_VERSION}::IconThemes
+    KF${QT_MAJOR_VERSION}::Parts
     models
     PrefixTickLabels
     KDAB::kddockwidgets
 )
 
-if(KF5Archive_FOUND)
-    target_link_libraries(hotspot KF5::Archive)
+if(KFArchive_FOUND)
+    target_link_libraries(hotspot KF${QT_MAJOR_VERSION}::Archive)
 endif()
 
 if(QCustomPlot_FOUND)
@@ -133,5 +132,5 @@ install(
 )
 install(
     FILES hotspot.notifyrc
-    DESTINATION ${KDE_INSTALL_KNOTIFY5RCDIR}
+    DESTINATION ${KDE_INSTALL_KNOTIFYRCDIR}
 )

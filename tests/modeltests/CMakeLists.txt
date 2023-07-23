@@ -8,8 +8,8 @@ add_library(
 ecm_add_test(
     tst_models.cpp
     LINK_LIBRARIES
-    Qt5::Core
-    Qt5::Test
+    Qt::Core
+    Qt::Test
     models
     PrefixTickLabels
     TEST_NAME
@@ -21,8 +21,8 @@ set_target_properties(tst_models PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_
 ecm_add_test(
     tst_timelinedelegate.cpp
     LINK_LIBRARIES
-    Qt5::Core
-    Qt5::Test
+    Qt::Core
+    Qt::Test
     models
     PrefixTickLabels
     TEST_NAME
@@ -36,8 +36,8 @@ set_target_properties(
 ecm_add_test(
     tst_disassemblyoutput.cpp
     LINK_LIBRARIES
-    Qt5::Core
-    Qt5::Test
+    Qt::Core
+    Qt::Test
     models
     PrefixTickLabels
     TEST_NAME
@@ -58,12 +58,12 @@ if(KGraphViewerPart_FOUND)
         ../../src/perfrecord.cpp
         ../../src/callgraphgenerator.cpp
         LINK_LIBRARIES
-        Qt5::Core
-        Qt5::Test
-        KF5::KIOCore
-        KF5::ThreadWeaver
-        KF5::Archive
-        KF5::WindowSystem
+        Qt::Core
+        Qt::Test
+        KF${QT_MAJOR_VERSION}::KIOCore
+        KF${QT_MAJOR_VERSION}::ThreadWeaver
+        KF${QT_MAJOR_VERSION}::Archive
+        KF${QT_MAJOR_VERSION}::WindowSystem
         models
         TEST_NAME
         tst_callgraphgenerator

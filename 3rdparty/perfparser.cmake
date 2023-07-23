@@ -32,8 +32,8 @@ add_library(libhotspot-perfparser STATIC
 
 target_link_libraries(libhotspot-perfparser
 PUBLIC
-    Qt5::Core
-    Qt5::Network
+    Qt::Core
+    Qt::Network
     ${LIBDW_LIBRARIES}
     ${LIBELF_LIBRARIES}
 )
@@ -69,7 +69,7 @@ ecm_add_test(
     perfparser/tests/auto/elfmap/tst_elfmap.cpp
     LINK_LIBRARIES
         libhotspot-perfparser
-        Qt5::Test
+        Qt::Test
     TEST_NAME
         tst_elfmap
 )
@@ -83,7 +83,7 @@ ecm_add_test(
     perfparser/tests/auto/addresscache/tst_addresscache.cpp
     LINK_LIBRARIES
         libhotspot-perfparser
-        Qt5::Test
+        Qt::Test
     TEST_NAME
         tst_addresscache
 )
@@ -98,7 +98,7 @@ ecm_add_test(
     perfparser/tests/auto/shared/perfparsertestclient.cpp
     perfparser/tests/auto/perfdata/perfdata.qrc
     LINK_LIBRARIES
-        Qt5::Test
+        Qt::Test
         libhotspot-perfparser
     TEST_NAME
         tst_perfdata
@@ -118,7 +118,7 @@ target_compile_definitions(perf2text
     PRIVATE MANUAL_TEST
 )
 target_link_libraries(perf2text
-    Qt5::Core
+    Qt::Core
 )
 
 set_target_properties(perf2text

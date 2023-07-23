@@ -667,7 +667,7 @@ private slots:
         QCOMPARE(actual, expected);
     }
 
-#if KF5Archive_FOUND
+#if KFArchive_FOUND
     void testDecompression_data()
     {
         QTest::addColumn<QByteArray>("content");

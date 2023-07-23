@@ -25,14 +25,14 @@ add_library(
 
 target_link_libraries(
     models
-    Qt5::Core
-    Qt5::Widgets
-    KF5::ItemModels
-    KF5::ConfigWidgets
-    KF5::Parts
+    Qt::Core
+    Qt::Widgets
+    KF${QT_MAJOR_VERSION}::ItemModels
+    KF${QT_MAJOR_VERSION}::ConfigWidgets
+    KF${QT_MAJOR_VERSION}::Parts
     PrefixTickLabels
 )
 
-if(KF5SyntaxHighlighting_FOUND)
-    target_link_libraries(models KF5::SyntaxHighlighting)
+if(KFSyntaxHighlighting_FOUND)
+    target_link_libraries(models KF${QT_MAJOR_VERSION}::SyntaxHighlighting)
 endif()

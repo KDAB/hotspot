@@ -12,7 +12,7 @@
 #include <QPalette>
 #include <QTextDocument>
 
-#if KF5SyntaxHighlighting_FOUND
+#if KFSyntaxHighlighting_FOUND
 #include <KSyntaxHighlighting/Definition>
 #include <KSyntaxHighlighting/Repository>
 #include <KSyntaxHighlighting/SyntaxHighlighter>
@@ -21,12 +21,12 @@
 
 Highlighter::Highlighter(QTextDocument* document, KSyntaxHighlighting::Repository* repository, QObject* parent)
     : QObject(parent)
-#if KF5SyntaxHighlighting_FOUND
+#if KFSyntaxHighlighting_FOUND
     , m_highlighter(new KSyntaxHighlighting::SyntaxHighlighter(document))
     , m_repository(repository)
 #endif
 {
-#if !KF5SyntaxHighlighting_FOUND
+#if !KFSyntaxHighlighting_FOUND
     Q_UNUSED(repository);
 #endif
     document->setDefaultFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
@@ -41,7 +41,7 @@ Highlighter::~Highlighter() = default;
 
 void Highlighter::setDefinition(const KSyntaxHighlighting::Definition& definition)
 {
-#if KF5SyntaxHighlighting_FOUND
+#if KFSyntaxHighlighting_FOUND
     // don't reparse if definition hasn't changed
     if (m_currentDefinition == definition.name())
         return;
@@ -65,7 +65,7 @@ bool Highlighter::eventFilter(QObject* /*watched*/, QEvent* event)
 
 void Highlighter::updateColorTheme()
 {
-#if KF5SyntaxHighlighting_FOUND
+#if KFSyntaxHighlighting_FOUND
     if (!m_repository) {
         return;
     }

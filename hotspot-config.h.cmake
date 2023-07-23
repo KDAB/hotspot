@@ -20,10 +20,9 @@
 
 #cmakedefine01 Zstd_FOUND
 
-#cmakedefine01 KF5Archive_FOUND
+#cmakedefine01 KFArchive_FOUND
+#cmakedefine01 KFSyntaxHighlighting_FOUND
 
 #cmakedefine01 QCustomPlot_FOUND
 
 #cmakedefine01 KGraphViewerPart_FOUND
-
-#cmakedefine01 KF5SyntaxHighlighting_FOUND

@@ -32,7 +32,7 @@
 
 #include "settings.h"
 
-#if KF5Archive_FOUND
+#if KFArchive_FOUND
 #include <KArchive/KCompressionDevice>
 #endif
 
@@ -1957,7 +1957,7 @@ void PerfParser::exportResults(const QUrl& url)
 
 QString PerfParser::decompressIfNeeded(const QString& path)
 {
-#if KF5Archive_FOUND
+#if KFArchive_FOUND
     m_decompressed = std::make_unique<QTemporaryFile>(this);
 
     KCompressionDevice compressedFile(path);
