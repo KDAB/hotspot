@@ -114,7 +114,7 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
                 graph->addToLegend();
                 graph->setVisible(true);
 
-                const auto numValues = costData.values.size();
+                const auto numValues = static_cast<int>(costData.values.size());
                 const auto valuesStart = costData.values.begin();
                 QVector<double> times((numValues + averagingWindowSize - 1) / averagingWindowSize);
                 QVector<double> costs(times.size());
