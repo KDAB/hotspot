@@ -25,7 +25,6 @@
 #include <QTextStream>
 
 #include <KColorScheme>
-#include <KRecursiveFilterProxyModel>
 #include <KStandardAction>
 
 #include "parsers/perf/perfparser.h"
