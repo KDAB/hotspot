@@ -33,7 +33,7 @@
 #include "settings.h"
 
 #if KFArchive_FOUND
-#include <KArchive/KCompressionDevice>
+#include <KCompressionDevice>
 #endif
 
 Q_LOGGING_CATEGORY(LOG_PERFPARSER, "hotspot.perfparser", QtWarningMsg)
