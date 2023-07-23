@@ -186,7 +186,6 @@ inline QString findExe(const QString& name)
                                                                                                                        \
         QApp app(argc, argv);                                                                                          \
         app.setAttribute(Qt::AA_Use96Dpi, true);                                                                       \
-        app.setAttribute(Qt::AA_UseHighDpiPixmaps);                                                                    \
         TestObject tc;                                                                                                 \
         QTEST_SET_MAIN_SOURCE_PATH                                                                                     \
         QTest::qInit(&tc, argc, argv);                                                                                 \
