@@ -17,7 +17,7 @@ MultiConfigWidget::MultiConfigWidget(QWidget* parent)
     : QWidget(parent)
 {
     auto* layout = new QHBoxLayout(this);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
 
     m_comboBox = new QComboBox(this);
     m_comboBox->setEditable(true);
