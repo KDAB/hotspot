@@ -17,7 +17,7 @@
 #include <QVBoxLayout>
 
 #include <KParts/ReadOnlyPart>
-#include <KParts/kde_terminal_interface.h>
+#include <kde_terminal_interface.h>
 
 namespace {
 QString tailExe()
