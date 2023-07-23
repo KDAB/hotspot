@@ -9,6 +9,7 @@
 #include "resultsdisassemblypage.h"
 #include "ui_resultsdisassemblypage.h"
 
+#include <QActionGroup>
 #include <QDir>
 #include <QDirIterator>
 #include <QFile>

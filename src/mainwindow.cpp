@@ -20,6 +20,7 @@
 #include <QFileDialog>
 #include <QStackedWidget>
 #include <QVBoxLayout>
+#include <QActionGroup>
 
 #include <QDesktopServices>
 #include <QInputDialog>
