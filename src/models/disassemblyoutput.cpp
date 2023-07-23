@@ -194,7 +194,7 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
                 sourceFileName = currentSourceFileName;
             }
 
-            auto lineNumber = asmLine.rightRef(asmLine.length() - colonIndex - 1);
+            auto lineNumber = QStringView(asmLine).right(asmLine.length() - colonIndex - 1);
             const auto spaceIndex = lineNumber.indexOf(QLatin1Char(' '));
             if (spaceIndex != -1) {
                 lineNumber = lineNumber.left(spaceIndex);

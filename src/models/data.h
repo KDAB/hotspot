@@ -111,7 +111,7 @@ struct FileLine
     QString toShortString() const
     {
         auto slashIdx = file.lastIndexOf(QLatin1Char('/')) + 1;
-        return file.midRef(slashIdx) + QLatin1Char(':') + QString::number(line);
+        return QStringView(file).mid(slashIdx) + QLatin1Char(':') + QString::number(line);
     }
 
     QString file;

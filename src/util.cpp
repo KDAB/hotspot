@@ -131,7 +131,7 @@ QString collapseTemplate(const QString& str, int level)
             }
         } else if (c == QLatin1Char('>')) {
             depth--;
-        } else if (c == QLatin1Char('o') && str.midRef(i, operatorKeyword.size()) == operatorKeyword) {
+        } else if (c == QLatin1Char('o') && QStringView(str).mid(i, operatorKeyword.size()) == operatorKeyword) {
             i += operatorKeyword.size();
             output.append(operatorKeyword);
             int j = i;

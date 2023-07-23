@@ -57,6 +57,18 @@ QStringList printTree(const Results& results)
     return list;
 }
 
+QStringView symbolSubString(const QString& string)
+{
+    auto idx = string.indexOf(QLatin1Char('>'));
+    if (idx == -1) {
+        idx = string.indexOf(QLatin1Char('<'));
+    }
+    if (idx == -1) {
+        idx = string.indexOf(QLatin1Char('='));
+    }
+    return QStringView(string).mid(0, idx);
+}
+
 inline QStringList printMap(const Data::CallerCalleeResults& results)
 {
     QStringList list;
@@ -80,17 +92,7 @@ inline QStringList printMap(const Data::CallerCalleeResults& results)
         subList.sort();
         list += subList;
     }
-    auto symbolSubString = [](const QString& string) -> QStringRef {
-        auto idx = string.indexOf(QLatin1Char('>'));
-        if (idx == -1) {
-            idx = string.indexOf(QLatin1Char('<'));
-        }
-        if (idx == -1) {
-            idx = string.indexOf(QLatin1Char('='));
-        }
-        return string.midRef(0, idx);
-    };
-    std::stable_sort(list.begin(), list.end(), [symbolSubString](const QString& lhs, const QString& rhs) {
+    std::stable_sort(list.begin(), list.end(), [](const QString& lhs, const QString& rhs) {
         return symbolSubString(lhs) < symbolSubString(rhs);
     });
     return list;
@@ -121,17 +123,7 @@ inline QStringList printCallerCalleeModel(const CallerCalleeModel& model)
         subList.sort();
         list += subList;
     }
-    auto symbolSubString = [](const QString& string) -> QStringRef {
-        auto idx = string.indexOf(QLatin1Char('>'));
-        if (idx == -1) {
-            idx = string.indexOf(QLatin1Char('<'));
-        }
-        if (idx == -1) {
-            idx = string.indexOf(QLatin1Char('='));
-        }
-        return string.midRef(0, idx);
-    };
-    std::stable_sort(list.begin(), list.end(), [symbolSubString](const QString& lhs, const QString& rhs) {
+    std::stable_sort(list.begin(), list.end(), [](const QString& lhs, const QString& rhs) {
         return symbolSubString(lhs) < symbolSubString(rhs);
     });
     return list;

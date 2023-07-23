@@ -119,7 +119,7 @@ ItemCost buildCallerCalleeResult(const BottomUp& data, const Costs& bottomUpCost
     return totalCost;
 }
 
-static int findSameDepth(const QStringRef& str, int offset, QChar ch, bool returnNext = false)
+static int findSameDepth(QStringView str, int offset, QChar ch, bool returnNext = false)
 {
     const int size = str.size();
 
@@ -140,7 +140,7 @@ static int findSameDepth(const QStringRef& str, int offset, QChar ch, bool retur
 }
 
 template<typename T>
-static int startsWith(const QStringRef& str, const std::initializer_list<T>& prefixes)
+static int startsWith(QStringView str, const std::initializer_list<T>& prefixes)
 {
     for (const auto& prefix_ : prefixes) {
         const auto prefix = QLatin1String(prefix_);
@@ -151,7 +151,7 @@ static int startsWith(const QStringRef& str, const std::initializer_list<T>& pre
     return -1;
 }
 
-QString prettifySymbol(const QStringRef& str)
+QString prettifySymbol(QStringView str)
 {
     int pos = 0;
     do {
@@ -284,7 +284,7 @@ void buildPerLibrary(const TopDown* node, PerLibraryResults& results, QHash<QStr
 
 QString Data::prettifySymbol(const QString& name)
 {
-    const auto result = ::prettifySymbol(QStringRef(&name));
+    const auto result = ::prettifySymbol(QStringView(name));
     return result == name ? name : result;
 }
 
