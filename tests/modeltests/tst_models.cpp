@@ -158,7 +158,7 @@ private slots:
         const auto i1_idx = model.indexFromItem(i1, 0);
         QVERIFY(i1_idx.isValid());
         QCOMPARE(i1_idx, model.index(0, 0));
-        QCOMPARE(model.parent(i1_idx), {});
+        QCOMPARE(model.parent(i1_idx), QModelIndex());
         QCOMPARE(model.itemFromIndex(i1_idx), i1);
         QCOMPARE(model.rowCount(i1_idx), 2); // simplified
 
