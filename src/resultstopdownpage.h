@@ -10,6 +10,8 @@
 
 #include <QWidget>
 
+#include <memory>
+
 namespace Ui {
 class ResultsTopDownPage;
 }
@@ -41,5 +43,5 @@ signals:
     void jumpToDisassembly(const Data::Symbol& symbol);
 
 private:
-    QScopedPointer<Ui::ResultsTopDownPage> ui;
+    std::unique_ptr<Ui::ResultsTopDownPage> ui;
 };

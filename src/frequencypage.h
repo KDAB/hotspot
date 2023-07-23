@@ -9,7 +9,10 @@
 #pragma once
 
 #include "data.h"
+
 #include <QWidget>
+
+#include <memory>
 
 class PerfParser;
 class QCustomPlot;
@@ -32,7 +35,7 @@ private:
     void updateColors();
 
     QCustomPlot* m_plot = nullptr;
-    QScopedPointer<Ui::FrequencyPage> m_page;
+    std::unique_ptr<Ui::FrequencyPage> m_page;
     Data::FrequencyResults m_results;
 
     double m_upperWithoutOutliers = 0;

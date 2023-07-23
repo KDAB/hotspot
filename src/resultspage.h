@@ -10,6 +10,8 @@
 
 #include <QWidget>
 
+#include <memory>
+
 class QMenu;
 class QAction;
 
@@ -71,7 +73,7 @@ private:
     void resizeEvent(QResizeEvent* event) override;
     void repositionFilterBusyIndicator();
 
-    QScopedPointer<Ui::ResultsPage> ui;
+    std::unique_ptr<Ui::ResultsPage> ui;
     KDDockWidgets::MainWindow* m_contents;
     FilterAndZoomStack* m_filterAndZoomStack;
     CostContextMenu* m_costContextMenu;

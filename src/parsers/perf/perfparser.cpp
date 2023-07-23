@@ -617,7 +617,7 @@ public:
         stream.setDevice(&buffer);
 
         if (qEnvironmentVariableIntValue("HOTSPOT_GENERATE_SCRIPT_OUTPUT")) {
-            perfScriptOutput.reset(new QTextStream(stdout));
+            perfScriptOutput = std::make_unique<QTextStream>(stdout);
         }
     }
 
@@ -1376,7 +1376,7 @@ public:
     Data::TracepointResults tracepointResult;
     Data::FrequencyResults frequencyResult;
     QHash<qint32, QHash<qint32, QString>> commands;
-    QScopedPointer<QTextStream> perfScriptOutput;
+    std::unique_ptr<QTextStream> perfScriptOutput;
     QHash<qint32, SymbolCount> numSymbolsByModule;
     QSet<QString> encounteredErrors;
     QHash<QVector<qint32>, qint32> stacks;

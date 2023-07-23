@@ -10,6 +10,8 @@
 
 #include <QWidget>
 
+#include <memory>
+
 class QMenu;
 
 namespace Ui {
@@ -43,5 +45,5 @@ signals:
     void selectSymbol(const Data::Symbol& symbol);
 
 private:
-    QScopedPointer<Ui::ResultsBottomUpPage> ui;
+    std::unique_ptr<Ui::ResultsBottomUpPage> ui;
 };

@@ -41,7 +41,7 @@ protected:
 FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , m_plot(new QCustomPlot(this))
-    , m_page(new Ui::FrequencyPage)
+    , m_page(std::make_unique<Ui::FrequencyPage>())
 {
     m_plot->axisRect()->setupFullAxesBox(true);
 

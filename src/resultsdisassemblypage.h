@@ -11,7 +11,10 @@
 #include "data.h"
 #include "hotspot-config.h"
 #include "models/costdelegate.h"
+
 #include <QWidget>
+
+#include <memory>
 
 class QMenu;
 
@@ -63,9 +66,9 @@ signals:
 private:
     void showDisassembly(const DisassemblyOutput& disassemblyOutput);
 
-    QScopedPointer<Ui::ResultsDisassemblyPage> ui;
+    std::unique_ptr<Ui::ResultsDisassemblyPage> ui;
 #if KFSyntaxHighlighting_FOUND
-    QScopedPointer<KSyntaxHighlighting::Repository> m_repository;
+    std::unique_ptr<KSyntaxHighlighting::Repository> m_repository;
 #endif
     // Model
     DisassemblyModel* m_disassemblyModel;

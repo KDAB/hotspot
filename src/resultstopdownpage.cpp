@@ -18,7 +18,7 @@
 ResultsTopDownPage::ResultsTopDownPage(FilterAndZoomStack* filterStack, PerfParser* parser,
                                        CostContextMenu* contextMenu, QWidget* parent)
     : QWidget(parent)
-    , ui(new Ui::ResultsTopDownPage)
+    , ui(std::make_unique<Ui::ResultsTopDownPage>())
 {
     ui->setupUi(this);
 

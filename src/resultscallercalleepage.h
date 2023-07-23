@@ -10,6 +10,8 @@
 
 #include <QWidget>
 
+#include <memory>
+
 namespace Ui {
 class ResultsCallerCalleePage;
 }
@@ -67,7 +69,7 @@ private:
     SourceMapLocation toSourceMapLocation(const QModelIndex& index) const;
     SourceMapLocation toSourceMapLocation(const Data::FileLine& fileLine, const Data::Symbol& symbol) const;
 
-    QScopedPointer<Ui::ResultsCallerCalleePage> ui;
+    std::unique_ptr<Ui::ResultsCallerCalleePage> ui;
     CallgraphWidget* m_callgraph;
 
     CallerCalleeModel* m_callerCalleeCostModel;

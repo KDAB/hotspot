@@ -68,12 +68,12 @@ bool isIntel()
         || instructionSets.testFlag(Processor::IntelSse41) || instructionSets.testFlag(Processor::IntelSse42);
 }
 
-RecordType selectedRecordType(const QScopedPointer<Ui::RecordPage>& ui)
+RecordType selectedRecordType(const std::unique_ptr<Ui::RecordPage>& ui)
 {
     return ui->recordTypeComboBox->currentData().value<RecordType>();
 }
 
-void updateStartRecordingButtonState(const QScopedPointer<Ui::RecordPage>& ui)
+void updateStartRecordingButtonState(const std::unique_ptr<Ui::RecordPage>& ui)
 {
     if (!PerfRecord::isPerfInstalled()) {
         ui->startRecordingButton->setEnabled(false);
@@ -159,7 +159,7 @@ void rememberApplication(const QString& application, const QString& appParameter
 
 RecordPage::RecordPage(QWidget* parent)
     : QWidget(parent)
-    , ui(new Ui::RecordPage)
+    , ui(std::make_unique<Ui::RecordPage>())
     , m_perfRecord(new PerfRecord(this))
     , m_updateRuntimeTimer(new QTimer(this))
     , m_watcher(new QFutureWatcher<ProcDataList>(this))

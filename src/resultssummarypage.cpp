@@ -29,7 +29,7 @@
 ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfParser* parser,
                                        CostContextMenu* contextMenu, QWidget* parent)
     : QWidget(parent)
-    , ui(new Ui::ResultsSummaryPage)
+    , ui(std::make_unique<Ui::ResultsSummaryPage>())
 {
     ui->setupUi(this);
 

@@ -10,6 +10,8 @@
 
 #include <QDialog>
 
+#include <memory>
+
 namespace Ui {
 class AboutDialog;
 }
@@ -26,5 +28,5 @@ public:
     void setLogo(const QString& iconFileName);
 
 private:
-    QScopedPointer<Ui::AboutDialog> ui;
+    std::unique_ptr<Ui::AboutDialog> ui;
 };

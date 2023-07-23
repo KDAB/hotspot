@@ -61,9 +61,9 @@ void connectModel(ModelType* model, ResultFound resultFound, EndReached endReach
 
 ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu, QWidget* parent)
     : QWidget(parent)
-    , ui(new Ui::ResultsDisassemblyPage)
+    , ui(std::make_unique<Ui::ResultsDisassemblyPage>())
 #if KFSyntaxHighlighting_FOUND
-    , m_repository(new KSyntaxHighlighting::Repository)
+    , m_repository(std::make_unique<KSyntaxHighlighting::Repository>())
     , m_disassemblyModel(new DisassemblyModel(m_repository.get(), this))
     , m_sourceCodeModel(new SourceCodeModel(m_repository.get(), this))
 #else

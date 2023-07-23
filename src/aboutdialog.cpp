@@ -11,7 +11,7 @@
 
 AboutDialog::AboutDialog(QWidget* parent)
     : QDialog(parent)
-    , ui(new Ui::AboutDialog)
+    , ui(std::make_unique<Ui::AboutDialog>())
 {
     ui->setupUi(this);
     connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QWidget::close);

@@ -77,7 +77,7 @@ void connectCallerOrCalleeModel(QTreeView* view, CallerCalleeModel* callerCallee
 ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack, PerfParser* parser,
                                                  CostContextMenu* contextMenu, QWidget* parent)
     : QWidget(parent)
-    , ui(new Ui::ResultsCallerCalleePage)
+    , ui(std::make_unique<Ui::ResultsCallerCalleePage>())
 {
     ui->setupUi(this);
 

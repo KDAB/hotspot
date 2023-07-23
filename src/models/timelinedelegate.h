@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <QScopedPointer>
 #include <QSet>
 #include <QStyledItemDelegate>
 

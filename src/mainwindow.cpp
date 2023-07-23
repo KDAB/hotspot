@@ -97,7 +97,7 @@ int firstAvailableIde()
 
 MainWindow::MainWindow(QWidget* parent)
     : KParts::MainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui(std::make_unique<Ui::MainWindow>())
     , m_parser(new PerfParser(this))
     , m_config(KSharedConfig::openConfig())
     , m_pageStack(new QStackedWidget(this))

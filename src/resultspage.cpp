@@ -44,7 +44,7 @@
 
 ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
-    , ui(new Ui::ResultsPage)
+    , ui(std::make_unique<Ui::ResultsPage>())
     , m_contents(createDockingArea(QStringLiteral("results"), this))
     , m_filterAndZoomStack(new FilterAndZoomStack(this))
     , m_costContextMenu(new CostContextMenu(this))

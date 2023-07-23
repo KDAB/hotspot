@@ -36,7 +36,7 @@ QString imageFormatFilter()
 ResultsFlameGraphPage::ResultsFlameGraphPage(FilterAndZoomStack* filterStack, PerfParser* parser, QMenu* exportMenu,
                                              QWidget* parent)
     : QWidget(parent)
-    , ui(new Ui::ResultsFlameGraphPage)
+    , ui(std::make_unique<Ui::ResultsFlameGraphPage>())
 {
     ui->setupUi(this);
     ui->flameGraph->setFilterStack(filterStack);

@@ -10,6 +10,8 @@
 
 #include <QWidget>
 
+#include <memory>
+
 class QMenu;
 class QAction;
 
@@ -44,6 +46,6 @@ signals:
     void jumpToDisassembly(const Data::Symbol& symbol);
 
 private:
-    QScopedPointer<Ui::ResultsFlameGraphPage> ui;
+    std::unique_ptr<Ui::ResultsFlameGraphPage> ui;
     QAction* m_exportAction = nullptr;
 };

@@ -8,11 +8,12 @@
 
 #pragma once
 
-#include <QScopedPointer>
 #include <QString>
 
 #include <KParts/MainWindow>
 #include <KSharedConfig>
+
+#include <memory>
 
 namespace Ui {
 class MainWindow;
@@ -70,7 +71,7 @@ private:
     void setupCodeNavigationMenu();
     QString queryOpenDataFile();
 
-    QScopedPointer<Ui::MainWindow> ui;
+    std::unique_ptr<Ui::MainWindow> ui;
     PerfParser* m_parser;
     KSharedConfigPtr m_config;
     QStackedWidget* m_pageStack;

@@ -15,7 +15,7 @@
 
 StartPage::StartPage(QWidget* parent)
     : QWidget(parent)
-    , ui(new Ui::StartPage)
+    , ui(std::make_unique<Ui::StartPage>())
 {
     ui->setupUi(this);
 

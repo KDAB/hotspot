@@ -10,6 +10,8 @@
 
 #include <QWidget>
 
+#include <memory>
+
 namespace Ui {
 class StartPage;
 }
@@ -44,7 +46,7 @@ signals:
 private:
     void updateBackground();
 
-    QScopedPointer<Ui::StartPage> ui;
+    std::unique_ptr<Ui::StartPage> ui;
 
     QPixmap m_background;
 };

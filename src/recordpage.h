@@ -14,6 +14,8 @@
 
 #include "processlist.h"
 
+#include <memory>
+
 class QTimer;
 class QTemporaryFile;
 
@@ -73,7 +75,7 @@ private:
     void appendOutput(const QString& text);
     void setError(const QString& message);
 
-    QScopedPointer<Ui::RecordPage> ui;
+    std::unique_ptr<Ui::RecordPage> ui;
 
     PerfRecord* m_perfRecord;
     QString m_resultsFile;

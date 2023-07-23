@@ -58,7 +58,7 @@ void stackCollapsedExport(QFile& file, int type, const Data::BottomUpResults& re
 ResultsBottomUpPage::ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfParser* parser,
                                          CostContextMenu* contextMenu, QMenu* exportMenu, QWidget* parent)
     : QWidget(parent)
-    , ui(new Ui::ResultsBottomUpPage)
+    , ui(std::make_unique<Ui::ResultsBottomUpPage>())
 {
     ui->setupUi(this);
 

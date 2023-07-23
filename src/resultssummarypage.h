@@ -10,6 +10,8 @@
 
 #include <QWidget>
 
+#include <memory>
+
 namespace Data {
 struct Symbol;
 }
@@ -37,5 +39,5 @@ signals:
     void jumpToDisassembly(const Data::Symbol& symbol);
 
 private:
-    QScopedPointer<Ui::ResultsSummaryPage> ui;
+    std::unique_ptr<Ui::ResultsSummaryPage> ui;
 };
