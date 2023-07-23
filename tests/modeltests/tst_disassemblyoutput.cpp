@@ -127,7 +127,7 @@ private slots:
     {
         QTest::addColumn<QStringList>("searchPath");
 
-        QFileInfo lib = findLib(QStringLiteral("libfib.so"));
+        const auto lib = QFileInfo(findLib(QStringLiteral("libfib.so")));
         QVERIFY(lib.exists());
 
         QTest::newRow("file in dir") << QStringList(lib.absolutePath());
