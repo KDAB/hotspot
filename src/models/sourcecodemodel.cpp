@@ -19,6 +19,7 @@
 
 #include "highlighter.hpp"
 #include "search.h"
+#include <climits>
 
 Q_LOGGING_CATEGORY(sourcecodemodel, "hotspot.sourcecodemodel", QtWarningMsg)
 
@@ -50,13 +51,14 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     m_inclusiveCosts = {};
     m_numLines = 0;
 
-    if (disassemblyOutput.mainSourceFileName.isEmpty())
+    if (disassemblyOutput.mainSourceFileName.isEmpty()) {
         return;
+    }
 
-    QFile file(m_sysroot + QDir::separator() + disassemblyOutput.realSourceFileName);
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    QFile file(disassemblyOutput.realSourceFileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         return;
+    }
 
     QString sourceCode = QString::fromUtf8(file.readAll());
 
