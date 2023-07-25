@@ -139,7 +139,7 @@ int main(int argc, char** argv)
 
     QCommandLineOption sourcePath(
         QStringLiteral("sourcePaths"),
-        QCoreApplication::translate("main", "Colon separated list of extra paths to the source code."),
+        QCoreApplication::translate("main", "Colon separated list of search paths for the source code."),
         QStringLiteral("paths"));
     parser.addOption(sourcePath);
 
