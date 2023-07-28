@@ -85,6 +85,8 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
             continue;
         }
 
+        qDebug() << line.fileLine;
+
         // maxLineNumber and minLineNumber are used to show the source code so we only update them when we are in the
         // current file
         if (line.fileLine.file == disassemblyOutput.mainSourceFileName) {
