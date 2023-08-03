@@ -155,6 +155,8 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
     QString asmLine;
     QString sourceFileName;
     QString currentSourceFileName;
+    QString symbol;
+    QString function;
 
     int sourceCodeLine = 0;
     while (stream.readLineInto(&asmLine)) {
@@ -172,10 +174,18 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
         const int colonIndex = asmLine.indexOf(QLatin1Char(':'));
         const int angleBracketIndex = asmLine.indexOf(QLatin1Char('<'));
         if (angleBracketIndex > 0 && colonIndex > angleBracketIndex) {
-            // -l add a line like:
-            // main():
-            // after 0000000000001090 <main>:
-            stream.readLine();
+            continue;
+        }
+
+        // inlining create lines like these
+        // std::ostream::operator<<(std::ostream& (*)(std::ostream&)):
+        // we want to skip those
+        if (asmLine.endsWith(QLatin1Char(':'))) {
+            symbol = asmLine.left(asmLine.length() - 1);
+
+            if (function.isEmpty()) {
+                function = symbol;
+            }
             continue;
         }
 
@@ -183,6 +193,7 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
         if (asmLine.startsWith(QLatin1Char('/')) && asmLine.contains(QStringLiteral("file format"))) {
             continue;
         } else if (asmLine.startsWith(QLatin1Char('/')) || asmLine.startsWith(QLatin1Char('.'))) {
+            // TODO: Remove
             // extract source code line info
             // these look like this:
             // - /usr/include/c++/11.2.0/bits/stl_tree.h:2083 (discriminator 1)
@@ -226,8 +237,11 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
             assembly = asmLine;
         }
 
-        disassemblyLines.push_back(
-            {addr, assembly, extractLinkedFunction(asmLine), {currentSourceFileName, sourceCodeLine}});
+        disassemblyLines.push_back({addr,
+                                    assembly,
+                                    extractLinkedFunction(asmLine),
+                                    {currentSourceFileName, sourceCodeLine},
+                                    symbol != function ? symbol : QString {}});
     }
     return {disassemblyLines, sourceFileName};
 }
@@ -262,7 +276,6 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
     // Call objdump with arguments: addresses range and binary file
     auto toHex = [](quint64 addr) -> QString { return QLatin1String("0x") + QString::number(addr, 16); };
     auto arguments = QStringList {QStringLiteral("-d"), // disassemble
-                                  QStringLiteral("-l"), // include source code lines
                                   QStringLiteral("-C"), // demangle names
                                   QStringLiteral("--start-address"),
                                   toHex(symbol.relAddr),

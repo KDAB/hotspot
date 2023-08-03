@@ -429,6 +429,8 @@ private slots:
         const quint64 size = match.captured(2).toInt(&ok, 10);
         Q_ASSERT(ok);
 
+        qDebug() << output << address << size;
+
         Data::Symbol symbol = {QStringLiteral("main"), address, size, QStringLiteral("cpp-recursion"), {}, binary};
 
         SourceCodeModel model(nullptr);

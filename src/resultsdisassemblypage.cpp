@@ -126,7 +126,8 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
         connect(sourceView, &QTreeView::clicked, sourceView, [=](const QModelIndex& index) {
             const auto fileLine = sourceModel->fileLineForIndex(index);
             if (fileLine.isValid()) {
-                destView->scrollTo(destModel->indexForFileLine(fileLine));
+                auto index = destModel->indexForFileLine(fileLine);
+                destView->scrollTo(index);
             }
         });
     };
@@ -142,8 +143,9 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
         int functionOffset = index.data(DisassemblyModel::LinkedFunctionOffsetRole).toInt();
 
         if (m_symbolStack[m_stackIndex].symbol == functionName) {
-            ui->assemblyView->scrollTo(m_disassemblyModel->findIndexWithOffset(functionOffset),
-                                       QAbstractItemView::ScrollHint::PositionAtTop);
+            auto index = m_disassemblyModel->findIndexWithOffset(functionOffset);
+            ui->assemblyView->setExpanded(index, true);
+            ui->assemblyView->scrollTo(index, QAbstractItemView::ScrollHint::PositionAtTop);
         } else {
             const auto symbol =
                 std::find_if(m_callerCalleeResults.entries.keyBegin(), m_callerCalleeResults.entries.keyEnd(),
@@ -325,7 +327,7 @@ void ResultsDisassemblyPage::setupAsmViewModel()
         ui->sourceCodeView->setItemDelegateForColumn(col, m_sourceCodeCostDelegate);
     }
 }
-
+#include "disassembler/disassemble.h"
 void ResultsDisassemblyPage::showDisassembly()
 {
     if (m_symbolStack.isEmpty())
@@ -390,8 +392,10 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
 
     ui->errorMessage->hide();
 
-    m_disassemblyModel->setDisassembly(disassemblyOutput, m_callerCalleeResults);
-    m_sourceCodeModel->setDisassembly(disassemblyOutput, m_callerCalleeResults);
+    auto disassembly = disassemble(disassemblyOutput.symbol);
+
+    m_disassemblyModel->setDisassembly(disassembly, m_callerCalleeResults);
+    m_sourceCodeModel->setDisassembly(disassembly, m_callerCalleeResults);
 
     ResultsUtil::hideEmptyColumns(m_callerCalleeResults.selfCosts, ui->assemblyView, DisassemblyModel::COLUMN_COUNT);
 
