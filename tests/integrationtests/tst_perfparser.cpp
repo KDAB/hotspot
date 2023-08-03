@@ -120,11 +120,11 @@ char* toString(const ComparableSymbol& symbol)
         QStringList patterns;
         for (const auto& pattern : symbol.pattern)
             patterns.append(QLatin1Char('{') + pattern.first + QLatin1String(", ") + pattern.second + QLatin1Char('}'));
-        return QTest::toString(QLatin1String("ComparableSymbol{[") + patterns.join(QLatin1String(", "))
-                               + QLatin1String("]}"));
+        return QTest::toString(
+            QString(QLatin1String("ComparableSymbol{[") + patterns.join(QLatin1String(", ")) + QLatin1String("]}")));
     } else {
-        return QTest::toString(QLatin1String("ComparableSymbol{") + symbol.symbol.symbol + QLatin1String(", ")
-                               + symbol.symbol.binary + QLatin1Char('}'));
+        return QTest::toString(QString(QLatin1String("ComparableSymbol{") + symbol.symbol.symbol + QLatin1String(", ")
+                                       + symbol.symbol.binary + QLatin1Char('}')));
     }
 }
 
