@@ -29,7 +29,7 @@ public:
                 const QStringList& pids);
     void recordSystem(const QStringList& perfOptions, const QString& outputPath);
 
-    const QString perfCommand();
+    QString perfCommand() const;
     void stopRecording();
     void sendInput(const QByteArray& input);
 

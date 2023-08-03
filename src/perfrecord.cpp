@@ -268,11 +268,10 @@ void PerfRecord::recordSystem(const QStringList& perfOptions, const QString& out
     runPerf(actuallyElevatePrivileges(true), options, outputPath, {});
 }
 
-const QString PerfRecord::perfCommand()
+QString PerfRecord::perfCommand() const
 {
     if (m_perfRecordProcess) {
-        return m_perfRecordProcess->program() + QLatin1Char(' ')
-            + m_perfRecordProcess->arguments().join(QLatin1Char(' '));
+        return QLatin1String("perf ") + m_perfRecordProcess->arguments().join(QLatin1Char(' '));
     } else {
         return {};
     }
