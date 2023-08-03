@@ -104,8 +104,10 @@ private:
         QSignalSpy recordingFailedSpy(&perf, &PerfRecord::recordingFailed);
 
         // always add `-c 1000000`, as perf's frequency mode is too unreliable for testing purposes
-        perf.record(perfOptions + QStringList {QStringLiteral("-c"), QStringLiteral("1000000")}, fileName, false,
-                    exePath, exeOptions);
+        perf.record(
+            perfOptions
+                + QStringList {QStringLiteral("-c"), QStringLiteral("1000000"), QStringLiteral("--no-buildid-cache")},
+            fileName, false, exePath, exeOptions);
 
         VERIFY_OR_THROW(recordingFinishedSpy.wait(10000));
 

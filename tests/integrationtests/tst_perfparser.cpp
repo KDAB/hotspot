@@ -420,7 +420,7 @@ private slots:
         QSignalSpy recordingFinishedSpy(&perf, &PerfRecord::recordingFinished);
         QSignalSpy recordingFailedSpy(&perf, &PerfRecord::recordingFailed);
 
-        perf.record({}, tempFile.fileName(), false, exePath, exeOptions);
+        perf.record({QStringLiteral("--no-buildid-cache")}, tempFile.fileName(), false, exePath, exeOptions);
         perf.sendInput(QByteArrayLiteral("some input\n"));
         QVERIFY(recordingFinishedSpy.wait());
 
@@ -637,7 +637,7 @@ private slots:
 
         Settings::instance()->setCostAggregation(aggregation);
         m_perfCommand = QStringLiteral("perf record --call-graph dwarf --sample-cpu --switch-events --event "
-                                       "sched:sched_switch -c 1000000 /tmp/cpp-threadnames");
+                                       "sched:sched_switch -c 1000000 --no-buildid-cache /tmp/cpp-threadnames");
         m_cpuArchitecture = QStringLiteral("x86_64");
         m_linuxKernelVersion = QStringLiteral("5.17.5-arch1-1");
         m_machineHostName = QStringLiteral("Sparrow");
@@ -725,8 +725,10 @@ private:
         QSignalSpy recordingFailedSpy(&perf, &PerfRecord::recordingFailed);
 
         // always add `-c 1000000`, as perf's frequency mode is too unreliable for testing purposes
-        perf.record(perfOptions + QStringList {QStringLiteral("-c"), QStringLiteral("1000000")}, fileName, false,
-                    exePath, exeOptions);
+        perf.record(
+            perfOptions
+                + QStringList {QStringLiteral("-c"), QStringLiteral("1000000"), QStringLiteral("--no-buildid-cache")},
+            fileName, false, exePath, exeOptions);
 
         VERIFY_OR_THROW(recordingFinishedSpy.wait(10000));
 
