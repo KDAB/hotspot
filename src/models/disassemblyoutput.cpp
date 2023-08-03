@@ -193,6 +193,7 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
         if (asmLine.startsWith(QLatin1Char('/')) && asmLine.contains(QStringLiteral("file format"))) {
             continue;
         } else if (asmLine.startsWith(QLatin1Char('/')) || asmLine.startsWith(QLatin1Char('.'))) {
+            // TODO: Remove
             // extract source code line info
             // these look like this:
             // - /usr/include/c++/11.2.0/bits/stl_tree.h:2083 (discriminator 1)
@@ -275,7 +276,6 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
     // Call objdump with arguments: addresses range and binary file
     auto toHex = [](quint64 addr) -> QString { return QLatin1String("0x") + QString::number(addr, 16); };
     auto arguments = QStringList {QStringLiteral("-d"), // disassemble
-                                  QStringLiteral("-l"), // include source code lines
                                   QStringLiteral("-C"), // demangle names
                                   QStringLiteral("--start-address"),
                                   toHex(symbol.relAddr),

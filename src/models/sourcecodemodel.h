@@ -8,27 +8,23 @@
 #pragma once
 
 #include "data.h"
-#include "disassemblyoutput.h"
 
 #include <memory>
 #include <QAbstractTableModel>
 #include <QTextLine>
 
+#include "../disassembler/disassemble.h"
+
 class QTextDocument;
 
 class Highlighter;
+
+struct Disassembly;
 
 namespace KSyntaxHighlighting {
 class Repository;
 class Definition;
 }
-
-struct SourceCodeLine
-{
-    QString text;
-    QTextLine line;
-};
-Q_DECLARE_TYPEINFO(SourceCodeLine, Q_MOVABLE_TYPE);
 
 enum class Direction;
 
@@ -42,7 +38,7 @@ public:
     ~SourceCodeModel();
 
     void clear();
-    void setDisassembly(const DisassemblyOutput& disassemblyOutput, const Data::CallerCalleeResults& results);
+    void setDisassembly(const Disassembly& disassembly, const Data::CallerCalleeResults& results);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -89,7 +85,8 @@ private:
     QString m_sysroot;
     QSet<int> m_validLineNumbers;
     QTextDocument* m_document = nullptr;
-    QVector<SourceCodeLine> m_sourceCodeLines;
+    Disassembly m_disassembly;
+    QVector<QTextLine> m_highlightedLines;
     Highlighter* m_highlighter = nullptr;
     Data::Costs m_selfCosts;
     Data::Costs m_inclusiveCosts;

@@ -327,7 +327,7 @@ void ResultsDisassemblyPage::setupAsmViewModel()
         ui->sourceCodeView->setItemDelegateForColumn(col, m_sourceCodeCostDelegate);
     }
 }
-
+#include "disassembler/disassemble.h"
 void ResultsDisassemblyPage::showDisassembly()
 {
     if (m_symbolStack.isEmpty())
@@ -392,8 +392,10 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
 
     ui->errorMessage->hide();
 
-    m_disassemblyModel->setDisassembly(disassemblyOutput, m_callerCalleeResults);
-    m_sourceCodeModel->setDisassembly(disassemblyOutput, m_callerCalleeResults);
+    auto disassembly = disassemble(disassemblyOutput.symbol);
+
+    m_disassemblyModel->setDisassembly(disassembly, m_callerCalleeResults);
+    m_sourceCodeModel->setDisassembly(disassembly, m_callerCalleeResults);
 
     ResultsUtil::hideEmptyColumns(m_callerCalleeResults.selfCosts, ui->assemblyView, DisassemblyModel::COLUMN_COUNT);
 

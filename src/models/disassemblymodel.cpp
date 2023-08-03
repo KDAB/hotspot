@@ -11,11 +11,22 @@
 #include <QTextDocument>
 
 #include "disassemblymodel.h"
-#include "hotspot-config.h"
 
 #include "highlighter.hpp"
 #include "search.h"
 #include "sourcecodemodel.h"
+
+namespace {
+bool isInlined(quint64 addr, const QVector<InlinedFunction>& inlinedFunctions)
+{
+    for (const auto& func : inlinedFunctions) {
+        if (addr > func.lowpc && addr < func.highpc) {
+            return true;
+        }
+    }
+    return false;
+}
+}
 
 DisassemblyModel::DisassemblyModel(KSyntaxHighlighting::Repository* repository, QObject* parent)
     : QAbstractItemModel(parent)
@@ -91,13 +102,12 @@ QModelIndex DisassemblyModel::index(int row, int column, const QModelIndex& pare
         return QModelIndex();
     }
 }
-
-void DisassemblyModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
-                                      const Data::CallerCalleeResults& results)
+#include <QDebug>
+void DisassemblyModel::setDisassembly(const Disassembly& disassembly, const Data::CallerCalleeResults& results)
 {
     beginResetModel();
 
-    m_data = disassemblyOutput;
+    m_data = disassembly.disassembly;
     m_results = results;
     m_numTypes = results.selfCosts.numTypes();
 
@@ -107,7 +117,7 @@ void DisassemblyModel::setDisassembly(const DisassemblyOutput& disassemblyOutput
     QTextCursor cursor(m_document);
     cursor.beginEditBlock();
     DisassemblyEntry* lastChild = nullptr;
-    for (const auto& it : disassemblyOutput.disassemblyLines) {
+    for (const auto& it : disassembly.disassembly.disassemblyLines) {
         cursor.insertText(it.disassembly);
         cursor.insertBlock();
     }
@@ -117,11 +127,12 @@ void DisassemblyModel::setDisassembly(const DisassemblyOutput& disassemblyOutput
 
     int linecounter = 0;
     QString function;
-    for (const auto& it : disassemblyOutput.disassemblyLines) {
+    for (const auto& it : disassembly.disassembly.disassemblyLines) {
         auto textLine = m_document->findBlockByLineNumber(linecounter++).layout()->lineAt(0);
 
         // if symbol in not empty -> inlined function detected
-        if (!it.symbol.isEmpty()) {
+        if (isInlined(it.addr, disassembly.inlinedFunctions)) {
+            qDebug() << "inlined";
             // only collapse the same function
             if (lastChild && function == it.symbol) {
                 lastChild->addChild({lastChild, it, textLine});

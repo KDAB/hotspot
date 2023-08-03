@@ -12,6 +12,7 @@
 #include <QAbstractItemModel>
 #include <QTextLine>
 
+#include "../disassembler/disassemble.h"
 #include "data.h"
 #include "disassemblyentry.h"
 #include "disassemblyoutput.h"
@@ -33,7 +34,7 @@ public:
     explicit DisassemblyModel(KSyntaxHighlighting::Repository* repository, QObject* parent = nullptr);
     ~DisassemblyModel();
 
-    void setDisassembly(const DisassemblyOutput& disassemblyOutput, const Data::CallerCalleeResults& results);
+    void setDisassembly(const Disassembly& disassembly, const Data::CallerCalleeResults& results);
 
     void clear();
     QModelIndex findIndexWithOffset(int offset);

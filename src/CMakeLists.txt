@@ -9,6 +9,7 @@ remove_definitions(-DQT_NO_SIGNALS_SLOTS_KEYWORDS)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(models)
+add_subdirectory(disassembler)
 
 ecm_install_icons(
     ICONS
@@ -89,10 +90,7 @@ if(QCustomPlot_FOUND)
     set(HOTSPOT_SRCS ${HOTSPOT_SRCS} frequencypage.cpp)
 endif()
 
-add_executable(
-    hotspot
-    ${HOTSPOT_SRCS}
-)
+add_executable(hotspot ${HOTSPOT_SRCS})
 
 target_link_libraries(
     hotspot
@@ -113,6 +111,7 @@ target_link_libraries(
     KF5::IconThemes
     KF5::Parts
     models
+    disassembler
     PrefixTickLabels
     KDAB::kddockwidgets
 )
@@ -125,13 +124,11 @@ if(QCustomPlot_FOUND)
     target_link_libraries(hotspot QCustomPlot::QCustomPlot)
 endif()
 
-set_target_properties(hotspot PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}")
+set_target_properties(
+    hotspot
+    PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
+)
 
-install(
-    TARGETS hotspot
-    RUNTIME DESTINATION ${KDE_INSTALL_BINDIR}
-)
-install(
-    FILES hotspot.notifyrc
-    DESTINATION ${KDE_INSTALL_KNOTIFY5RCDIR}
-)
+install(TARGETS hotspot RUNTIME DESTINATION ${KDE_INSTALL_BINDIR})
+install(FILES hotspot.notifyrc DESTINATION ${KDE_INSTALL_KNOTIFY5RCDIR})

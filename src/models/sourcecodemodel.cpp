@@ -40,8 +40,7 @@ void SourceCodeModel::clear()
     endResetModel();
 }
 
-void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
-                                     const Data::CallerCalleeResults& results)
+void SourceCodeModel::setDisassembly(const Disassembly& disassembly, const Data::CallerCalleeResults& results)
 {
     beginResetModel();
     auto guard = qScopeGuard([this]() { endResetModel(); });
@@ -50,92 +49,84 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     m_inclusiveCosts = {};
     m_numLines = 0;
 
-    if (disassemblyOutput.mainSourceFileName.isEmpty())
-        return;
+    // if (disassemblyOutput.mainSourceFileName.isEmpty())
+    //     return;
+    //
+    // QFile file(m_sysroot + QDir::separator() + disassemblyOutput.realSourceFileName);
+    //
+    // if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    //     return;
+    //
+    // QString sourceCode = QString::fromUtf8(file.readAll());
 
-    QFile file(m_sysroot + QDir::separator() + disassemblyOutput.realSourceFileName);
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-        return;
-
-    QString sourceCode = QString::fromUtf8(file.readAll());
-
-    m_sourceCodeLines.clear();
+    m_highlightedLines.clear();
     m_document->clear();
+
+    QString sourceCode;
+
+    m_disassembly = disassembly;
+
+    for (const auto& line : disassembly.sourceCode) {
+        sourceCode += line + QLatin1Char('\n');
+    }
+
+    m_numLines = disassembly.sourceCode.size();
+    m_startLine = disassembly.startLineNumber - 1;
 
     m_document->setPlainText(sourceCode);
     m_document->setTextWidth(m_document->idealWidth());
-
-    int maxLineNumber = 0;
-    int minLineNumber = std::numeric_limits<int>::max();
 
     m_validLineNumbers.clear();
 
     m_selfCosts.initializeCostsFrom(results.selfCosts);
     m_inclusiveCosts.initializeCostsFrom(results.inclusiveCosts);
 
-    m_mainSourceFileName = disassemblyOutput.mainSourceFileName;
+    // m_mainSourceFileName = disassemblyOutput.mainSourceFileName;
+    //
+    // const auto entry = results.entries.find(disassemblyOutput.symbol);
+    //
+    // for (const auto& line : disassemblyOutput.disassemblyLines) {
+    //     // symbol not empty -> inlined function
+    //     // skip all lines that are not part of the function (happens due to inlining)
+    //     if (line.fileLine.line == 0 || !line.symbol.isEmpty()) {
+    //         continue;
+    //     }
+    //
+    //     // maxLineNumber and minLineNumber are used to show the source code so we only update them when we are in the
+    //     // current file
+    //     if (line.fileLine.file == disassemblyOutput.mainSourceFileName) {
+    //         if (line.fileLine.line > maxLineNumber) {
+    //             maxLineNumber = line.fileLine.line;
+    //         }
+    //         if (line.fileLine.line < minLineNumber) {
+    //             minLineNumber = line.fileLine.line;
+    //         }
+    //     }
+    //
+    //     if (m_validLineNumbers.contains(line.fileLine.line))
+    //         continue;
+    //
+    //     if (entry != results.entries.end()) {
+    //         const auto it = entry->sourceMap.find(line.fileLine);
+    //         if (it != entry->sourceMap.end()) {
+    //             const auto& locationCost = it.value();
+    //
+    //             m_selfCosts.add(line.fileLine.line, locationCost.selfCost);
+    //             m_inclusiveCosts.add(line.fileLine.line, locationCost.inclusiveCost);
+    //         }
+    //     }
+    //
+    //     m_validLineNumbers.insert(line.fileLine.line);
+    // }
 
-    const auto entry = results.entries.find(disassemblyOutput.symbol);
+    //    m_prettySymbol = disassemblyOutput.symbol.prettySymbol;
 
-    for (const auto& line : disassemblyOutput.disassemblyLines) {
-        // symbol not empty -> inlined function
-        // skip all lines that are not part of the function (happens due to inlining)
-        if (line.fileLine.line == 0 || !line.symbol.isEmpty()) {
-            continue;
-        }
-
-        qDebug() << line.fileLine;
-
-        // maxLineNumber and minLineNumber are used to show the source code so we only update them when we are in the
-        // current file
-        if (line.fileLine.file == disassemblyOutput.mainSourceFileName) {
-            if (line.fileLine.line > maxLineNumber) {
-                maxLineNumber = line.fileLine.line;
-            }
-            if (line.fileLine.line < minLineNumber) {
-                minLineNumber = line.fileLine.line;
-            }
-        }
-
-        if (m_validLineNumbers.contains(line.fileLine.line))
-            continue;
-
-        if (entry != results.entries.end()) {
-            const auto it = entry->sourceMap.find(line.fileLine);
-            if (it != entry->sourceMap.end()) {
-                const auto& locationCost = it.value();
-
-                m_selfCosts.add(line.fileLine.line, locationCost.selfCost);
-                m_inclusiveCosts.add(line.fileLine.line, locationCost.inclusiveCost);
-            }
-        }
-
-        m_validLineNumbers.insert(line.fileLine.line);
-    }
-
-    if (maxLineNumber == 0) {
-        qCWarning(sourcecodemodel) << "failed to parse line numbers from disassembly output";
-        return;
-    }
-
-    qCDebug(sourcecodemodel) << disassemblyOutput.mainSourceFileName << minLineNumber << maxLineNumber;
-
-    Q_ASSERT(minLineNumber > 0);
-    Q_ASSERT(minLineNumber < maxLineNumber);
-
-    m_prettySymbol = disassemblyOutput.symbol.prettySymbol;
-    m_startLine = minLineNumber - 1; // convert to index
-    m_numLines = maxLineNumber - minLineNumber + 1; // include minLineNumber
-
-    m_sourceCodeLines.reserve(m_numLines);
-
-    for (int i = m_startLine; i < m_startLine + m_numLines; i++) {
+    for (int i = 0; i < m_numLines; i++) {
         auto block = m_document->findBlockByLineNumber(i);
         if (!block.isValid())
             continue;
 
-        m_sourceCodeLines.push_back({block.text(), block.layout()->lineAt(0)});
+        m_highlightedLines.push_back(block.layout()->lineAt(0));
     }
 }
 
@@ -189,8 +180,8 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
             }
 
             if (role == SyntaxHighlightRole)
-                return QVariant::fromValue(m_sourceCodeLines[index.row() - 1].line);
-            return m_sourceCodeLines[index.row() - 1].text;
+                return QVariant::fromValue(m_highlightedLines[index.row() - 1]);
+            return m_disassembly.sourceCode[index.row() - 1]; // m_sourceCodeLines[index.row() - 1].text;
         }
 
         if (index.column() == SourceCodeLineNumber) {
@@ -269,12 +260,10 @@ void SourceCodeModel::setSysroot(const QString& sysroot)
 
 void SourceCodeModel::find(const QString& search, Direction direction, int offset)
 {
-    auto searchFunc = [&search](const SourceCodeLine& line) {
-        return line.text.indexOf(search, 0, Qt::CaseInsensitive) != -1;
-    };
+    auto searchFunc = [&search](const QString& line) { return line.indexOf(search, 0, Qt::CaseInsensitive) != -1; };
 
     int resultIndex = ::search(
-        m_sourceCodeLines, searchFunc, [this] { emit resultFound({}); }, direction, offset);
+        m_disassembly.sourceCode, searchFunc, [this] { emit resultFound({}); }, direction, offset);
 
     if (resultIndex >= 0) {
         emit resultFound(createIndex(resultIndex + 1, SourceCodeColumn));
