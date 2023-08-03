@@ -11,7 +11,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-int main()
+int main(void)
 {
     pid_t child = fork();
     if (child == 0) {
