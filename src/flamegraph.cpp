@@ -60,7 +60,7 @@ enum SearchMatchType
 class FrameGraphicsItem : public QGraphicsRectItem
 {
 public:
-    FrameGraphicsItem(const qint64 cost, Data::Symbol symbol, FrameGraphicsItem* parent);
+    FrameGraphicsItem(qint64 cost, Data::Symbol symbol, FrameGraphicsItem* parent);
 
     qint64 cost() const;
     void setCost(qint64 cost);
