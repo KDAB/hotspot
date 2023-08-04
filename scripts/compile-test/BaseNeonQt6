@@ -1,18 +1,19 @@
-FROM invent-registry.kde.org/neon/docker-images/plasma:latest
+FROM ubuntu:22.04
 
-# install dependencies
 ARG DEBIAN_FRONTEND=noninteractive
 
-USER root
-
-RUN apt-get update && apt-get -y upgrade && \
-    apt-get remove -y --allow-remove-essential neon-desktop && \
+RUN apt-get update && \
+    apt-get install -y gnupg2 wget && \
+    wget https://archive.neon.kde.org/public.key -O /tmp/public.key && \
+    apt-key add /tmp/public.key && rm /tmp/public.key && \
+    echo "deb http://archive.neon.kde.org/unstable jammy main" > /etc/apt/sources.list.d/neon.list && \
+    echo "deb-src http://archive.neon.kde.org/unstable jammy main" >> /etc/apt/sources.list.d/neon.list && \
+    apt-get update && apt-get dist-upgrade -y --allow-downgrades && \
     apt-get install -y qt6-base-dev qt6-base-private-dev qt6-svg-dev \
-        cmake libdwarf-dev mesa-common-dev \
-        libboost-iostreams-dev libboost-program-options-dev libboost-system-dev libboost-filesystem-dev \
-        build-essential curl git wget autotools-dev autoconf libtool liblzma-dev libz-dev gettext cmake \
-        libzstd-dev ninja-build libdw-dev libelf-dev kf6-extra-cmake-modules \
-        kf6-karchive-dev kf6-threadweaver-dev kf6-ki18n-dev kf6-kconfigwidgets-dev kf6-kxmlgui-dev \
-        kf6-kcoreaddons-dev kf6-kitemviews-dev kf6-kitemmodels-dev kf6-kio-dev kf6-kparts-dev kf6-kcolorscheme-dev \
-        kf6-solid-dev kf6-kwindowsystem-dev kf6-knotifications-dev kf6-kiconthemes-dev kf6-syntax-highlighting-dev && \
-    apt-get auto-remove -y
+    locales cmake libdwarf-dev mesa-common-dev \
+    libboost-iostreams-dev libboost-program-options-dev libboost-system-dev libboost-filesystem-dev \
+    build-essential curl git wget autotools-dev autoconf libtool liblzma-dev libz-dev gettext cmake \
+    libzstd-dev ninja-build libdw-dev libelf-dev kf6-extra-cmake-modules \
+    kf6-karchive-dev kf6-threadweaver-dev kf6-ki18n-dev kf6-kconfigwidgets-dev kf6-kxmlgui-dev \
+    kf6-kcoreaddons-dev kf6-kitemviews-dev kf6-kitemmodels-dev kf6-kio-dev kf6-kparts-dev kf6-kcolorscheme-dev \
+    kf6-solid-dev kf6-kwindowsystem-dev kf6-knotifications-dev kf6-kiconthemes-dev kf6-syntax-highlighting-dev
