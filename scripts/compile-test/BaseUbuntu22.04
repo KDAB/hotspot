@@ -12,4 +12,4 @@ RUN apt-get update && \
         libzstd-dev ninja-build libdw-dev libelf-dev extra-cmake-modules \
         libkf5archive-dev libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev \
         libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libkf5kio-dev libkf5parts-dev \
-        libkf5solid-dev libkf5windowsystem-dev libkf5notifications-dev libkf5iconthemes-dev
+        libkf5solid-dev libkf5windowsystem-dev libkf5notifications-dev libkf5iconthemes-dev libkf5syntaxhighlighting-dev

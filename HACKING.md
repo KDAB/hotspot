@@ -63,7 +63,7 @@ As of now, you will need the following dependencies to build this project:
 ```bash
 add-apt-repository ppa:kubuntu-ppa/backports
 apt-get update
-apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev \
+apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev libkf5syntaxhighlighting-dev \
     libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libkf5kio-dev libkf5parts-dev \
     libkf5solid-dev libkf5windowsystem-dev libkf5notifications-dev libkf5iconthemes-dev libelf-dev \
     libdw-dev cmake extra-cmake-modules gettext libqt5svg5-dev
@@ -87,7 +87,7 @@ The automatic builds via GitHub actions [use the following][Ubuntu2004Script] fo
 ```bash
 dnf install cmake gcc glibc-static gcc-c++ libstdc++-static qt5-qtbase qt5-qtbase-devel qt5-qtsvg-devel \
     extra-cmake-modules elfutils-devel kf5-threadweaver-devel \
-    kf5-kconfigwidgets-devel kf5-kitemviews-devel kf5-kitemmodels-devel \
+    kf5-kconfigwidgets-devel kf5-kitemviews-devel kf5-kitemmodels-devel kf5-syntax-highlighting-devel \
     kf5-kio-devel kf5-solid-devel kf5-kwindowsystem-devel kf5-kiconthemes-devel \
     kf5-knotifications-devel kf5-kparts-devel
 ```
@@ -96,7 +96,7 @@ dnf install cmake gcc glibc-static gcc-c++ libstdc++-static qt5-qtbase qt5-qtbas
 
 ```bash
 pacman -Syu
-pacman -S cmake gcc extra-cmake-modules threadweaver kconfigwidgets knotifications \
+pacman -S cmake gcc extra-cmake-modules threadweaver kconfigwidgets knotifications syntax-highlighting \
     kiconthemes kitemviews kitemmodels kwindowsystem kio kparts solid libelf gettext qt5-base
 ```
 
@@ -105,7 +105,7 @@ pacman -S cmake gcc extra-cmake-modules threadweaver kconfigwidgets knotificatio
 ```bash
 zypper in cmake gcc-c++ extra-cmake-modules threadweaver-devel kio-devel \
     solid-devel kcoreaddons-devel threadweaver-devel kconfigwidgets-devel \
-    kitemmodels-devel kitemviews-devel kwindowsystem-devel kparts-devel \
+    kitemmodels-devel kitemviews-devel kwindowsystem-devel kparts-devel syntax-highlighting-devel \
     libqt5-qtbase-devel libqt5-qtsvg-devel libelf-devel libdw-devel gettext glibc-devel-static \
     knotifications-devel kiconthemes-devel libzstd-devel binutils
 ```

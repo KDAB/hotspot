@@ -6,7 +6,7 @@ RUN echo "max_parallel_downloads=10" >> /etc/dnf/dnf.conf && \
     echo "deltarpm=True" >> /etc/dnf/dnf.conf && \
     dnf install -y cmake gcc glibc-static gcc-c++ libstdc++-static git ninja-build libasan libubsan \
     qt5-qtbase qt5-qtbase-devel qt5-qtsvg-devel qt5-qtx11extras qt5-qtx11extras-devel \
-    qt5-qtbase-private-devel extra-cmake-modules elfutils-devel kf5-threadweaver-devel \
+    qt5-qtbase-private-devel extra-cmake-modules elfutils-devel kf5-threadweaver-devel kf5-syntax-highlighting-devel \
     kf5-kconfigwidgets-devel kf5-kitemviews-devel kf5-kitemmodels-devel kf5-karchive-devel \
     kf5-kio-devel kf5-solid-devel kf5-kwindowsystem-devel kf5-kiconthemes-devel \
     kf5-knotifications-devel kf5-kparts-devel libzstd-devel qcustomplot-qt5-devel
