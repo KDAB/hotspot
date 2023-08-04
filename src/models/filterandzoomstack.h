@@ -65,7 +65,7 @@ signals:
     void zoomChanged(Data::ZoomAction zoom);
 
 private:
-    void updateActions();
+    void updateActions() const;
 
     Actions m_actions;
     QVector<Data::FilterAction> m_filterStack;

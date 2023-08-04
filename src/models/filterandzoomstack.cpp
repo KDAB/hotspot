@@ -239,7 +239,7 @@ void FilterAndZoomStack::resetFilterAndZoom()
     resetZoom();
 }
 
-void FilterAndZoomStack::updateActions()
+void FilterAndZoomStack::updateActions() const
 {
     const bool isFiltered = filter().isValid();
     m_actions.filterOut->setEnabled(isFiltered);

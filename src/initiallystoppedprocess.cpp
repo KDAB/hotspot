@@ -112,7 +112,7 @@ bool InitiallyStoppedProcess::continueStoppedProcess()
     return true;
 }
 
-void InitiallyStoppedProcess::terminate()
+void InitiallyStoppedProcess::terminate() const
 {
     if (m_pid > 0) {
         sendSignal(m_pid, SIGTERM);

@@ -37,7 +37,7 @@ public:
     bool continueStoppedProcess();
 
     /// send SIGTERM to the child process
-    void terminate();
+    void terminate() const;
 
     /// send SIGKILL to the child process
     void kill();
