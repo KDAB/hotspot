@@ -42,4 +42,11 @@ for diagnostic, fixits in groupedFixits.items():
     if not os.path.isdir(diagnosticDir):
         os.mkdir(diagnosticDir)
     with open(f"{diagnosticDir}/fixits.yaml", 'w', encoding='utf-8') as fixitsFile:
-        yaml.dump({'Diagnostics': fixits, 'MainSourceFile': ''}, fixitsFile)
+        text = yaml.dump({'Diagnostics': fixits, 'MainSourceFile': ''})
+
+        # sadly clang-apply-replacements doesn't like our additional FileLine
+        # and we cannot add comments directly with pyaml
+        # so instead we do this manually here
+        text = text.replace('FileLine:', '# FileLine:')
+
+        fixitsFile.write(text)
