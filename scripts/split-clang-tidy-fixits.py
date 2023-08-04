@@ -23,6 +23,11 @@ groupedFixits = {}
 
 with open(inputFile, 'r', encoding='utf-8') as mainFixitsFile:
     mainFixits = yaml.safe_load(mainFixitsFile)
+
+    if not mainFixits:
+        print("no diagnostics found")
+        sys.exit(0)
+
     for fixit in mainFixits['Diagnostics']:
         fileOffsetToLine(fixit['DiagnosticMessage'])
         for note in fixit.get('Notes', []):
