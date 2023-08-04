@@ -167,7 +167,7 @@ MainWindow::MainWindow(QWidget* parent)
     auto* recordDataAction = new QAction(this);
     recordDataAction->setText(tr("&Record Data"));
     recordDataAction->setIcon(QIcon::fromTheme(QStringLiteral("media-record")));
-    recordDataAction->setShortcut(Qt::CTRL | Qt::Key_R);
+    recordDataAction->setShortcut(tr("Ctrl+R"));
     ui->fileMenu->addAction(recordDataAction);
     connect(recordDataAction, &QAction::triggered, this, &MainWindow::onRecordButtonClicked);
     ui->fileMenu->addSeparator();
@@ -176,7 +176,7 @@ MainWindow::MainWindow(QWidget* parent)
     ui->fileMenu->addAction(KStandardAction::open(this, SLOT(onOpenFileButtonClicked()), this));
 
     auto openNewWindow = new QAction(QIcon::fromTheme(QStringLiteral("document-open")), tr("Open in new window"), this);
-    openNewWindow->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_O);
+    openNewWindow->setShortcut(tr("Ctrl+Shift+O"));
     connect(openNewWindow, &QAction::triggered, this, [this] {
         const auto fileName = queryOpenDataFile();
         if (!fileName.isEmpty())

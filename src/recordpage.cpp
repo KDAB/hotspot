@@ -405,12 +405,12 @@ RecordPage::RecordPage(QWidget* parent)
         ui->startRecordingButton->setText(tr("Stop Recording (%1)").arg(Util::formatTimeString(roundedElapsed, true)));
     });
 
-    auto* stopRecordingShortcut = new QShortcut(Qt::Key_Escape, this);
+    auto* stopRecordingShortcut = new QShortcut(tr("Escape"), this);
     stopRecordingShortcut->setContext(Qt::WidgetWithChildrenShortcut);
     connect(stopRecordingShortcut, &QShortcut::activated, this,
             [this] { ui->startRecordingButton->setChecked(false); });
 
-    auto* startRecordingShortcut = new QShortcut(Qt::CTRL | Qt::Key_Return, this);
+    auto* startRecordingShortcut = new QShortcut(tr("Ctrl+Return"), this);
     startRecordingShortcut->setContext(Qt::WidgetWithChildrenShortcut);
     connect(startRecordingShortcut, &QShortcut::activated, this, [this] {
         if (ui->viewPerfRecordResultsButton->isEnabled()) {
