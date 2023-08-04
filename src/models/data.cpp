@@ -119,7 +119,7 @@ ItemCost buildCallerCalleeResult(const BottomUp& data, const Costs& bottomUpCost
     return totalCost;
 }
 
-static int findSameDepth(QStringView str, int offset, QChar ch, bool returnNext = false)
+int findSameDepth(QStringView str, int offset, QChar ch, bool returnNext = false)
 {
     const int size = str.size();
 
@@ -140,7 +140,7 @@ static int findSameDepth(QStringView str, int offset, QChar ch, bool returnNext 
 }
 
 template<typename T>
-static int startsWith(QStringView str, const std::initializer_list<T>& prefixes)
+int startsWith(QStringView str, const std::initializer_list<T>& prefixes)
 {
     for (const auto& prefix_ : prefixes) {
         const auto prefix = QLatin1String(prefix_);

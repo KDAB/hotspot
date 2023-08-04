@@ -60,7 +60,7 @@ struct IdeSettings
     const char* const desktopEntryName;
 };
 
-static const IdeSettings ideSettings[] = {
+const IdeSettings ideSettings[] = {
 #if defined(Q_OS_WIN) || defined(Q_OS_OSX)
     {"", "", "", "", ""} // Dummy content, because we can't have empty arrays.
 #else
@@ -76,7 +76,7 @@ static const IdeSettings ideSettings[] = {
     || defined(Q_OS_OSX) // Remove this #if branch when adding real data to ideSettings for Windows/OSX.
 static const int ideSettingsSize = 0;
 #else
-static const int ideSettingsSize = sizeof(ideSettings) / sizeof(IdeSettings);
+const int ideSettingsSize = sizeof(ideSettings) / sizeof(IdeSettings);
 #endif
 
 bool isAppAvailable(const char* app)
