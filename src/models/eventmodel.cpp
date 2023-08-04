@@ -157,9 +157,7 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         const auto& process = m_processes.value(index.row());
         if (role == Qt::DisplayRole)
             return tr("%1 (#%2)").arg(process.name, QString::number(process.pid));
-        else if (role == SortRole)
-            return process.pid;
-        else if (role == ProcessIdRole || role == ThreadIdRole)
+        else if (role == SortRole || role == ProcessIdRole || role == ThreadIdRole)
             return process.pid;
         else if (role == CpuIdRole)
             return Data::INVALID_CPU_ID;

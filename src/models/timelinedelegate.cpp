@@ -94,11 +94,7 @@ void TimeLineData::findSamples(int mappedX, int costType, int lostEventCostId, b
         if (timeX > mappedX) {
             // event lies to the right of the selected time
             break;
-        } else if (contains && mappedX > mapTimeToX(it->time + it->cost)) {
-            // event lies to the left of the selected time
-            ++it;
-            continue;
-        } else if (!contains && timeX < mappedX) {
+        } else if ((contains && mappedX > mapTimeToX(it->time + it->cost)) || (!contains && timeX < mappedX)) {
             // event lies to the left of the selected time
             ++it;
             continue;

@@ -70,12 +70,10 @@ bool PerfOutputWidgetKonsole::eventFilter(QObject* watched, QEvent* event)
     Q_UNUSED(watched);
     if (event->type() == QEvent::KeyPress) {
         auto keyEvent = static_cast<QKeyEvent*>(event);
+        const auto key = keyEvent->key();
 
-        // ignore ctrl + c
-        if (keyEvent->key() == Qt::Key_C && keyEvent->modifiers() == Qt::ControlModifier) {
-            return true;
-        } else if (keyEvent->key() == Qt::Key_S && keyEvent->modifiers() == Qt::ControlModifier) {
-            // ignore ctrl + s (stop output)
+        // ignore ctrl + c and ctrl + s (stop output)
+        if (keyEvent->modifiers() == Qt::ControlModifier && (key == Qt::Key_C || key == Qt::Key_S)) {
             return true;
         }
 
@@ -83,10 +81,10 @@ bool PerfOutputWidgetKonsole::eventFilter(QObject* watched, QEvent* event)
             // eat all key events if input is disabled
             return true;
         } else {
-            if (keyEvent->key() == Qt::Key_Enter || keyEvent->key() == Qt::Key_Return) {
+            if (key == Qt::Key_Enter || key == Qt::Key_Return) {
                 emit sendInput(m_inputBuffer + QByteArrayLiteral("\n"));
                 m_inputBuffer.clear();
-            } else if (keyEvent->key() == Qt::Key_Delete) {
+            } else if (key == Qt::Key_Delete) {
                 m_inputBuffer.remove(m_inputBuffer.size() - 1, 1);
             } else {
                 m_inputBuffer.append(keyEvent->text().toUtf8());

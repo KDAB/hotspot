@@ -527,10 +527,7 @@ bool hoverStack(FrameGraphicsItem* item, const QVector<Data::Symbol>& stack, int
     if ((stack.size() - 1) == depth && item->symbol() == stack.constFirst()) {
         item->setIsExternallyHovered(true);
         return true;
-    }
-    if (stack.size() <= depth) {
-        return false;
-    } else if (item->symbol() != stack[stack.size() - 1 - depth]) {
+    } else if (stack.size() <= depth || item->symbol() != stack[stack.size() - 1 - depth]) {
         return false;
     }
 
