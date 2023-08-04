@@ -57,6 +57,7 @@ if(KGraphViewerPart_FOUND)
         ../../src/perfcontrolfifowrapper.cpp
         ../../src/perfrecord.cpp
         ../../src/callgraphgenerator.cpp
+        ../../src/errnoutil.cpp
         LINK_LIBRARIES
         Qt::Core
         Qt::Test

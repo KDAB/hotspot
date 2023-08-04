@@ -7,6 +7,8 @@
 
 #include "perfcontrolfifowrapper.h"
 
+#include "errnoutil.h"
+
 #include <cstring>
 
 #include <QFile>
@@ -30,13 +32,13 @@ int createAndOpenFifo(const QString& name)
 {
     const auto localName = name.toLocal8Bit();
     if (mkfifo(localName.constData(), 0600) != 0) {
-        qCCritical(perfcontrolfifowrapper) << "Cannot create fifo" << name << std::strerror(errno);
+        qCCritical(perfcontrolfifowrapper) << "Cannot create fifo" << name << Util::PrintableErrno {errno};
         return -1;
     }
 
     auto fd = open(localName.constData(), O_RDWR);
     if (fd < 0) {
-        qCCritical(perfcontrolfifowrapper) << "Cannot open fifo" << name << std::strerror(errno);
+        qCCritical(perfcontrolfifowrapper) << "Cannot open fifo" << name << Util::PrintableErrno {errno};
         return -1;
     }
     return fd;
@@ -83,7 +85,7 @@ void PerfControlFifoWrapper::requestStart()
         char buf[10];
         if (read(m_ackFifoFd, buf, sizeof(buf)) == -1) {
             qCWarning(perfcontrolfifowrapper)
-                << "failed to read message from fifo:" << m_ctlFifoPath << std::strerror(errno);
+                << "failed to read message from fifo:" << m_ctlFifoPath << Util::PrintableErrno {errno};
         }
         emit started();
         m_ackReady->disconnect(this);
@@ -92,7 +94,7 @@ void PerfControlFifoWrapper::requestStart()
     const char start_cmd[] = "enable\n";
     if (write(m_ctlFifoFd, start_cmd, sizeof(start_cmd) - 1) == -1) {
         qCWarning(perfcontrolfifowrapper)
-            << "failed to write start message to fifo:" << m_ctlFifoPath << std::strerror(errno);
+            << "failed to write start message to fifo:" << m_ctlFifoPath << Util::PrintableErrno {errno};
     }
 }
 
@@ -105,7 +107,7 @@ void PerfControlFifoWrapper::requestStop()
     const char stop_cmd[] = "stop\n";
     if (write(m_ctlFifoFd, stop_cmd, sizeof(stop_cmd) - 1) == -1) {
         qCWarning(perfcontrolfifowrapper)
-            << "failed to write start message to fifo:" << m_ctlFifoPath << std::strerror(errno);
+            << "failed to write start message to fifo:" << m_ctlFifoPath << Util::PrintableErrno {errno};
     }
 }
 

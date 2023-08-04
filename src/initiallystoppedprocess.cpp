@@ -7,6 +7,7 @@
 
 #include <cstring>
 
+#include "errnoutil.h"
 #include "initiallystoppedprocess.h"
 
 #include <QDebug>
@@ -29,7 +30,7 @@ void sendSignal(pid_t pid, int signal)
 {
     if (kill(pid, signal) != 0) {
         qCCritical(initiallystoppedprocess)
-            << "Failed to send signal" << signal << "to" << pid << ":" << std::strerror(errno);
+            << "Failed to send signal" << signal << "to" << pid << ":" << Util::PrintableErrno {errno};
     }
 }
 }
@@ -70,19 +71,19 @@ bool InitiallyStoppedProcess::createProcessAndStop(const QString& exePath, const
         // change working dir
         if (!wd.isEmpty() && chdir(wd.data()) != 0) {
             qCCritical(initiallystoppedprocess)
-                << "Failed to change working directory to:" << wd.data() << std::strerror(errno);
+                << "Failed to change working directory to:" << wd.data() << Util::PrintableErrno {errno};
         }
 
         // stop self
         if (raise(SIGSTOP) != 0) {
-            qCCritical(initiallystoppedprocess) << "Failed to raise SIGSTOP:" << std::strerror(errno);
+            qCCritical(initiallystoppedprocess) << "Failed to raise SIGSTOP:" << Util::PrintableErrno {errno};
         }
 
         // exec
         execvp(argsRaw[0], argsRaw.data());
-        qCCritical(initiallystoppedprocess) << "Failed to exec" << argsRaw[0] << std::strerror(errno);
+        qCCritical(initiallystoppedprocess) << "Failed to exec" << argsRaw[0] << Util::PrintableErrno {errno};
     } else if (m_pid < 0) {
-        qCCritical(initiallystoppedprocess) << "Failed to fork:" << std::strerror(errno);
+        qCCritical(initiallystoppedprocess) << "Failed to fork:" << Util::PrintableErrno {errno};
         return false;
     }
 
@@ -98,7 +99,7 @@ bool InitiallyStoppedProcess::continueStoppedProcess()
 
     int wstatus;
     if (waitpid(m_pid, &wstatus, WUNTRACED) == -1) {
-        qCWarning(initiallystoppedprocess()) << "Failed to wait on process:" << std::strerror(errno);
+        qCWarning(initiallystoppedprocess()) << "Failed to wait on process:" << Util::PrintableErrno {errno};
     }
 
     if (!WIFSTOPPED(wstatus)) {
@@ -124,7 +125,7 @@ void InitiallyStoppedProcess::kill()
     if (m_pid > 0) {
         sendSignal(m_pid, SIGILL);
         if (waitpid(m_pid, nullptr, 0) == -1) {
-            qCWarning(initiallystoppedprocess()) << "failed to wait on pid:" << m_pid << std::strerror(errno);
+            qCWarning(initiallystoppedprocess()) << "failed to wait on pid:" << m_pid << Util::PrintableErrno {errno};
         }
         m_pid = -1;
     }

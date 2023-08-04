@@ -264,7 +264,7 @@ void FrameGraphicsItem::setIsExternallyHovered(bool externallyHovered)
 
 namespace {
 
-int rand(int max)
+int randInt(int max)
 {
     return max * QRandomGenerator::global()->generateDouble();
 }
@@ -274,7 +274,7 @@ int rand(int max)
  */
 Q_DECL_UNUSED QBrush memBrush()
 {
-    return QColor(0, 190 + rand(50), rand(210), 125);
+    return QColor(0, 190 + randInt(50), randInt(210), 125);
 }
 
 /**
@@ -282,7 +282,7 @@ Q_DECL_UNUSED QBrush memBrush()
  */
 QBrush hotBrush()
 {
-    return QColor(205 + rand(50), rand(230), rand(55), 125);
+    return QColor(205 + randInt(50), randInt(230), randInt(55), 125);
 }
 
 template<typename Generator>

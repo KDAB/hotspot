@@ -52,6 +52,7 @@ set(HOTSPOT_SRCS
     costcontextmenu.cpp
     initiallystoppedprocess.cpp
     perfcontrolfifowrapper.cpp
+    errnoutil.cpp
     # ui files:
     mainwindow.ui
     aboutdialog.ui

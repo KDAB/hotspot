@@ -8,6 +8,7 @@ ecm_add_test(
     ../../src/perfrecord.cpp
     ../../src/settings.cpp
     ../../src/util.cpp
+    ../../src/errnoutil.cpp
     ../../src/models/data.cpp
     ../../src/parsers/perf/perfparser.cpp
     tst_perfparser.cpp
