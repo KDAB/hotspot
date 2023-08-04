@@ -68,10 +68,7 @@ bool PerfControlFifoWrapper::open()
         return false;
 
     m_ackFifoFd = createAndOpenFifo(m_ackFifoPath);
-    if (m_ackFifoFd < 0)
-        return false;
-
-    return true;
+    return m_ackFifoFd >= 0;
 }
 
 void PerfControlFifoWrapper::requestStart()

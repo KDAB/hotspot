@@ -761,7 +761,7 @@ void RecordPage::updateRecordType()
         if (PerfRecord::canElevatePrivileges()) {
             ui->elevatePrivilegesCheckBox->setChecked(true);
         }
-        ui->sampleCpuCheckBox->setChecked(true && PerfRecord::canSampleCpu());
+        ui->sampleCpuCheckBox->setChecked(PerfRecord::canSampleCpu());
     }
 
     if (recordType == AttachToProcess) {
