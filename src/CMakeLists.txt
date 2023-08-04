@@ -112,6 +112,7 @@ target_link_libraries(
     KF${QT_MAJOR_VERSION}::Notifications
     KF${QT_MAJOR_VERSION}::IconThemes
     KF${QT_MAJOR_VERSION}::Parts
+    KF${QT_MAJOR_VERSION}::I18n
     models
     PrefixTickLabels
     KDAB::kddockwidgets

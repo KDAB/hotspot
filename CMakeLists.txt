@@ -104,6 +104,7 @@ find_package(
                Notifications
                IconThemes
                Parts
+               I18n
     REQUIRED
 )
 
