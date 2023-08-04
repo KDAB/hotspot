@@ -60,7 +60,7 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
         return;
     }
 
-    QString sourceCode = QString::fromUtf8(file.readAll());
+    const auto sourceCode = QString::fromUtf8(file.readAll());
 
     m_sourceCodeLines.clear();
     m_document->clear();
@@ -212,7 +212,7 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
     } else if (role == HighlightRole) {
         return index.row() + m_startLine == m_highlightLine;
     } else if (role == RainbowLineNumberRole) {
-        int line = index.row() + m_startLine;
+        const auto line = index.row() + m_startLine;
         if (m_validLineNumbers.contains(line))
             return line;
         return -1;
@@ -267,7 +267,7 @@ void SourceCodeModel::find(const QString& search, Direction direction, int offse
         return line.text.indexOf(search, 0, Qt::CaseInsensitive) != -1;
     };
 
-    int resultIndex = ::search(
+    const auto resultIndex = ::search(
         m_sourceCodeLines, searchFunc, [this] { emit resultFound({}); }, direction, offset);
 
     if (resultIndex >= 0) {

@@ -108,18 +108,19 @@ int main(int argc, char** argv)
     parser.addHelpOption();
     parser.addVersionOption();
 
-    QCommandLineOption sysroot(QStringLiteral("sysroot"),
-                               QCoreApplication::translate("main", "Path to sysroot which is used to find libraries."),
-                               QStringLiteral("path"));
+    const auto sysroot =
+        QCommandLineOption(QStringLiteral("sysroot"),
+                           QCoreApplication::translate("main", "Path to sysroot which is used to find libraries."),
+                           QStringLiteral("path"));
     parser.addOption(sysroot);
 
-    QCommandLineOption kallsyms(
+    const auto kallsyms = QCommandLineOption(
         QStringLiteral("kallsyms"),
         QCoreApplication::translate("main", "Path to kallsyms file which is used to resolve kernel symbols."),
         QStringLiteral("path"));
     parser.addOption(kallsyms);
 
-    QCommandLineOption debugPaths(
+    const auto debugPaths = QCommandLineOption(
         QStringLiteral("debugPaths"),
         QCoreApplication::translate("main",
                                     "Colon separated list of paths that contain debug information. These paths are "
@@ -127,19 +128,19 @@ int main(int argc, char** argv)
         QStringLiteral("paths"));
     parser.addOption(debugPaths);
 
-    QCommandLineOption extraLibPaths(
+    const auto extraLibPaths = QCommandLineOption(
         QStringLiteral("extraLibPaths"),
         QCoreApplication::translate("main", "Colon separated list of extra paths to find libraries."),
         QStringLiteral("paths"));
     parser.addOption(extraLibPaths);
 
-    QCommandLineOption appPath(
+    const auto appPath = QCommandLineOption(
         QStringLiteral("appPath"),
         QCoreApplication::translate("main", "Path to folder containing the application executable and libraries."),
         QStringLiteral("path"));
     parser.addOption(appPath);
 
-    QCommandLineOption sourcePath(
+    const auto sourcePath = QCommandLineOption(
         QStringLiteral("sourcePaths"),
         QCoreApplication::translate("main", "Colon separated list of search paths for the source code."),
         QStringLiteral("paths"));
@@ -150,7 +151,7 @@ int main(int argc, char** argv)
                             QStringLiteral("path"));
     parser.addOption(arch);
 
-    QCommandLineOption exportTo(
+    const auto exportTo = QCommandLineOption(
         QStringLiteral("exportTo"),
         QCoreApplication::translate("main",
                                     "Path to .perfparser output file to which the input data should be exported. A "

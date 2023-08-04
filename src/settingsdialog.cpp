@@ -133,7 +133,7 @@ QString SettingsDialog::kallsyms() const
 
 QString SettingsDialog::arch() const
 {
-    QString sArch = unwindPage->comboBoxArchitecture->currentText();
+    const auto sArch = unwindPage->comboBoxArchitecture->currentText();
     return (sArch == QLatin1String("auto-detect")) ? QString() : sArch;
 }
 

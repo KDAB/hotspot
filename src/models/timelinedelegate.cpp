@@ -183,7 +183,7 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         if (threadTimeRect.right() > option.rect.width())
             threadTimeRect.setRight(option.rect.width());
 
-        KColorScheme scheme(palette.currentColorGroup());
+        const auto scheme = KColorScheme(palette.currentColorGroup());
 
         auto runningColor = scheme.background(KColorScheme::PositiveBackground).color();
         runningColor.setAlpha(128);
@@ -214,10 +214,10 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
             }
         }
 
-        QPen selectedPen(scheme.foreground(KColorScheme::ActiveText), 1);
-        QPen hoveredPen(toHoverColor(selectedPen.color()), 1);
-        QPen eventPen(scheme.foreground(KColorScheme::NeutralText), 1);
-        QPen lostEventPen(scheme.foreground(KColorScheme::NegativeText), 1);
+        const auto selectedPen = QPen(scheme.foreground(KColorScheme::ActiveText), 1);
+        const auto hoveredPen = QPen(toHoverColor(selectedPen.color()), 1);
+        const auto eventPen = QPen(scheme.foreground(KColorScheme::NeutralText), 1);
+        const auto lostEventPen = QPen(scheme.foreground(KColorScheme::NegativeText), 1);
 
         int last_x = -1;
         // TODO: accumulate cost for events that fall to the same pixel somehow
@@ -263,7 +263,7 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         const auto startX = std::max(data.mapTimeToX(m_timeSlice.normalized().start), 0);
         const auto endX = std::min(data.mapTimeToX(m_timeSlice.normalized().end), data.w);
         // undo vertical padding manually to fill complete height
-        QRect timeSlice(startX, -data.padding, endX - startX, option.rect.height());
+        const auto timeSlice = QRect(startX, -data.padding, endX - startX, option.rect.height());
 
         auto brush = palette.highlight();
         auto color = brush.color();

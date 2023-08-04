@@ -36,7 +36,7 @@ void DisassemblyModel::clear()
 
 QModelIndex DisassemblyModel::findIndexWithOffset(int offset)
 {
-    quint64 address = m_data.disassemblyLines[0].addr + offset;
+    const auto address = m_data.disassemblyLines[0].addr + offset;
 
     const auto& found =
         std::find_if(m_data.disassemblyLines.begin(), m_data.disassemblyLines.end(),
@@ -132,7 +132,7 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
         const auto entry = m_results.entries.value(m_data.symbol);
         auto it = entry.offsetMap.find(data.addr);
         if (it != entry.offsetMap.end()) {
-            int event = index.column() - COLUMN_COUNT;
+            const auto event = index.column() - COLUMN_COUNT;
 
             const auto& locationCost = it.value();
             const auto& costLine = locationCost.selfCost[event];
@@ -230,7 +230,7 @@ void DisassemblyModel::find(const QString& search, Direction direction, int offs
         return line.disassembly.indexOf(search, 0, Qt::CaseInsensitive) != -1;
     };
 
-    int resultIndex = ::search(
+    const auto resultIndex = ::search(
         m_data.disassemblyLines, searchFunc, [this] { emit resultFound({}); }, direction, offset);
 
     if (resultIndex >= 0) {

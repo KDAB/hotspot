@@ -28,7 +28,7 @@ CostHeaderView::CostHeaderView(CostContextMenu* contextMenu, QWidget* parent)
     connect(this, &QHeaderView::sectionResized, this, [this](int index, int oldSize, int newSize) {
         if (m_isResizing)
             return;
-        QScopedValueRollback<bool> guard(m_isResizing, true);
+        const auto guard = QScopedValueRollback<bool>(m_isResizing, true);
         if (index != 0) {
             // give/take space from first column
             resizeSection(0, sectionSize(0) - (newSize - oldSize));
@@ -85,7 +85,7 @@ void CostHeaderView::resizeEvent(QResizeEvent* event)
 
 void CostHeaderView::resizeColumns(bool reset)
 {
-    QScopedValueRollback<bool> guard(m_isResizing, true);
+    const auto guard = QScopedValueRollback<bool>(m_isResizing, true);
     auto availableWidth = width();
     const auto defaultSize = defaultSectionSize();
     for (int i = count() - 1; i >= 0; --i) {

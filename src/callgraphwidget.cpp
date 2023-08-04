@@ -168,7 +168,7 @@ void CallgraphWidget::generateCallgraph(const Data::Symbol& symbol)
 
 void CallgraphWidget::updateColors()
 {
-    KColorScheme scheme(palette().currentColorGroup());
+    const auto scheme = KColorScheme(palette().currentColorGroup());
     m_interface->setBackgroundColor(scheme.background(KColorScheme::NormalBackground).color());
     m_fontColor = scheme.foreground().color().name();
 }

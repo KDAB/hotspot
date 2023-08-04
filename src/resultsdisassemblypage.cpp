@@ -139,7 +139,7 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
         if (functionName.isEmpty())
             return;
 
-        int functionOffset = index.data(DisassemblyModel::LinkedFunctionOffsetRole).toInt();
+        const auto functionOffset = index.data(DisassemblyModel::LinkedFunctionOffsetRole).toInt();
 
         if (m_symbolStack[m_stackIndex].symbol == functionName) {
             ui->assemblyView->scrollTo(m_disassemblyModel->findIndexWithOffset(functionOffset),
@@ -206,12 +206,12 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
         view->addAction(findAction);
 
         auto searchNext = [this, model, edit, additionalRows] {
-            int offset = m_currentSearchIndex.isValid() ? m_currentSearchIndex.row() - additionalRows + 1 : 0;
+            const auto offset = m_currentSearchIndex.isValid() ? m_currentSearchIndex.row() - additionalRows + 1 : 0;
             model->find(edit->text(), Direction::Forward, offset);
         };
 
         auto searchPrev = [this, model, edit, additionalRows] {
-            int offset = m_currentSearchIndex.isValid() ? m_currentSearchIndex.row() - additionalRows - 1 : 0;
+            const auto offset = m_currentSearchIndex.isValid() ? m_currentSearchIndex.row() - additionalRows - 1 : 0;
 
             model->find(edit->text(), Direction::Backward, offset);
         };
@@ -230,7 +230,7 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
         connect(search, &QPushButton::clicked, findAction, &QAction::trigger);
         connect(close, &QPushButton::clicked, this, [searchWidget] { searchWidget->hide(); });
 
-        KColorScheme colorScheme;
+        const auto colorScheme = KColorScheme();
 
         connectModel(
             model,

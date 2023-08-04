@@ -118,9 +118,9 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
     m_perfRecordProcess = new QProcess(this);
     m_perfRecordProcess->setProcessChannelMode(QProcess::MergedChannels);
 
-    QFileInfo outputFileInfo(outputPath);
-    QString folderPath = outputFileInfo.dir().path();
-    QFileInfo folderInfo(folderPath);
+    const auto outputFileInfo = QFileInfo(outputPath);
+    const auto folderPath = outputFileInfo.dir().path();
+    const auto folderInfo = QFileInfo(folderPath);
     if (!folderInfo.exists()) {
         emit recordingFailed(tr("Folder '%1' does not exist.").arg(folderPath));
         return false;
@@ -138,7 +138,7 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
             this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
                 Q_UNUSED(exitStatus)
 
-                QFileInfo outputFileInfo(m_outputPath);
+                const auto outputFileInfo = QFileInfo(m_outputPath);
                 if ((exitCode == EXIT_SUCCESS || (exitCode == SIGTERM && m_userTerminated) || outputFileInfo.size() > 0)
                     && outputFileInfo.exists()) {
                     if (exitCode != EXIT_SUCCESS && !m_userTerminated) {
@@ -162,7 +162,7 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
             [this] { emit recordingStarted(m_perfRecordProcess->program(), m_perfRecordProcess->arguments()); });
 
     connect(m_perfRecordProcess.data(), &QProcess::readyRead, this, [this]() {
-        QString output = QString::fromUtf8(m_perfRecordProcess->readAll());
+        const auto output = QString::fromUtf8(m_perfRecordProcess->readAll());
         emit recordingOutput(output);
     });
 
@@ -303,7 +303,7 @@ QString PerfRecord::currentUsername()
 
 bool PerfRecord::canTrace(const QString& path)
 {
-    QFileInfo info(QLatin1String("/sys/kernel/debug/tracing/") + path);
+    const auto info = QFileInfo(QLatin1String("/sys/kernel/debug/tracing/") + path);
     if (!info.isDir() || !info.isReadable()) {
         return false;
     }

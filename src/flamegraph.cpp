@@ -323,8 +323,8 @@ QBrush brushBinary(const Data::Symbol& symbol)
 
 QBrush brushKernel(const Data::Symbol& symbol)
 {
-    static QBrush kernel(QColor(255, 0, 0, 125));
-    static QBrush user(QColor(0, 0, 255, 125));
+    static auto kernel = QBrush(QColor(255, 0, 0, 125));
+    static auto user = QBrush(QColor(0, 0, 255, 125));
 
     if (symbol.isKernel) {
         return kernel;
@@ -351,9 +351,9 @@ bool isUserPath(const QString& path)
 
 QBrush brushSystem(const Data::Symbol& symbol)
 {
-    static QBrush system(QColor(0, 125, 0, 125));
-    static QBrush user(QColor(200, 200, 0, 125));
-    static QBrush unkown(QColor(50, 50, 50, 125));
+    static const auto system = QBrush(QColor(0, 125, 0, 125));
+    static const auto user = QBrush(QColor(200, 200, 0, 125));
+    static const auto unkown = QBrush(QColor(50, 50, 50, 125));
 
     // I have seen [ only on kernel calls
     if (symbol.path.isEmpty() || symbol.path.startsWith(QLatin1Char('['))) {
@@ -371,8 +371,8 @@ QBrush costRatioBrush(quint32 cost, quint32 totalCost)
 {
     // interpolate between red and yellow
     // where yellow = 0% and red = 100%
-    float ratio = (1 - static_cast<float>(cost) / totalCost);
-    int hue = ratio * ratio * 60;
+    const float ratio = (1 - static_cast<float>(cost) / totalCost);
+    const int hue = ratio * ratio * 60;
     return QColor::fromHsv(hue, 230, 200, 125);
 }
 
@@ -472,10 +472,10 @@ FrameGraphicsItem* parseData(const Data::Costs& costs, int type, const QVector<T
 {
     const auto totalCost = costs.totalCost(type);
 
-    KColorScheme scheme(QPalette::Active);
-    const QPen pen(scheme.foreground().color());
+    const auto scheme = KColorScheme(QPalette::Active);
+    const auto pen = QPen(scheme.foreground().color());
 
-    QString label = i18n("%1 aggregated %2 cost in total", costs.formatCost(type, totalCost), costs.typeName(type));
+    const auto label = i18n("%1 aggregated %2 cost in total", costs.formatCost(type, totalCost), costs.typeName(type));
     auto rootItem = new FrameGraphicsRootItem(totalCost, costs.unit(type), costs.typeName(type), label);
     rootItem->setBrush(scheme.background());
     rootItem->setPen(pen);
@@ -807,7 +807,7 @@ void FlameGraph::setFilterStack(FilterAndZoomStack* filterStack)
 
 bool FlameGraph::eventFilter(QObject* object, QEvent* event)
 {
-    bool ret = QObject::eventFilter(object, event);
+    const auto ret = QObject::eventFilter(object, event);
 
     if (event->type() == QEvent::MouseButtonRelease) {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
@@ -978,7 +978,7 @@ void FlameGraph::showData()
     using namespace ThreadWeaver;
     auto bottomUpData = m_bottomUpData;
     auto topDownData = m_topDownData;
-    bool collapseRecursion = m_collapseRecursion;
+    const auto collapseRecursion = m_collapseRecursion;
     auto type = m_costSource->currentData().value<int>();
     auto threshold = m_costThreshold;
     const auto colorScheme = Settings::instance()->colorScheme();

@@ -135,8 +135,8 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
     const QColor prefixedColor = palette().highlight().color();
 
     if (!m_tracepoints.tracepoints.isEmpty()) {
-        KColorScheme scheme(palette().currentColorGroup());
-        QPen tracepointPen(scheme.foreground(KColorScheme::LinkText), 1);
+        const auto scheme = KColorScheme(palette().currentColorGroup());
+        const auto tracepointPen = QPen(scheme.foreground(KColorScheme::LinkText), 1);
         painter->setPen(tracepointPen);
 
         for (const auto& tracepoint : m_tracepoints.tracepoints) {

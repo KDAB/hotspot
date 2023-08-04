@@ -16,11 +16,11 @@
 #include "ui_mainwindow.h"
 #include "ui_unwindsettingspage.h"
 
+#include <QActionGroup>
 #include <QApplication>
 #include <QFileDialog>
 #include <QStackedWidget>
 #include <QVBoxLayout>
-#include <QActionGroup>
 
 #include <QDesktopServices>
 #include <QInputDialog>
@@ -280,7 +280,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
     auto config = m_config->group("Window");
     config.writeEntry("geometry", saveGeometry());
     config.writeEntry("state", saveState());
-    KDDockWidgets::LayoutSaver serializer(KDDockWidgets::RestoreOption_RelativeToMainWindow);
+
+    const auto serializer = KDDockWidgets::LayoutSaver(KDDockWidgets::RestoreOption_RelativeToMainWindow);
     config.writeEntry("layout", serializer.serializeLayout());
 
     m_parser->stop();
@@ -344,7 +345,7 @@ void MainWindow::openFile(const QString& path, bool isReload)
 {
     clear(isReload);
 
-    QFileInfo file(path);
+    const auto file = QFileInfo(path);
     setWindowTitle(tr("%1 - Hotspot").arg(file.fileName()));
 
     m_startPage->showParseFileProgress();

@@ -1048,7 +1048,7 @@ public:
         auto& core = frequencyResult.cores[sample.cpu];
         for (const auto& cost : sample.costs) {
             if (core.costs.size() <= cost.attributeId) {
-                int oldSize = core.costs.size();
+                const auto oldSize = core.costs.size();
                 core.costs.resize(cost.attributeId + 1);
 
                 for (int i = oldSize; i < core.costs.size(); i++) {
@@ -1466,7 +1466,7 @@ PerfParser::~PerfParser() = default;
 
 bool PerfParser::initParserArgs(const QString& path)
 {
-    QFileInfo info(path);
+    const auto info = QFileInfo(path);
     if (!info.exists()) {
         emit parsingFailed(tr("File '%1' does not exist.").arg(path));
         return false;
@@ -1969,7 +1969,7 @@ QString PerfParser::decompressIfNeeded(const QString& path)
         buffer.resize(chunkSize);
 
         while (!compressedFile.atEnd()) {
-            int size = compressedFile.read(buffer.data(), buffer.size());
+            const auto size = compressedFile.read(buffer.data(), buffer.size());
             m_decompressed->write(buffer.data(), size);
         }
         m_decompressed->flush();

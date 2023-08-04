@@ -18,7 +18,7 @@
 namespace {
 QColor backgroundColor(int line, bool isCurrent)
 {
-    int degrees = (line * 139) % 360;
+    const int degrees = (line * 139) % 360;
     return QColor::fromHsv(degrees, 255, 255, isCurrent ? 60 : 40);
 }
 }

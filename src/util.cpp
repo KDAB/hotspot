@@ -190,7 +190,7 @@ QString Util::findLibexecBinary(const QString& name)
     if (!dir.cd(QStringLiteral(HOTSPOT_LIBEXEC_REL_PATH))) {
         return {};
     }
-    QFileInfo info(dir.filePath(name));
+    const auto info = QFileInfo(dir.filePath(name));
     if (!info.exists() || !info.isFile() || !info.isExecutable()) {
         return {};
     }
@@ -252,16 +252,16 @@ QString Util::formatTimeString(quint64 nanoseconds, bool shortForm)
         return QString::number(fragment).rightJustified(precision, QLatin1Char('0'));
     };
 
-    quint64 microseconds = nanoseconds / 1000;
+    const auto microseconds = nanoseconds / 1000;
     if (nanoseconds < 1000000) {
-        quint64 nanos = nanoseconds % 1000;
+        const auto nanos = nanoseconds % 1000;
         if (shortForm) {
             return QString::number(microseconds) + QStringLiteral("µs");
         }
         return format(microseconds, 3) + QLatin1Char('.') + format(nanos, 3) + QStringLiteral("µs");
     }
 
-    quint64 milliseconds = (nanoseconds / 1000000) % 1000;
+    const auto milliseconds = (nanoseconds / 1000000) % 1000;
     if (nanoseconds < 1000000000) {
         if (shortForm) {
             return QString::number(milliseconds) + QLatin1String("ms");
@@ -269,11 +269,11 @@ QString Util::formatTimeString(quint64 nanoseconds, bool shortForm)
         return format(milliseconds, 3) + QLatin1Char('.') + format(microseconds, 3) + QLatin1String("ms");
     }
 
-    quint64 totalSeconds = nanoseconds / 1000000000;
-    quint64 days = totalSeconds / 60 / 60 / 24;
-    quint64 hours = (totalSeconds / 60 / 60) % 24;
-    quint64 minutes = (totalSeconds / 60) % 60;
-    quint64 seconds = totalSeconds % 60;
+    const auto totalSeconds = nanoseconds / 1000000000;
+    const auto days = totalSeconds / 60 / 60 / 24;
+    const auto hours = (totalSeconds / 60 / 60) % 24;
+    const auto minutes = (totalSeconds / 60) % 60;
+    const auto seconds = totalSeconds % 60;
 
     auto optional = [](quint64 fragment, const char* unit) -> QString {
         if (fragment > 0)

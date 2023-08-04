@@ -74,7 +74,7 @@ QString findInSubdirRecursive(const QString& path, const QString& filename)
 {
     // find filename in path
     // some distros (Ubuntu) use subdirs to store their debug files
-    QString filepath = path + QDir::separator() + filename;
+    auto filepath = QString(path + QDir::separator() + filename);
     if (QFileInfo::exists(filepath)) {
         return filepath;
     }
@@ -136,8 +136,9 @@ QString findSourceCodeFile(const QString& originalPath, const QStringList& sourc
     for (const auto& sourcePath : sourceCodePaths) {
         for (auto it = originalPath.begin(); it != originalPath.end();
              it = std::find(++it, originalPath.end(), QDir::separator())) {
-            QString path = sourcePath + QDir::separator() + QString(it, std::distance(it, originalPath.end()));
-            QFileInfo info(path);
+            const auto path =
+                QString(sourcePath + QDir::separator() + QString(it, std::distance(it, originalPath.end())));
+            const auto info = QFileInfo(path);
             if (info.exists()) {
                 return info.canonicalFilePath();
             }
@@ -200,7 +201,7 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
                 lineNumber = lineNumber.left(spaceIndex);
             }
             bool ok = false;
-            int number = lineNumber.toInt(&ok);
+            const auto number = lineNumber.toInt(&ok);
             if (ok) {
                 sourceCodeLine = number;
             }

@@ -150,7 +150,7 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
 
         QString systemInfoText;
         if (!data.hostName.isEmpty()) {
-            KFormat format;
+            const auto format = KFormat();
             QTextStream stream(&systemInfoText);
             stream << "<qt><table>" << formatSummaryText(tr("Host Name"), data.hostName)
                    << formatSummaryText(tr("Linux Kernel Version"), data.linuxKernelVersion)

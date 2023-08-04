@@ -34,7 +34,7 @@ void scheduleJob(Context* context, std::atomic<uint>* currentJobId, Job&& job, S
 {
     using namespace ThreadWeaver;
     const auto jobId = ++(*currentJobId);
-    QPointer<Context> smartContext(context);
+    const auto smartContext = QPointer<Context>(context);
     auto jobCancelled = [=]() { return !smartContext || jobId != (*currentJobId); };
     stream() << make_job([=]() {
         auto results = job(jobCancelled);

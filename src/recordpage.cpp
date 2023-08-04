@@ -660,7 +660,7 @@ void RecordPage::onApplicationNameChanged(const QString& filePath)
 
 void RecordPage::onWorkingDirectoryNameChanged(const QString& folderPath)
 {
-    QFileInfo folder(ui->workingDirectory->url().toLocalFile());
+    const auto folder = QFileInfo(ui->workingDirectory->url().toLocalFile());
 
     if (!folder.exists()) {
         setError(tr("Working directory folder cannot be found: %1").arg(folderPath));
@@ -683,8 +683,8 @@ void RecordPage::onOutputFileNameChanged(const QString& /*filePath*/)
 {
     const auto perfDataExtension = QStringLiteral(".data");
 
-    QFileInfo file(ui->outputFile->url().toLocalFile());
-    QFileInfo folder(file.absolutePath());
+    const auto file = QFileInfo(ui->outputFile->url().toLocalFile());
+    const auto folder = QFileInfo(file.absolutePath());
 
     if (!folder.exists()) {
         setError(tr("Output file directory folder cannot be found: %1").arg(folder.path()));

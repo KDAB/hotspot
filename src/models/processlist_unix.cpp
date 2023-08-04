@@ -67,7 +67,7 @@ static ProcDataList unixProcessListPS()
         return {};
 
     psProcess.waitForFinished();
-    QByteArray output = psProcess.readAllStandardOutput();
+    const auto output = psProcess.readAllStandardOutput();
     // Split "457 S+   /Users/foo.app"
     const QStringList lines = QString::fromLocal8Bit(output).split(QLatin1Char('\n'));
     const int lineCount = lines.size();
