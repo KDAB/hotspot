@@ -285,7 +285,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     config.writeEntry("layout", serializer.serializeLayout());
 
     m_parser->stop();
-    QMainWindow::closeEvent(event);
+    KMainWindow::closeEvent(event);
 }
 
 QString MainWindow::queryOpenDataFile()

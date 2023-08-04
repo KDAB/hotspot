@@ -164,9 +164,3 @@ ProcDataList ProcessModel::processes() const
 {
     return m_data;
 }
-
-Qt::ItemFlags ProcessModel::flags(const QModelIndex& index) const
-{
-    const Qt::ItemFlags f = QAbstractItemModel::flags(index);
-    return f;
-}
