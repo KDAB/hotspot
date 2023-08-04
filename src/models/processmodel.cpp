@@ -17,7 +17,7 @@ ProcessModel::ProcessModel(QObject* parent)
 {
 }
 
-ProcessModel::~ProcessModel() { }
+ProcessModel::~ProcessModel() = default;
 
 void ProcessModel::setProcesses(const ProcDataList& processes)
 {

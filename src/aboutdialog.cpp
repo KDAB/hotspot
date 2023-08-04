@@ -17,7 +17,7 @@ AboutDialog::AboutDialog(QWidget* parent)
     connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QWidget::close);
 }
 
-AboutDialog::~AboutDialog() { }
+AboutDialog::~AboutDialog() = default;
 
 void AboutDialog::setTitle(const QString& title)
 {
