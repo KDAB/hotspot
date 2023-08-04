@@ -176,7 +176,7 @@ QString Util::elideSymbol(const QString& symbolText, const QFontMetrics& metrics
         elided = argumentsElided.first + QStringLiteral("…") + argumentsElided.second;
     }
 
-    const auto templateElided = collapseTemplate(elided, 1);
+    auto templateElided = collapseTemplate(elided, 1);
     if (metrics.horizontalAdvance(templateElided) < maxWidth) {
         return templateElided;
     }
