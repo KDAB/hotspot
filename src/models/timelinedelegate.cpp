@@ -401,6 +401,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
                 // check whether we are hovering an off-CPU area
                 found = findSamples(results.offCpuTimeCostId, true);
             }
+            Q_UNUSED(found);
         }
 
         if (stacks != m_hoveredStacks) {
