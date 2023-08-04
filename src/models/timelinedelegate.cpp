@@ -171,7 +171,7 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     // transform into target coordinate system
     painter->translate(option.rect.topLeft());
     // account for padding
-    painter->translate(data.padding, data.padding);
+    painter->translate(TimeLineData::padding, TimeLineData::padding);
 
     // visualize the time where the thread was active
     // i.e. paint events for threads that have any in the selected time range
@@ -234,7 +234,7 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
             }
 
             const auto x = data.mapTimeToX(event.time);
-            if (x < data.padding || x >= data.w) {
+            if (x < TimeLineData::padding || x >= data.w) {
                 continue;
             }
 
@@ -263,7 +263,7 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         const auto startX = std::max(data.mapTimeToX(m_timeSlice.normalized().start), 0);
         const auto endX = std::min(data.mapTimeToX(m_timeSlice.normalized().end), data.w);
         // undo vertical padding manually to fill complete height
-        const auto timeSlice = QRect(startX, -data.padding, endX - startX, option.rect.height());
+        const auto timeSlice = QRect(startX, -TimeLineData::padding, endX - startX, option.rect.height());
 
         auto brush = palette.highlight();
         auto color = brush.color();
@@ -281,7 +281,7 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, con
     if (event->type() == QEvent::ToolTip) {
         const auto data = dataFromIndex(index, option.rect, m_filterAndZoomStack->zoom());
         const auto localX = event->pos().x();
-        const auto mappedX = localX - option.rect.x() - data.padding;
+        const auto mappedX = localX - option.rect.x() - TimeLineData::padding;
         const auto time = data.mapXToTime(mappedX);
         const auto start = findEvent(data.events.constBegin(), data.events.constEnd(), time);
         const auto results = index.data(EventModel::EventResultsRole).value<Data::EventResults>();
@@ -383,9 +383,9 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         if (inEventsColumn && event->type() != QEvent::HoverLeave) {
             const auto results = alwaysValidIndex.data(EventModel::EventResultsRole).value<Data::EventResults>();
             const auto data = dataFromIndex(m_view->indexAt(pos.toPoint()), visualRect, zoom);
-            const auto hoverX = pos.x() - visualRect.left() - data.padding;
+            const auto hoverX = pos.x() - visualRect.left() - TimeLineData::padding;
 
-            const auto time = data.mapXToTime(pos.x() - visualRect.left() - data.padding);
+            const auto time = data.mapXToTime(pos.x() - visualRect.left() - TimeLineData::padding);
             const auto start = findEvent(data.events.constBegin(), data.events.constEnd(), time);
             auto findSamples = [&](int costType, bool contains) {
                 bool foundAny = false;
@@ -421,7 +421,7 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
 
     if (isLeftButtonEvent && inEventsColumn) {
         const auto data = dataFromIndex(alwaysValidIndex, visualRect, zoom);
-        const auto time = data.mapXToTime(pos.x() - visualRect.left() - data.padding);
+        const auto time = data.mapXToTime(pos.x() - visualRect.left() - TimeLineData::padding);
 
         if (isButtonPress) {
             m_timeSlice.start = time;

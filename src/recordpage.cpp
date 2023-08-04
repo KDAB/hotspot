@@ -368,7 +368,7 @@ RecordPage::RecordPage(QWidget* parent)
 
     connect(m_watcher, &QFutureWatcher<ProcDataList>::finished, this, &RecordPage::updateProcessesFinished);
 
-    if (m_perfRecord->currentUsername() == QLatin1String("root")) {
+    if (PerfRecord::currentUsername() == QLatin1String("root")) {
         ui->elevatePrivilegesCheckBox->setChecked(true);
         ui->elevatePrivilegesCheckBox->setEnabled(false);
     } else if (!PerfRecord::canElevatePrivileges()) {
