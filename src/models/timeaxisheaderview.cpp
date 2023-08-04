@@ -74,7 +74,7 @@ bool TimeAxisHeaderView::event(QEvent* event)
                                               sectionPosition(EventModel::EventsColumn));
 
         const auto oneNanoSecond = 1e-9;
-        for (const auto& tracepoint : qAsConst(m_tracepoints.tracepoints)) {
+        for (const auto& tracepoint : std::as_const(m_tracepoints.tracepoints)) {
             if (zoomTime.contains(tracepoint.time)) {
                 if (helpEvent->pos().x() == xForTime((tracepoint.time - m_timeRange.start) * oneNanoSecond)) {
                     QToolTip::showText(helpEvent->globalPos(), tracepoint.name);

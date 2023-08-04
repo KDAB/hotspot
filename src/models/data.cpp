@@ -303,7 +303,7 @@ TopDownResults TopDownResults::fromBottomUp(const BottomUpResults& bottomUpData,
             buildTopDownResult(bottomUpGroup, bottomUpData.costs, topDownGroup, &results.inclusiveCosts,
                                &results.selfCosts, &maxId, true);
             // finally manually sum up the inclusive costs
-            for (const auto& child : qAsConst(topDownGroup->children)) {
+            for (const auto& child : std::as_const(topDownGroup->children)) {
                 results.inclusiveCosts.add(topDownGroup->id, results.inclusiveCosts.itemCost(child.id));
             }
         }

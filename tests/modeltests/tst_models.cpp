@@ -296,7 +296,7 @@ private slots:
         QTextStream(stdout) << "\nActual Model:\n" << printCallerCalleeModel(model).join(QLatin1Char('\n')) << "\n";
         QCOMPARE(printCallerCalleeModel(model), expectedMap);
 
-        for (const auto& entry : qAsConst(results.entries)) {
+        for (const auto& entry : std::as_const(results.entries)) {
             {
                 CallerModel model;
                 QAbstractItemModelTester tester(&model);

@@ -600,7 +600,7 @@ private slots:
             QCOMPARE(m_bottomUpData.costs.typeName(2), QStringLiteral("off-CPU Time"));
 
             QSet<quint32> eventCpuIds[3];
-            for (const auto& thread : qAsConst(m_eventData.threads)) {
+            for (const auto& thread : std::as_const(m_eventData.threads)) {
                 for (const auto& event : thread.events) {
                     eventCpuIds[event.type].insert(event.cpuId);
                 }
@@ -845,7 +845,7 @@ private:
         VERIFY_OR_THROW(m_callerCalleeData.entries.count() > 0);
 
         // Verify that no individual cost in the Caller/Callee data is greater than the total cost of all samples
-        for (const auto& entry : qAsConst(m_callerCalleeData.entries)) {
+        for (const auto& entry : std::as_const(m_callerCalleeData.entries)) {
             VERIFY_OR_THROW(m_callerCalleeData.inclusiveCosts.cost(0, entry.id)
                             <= static_cast<qint64>(m_summaryData.costs[0].totalPeriod));
         }
@@ -856,7 +856,7 @@ private:
         VERIFY_OR_THROW(!m_eventData.stacks.isEmpty());
         VERIFY_OR_THROW(!m_eventData.threads.isEmpty());
         COMPARE_OR_THROW(static_cast<quint32>(m_eventData.threads.size()), m_summaryData.threadCount);
-        for (const auto& thread : qAsConst(m_eventData.threads)) {
+        for (const auto& thread : std::as_const(m_eventData.threads)) {
             VERIFY_OR_THROW(!thread.name.isEmpty());
             VERIFY_OR_THROW(thread.pid != 0);
             VERIFY_OR_THROW(thread.tid != 0);
@@ -865,7 +865,7 @@ private:
             VERIFY_OR_THROW(thread.offCpuTime == 0 || thread.offCpuTime < thread.time.delta());
         }
         VERIFY_OR_THROW(!m_eventData.totalCosts.isEmpty());
-        for (const auto& costs : qAsConst(m_eventData.totalCosts)) {
+        for (const auto& costs : std::as_const(m_eventData.totalCosts)) {
             VERIFY_OR_THROW(!costs.label.isEmpty());
             VERIFY_OR_THROW(costs.sampleCount > 0);
             VERIFY_OR_THROW(costs.totalPeriod > 0);
