@@ -7,6 +7,8 @@
 
 #include "callgraphwidget.h"
 
+#include <utility>
+
 #include <QLabel>
 #include <QMouseEvent>
 #include <QSpinBox>
@@ -26,14 +28,14 @@
 
 #include <kgraphviewer/kgraphviewer_interface.h>
 
-CallgraphWidget::CallgraphWidget(const Data::CallerCalleeResults& results, KParts::ReadOnlyPart* view,
+CallgraphWidget::CallgraphWidget(Data::CallerCalleeResults results, KParts::ReadOnlyPart* view,
                                  KGraphViewer::KGraphViewerInterface* interface, QWidget* parent)
     : QWidget(parent)
     , ui(new Ui::CallgraphWidget)
     , m_graphFile(new QTemporaryFile(this))
     , m_graphview(view)
     , m_interface(interface)
-    , m_callerCalleeResults(results)
+    , m_callerCalleeResults(std::move(results))
 {
     ui->setupUi(this);
 

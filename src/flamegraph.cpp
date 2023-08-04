@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include <QAction>
 #include <QApplication>
@@ -59,7 +60,7 @@ enum SearchMatchType
 class FrameGraphicsItem : public QGraphicsRectItem
 {
 public:
-    FrameGraphicsItem(const qint64 cost, const Data::Symbol& symbol, FrameGraphicsItem* parent);
+    FrameGraphicsItem(const qint64 cost, Data::Symbol symbol, FrameGraphicsItem* parent);
 
     qint64 cost() const;
     void setCost(qint64 cost);
@@ -89,9 +90,9 @@ Q_DECLARE_METATYPE(FrameGraphicsItem*)
 class FrameGraphicsRootItem : public FrameGraphicsItem
 {
 public:
-    FrameGraphicsRootItem(const qint64 totalCost, Data::Costs::Unit unit, const QString& costName, const QString& label)
+    FrameGraphicsRootItem(const qint64 totalCost, Data::Costs::Unit unit, QString costName, const QString& label)
         : FrameGraphicsItem(totalCost, {label, {}}, nullptr)
-        , m_costName(costName)
+        , m_costName(std::move(costName))
         , m_unit(unit)
     {
     }
@@ -112,10 +113,10 @@ private:
 
 Q_DECLARE_METATYPE(FrameGraphicsRootItem*)
 
-FrameGraphicsItem::FrameGraphicsItem(const qint64 cost, const Data::Symbol& symbol, FrameGraphicsItem* parent)
+FrameGraphicsItem::FrameGraphicsItem(const qint64 cost, Data::Symbol symbol, FrameGraphicsItem* parent)
     : QGraphicsRectItem(parent)
     , m_cost(cost)
-    , m_symbol(symbol)
+    , m_symbol(std::move(symbol))
     , m_isHovered(false)
     , m_isExternallyHovered(false)
 {

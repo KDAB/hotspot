@@ -55,7 +55,7 @@ private slots:
     void hoverLeave(const QString& node);
 
 private:
-    CallgraphWidget(const Data::CallerCalleeResults& results, KParts::ReadOnlyPart* view,
+    CallgraphWidget(Data::CallerCalleeResults results, KParts::ReadOnlyPart* view,
                     KGraphViewer::KGraphViewerInterface* interface, QWidget* parent = nullptr);
 
     void generateCallgraph(const Data::Symbol& symbol);

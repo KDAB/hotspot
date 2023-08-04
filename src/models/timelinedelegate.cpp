@@ -22,6 +22,7 @@
 #include <KColorScheme>
 
 #include <algorithm>
+#include <utility>
 
 static QPoint globalPos(const QMouseEvent* event)
 {
@@ -32,9 +33,9 @@ static QPoint globalPos(const QMouseEvent* event)
 #endif
 }
 
-TimeLineData::TimeLineData(const Data::Events& events, quint64 maxCost, Data::TimeRange time,
-                           Data::TimeRange threadTime, QRect rect)
-    : events(events)
+TimeLineData::TimeLineData(Data::Events events, quint64 maxCost, Data::TimeRange time, Data::TimeRange threadTime,
+                           QRect rect)
+    : events(std::move(events))
     , maxCost(maxCost)
     , time(time)
     , threadTime(threadTime)

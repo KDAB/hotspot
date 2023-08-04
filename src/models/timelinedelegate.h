@@ -21,8 +21,7 @@ struct TimeLineData
 {
     TimeLineData() = default;
 
-    TimeLineData(const Data::Events& events, quint64 maxCost, Data::TimeRange time, Data::TimeRange threadTime,
-                 QRect rect);
+    TimeLineData(Data::Events events, quint64 maxCost, Data::TimeRange time, Data::TimeRange threadTime, QRect rect);
 
     int mapTimeToX(quint64 time) const;
 
