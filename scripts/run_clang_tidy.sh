@@ -7,7 +7,7 @@ cd $(dirname $0)/..
 rm -Rf scripts/fixits
 mkdir -p scripts/fixits
 
-run-clang-tidy -j $(nproc) -config-file .clang-tidy -export-fixes scripts/fixits/fixits.yaml -use-color -p $PWD/build $PWD/src
+run-clang-tidy -extra-arg="-Wno-gnu-zero-variadic-macro-arguments" -j $(nproc) -config-file .clang-tidy -export-fixes scripts/fixits/fixits.yaml -use-color -p $PWD/build $PWD/src
 
 echo "splitting fixits"
 
