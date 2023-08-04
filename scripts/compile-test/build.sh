@@ -53,6 +53,7 @@ buildHotspotWithoutPresets()
         -f scripts/compile-test/BuildHotspotWithoutPresets $extraArgs .
 }
 
+export DOCKER_BUILDKIT=1
 buildHotspotWithoutPresets Ubuntu20.04
 buildHotspotWithPresets Ubuntu22.04
 buildHotspotWithPresets Archlinux
