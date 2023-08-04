@@ -13,11 +13,26 @@
       }
     },
     {
+      "name": "qt6",
+      "cacheVariables": {
+        "QT6_BUILD": "ON"
+      }
+    },
+    {
       "name": "asan",
       "cacheVariables": {
         "CMAKE_CXX_FLAGS_DEBUG": "-g -fsanitize=address,undefined",
         "CMAKE_C_FLAGS_DEBUG": "-g -fsanitize=address,undefined"
       }
+    },
+    {
+      "name": "dev-qt6",
+      "displayName": "dev with Qt6",
+      "description": "Preset for developers using Qt6",
+      "inherits": [
+        "dev",
+        "qt6"
+      ]
     },
     {
       "name": "dev-asan",
@@ -26,6 +41,15 @@
       "inherits": [
         "dev",
         "asan"
+      ]
+    },
+    {
+      "name": "dev-asan-qt6",
+      "displayName": "dev with sanitizers, Qt6",
+      "description": "Preset for developers with Qt6, asan and ubsan enabled",
+      "inherits": [
+        "dev-asan",
+        "qt6"
       ]
     },
     {
@@ -43,6 +67,15 @@
       ]
     },
     {
+      "name": "dev-clazy-qt6",
+      "displayName": "clazy with sanitizers, Qt6",
+      "description": "Preset for compiling with clang/clazy, Qt6 and asan and ubsan enabled",
+      "inherits": [
+        "dev-clazy",
+        "qt6"
+      ]
+    },
+    {
       "name": "dev-opt",
       "displayName": "dev with optimizations",
       "description": "Preset for developers with compiler optimizations enabled",
@@ -55,12 +88,30 @@
       ]
     },
     {
+      "name": "dev-opt-qt6",
+      "displayName": "dev with Qt6, optimizations",
+      "description": "Preset for developers with Qt6, compiler optimizations enabled",
+      "inherits": [
+        "dev-opt",
+        "qt6"
+      ]
+    },
+    {
       "name": "dev-opt-asan",
       "displayName": "dev with optimizations and sanitizers",
       "description": "Preset for developers with compiler optimizations and sanitizers enabled",
       "inherits": [
         "dev-opt",
         "asan"
+      ]
+    },
+    {
+      "name": "dev-opt-asan-qt6",
+      "displayName": "dev with optimizations, Qt6 and sanitizers",
+      "description": "Preset for developers with Qt6, compiler optimizations and sanitizers enabled",
+      "inherits": [
+        "dev-opt-asan",
+        "qt6"
       ]
     }
   ],
@@ -70,20 +121,40 @@
       "configurePreset": "dev"
     },
     {
+      "name": "dev-qt6",
+      "configurePreset": "dev-qt6"
+    },
+    {
       "name": "dev-asan",
       "configurePreset": "dev-asan"
+    },
+    {
+      "name": "dev-asan-qt6",
+      "configurePreset": "dev-asan-qt6"
     },
     {
       "name": "dev-opt",
       "configurePreset": "dev-opt"
     },
     {
+      "name": "dev-opt-qt6",
+      "configurePreset": "dev-opt-qt6"
+    },
+    {
       "name": "dev-opt-asan",
       "configurePreset": "dev-opt-asan"
     },
     {
+      "name": "dev-opt-asan-qt6",
+      "configurePreset": "dev-opt-asan-qt6"
+    },
+    {
       "name": "dev-clazy",
       "configurePreset": "dev-clazy"
+    },
+    {
+      "name": "dev-clazy-qt6",
+      "configurePreset": "dev-clazy-qt6"
     }
   ],
   "testPresets": [
@@ -116,6 +187,31 @@
     {
       "name": "dev-clazy",
       "configurePreset": "dev-clazy",
+      "inherits": "base"
+    },
+    {
+      "name": "dev-qt6",
+      "configurePreset": "dev-qt6",
+      "inherits": "base"
+    },
+    {
+      "name": "dev-asan-qt6",
+      "configurePreset": "dev-asan-qt6",
+      "inherits": "base"
+    },
+    {
+      "name": "dev-opt-qt6",
+      "configurePreset": "dev-opt-qt6",
+      "inherits": "base"
+    },
+    {
+      "name": "dev-opt-asan-qt6",
+      "configurePreset": "dev-opt-asan-qt6",
+      "inherits": "base"
+    },
+    {
+      "name": "dev-clazy-qt6",
+      "configurePreset": "dev-clazy-qt6",
       "inherits": "base"
     }
   ]
