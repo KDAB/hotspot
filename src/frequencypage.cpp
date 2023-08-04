@@ -25,10 +25,7 @@ struct PlotData
 class TimeAxis : public QCPAxisTicker
 {
 public:
-    TimeAxis()
-        : QCPAxisTicker()
-    {
-    }
+    ~TimeAxis() override = default;
 
 protected:
     QString getTickLabel(double tick, const QLocale& /*locale*/, QChar /*formatChar*/, int /*precision*/) override

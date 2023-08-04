@@ -54,7 +54,6 @@ QString findPkexec()
 PerfRecord::PerfRecord(QObject* parent)
     : QObject(parent)
     , m_perfRecordProcess(nullptr)
-    , m_outputPath()
     , m_userTerminated(false)
 {
     connect(&m_perfControlFifo, &PerfControlFifoWrapper::started, this,
