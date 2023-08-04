@@ -38,7 +38,7 @@ set(HOTSPOT_VERSION_STRING "${hotspot_VERSION}")
 include(HotspotMacrosInternal)
 include(FeatureSummary)
 
-if (QT6_BUILD)
+if(QT6_BUILD)
     set(QT_MAJOR_VERSION 6)
     set(QT_MIN_VERSION 6.4)
     set(KDDW_SUFFIX "-qt6")
@@ -51,10 +51,10 @@ endif()
 find_package(
     Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION}
     COMPONENTS Core
-                Widgets
-                Network
-                Test
-                Svg
+               Widgets
+               Network
+               Test
+               Svg
     REQUIRED
 )
 
