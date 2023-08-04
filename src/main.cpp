@@ -247,8 +247,6 @@ int main(int argc, char** argv)
         if (window) {
             window->openFile(file);
         }
-
-        window->openFile(file);
     } else {
         // open perf.data in current CWD, if it exists
         // this brings hotspot closer to the behavior of "perf report"
