@@ -394,7 +394,7 @@ QBrush brush(const Data::Symbol& entry, Settings::ColorScheme scheme, quint32 co
     case Settings::ColorScheme::NumColorSchemes:
         Q_UNREACHABLE();
     }
-    return QBrush();
+    return {};
 }
 
 /**

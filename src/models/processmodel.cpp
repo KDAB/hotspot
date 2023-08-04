@@ -99,13 +99,14 @@ QModelIndex ProcessModel::indexForPid(const QString& pid) const
         if (m_data.at(i).ppid == pid)
             return index(i, 0);
     }
-    return QModelIndex();
+
+    return {};
 }
 
 QVariant ProcessModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role != Qt::DisplayRole || orientation != Qt::Horizontal)
-        return QVariant();
+        return {};
 
     if (section == PIDColumn)
         return tr("Process ID");
@@ -116,13 +117,13 @@ QVariant ProcessModel::headerData(int section, Qt::Orientation orientation, int 
     else if (section == UserColumn)
         return tr("User");
 
-    return QVariant();
+    return {};
 }
 
 QVariant ProcessModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid())
-        return QVariant();
+        return {};
 
     const ProcData& data = m_data.at(index.row());
 
@@ -147,7 +148,7 @@ QVariant ProcessModel::data(const QModelIndex& index, int role) const
         return data.user;
     }
 
-    return QVariant();
+    return {};
 }
 
 int ProcessModel::columnCount(const QModelIndex& parent) const

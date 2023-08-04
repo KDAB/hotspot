@@ -232,7 +232,7 @@ QString Util::formatCost(quint64 cost)
 QString Util::formatCostRelative(quint64 selfCost, quint64 totalCost, bool addPercentSign)
 {
     if (!totalCost) {
-        return QString();
+        return {};
     }
 
     auto ret = QString::number(static_cast<double>(selfCost) * 100. / totalCost, 'G', 3);
@@ -278,7 +278,7 @@ QString Util::formatTimeString(quint64 nanoseconds, bool shortForm)
     auto optional = [](quint64 fragment, const char* unit) -> QString {
         if (fragment > 0)
             return QString::number(fragment) + QLatin1String(unit) + QLatin1Char(' ');
-        return QString();
+        return {};
     };
     if (shortForm) {
         return optional(days, "d") + optional(hours, "h") + optional(minutes, "min") + QString::number(seconds)

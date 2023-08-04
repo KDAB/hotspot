@@ -37,7 +37,7 @@ QSize CodeDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelInd
 {
     const auto line = index.data(m_syntaxHighlightRole).value<QTextLine>();
     if (line.isValid()) {
-        return QSize(line.width(), line.height());
+        return {static_cast<int>(line.width()), static_cast<int>(line.height())};
     }
     return QStyledItemDelegate::sizeHint(option, index);
 }
