@@ -228,7 +228,7 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
     } else if (role == CpuIdRole) {
         return cpu ? cpu->cpuId : Data::INVALID_CPU_ID;
     } else if (role == EventsRole) {
-        return QVariant::fromValue(thread ? thread->events : cpu->events);
+        return QVariant::fromValue(thread ? thread->events : (cpu ? cpu->events : Data::Events()));
     } else if (role == SortRole) {
         if (index.column() == ThreadColumn)
             return thread ? thread->tid : cpu->cpuId;
