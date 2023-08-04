@@ -1,0 +1,10 @@
+ARG BASEIMAGE
+FROM $BASEIMAGE
+
+WORKDIR /opt
+
+ADD . /opt/hotspot/
+
+RUN cd hotspot && \
+    cmake --preset dev-asan-qt6 && \
+    cmake --build --preset dev-asan-qt6

@@ -23,3 +23,4 @@ pushDependencies ubuntu22.04
 pushDependencies archlinux
 pushDependencies opensusetumbleweed
 pushDependencies fedora34
+pushDependencies neonqt6

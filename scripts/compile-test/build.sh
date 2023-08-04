@@ -26,9 +26,15 @@ buildDependencies()
     tag=$(toLower $distro)
 
     buildBase $distro
+
+    suffix=
+    if [[ $distro == *Qt6 ]]; then
+        suffix=Qt6
+    fi
+
     docker build -t hotspot-$tag-dependencies \
         --build-arg BASEIMAGE=hotspot-$tag-base \
-        -f scripts/compile-test/BuildDependencies $extraArgs .
+        -f scripts/compile-test/BuildDependencies$suffix $extraArgs .
 }
 
 buildHotspotWithPresets()
@@ -36,10 +42,15 @@ buildHotspotWithPresets()
     distro=$1
     tag=$(toLower $distro)
 
+    suffix=
+    if [[ $distro == *Qt6 ]]; then
+        suffix=Qt6
+    fi
+
     buildDependencies $distro
     docker build -t hotspot-$tag \
         --build-arg BASEIMAGE=hotspot-$tag-dependencies \
-        -f scripts/compile-test/BuildHotspotWithPresets $extraArgs .
+        -f scripts/compile-test/BuildHotspotWithPresets$suffix $extraArgs .
 }
 
 buildHotspotWithoutPresets()
@@ -59,3 +70,4 @@ buildHotspotWithPresets Ubuntu22.04
 buildHotspotWithPresets Archlinux
 buildHotspotWithPresets OpenSuseTumbleweed
 buildHotspotWithoutPresets Fedora34
+buildHotspotWithPresets NeonQt6

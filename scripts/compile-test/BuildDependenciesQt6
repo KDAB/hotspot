@@ -1,0 +1,24 @@
+ARG BASEIMAGE
+FROM $BASEIMAGE
+
+WORKDIR /opt
+
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
+RUN wget https://www.qcustomplot.com/release/2.1.1/QCustomPlot-source.tar.gz && \
+    tar -xf QCustomPlot-source.tar.gz && rm QCustomPlot-source.tar.gz && cd qcustomplot-source && \
+    cp -va qcustomplot.h /usr/include/ && \
+    wget https://www.qcustomplot.com/release/2.1.1/QCustomPlot-sharedlib.tar.gz && \
+    tar -xf QCustomPlot-sharedlib.tar.gz && cd qcustomplot-sharedlib/sharedlib-compilation && \
+    qmake6 CONFIG+=release CONFIG+=force_debug_info && make -j && \
+    cp -va libqcustomplot* /usr/lib/x86_64-linux-gnu/ && cd /opt && rm -Rf qcustomplot-source
+
+RUN git clone -b 1.7 https://github.com/KDAB/KDDockWidgets && \
+    cd KDDockWidgets && mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Debug -DKDDockWidgets_QT6=ON -DCMAKE_INSTALL_PREFIX=/usr/ \
+        -DKDDockWidgets_EXAMPLES=OFF -G Ninja .. && \
+    cmake --build . --target install && cd /opt && rm -Rf KDDockWidgets
