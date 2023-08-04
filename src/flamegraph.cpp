@@ -81,8 +81,8 @@ protected:
 private:
     qint64 m_cost;
     Data::Symbol m_symbol;
-    bool m_isHovered;
-    bool m_isExternallyHovered;
+    bool m_isHovered = false;
+    bool m_isExternallyHovered = false;
     SearchMatchType m_searchMatch = NoSearch;
 };
 Q_DECLARE_METATYPE(FrameGraphicsItem*)
@@ -117,8 +117,6 @@ FrameGraphicsItem::FrameGraphicsItem(const qint64 cost, Data::Symbol symbol, Fra
     : QGraphicsRectItem(parent)
     , m_cost(cost)
     , m_symbol(std::move(symbol))
-    , m_isHovered(false)
-    , m_isExternallyHovered(false)
 {
     setFlag(QGraphicsItem::ItemIsSelectable);
     setAcceptHoverEvents(true);
