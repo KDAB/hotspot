@@ -112,7 +112,7 @@ MainWindow::MainWindow(QWidget* parent)
     m_pageStack->addWidget(m_resultsPage);
     m_pageStack->addWidget(m_recordPage);
 
-    QVBoxLayout* layout = new QVBoxLayout;
+    auto* layout = new QVBoxLayout;
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_pageStack);
     centralWidget()->setLayout(layout);
@@ -456,7 +456,7 @@ void MainWindow::aboutHotspot()
 void MainWindow::setupCodeNavigationMenu()
 {
     // Code Navigation
-    QAction* configAction =
+    auto* configAction =
         new QAction(QIcon::fromTheme(QStringLiteral("applications-development")), tr("Code Navigation"), this);
     auto menu = new QMenu(this);
     auto group = new QActionGroup(this);
@@ -484,7 +484,7 @@ void MainWindow::setupCodeNavigationMenu()
     }
     menu->addSeparator();
 
-    QAction* action = new QAction(menu);
+    auto* action = new QAction(menu);
     action->setText(tr("Custom..."));
     action->setCheckable(true);
     action->setChecked(currentIdx == -1);

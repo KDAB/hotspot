@@ -39,7 +39,7 @@ bool ProcessFilterModel::lessThan(const QModelIndex& left, const QModelIndex& ri
 
 bool ProcessFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
 {
-    ProcessModel* source = dynamic_cast<ProcessModel*>(sourceModel());
+    auto* source = dynamic_cast<ProcessModel*>(sourceModel());
     if (!source)
         return true;
 

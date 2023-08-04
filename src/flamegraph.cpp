@@ -804,7 +804,7 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
     const auto ret = QObject::eventFilter(object, event);
 
     if (event->type() == QEvent::MouseButtonRelease) {
-        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+        auto* mouseEvent = static_cast<QMouseEvent*>(event);
         if (mouseEvent->button() == Qt::LeftButton) {
             auto item = static_cast<FrameGraphicsItem*>(m_view->itemAt(mouseEvent->pos()));
             if (item && item != m_selectionHistory.at(m_selectedItem)) {
@@ -822,7 +822,7 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
             m_forwardAction->trigger();
         }
     } else if (event->type() == QEvent::MouseMove) {
-        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+        auto* mouseEvent = static_cast<QMouseEvent*>(event);
         auto item = static_cast<FrameGraphicsItem*>(m_view->itemAt(mouseEvent->pos()));
         setTooltipItem(item);
     } else if (event->type() == QEvent::Leave) {
@@ -837,7 +837,7 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
         }
         updateTooltip();
     } else if (event->type() == QEvent::ContextMenu) {
-        QContextMenuEvent* contextEvent = static_cast<QContextMenuEvent*>(event);
+        auto* contextEvent = static_cast<QContextMenuEvent*>(event);
         auto item = static_cast<FrameGraphicsItem*>(m_view->itemAt(m_view->mapFromGlobal(contextEvent->globalPos())));
 
         QMenu contextMenu;
