@@ -7,6 +7,7 @@
 
 #include "flamegraph.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include <QAction>
@@ -559,12 +560,9 @@ void resetIsExternallyHovered(FrameGraphicsItem* item)
 void hoverStacks(FrameGraphicsItem* rootItem, const QVector<QVector<Data::Symbol>>& stacks)
 {
     auto matchStacks = [&stacks](QGraphicsItem* item) {
-        for (const auto& stack : stacks) {
-            if (hoverStack(static_cast<FrameGraphicsItem*>(item), stack, 0)) {
-                return true;
-            }
-        }
-        return false;
+        return std::any_of(stacks.begin(), stacks.end(), [item](const auto& stack) {
+            return hoverStack(static_cast<FrameGraphicsItem*>(item), stack, 0);
+        });
     };
 
     const auto children = rootItem->childItems();
