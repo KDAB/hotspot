@@ -127,7 +127,7 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
                                                            return lhs;
                                                        });
                     const auto time =
-                        static_cast<double>(value.time / actualWindowSize - plotData->applicationStartTime);
+                        static_cast<double>(value.time) / actualWindowSize - plotData->applicationStartTime;
                     times[j] = time;
                     costs[j] = value.cost / actualWindowSize;
                     numEntries += actualWindowSize;
