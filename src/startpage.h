@@ -35,7 +35,7 @@ protected:
 public slots:
     void onOpenFileError(const QString& errorMessage);
     void onParseFileProgress(float percent);
-    void onDebugInfoDownloadProgress(const QString& url, qint64 numerator, qint64 denominator);
+    void onDebugInfoDownloadProgress(const QString& module, const QString& url, qint64 numerator, qint64 denominator);
 
 signals:
     void openFileButtonClicked();

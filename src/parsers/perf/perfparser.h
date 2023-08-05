@@ -62,7 +62,7 @@ signals:
     void parsingFailed(const QString& errorMessage);
     void exportFailed(const QString& errorMessage);
     void progress(float progress);
-    void debugInfoDownloadProgress(const QString& url, qint64 numerator, qint64 denominator);
+    void debugInfoDownloadProgress(const QString& module, const QString& url, qint64 numerator, qint64 denominator);
     void stopRequested();
 
     void parserWarning(const QString& errorMessage);

@@ -835,12 +835,13 @@ public:
             break;
         }
         case EventType::DebugInfoDownloadProgress: {
+            StringId module;
             StringId url;
             qint64 numerator = 0;
             qint64 denominator = 0;
-            stream >> url >> numerator >> denominator;
+            stream >> module >> url >> numerator >> denominator;
             qCDebug(LOG_PERFPARSER) << "parsed:" << url << numerator << denominator;
-            emit debugInfoDownloadProgress(strings.value(url.id), numerator, denominator);
+            emit debugInfoDownloadProgress(strings.value(module.id), strings.value(url.id), numerator, denominator);
             break;
         }
         case EventType::TracePointFormat:
@@ -1399,7 +1400,7 @@ public slots:
 
 signals:
     void progress(float percent);
-    void debugInfoDownloadProgress(const QString& url, qint64 numerator, qint64 denominator);
+    void debugInfoDownloadProgress(const QString& module, const QString& url, qint64 numerator, qint64 denominator);
 };
 
 PerfParser::PerfParser(QObject* parent)

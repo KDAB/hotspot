@@ -13,6 +13,8 @@
 #include <QMainWindow>
 #include <QPainter>
 
+#include <KFormat>
+
 StartPage::StartPage(QWidget* parent)
     : QWidget(parent)
     , ui(std::make_unique<Ui::StartPage>())
@@ -62,15 +64,23 @@ void StartPage::onParseFileProgress(float percent)
     ui->openFileProgressBar->setValue(static_cast<int>(percent * scale));
 }
 
-void StartPage::onDebugInfoDownloadProgress(const QString& url, qint64 numerator, qint64 denominator)
+void StartPage::onDebugInfoDownloadProgress(const QString& module, const QString& url, qint64 numerator,
+                                            qint64 denominator)
 {
     if (numerator == denominator) {
         ui->loadStack->setCurrentWidget(ui->parseProgressPage);
         return;
     }
 
+    const auto format = KFormat();
     ui->loadStack->setCurrentWidget(ui->downloadDebugInfoProgressPage);
-    ui->downloadDebugInfoProgressLabel->setText(tr("Downloading Debug Information from %1...").arg(url));
+
+    ui->downloadDebugInfoProgressLabel->setText(
+        tr("Downloading Debug Information for %1 (%2 of %3)")
+            .arg(module, format.formatByteSize(numerator, 1, KFormat::MetricBinaryDialect),
+                 format.formatByteSize(denominator, 1, KFormat::MetricBinaryDialect)));
+    ui->downloadDebugInfoProgressLabel->setToolTip(url);
+
     if (denominator == 0 || denominator > std::numeric_limits<int>::max()) {
         ui->downloadDebugInfoProgressBar->setRange(0, 0);
         ui->downloadDebugInfoProgressBar->setValue(-1);
