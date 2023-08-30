@@ -49,28 +49,28 @@ set_target_properties(
     tst_disassemblyoutput PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
 )
 
-if(KGraphViewerPart_FOUND)
-    ecm_add_test(
-        tst_callgraphgenerator.cpp
-        ../../src/parsers/perf/perfparser.cpp
-        ../../src/initiallystoppedprocess.cpp
-        ../../src/perfcontrolfifowrapper.cpp
-        ../../src/perfrecord.cpp
-        ../../src/callgraphgenerator.cpp
-        ../../src/errnoutil.cpp
-        LINK_LIBRARIES
-        Qt::Core
-        Qt::Test
-        KF${QT_MAJOR_VERSION}::KIOCore
-        KF${QT_MAJOR_VERSION}::ThreadWeaver
-        KF${QT_MAJOR_VERSION}::Archive
-        KF${QT_MAJOR_VERSION}::WindowSystem
-        models
-        TEST_NAME
-        tst_callgraphgenerator
-    )
-
-    set_target_properties(
-        tst_callgraphgenerator PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
-    )
+ecm_add_test(
+    tst_callgraphgenerator.cpp
+    ../../src/parsers/perf/perfparser.cpp
+    ../../src/initiallystoppedprocess.cpp
+    ../../src/perfcontrolfifowrapper.cpp
+    ../../src/perfrecord.cpp
+    ../../src/callgraphgenerator.cpp
+    ../../src/errnoutil.cpp
+    LINK_LIBRARIES
+    Qt::Core
+    Qt::Test
+    KF${QT_MAJOR_VERSION}::KIOCore
+    KF${QT_MAJOR_VERSION}::ThreadWeaver
+    KF${QT_MAJOR_VERSION}::WindowSystem
+    models
+    TEST_NAME
+    tst_callgraphgenerator
+)
+if(${KFArchive_FOUND})
+    target_link_libraries(tst_callgraphgenerator KF${QT_MAJOR_VERSION}::Archive)
 endif()
+
+set_target_properties(
+    tst_callgraphgenerator PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
+)
