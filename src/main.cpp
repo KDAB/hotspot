@@ -94,14 +94,6 @@ int main(int argc, char** argv)
 
     initRCCIconTheme();
 #endif
-    QGuiApplication::setWindowIcon(QIcon(QStringLiteral(":/images/icons/512-hotspot_app_icon.png")));
-
-    auto* guiApp = qobject_cast<QApplication*>(app.get());
-    MainWindow* window = nullptr;
-    if (guiApp) {
-        setupDockWidgets();
-        window = new MainWindow();
-    }
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("Linux perf GUI for performance analysis."));
@@ -201,6 +193,14 @@ int main(int argc, char** argv)
             << "\n\n"
             << parser.helpText();
         return 1;
+    }
+
+    auto* guiApp = qobject_cast<QApplication*>(app.get());
+    MainWindow* window = nullptr;
+    if (guiApp) {
+        QGuiApplication::setWindowIcon(QIcon(QStringLiteral(":/images/icons/512-hotspot_app_icon.png")));
+        setupDockWidgets();
+        window = new MainWindow();
     }
 
     const auto originalArguments = QCoreApplication::arguments();
