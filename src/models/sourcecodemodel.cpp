@@ -15,6 +15,7 @@
 #include <QTextDocument>
 
 #include <algorithm>
+#include <iterator>
 #include <limits>
 
 #include "highlighter.hpp"
@@ -261,14 +262,15 @@ void SourceCodeModel::setSysroot(const QString& sysroot)
     m_sysroot = sysroot;
 }
 
-void SourceCodeModel::find(const QString& search, Direction direction, int offset)
+void SourceCodeModel::find(const QString& search, Direction direction, int current)
 {
     auto searchFunc = [&search](const SourceCodeLine& line) {
         return line.text.indexOf(search, 0, Qt::CaseInsensitive) != -1;
     };
 
-    const auto resultIndex = ::search(
-        m_sourceCodeLines, searchFunc, [this] { emit resultFound({}); }, direction, offset);
+    auto endReached = [this] { emit searchEndReached(); };
+
+    const int resultIndex = ::search(m_sourceCodeLines, current, direction, searchFunc, endReached);
 
     if (resultIndex >= 0) {
         emit resultFound(createIndex(resultIndex + 1, SourceCodeColumn));
