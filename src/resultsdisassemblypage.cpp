@@ -190,7 +190,8 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
 
     auto setupSearchShortcuts = [this](QPushButton* search, QPushButton* next, QPushButton* prev, QPushButton* close,
                                        QWidget* searchWidget, QLineEdit* edit, QAbstractItemView* view,
-                                       KMessageWidget* endReached, auto* model, int additionalRows) {
+                                       KMessageWidget* endReached, auto* model, QModelIndex* searchResultIndex,
+                                       int additionalRows) {
         searchWidget->hide();
 
         auto actions = new QActionGroup(view);
@@ -205,13 +206,13 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
         findAction->setShortcutContext(Qt::ShortcutContext::WidgetWithChildrenShortcut);
         view->addAction(findAction);
 
-        auto searchNext = [this, model, edit, additionalRows] {
-            const auto offset = m_currentSearchIndex.isValid() ? m_currentSearchIndex.row() - additionalRows + 1 : 0;
+        auto searchNext = [model, edit, additionalRows, searchResultIndex] {
+            const auto offset = searchResultIndex->isValid() ? searchResultIndex->row() - additionalRows : 0;
             model->find(edit->text(), Direction::Forward, offset);
         };
 
-        auto searchPrev = [this, model, edit, additionalRows] {
-            const auto offset = m_currentSearchIndex.isValid() ? m_currentSearchIndex.row() - additionalRows - 1 : 0;
+        auto searchPrev = [model, edit, additionalRows, searchResultIndex] {
+            const auto offset = searchResultIndex->isValid() ? searchResultIndex->row() - additionalRows : 0;
 
             model->find(edit->text(), Direction::Backward, offset);
         };
@@ -234,9 +235,9 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
 
         connectModel(
             model,
-            [this, edit, view, colorScheme](const QModelIndex& index) {
+            [edit, view, colorScheme, searchResultIndex](const QModelIndex& index) {
                 auto palette = edit->palette();
-                m_currentSearchIndex = index;
+                *searchResultIndex = index;
                 palette.setBrush(QPalette::Text,
                                  index.isValid() ? colorScheme.foreground()
                                                  : colorScheme.foreground(KColorScheme::NegativeText));
@@ -250,10 +251,11 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
     };
 
     setupSearchShortcuts(ui->searchButton, ui->nextResult, ui->prevResult, ui->closeButton, ui->searchWidget,
-                         ui->searchEdit, ui->sourceCodeView, ui->searchEndWidget, m_sourceCodeModel, 1);
+                         ui->searchEdit, ui->sourceCodeView, ui->searchEndWidget, m_sourceCodeModel,
+                         &m_currentSourceSearchIndex, 1);
     setupSearchShortcuts(ui->disasmSearchButton, ui->disasmNextButton, ui->disasmPrevButton, ui->disasmCloseButton,
                          ui->disasmSearchWidget, ui->disasmSearchEdit, ui->assemblyView, ui->disasmEndReachedWidget,
-                         m_disassemblyModel, 0);
+                         m_disassemblyModel, &m_currentDisasmSearchIndex, 0);
 
 #if KFSyntaxHighlighting_FOUND
     QStringList schemes;

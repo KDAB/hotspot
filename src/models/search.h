@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <algorithm>
+#include <iterator>
 #include <QVector>
 
 enum class Direction
@@ -15,36 +17,51 @@ enum class Direction
     Backward
 };
 
-template<typename entry, typename SearchFunc, typename EndReached>
-int search(QVector<entry> source, SearchFunc&& searchFunc, EndReached&& endReached, Direction direction, int offset)
+/** a search function that wrap around at the end
+ * this function evaluates searchFunc starting from current and returns the offset from begin. In case end is reached,
+ * it calls endReached and starts again at begin
+ *
+ * return: offset from begin
+ * */
+template<typename iter, typename SearchFunc, typename EndReached>
+int search_impl(iter begin, iter end, iter current, SearchFunc searchFunc, EndReached endReached)
 {
-    if (offset > source.size() || offset < 0) {
-        offset = 0;
+    if (begin == end)
+        return -1;
+
+    auto start = current + 1;
+    auto found = std::find_if(start, end, searchFunc);
+
+    if (found != end) {
+        return std::distance(begin, found);
     }
 
-    auto start = direction == Direction::Forward
-        ? (source.begin() + offset)
-        : (source.end() - (source.size() - offset - 1)); // 1 one due to offset of the reverse iterator
+    endReached();
 
-    auto it = direction == Direction::Forward
-        ? std::find_if(start, source.end(), searchFunc)
-        : (std::find_if(std::make_reverse_iterator(start), source.rend(), searchFunc) + 1).base();
+    found = std::find_if(begin, start, searchFunc);
 
-    // it is less than source.begin() if the backward search ends at source.rend()
-    if (it >= source.begin() && it < source.end()) {
-        auto distance = std::distance(source.begin(), it);
-        return distance;
-    }
-
-    it = direction == Direction::Forward
-        ? std::find_if(source.begin(), start, searchFunc)
-        : (std::find_if(source.rbegin(), std::make_reverse_iterator(start), searchFunc) + 1).base();
-
-    if (it != source.end()) {
-        auto distance = std::distance(source.begin(), it);
-        endReached();
-        return distance;
+    if (found != end) {
+        return std::distance(begin, found);
     }
 
     return -1;
+}
+
+// a wrapper around search_impl that returns the result index from begin
+template<typename Array, typename SearchFunc, typename EndReached>
+int search(const Array& array, int current, Direction direction, SearchFunc searchFunc, EndReached endReached)
+{
+    current = std::clamp(0, static_cast<int>(array.size()), current);
+    int resultIndex = 0;
+
+    if (direction == Direction::Forward) {
+        resultIndex = ::search_impl(array.begin(), array.end(), array.begin() + current, searchFunc, endReached);
+    } else {
+        resultIndex = ::search_impl(array.rbegin(), array.rend(),
+                                    std::make_reverse_iterator(array.begin() + current) - 1, searchFunc, endReached);
+        if (resultIndex != -1) {
+            resultIndex = array.size() - resultIndex - 1;
+        }
+    }
+    return resultIndex;
 }

@@ -71,3 +71,12 @@ endif()
 set_target_properties(
     tst_callgraphgenerator PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
 )
+
+ecm_add_test(
+    tst_search.cpp
+    LINK_LIBRARIES
+    Qt::Test
+    TEST_NAME
+    tst_search
+)
+set_target_properties(tst_search PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}")

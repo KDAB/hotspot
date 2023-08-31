@@ -224,14 +224,15 @@ QModelIndex DisassemblyModel::indexForFileLine(const Data::FileLine& fileLine) c
     return index(bestMatch, 0);
 }
 
-void DisassemblyModel::find(const QString& search, Direction direction, int offset)
+void DisassemblyModel::find(const QString& search, Direction direction, int current)
 {
     auto searchFunc = [&search](const DisassemblyOutput::DisassemblyLine& line) {
         return line.disassembly.indexOf(search, 0, Qt::CaseInsensitive) != -1;
     };
 
-    const auto resultIndex = ::search(
-        m_data.disassemblyLines, searchFunc, [this] { emit resultFound({}); }, direction, offset);
+    auto endReached = [this] { emit searchEndReached(); };
+
+    const int resultIndex = ::search(m_data.disassemblyLines, current, direction, searchFunc, endReached);
 
     if (resultIndex >= 0) {
         emit resultFound(createIndex(resultIndex, DisassemblyColumn));

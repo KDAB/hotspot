@@ -83,7 +83,7 @@ public slots:
     void updateHighlighting(int line);
     void setSysroot(const QString& sysroot);
 
-    void find(const QString& search, Direction direction, int offset);
+    void find(const QString& search, Direction direction, int current);
 
 private:
     QString m_sysroot;
