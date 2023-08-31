@@ -20,7 +20,6 @@
 #include "resultsflamegraphpage.h"
 #include "resultssummarypage.h"
 #include "resultstopdownpage.h"
-#include "resultsutil.h"
 
 #include "timelinewidget.h"
 

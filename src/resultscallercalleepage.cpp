@@ -21,7 +21,6 @@
 
 #include "models/callercalleemodel.h"
 #include "models/callercalleeproxy.h"
-#include "models/costdelegate.h"
 #include "models/disassemblyoutput.h"
 #include "models/filterandzoomstack.h"
 #include "models/hashmodel.h"

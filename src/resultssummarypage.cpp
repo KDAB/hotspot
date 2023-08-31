@@ -20,9 +20,6 @@
 #include "resultsutil.h"
 #include "util.h"
 
-#include "models/callercalleemodel.h"
-#include "models/costdelegate.h"
-#include "models/hashmodel.h"
 #include "models/topproxy.h"
 #include "models/treemodel.h"
 

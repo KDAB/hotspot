@@ -18,8 +18,6 @@
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
 
-#include "models/costdelegate.h"
-#include "models/hashmodel.h"
 #include "models/treemodel.h"
 
 namespace {
