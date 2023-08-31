@@ -12,7 +12,6 @@
 #include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
 
-#include "models/hashmodel.h"
 #include "models/treemodel.h"
 
 ResultsTopDownPage::ResultsTopDownPage(FilterAndZoomStack* filterStack, PerfParser* parser,

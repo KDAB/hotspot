@@ -20,8 +20,6 @@
 #include <KParts/ReadOnlyPart>
 
 #include "callgraphgenerator.h"
-#include "hotspot-config.h"
-#include "models/callercalleemodel.h"
 #include "settings.h"
 #include "ui_callgraphwidget.h"
 #include "util.h"

@@ -17,7 +17,6 @@
 #include "dockwidgetsetup.h"
 #include "hotspot-config.h"
 #include "mainwindow.h"
-#include "models/data.h"
 #include "parsers/perf/perfparser.h"
 #include "settings.h"
 #include "util.h"

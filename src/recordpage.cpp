@@ -38,8 +38,6 @@
 #include <Solid/Device>
 #include <Solid/Processor>
 
-#include "hotspot-config.h"
-
 #include "multiconfigwidget.h"
 #include "perfoutputwidgetkonsole.h"
 #include "perfoutputwidgettext.h"
