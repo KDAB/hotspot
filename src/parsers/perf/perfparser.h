@@ -58,6 +58,7 @@ signals:
     void tracepointDataAvailable(const Data::TracepointResults& data);
     void frequencyDataAvailable(const Data::FrequencyResults& data);
     void eventsAvailable(const Data::EventResults& events);
+    void threadNamesAvailable(const Data::ThreadNames& threadNames);
     void parsingFinished();
     void parsingFailed(const QString& errorMessage);
     void exportFailed(const QString& errorMessage);
@@ -86,5 +87,5 @@ private:
     std::atomic<bool> m_stopRequested;
     std::atomic<bool> m_costAggregationChanged;
     std::unique_ptr<QTemporaryFile> m_decompressed;
-    QHash<qint32, QHash<qint32, QString>> m_threadNames;
+    Data::ThreadNames m_threadNames;
 };
