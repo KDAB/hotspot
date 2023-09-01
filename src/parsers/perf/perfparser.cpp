@@ -1563,14 +1563,14 @@ void PerfParser::startParseFile(const QString& path)
             emit tracepointDataAvailable(d.tracepointResult);
             emit eventsAvailable(d.eventResult);
             emit frequencyDataAvailable(d.frequencyResult);
-            emit parsingFinished();
-
             emit threadNamesAvailable(d.commands);
 
             if (d.m_numSamplesWithMoreThanOneFrame == 0) {
                 emit parserWarning(tr("Samples contained no call stack frames. Consider passing <code>--call-graph "
                                       "dwarf</code> to <code>perf record</code>."));
             }
+
+            emit parsingFinished();
         };
 
         if (path.endsWith(QLatin1String(".perfparser"))) {
