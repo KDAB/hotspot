@@ -7,8 +7,6 @@
 #include <QTest>
 
 #include "../../src/parsers/perf/perfparser.h"
-#include "../../src/perfrecord.h"
-#include "../../src/recordhost.h"
 #include "../testutils.h"
 #include "data.h"
 
@@ -16,22 +14,11 @@ class TestCallgraphGenerator : public QObject
 {
     Q_OBJECT
 private slots:
-    void initTestCase()
-    {
-        const QStringList perfOptions = {QStringLiteral("--call-graph"), QStringLiteral("dwarf")};
-        QStringList exeOptions;
-
-        const QString exePath = findExe(QStringLiteral("callgraph"));
-        m_file.open();
-
-        perfRecord(perfOptions, exePath, exeOptions, m_file.fileName());
-    }
-
     void testParent()
     {
-        auto results = callerCalleeResults(m_file.fileName());
+        auto results = callerCalleeResults(s_fileName);
 
-        QVERIFY(callerCalleeResults(m_file.fileName()).entries.size() > 0);
+        QVERIFY(!callerCalleeResults(s_fileName).entries.empty());
 
         auto key = Data::Symbol();
         for (auto it = results.entries.cbegin(); it != results.entries.cend(); it++) {
@@ -51,14 +38,15 @@ private slots:
         int parent1Pos = test.indexOf(QLatin1String("parent1"));
 
         QVERIFY(parent3Pos < parent2Pos);
+
         QVERIFY(parent2Pos < parent1Pos);
     }
 
     void testChild()
     {
-        auto results = callerCalleeResults(m_file.fileName());
+        auto results = callerCalleeResults(s_fileName);
 
-        QVERIFY(callerCalleeResults(m_file.fileName()).entries.size() > 0);
+        QVERIFY(!callerCalleeResults(s_fileName).entries.empty());
 
         auto key = Data::Symbol();
         for (auto it = results.entries.cbegin(); it != results.entries.cend(); it++) {
@@ -82,10 +70,11 @@ private slots:
 private:
     Data::CallerCalleeResults callerCalleeResults(const QString& filename)
     {
-        qputenv("HOTSPOT_PERFPARSER",
-                QCoreApplication::applicationDirPath().toUtf8() + QByteArrayLiteral("/perfparser"));
-        PerfParser parser(this);
+        const QByteArray perfparserPath =
+            QCoreApplication::applicationDirPath().toUtf8() + QByteArrayLiteral("/perfparser");
+        qputenv("HOTSPOT_PERFPARSER", perfparserPath);
 
+        PerfParser parser(this);
         QSignalSpy parsingFinishedSpy(&parser, &PerfParser::parsingFinished);
         QSignalSpy parsingFailedSpy(&parser, &PerfParser::parsingFailed);
 
@@ -97,28 +86,7 @@ private:
         return parser.callerCalleeResults();
     }
 
-    void perfRecord(const QStringList& perfOptions, const QString& exePath, const QStringList& exeOptions,
-                    const QString& fileName)
-    {
-        RecordHost host;
-        PerfRecord perf(&host);
-        QSignalSpy recordingFinishedSpy(&perf, &PerfRecord::recordingFinished);
-        QSignalSpy recordingFailedSpy(&perf, &PerfRecord::recordingFailed);
-
-        // always add `-c 1000000`, as perf's frequency mode is too unreliable for testing purposes
-        perf.record(
-            perfOptions
-                + QStringList {QStringLiteral("-c"), QStringLiteral("1000000"), QStringLiteral("--no-buildid-cache")},
-            fileName, false, exePath, exeOptions);
-
-        VERIFY_OR_THROW(recordingFinishedSpy.wait(10000));
-
-        COMPARE_OR_THROW(recordingFailedSpy.count(), 0);
-        COMPARE_OR_THROW(recordingFinishedSpy.count(), 1);
-        COMPARE_OR_THROW(QFileInfo::exists(fileName), true);
-    }
-
-    QTemporaryFile m_file;
+    const QString s_fileName = QFINDTESTDATA("callgraph.perfparser");
 };
 
 QTEST_GUILESS_MAIN(TestCallgraphGenerator)
