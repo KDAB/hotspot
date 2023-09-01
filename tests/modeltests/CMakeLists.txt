@@ -52,10 +52,6 @@ set_target_properties(
 ecm_add_test(
     tst_callgraphgenerator.cpp
     ../../src/parsers/perf/perfparser.cpp
-    ../../src/initiallystoppedprocess.cpp
-    ../../src/perfcontrolfifowrapper.cpp
-    ../../src/perfrecord.cpp
-    ../../src/recordhost.cpp
     ../../src/callgraphgenerator.cpp
     ../../src/errnoutil.cpp
     LINK_LIBRARIES
