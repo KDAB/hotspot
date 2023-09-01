@@ -555,20 +555,20 @@ void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& loca
 
 template<typename FrameCallback>
 void addBottomUpResult(Data::BottomUpResults* bottomUpResult, Settings::CostAggregation costAggregation,
-                       const QHash<qint32, QHash<qint32, QString>>& commands, int type, quint64 cost, qint32 pid,
-                       qint32 tid, quint32 cpu, const QVector<qint32>& frames, const FrameCallback& frameCallback)
+                       const Data::ThreadNames& commands, int type, quint64 cost, qint32 pid, qint32 tid, quint32 cpu,
+                       const QVector<qint32>& frames, const FrameCallback& frameCallback)
 {
     switch (costAggregation) {
     case Settings::CostAggregation::BySymbol:
         bottomUpResult->addEvent(type, cost, frames, frameCallback);
         break;
     case Settings::CostAggregation::ByThread: {
-        auto thread = commands.value(pid).value(tid);
+        auto thread = commands.names.value(pid).value(tid);
         bottomUpResult->addEvent(thread.isEmpty() ? QString::number(tid) : thread, type, cost, frames, frameCallback);
         break;
     }
     case Settings::CostAggregation::ByProcess: {
-        auto process = commands.value(pid).value(pid);
+        auto process = commands.names.value(pid).value(pid);
         bottomUpResult->addEvent(process.isEmpty() ? QString::number(pid) : process, type, cost, frames, frameCallback);
         break;
     }
@@ -747,8 +747,8 @@ public:
             auto thread = addThread(threadStart);
             thread->time.start = threadStart.time;
             if (threadStart.ppid != threadStart.pid) {
-                const auto parentComm = commands.value(threadStart.ppid).value(threadStart.ppid);
-                commands[threadStart.pid][threadStart.pid] = parentComm;
+                const auto parentComm = commands.names.value(threadStart.ppid).value(threadStart.ppid);
+                commands.names[threadStart.pid][threadStart.pid] = parentComm;
                 thread->name = parentComm;
             }
             break;
@@ -960,9 +960,9 @@ public:
         // we started the application, otherwise we override the start time when
         // we encounter a ThreadStart event
         thread.time.start = applicationTime.start;
-        thread.name = commands.value(thread.pid).value(thread.tid);
+        thread.name = commands.names.value(thread.pid).value(thread.tid);
         if (thread.name.isEmpty() && thread.pid != thread.tid)
-            thread.name = commands.value(thread.pid).value(thread.pid);
+            thread.name = commands.names.value(thread.pid).value(thread.pid);
         eventResult.threads.push_back(thread);
         return &eventResult.threads.last();
     }
@@ -984,7 +984,7 @@ public:
             thread->name = comm;
         }
         // and remember the command, maybe a future ThreadStart event references it
-        commands[command.pid][command.tid] = comm;
+        commands.names[command.pid][command.tid] = comm;
     }
 
     void addLocation(const LocationDefinition& location)
@@ -1124,7 +1124,7 @@ public:
     void addSampleToBottomUp(const Sample& sample, SampleCost sampleCost)
     {
         if (perfScriptOutput) {
-            *perfScriptOutput << commands.value(sample.pid).value(sample.pid) << '\t' << sample.pid << '\t'
+            *perfScriptOutput << commands.names.value(sample.pid).value(sample.pid) << '\t' << sample.pid << '\t'
                               << sample.time / 1000000000 << '.' << qSetFieldWidth(9) << qSetPadChar(QLatin1Char('0'))
                               << sample.time % 1000000000 << qSetFieldWidth(0) << ":\t" << sampleCost.cost << ' '
                               << strings.value(attributes.value(sampleCost.attributeId).name.id) << '\n';
@@ -1376,7 +1376,7 @@ public:
     Data::EventResults eventResult;
     Data::TracepointResults tracepointResult;
     Data::FrequencyResults frequencyResult;
-    QHash<qint32, QHash<qint32, QString>> commands;
+    Data::ThreadNames commands;
     std::unique_ptr<QTextStream> perfScriptOutput;
     QHash<qint32, SymbolCount> numSymbolsByModule;
     QSet<QString> encounteredErrors;
@@ -1420,6 +1420,7 @@ PerfParser::PerfParser(QObject* parent)
     qRegisterMetaType<Data::PerLibraryResults>();
     qRegisterMetaType<Data::TracepointResults>();
     qRegisterMetaType<Data::FrequencyResults>();
+    qRegisterMetaType<Data::ThreadNames>();
 
     // set data via signal/slot connection to ensure we don't introduce a data race
     connect(this, &PerfParser::bottomUpDataAvailable, this, [this](const Data::BottomUpResults& data) {
@@ -1447,6 +1448,8 @@ PerfParser::PerfParser(QObject* parent)
             m_tracepointResults = data;
         }
     });
+    connect(this, &PerfParser::threadNamesAvailable, this,
+            [this](const Data::ThreadNames& threadNames) { m_threadNames = threadNames; });
     connect(this, &PerfParser::parsingStarted, this, [this]() {
         m_isParsing = true;
         m_stopRequested = false;
@@ -1562,7 +1565,7 @@ void PerfParser::startParseFile(const QString& path)
             emit frequencyDataAvailable(d.frequencyResult);
             emit parsingFinished();
 
-            m_threadNames = d.commands;
+            emit threadNamesAvailable(d.commands);
 
             if (d.m_numSamplesWithMoreThanOneFrame == 0) {
                 emit parserWarning(tr("Samples contained no call stack frames. Consider passing <code>--call-graph "

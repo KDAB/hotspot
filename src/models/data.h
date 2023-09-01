@@ -821,6 +821,11 @@ struct Summary
     QStringList errors;
 };
 
+struct ThreadNames
+{
+    QHash<qint32, QHash<qint32, QString>> names;
+};
+
 struct EventResults
 {
     QVector<ThreadEvents> threads;
@@ -950,6 +955,9 @@ Q_DECLARE_TYPEINFO(Data::Summary, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::CostSummary)
 Q_DECLARE_TYPEINFO(Data::CostSummary, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::ThreadNames)
+Q_DECLARE_TYPEINFO(Data::ThreadNames, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::EventResults)
 Q_DECLARE_TYPEINFO(Data::EventResults, Q_MOVABLE_TYPE);
