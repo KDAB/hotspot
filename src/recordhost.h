@@ -14,6 +14,7 @@
 enum class RecordType
 {
     LaunchApplication,
+    LaunchRemoteApplication,
     AttachToProcess,
     ProfileSystem,
     NUM_RECORD_TYPES

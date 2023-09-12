@@ -19,6 +19,7 @@ class DebuginfodPage;
 class CallgraphSettingsPage;
 class DisassemblySettingsPage;
 class PerfSettingsPage;
+class SSHSettingsPage;
 }
 
 class MultiConfigWidget;
@@ -51,6 +52,7 @@ private:
     void addDebuginfodPage();
     void addCallgraphPage();
     void addSourcePathPage();
+    void addSSHPage();
 
     std::unique_ptr<Ui::PerfSettingsPage> perfPage;
     std::unique_ptr<Ui::UnwindSettingsPage> unwindPage;
@@ -58,4 +60,5 @@ private:
     std::unique_ptr<Ui::DebuginfodPage> debuginfodPage;
     std::unique_ptr<Ui::DisassemblySettingsPage> disassemblyPage;
     std::unique_ptr<Ui::CallgraphSettingsPage> callgraphPage;
+    std::unique_ptr<Ui::SSHSettingsPage> sshSettingsPage;
 };

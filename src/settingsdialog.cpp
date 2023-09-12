@@ -13,6 +13,8 @@
 #include "ui_disassemblysettingspage.h"
 #include "ui_flamegraphsettingspage.h"
 #include "ui_perfsettingspage.h"
+#include "ui_sourcepathsettings.h"
+#include "ui_sshsettingspage.h"
 #include "ui_unwindsettingspage.h"
 
 #include "multiconfigwidget.h"
@@ -26,6 +28,7 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QListView>
+#include <QProcess>
 
 #include <hotspot-config.h>
 
@@ -63,6 +66,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
 #if KGraphViewerPart_FOUND
     , callgraphPage(new Ui::CallgraphSettingsPage)
 #endif
+    , sshSettingsPage(new Ui::SSHSettingsPage)
 {
     addPerfSettingsPage();
     addPathSettingsPage();
@@ -72,6 +76,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     addCallgraphPage();
 #endif
     addSourcePathPage();
+    addSSHPage();
 }
 
 SettingsDialog::~SettingsDialog() = default;
@@ -270,5 +275,69 @@ void SettingsDialog::addSourcePathPage()
     connect(buttonBox(), &QDialogButtonBox::accepted, this, [this, colon, settings] {
         settings->setSourceCodePaths(disassemblyPage->sourcePaths->items().join(colon));
         settings->setShowBranches(disassemblyPage->showBranches->isChecked());
+    });
+}
+
+void SettingsDialog::addSSHPage()
+{
+    auto page = new QWidget(this);
+    auto item = addPage(page, tr("SSH Settings"));
+    item->setHeader(tr("SSH Settings Page"));
+    item->setIcon(QIcon::fromTheme(QStringLiteral("preferences-system-windows-behavior")));
+    sshSettingsPage->setupUi(page);
+    sshSettingsPage->messageWidget->hide();
+    sshSettingsPage->errorWidget->hide();
+
+    auto configGroup = KSharedConfig::openConfig()->group("SSH");
+    sshSettingsPage->deviceConfig->setChildWidget(
+        sshSettingsPage->deviceSettings,
+        {sshSettingsPage->username, sshSettingsPage->hostname, sshSettingsPage->options});
+    sshSettingsPage->deviceConfig->setConfigGroup(configGroup);
+
+    connect(sshSettingsPage->copySshKeyButton, &QPushButton::pressed, this, [this] {
+        auto* copyKey = new QProcess(this);
+
+        auto path = sshSettingsPage->sshCopyIdPath->text();
+        if (path.isEmpty()) {
+            path = QStandardPaths::findExecutable(QStringLiteral("ssh-copy-id"));
+        }
+        if (path.isEmpty()) {
+            sshSettingsPage->messageWidget->setText(tr("Could not find ssh-copy-id"));
+            sshSettingsPage->messageWidget->show();
+            return;
+        }
+
+        copyKey->setProgram(path);
+
+        QStringList arguments = {};
+        auto options = sshSettingsPage->options->text();
+        if (!options.isEmpty()) {
+            arguments.append(options.split(QLatin1Char(' ')));
+        }
+        arguments.append(
+            QStringLiteral("%1@%2").arg(sshSettingsPage->username->text(), sshSettingsPage->hostname->text()));
+        copyKey->setArguments(arguments);
+
+        connect(copyKey, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this,
+                [this, copyKey](int code, QProcess::ExitStatus) {
+                    if (code == 0) {
+                        sshSettingsPage->messageWidget->setText(QStringLiteral("Copy key successfully"));
+                        sshSettingsPage->messageWidget->show();
+                    } else {
+                        sshSettingsPage->errorWidget->setText(QStringLiteral("Failed to copy key"));
+                        sshSettingsPage->errorWidget->show();
+                    }
+                    copyKey->deleteLater();
+                });
+        copyKey->start();
+    });
+
+    connect(buttonBox(), &QDialogButtonBox::accepted, this, [this, configGroup] {
+        sshSettingsPage->deviceConfig->saveCurrentConfig();
+
+        auto settings = Settings::instance();
+        settings->setDevices(configGroup.groupList());
+        settings->setSSHPath(sshSettingsPage->sshBinary->text());
+        settings->setSSHCopyKeyPath(sshSettingsPage->sshCopyIdPath->text());
     });
 }
