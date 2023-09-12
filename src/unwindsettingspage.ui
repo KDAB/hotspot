@@ -16,186 +16,210 @@
   <property name="sizeGripEnabled" stdset="0">
    <bool>true</bool>
   </property>
-  <layout class="QFormLayout" name="formLayout">
-   <item row="0" column="1">
-    <widget class="KUrlRequester" name="lineEditSysroot">
-     <property name="toolTip">
-      <string>Path to the sysroot. Leave empty to use the local machine.</string>
-     </property>
-     <property name="placeholderText">
-      <string>local machine</string>
-     </property>
-    </widget>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="MultiConfigWidget" name="multiConfig" native="true"/>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="applicationPathLabel">
-     <property name="toolTip">
-      <string>Path to the application binary and library.</string>
-     </property>
-     <property name="text">
-      <string>Application Path:</string>
-     </property>
-     <property name="buddy">
-      <cstring>lineEditApplicationPath</cstring>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="KUrlRequester" name="lineEditApplicationPath">
-     <property name="toolTip">
-      <string>Path to the application binary and library.</string>
-     </property>
-     <property name="placeholderText">
-      <string>auto-detect</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="KEditListWidget" name="extraLibraryPaths">
-     <property name="focusPolicy">
-      <enum>Qt::TabFocus</enum>
-     </property>
-     <property name="toolTip">
-      <string>List of paths that contain additional libraries.</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="debugPathsLabel">
-     <property name="toolTip">
-      <string>List of that contain debug information.</string>
-     </property>
-     <property name="text">
-      <string>Debug Paths:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
-    <widget class="KEditListWidget" name="debugPaths">
-     <property name="focusPolicy">
-      <enum>Qt::TabFocus</enum>
-     </property>
-     <property name="toolTip">
-      <string>List of paths that contain debug information.</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="0">
-    <widget class="QLabel" name="kallsymsLabel">
-     <property name="toolTip">
-      <string>Path to the kernel symbol mapping.</string>
-     </property>
-     <property name="text">
-      <string>Kallsyms:</string>
-     </property>
-     <property name="buddy">
-      <cstring>lineEditKallsyms</cstring>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="1">
-    <widget class="KUrlRequester" name="lineEditKallsyms">
-     <property name="toolTip">
-      <string>Path to the kernel symbol mapping.</string>
-     </property>
-     <property name="placeholderText">
-      <string>auto-detect</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="0">
-    <widget class="QLabel" name="archLabel">
-     <property name="toolTip">
-      <string>System architecture, e.g. x86_64, arm, aarch64 etc.</string>
-     </property>
-     <property name="text">
-      <string>Architecture:</string>
-     </property>
-     <property name="buddy">
-      <cstring>comboBoxArchitecture</cstring>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="1">
-    <widget class="QComboBox" name="comboBoxArchitecture">
-     <property name="toolTip">
-      <string>System architecture, e.g. x86_64, arm, aarch64 etc.</string>
-     </property>
-     <property name="editable">
-      <bool>true</bool>
-     </property>
-     <item>
-      <property name="text">
-       <string>auto-detect</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>x64</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>ARMv7 (32 bit)</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>ARMv8 (64 bit)</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="9" column="0">
-    <widget class="QLabel" name="objdumpLabel">
-     <property name="toolTip">
-      <string>&lt;qt&gt;The &lt;tt&gt;objdump&lt;/tt&gt; binary that will be used for the disassembly view. Leave empty to let it be auto-detected.&lt;/qt&gt;</string>
-     </property>
-     <property name="text">
-      <string>Objdump:</string>
-     </property>
-     <property name="buddy">
-      <cstring>lineEditObjdump</cstring>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="1">
-    <widget class="KUrlRequester" name="lineEditObjdump">
-     <property name="toolTip">
-      <string>&lt;qt&gt;The &lt;tt&gt;objdump&lt;/tt&gt; binary that will be used for the disassembly view. Leave empty to let it be auto-detected.&lt;/qt&gt;</string>
-     </property>
-     <property name="placeholderText">
-      <string>auto-detect</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="extraLibraryPathsLabel">
-     <property name="toolTip">
-      <string>List of paths that contain additional libraries.</string>
-     </property>
-     <property name="text">
-      <string>Extra Library Paths:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="sysrootLabel">
-     <property name="toolTip">
-      <string>Path to the sysroot. Leave empty to use the local machine.</string>
-     </property>
-     <property name="text">
-      <string>Sysroot:</string>
-     </property>
-     <property name="buddy">
-      <cstring>lineEditSysroot</cstring>
-     </property>
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QFormLayout" name="formLayout_3">
+      <item row="3" column="1">
+       <widget class="KUrlRequester" name="appPath">
+        <property name="toolTip">
+         <string>Path to the application binary and library.</string>
+        </property>
+        <property name="placeholderText">
+         <string>auto-detect</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="KUrlRequester" name="sysroot">
+        <property name="toolTip">
+         <string>Path to the sysroot. Leave empty to use the local machine.</string>
+        </property>
+        <property name="placeholderText">
+         <string>local machine</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="KEditListWidget" name="extraLibraryPaths">
+        <property name="focusPolicy">
+         <enum>Qt::TabFocus</enum>
+        </property>
+        <property name="toolTip">
+         <string>List of paths that contain additional libraries.</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="extraLibraryPathsLabel">
+        <property name="toolTip">
+         <string>List of paths that contain additional libraries.</string>
+        </property>
+        <property name="text">
+         <string>Extra Library Paths:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="KEditListWidget" name="debugPaths">
+        <property name="focusPolicy">
+         <enum>Qt::TabFocus</enum>
+        </property>
+        <property name="toolTip">
+         <string>List of paths that contain debug information.</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1">
+       <widget class="KUrlRequester" name="kallsyms">
+        <property name="toolTip">
+         <string>Path to the kernel symbol mapping.</string>
+        </property>
+        <property name="placeholderText">
+         <string>auto-detect</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="kallsymsLabel">
+        <property name="toolTip">
+         <string>Path to the kernel symbol mapping.</string>
+        </property>
+        <property name="text">
+         <string>Kallsyms:</string>
+        </property>
+        <property name="buddy">
+         <cstring>kallsyms</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="debugPathsLabel">
+        <property name="toolTip">
+         <string>List of that contain debug information.</string>
+        </property>
+        <property name="text">
+         <string>Debug Paths:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="applicationPathLabel">
+        <property name="toolTip">
+         <string>Path to the application binary and library.</string>
+        </property>
+        <property name="text">
+         <string>Application Path:</string>
+        </property>
+        <property name="buddy">
+         <cstring>appPath</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="sysrootLabel">
+        <property name="toolTip">
+         <string>Path to the sysroot. Leave empty to use the local machine.</string>
+        </property>
+        <property name="text">
+         <string>Sysroot:</string>
+        </property>
+        <property name="buddy">
+         <cstring>sysroot</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0">
+       <widget class="QLabel" name="archLabel">
+        <property name="toolTip">
+         <string>System architecture, e.g. x86_64, arm, aarch64 etc.</string>
+        </property>
+        <property name="text">
+         <string>Architecture:</string>
+        </property>
+        <property name="buddy">
+         <cstring>arch</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="1">
+       <widget class="QComboBox" name="arch">
+        <property name="toolTip">
+         <string>System architecture, e.g. x86_64, arm, aarch64 etc.</string>
+        </property>
+        <property name="editable">
+         <bool>true</bool>
+        </property>
+        <item>
+         <property name="text">
+          <string>auto-detect</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>x64</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>ARMv7 (32 bit)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>ARMv8 (64 bit)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="11" column="1">
+       <widget class="KUrlRequester" name="objdump">
+        <property name="toolTip">
+         <string>&lt;qt&gt;The &lt;tt&gt;objdump&lt;/tt&gt; binary that will be used for the disassembly view. Leave empty to let it be auto-detected.&lt;/qt&gt;</string>
+        </property>
+        <property name="placeholderText">
+         <string>auto-detect</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0">
+       <widget class="QLabel" name="objdumpLabel">
+        <property name="toolTip">
+         <string>&lt;qt&gt;The &lt;tt&gt;objdump&lt;/tt&gt; binary that will be used for the disassembly view. Leave empty to let it be auto-detected.&lt;/qt&gt;</string>
+        </property>
+        <property name="text">
+         <string>Objdump:</string>
+        </property>
+        <property name="buddy">
+         <cstring>objdump</cstring>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
    <item row="10" column="0">
@@ -225,16 +249,13 @@
    <extends>QWidget</extends>
    <header>keditlistwidget.h</header>
   </customwidget>
+  <customwidget>
+   <class>MultiConfigWidget</class>
+   <extends>QWidget</extends>
+   <header>multiconfigwidget.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
- <tabstops>
-  <tabstop>lineEditSysroot</tabstop>
-  <tabstop>lineEditApplicationPath</tabstop>
-  <tabstop>extraLibraryPaths</tabstop>
-  <tabstop>debugPaths</tabstop>
-  <tabstop>lineEditKallsyms</tabstop>
-  <tabstop>comboBoxArchitecture</tabstop>
-  <tabstop>lineEditObjdump</tabstop>
- </tabstops>
  <resources/>
  <connections/>
 </ui>

@@ -1,7 +1,6 @@
 /*
     SPDX-FileCopyrightText: Lieven Hey <lieven.hey@kdab.com>
-    SPDX-FileCopyrightText: Milian Wolff <milian.wolff@kdab.com>
-    SPDX-FileCopyrightText: 2016-2022 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+    SPDX-FileCopyrightText: 2022-2023 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
 
     SPDX-License-Identifier: GPL-2.0-or-later
 */
@@ -11,32 +10,46 @@
 #include <KConfigGroup>
 #include <QWidget>
 
-class QComboBox;
-class QPushButton;
+namespace Ui {
+class MultiConfigWidget;
+}
 
+/** this widget allows fast switching between different configurations
+ * of m_child
+ * saveConfig will automatically save all changes to m_group
+ * use setChildWidget for an unparented one and moveWidgetToChild for a parented one
+ * */
 class MultiConfigWidget : public QWidget
 {
     Q_OBJECT
 public:
     MultiConfigWidget(QWidget* parent = nullptr);
-    ~MultiConfigWidget();
+    ~MultiConfigWidget() override;
+
+    /** widget is the widget containing the form which will be shown inside the MultiConfigWidget
+     * formWidgets is a list of all user editable widgets in widget that will automatically be saved and restored
+     * each widget in formWidgets needs a unique name **/
+    void setChildWidget(QWidget* widget, const QVector<QWidget*>& formWidgets);
+
+    /** set group where everything should be saved in **/
+    void setConfigGroup(const KConfigGroup& group);
 
     QString currentConfig() const;
 
-signals:
-    void saveConfig(KConfigGroup group);
-    void restoreConfig(const KConfigGroup& group);
-
 public slots:
-    void setConfig(const KConfigGroup& group);
-    void saveConfigAs(const QString& name);
-    void updateCurrentConfig();
-    void selectConfig(const QString& name);
-    void restoreCurrent();
+    void loadConfig(const QString& name);
+    void saveConfig(const QString& name);
+    void saveCurrentConfig();
+
+signals:
+    void configsChanged();
+    void currentConfigChanged();
 
 private:
-    KConfigGroup m_config;
-    QComboBox* m_comboBox = nullptr;
-    QPushButton* m_copyButton = nullptr;
-    QPushButton* m_removeButton = nullptr;
+    QStringList configs() const;
+    std::unique_ptr<Ui::MultiConfigWidget> m_configWidget;
+    QWidget* m_child = nullptr;
+    QVector<QWidget*> m_formWidgets;
+    KConfigGroup m_group;
+    bool m_saving = false;
 };

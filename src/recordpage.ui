@@ -54,74 +54,95 @@
      <property name="title">
       <string>Launch Application</string>
      </property>
-     <layout class="QFormLayout" name="formLayout_1">
-      <property name="fieldGrowthPolicy">
-       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-      </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="applicationLabel">
-        <property name="toolTip">
-         <string>Path to the application to be recorded</string>
-        </property>
-        <property name="text">
-         <string>App&amp;lication:</string>
-        </property>
-        <property name="buddy">
-         <cstring>applicationName</cstring>
-        </property>
-       </widget>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="MultiConfigWidget" name="multiConfig" native="true"/>
       </item>
-      <item row="0" column="1">
-       <widget class="KUrlComboRequester" name="applicationName">
-        <property name="toolTip">
-         <string>Path to the application to be recorded</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="applicationParamsLabel">
-        <property name="toolTip">
-         <string>Optional parameters to pass to the application being recorded</string>
-        </property>
-        <property name="text">
-         <string>Parame&amp;ters:</string>
-        </property>
-        <property name="buddy">
-         <cstring>applicationParametersBox</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="applicationParametersBox">
-        <property name="contextMenuPolicy">
-         <enum>Qt::NoContextMenu</enum>
-        </property>
-        <property name="toolTip">
-         <string>Optional parameters to pass to the application being recorded</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="workingDirectoryLabel">
-        <property name="toolTip">
-         <string>Directory to store the perf data file while recording</string>
-        </property>
-        <property name="text">
-         <string>Wor&amp;king Directory:</string>
-        </property>
-        <property name="buddy">
-         <cstring>workingDirectory</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="KUrlRequester" name="workingDirectory">
-        <property name="toolTip">
-         <string>Directory to store the perf data file while recording</string>
-        </property>
+      <item>
+       <widget class="QWidget" name="launchWidget" native="true">
+        <layout class="QFormLayout" name="formLayout_1">
+         <property name="horizontalSpacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item row="1" column="1">
+          <widget class="KUrlComboRequester" name="applicationName">
+           <property name="toolTip">
+            <string>Path to the application to be recorded</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="applicationLabel">
+           <property name="toolTip">
+            <string>Path to the application to be recorded</string>
+           </property>
+           <property name="text">
+            <string>App&amp;lication:</string>
+           </property>
+           <property name="buddy">
+            <cstring>applicationName</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="applicationParamsLabel">
+           <property name="toolTip">
+            <string>Optional parameters to pass to the application being recorded</string>
+           </property>
+           <property name="text">
+            <string>Parame&amp;ters:</string>
+           </property>
+           <property name="buddy">
+            <cstring>applicationParametersBox</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="workingDirectoryLabel">
+           <property name="toolTip">
+            <string>Directory to store the perf data file while recording</string>
+           </property>
+           <property name="text">
+            <string>Wor&amp;king Directory:</string>
+           </property>
+           <property name="buddy">
+            <cstring>workingDirectory</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="KUrlRequester" name="workingDirectory">
+           <property name="toolTip">
+            <string>Directory to store the perf data file while recording</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="applicationParametersBox">
+           <property name="contextMenuPolicy">
+            <enum>Qt::NoContextMenu</enum>
+           </property>
+           <property name="toolTip">
+            <string>Optional parameters to pass to the application being recorded</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>
@@ -618,6 +639,12 @@
    <class>KMessageWidget</class>
    <extends>QFrame</extends>
    <header>kmessagewidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MultiConfigWidget</class>
+   <extends>QWidget</extends>
+   <header>multiconfigwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

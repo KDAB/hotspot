@@ -1,119 +1,208 @@
 /*
     SPDX-FileCopyrightText: Lieven Hey <lieven.hey@kdab.com>
-    SPDX-FileCopyrightText: Milian Wolff <milian.wolff@kdab.com>
-    SPDX-FileCopyrightText: 2016-2022 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+    SPDX-FileCopyrightText: 2022-2023 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
 
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
 #include "multiconfigwidget.h"
 
+#include <algorithm>
+
 #include <QComboBox>
+#include <QDebug>
 #include <QHBoxLayout>
 #include <QLineEdit>
 #include <QPushButton>
 
+#include <KUrlRequester>
+
+#include "ui_multiconfigwidget.h"
+
 MultiConfigWidget::MultiConfigWidget(QWidget* parent)
     : QWidget(parent)
+    , m_configWidget(new Ui::MultiConfigWidget)
 {
-    auto* layout = new QHBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
+    m_configWidget->setupUi(this);
 
-    m_comboBox = new QComboBox(this);
-    m_comboBox->setEditable(true);
-    m_comboBox->setInsertPolicy(QComboBox::InsertAtCurrent);
-    m_comboBox->setDisabled(true);
-    layout->addWidget(m_comboBox);
+    connect(m_configWidget->currentConfigComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+            [this](int) { loadConfig(currentConfig()); });
 
-    connect(m_comboBox->lineEdit(), &QLineEdit::editingFinished, this, [this] {
-        m_config.deleteGroup(m_comboBox->currentData().toString());
-        saveConfigAs(m_comboBox->currentText());
-        m_comboBox->setItemData(m_comboBox->currentIndex(), m_comboBox->currentText());
-        m_config.sync();
+    connect(this, &MultiConfigWidget::configsChanged, this, [this]() {
+        m_configWidget->currentConfigComboBox->setDisabled(m_configWidget->currentConfigComboBox->count() == 0);
     });
 
-    connect(m_comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
-            [this] { selectConfig(m_comboBox->currentData().toString()); });
+    m_configWidget->currentConfigComboBox->setEnabled(true);
 
-    m_copyButton = new QPushButton(this);
-    m_copyButton->setText(tr("Copy Config"));
-    layout->addWidget(m_copyButton);
-
-    connect(m_copyButton, &QPushButton::clicked, this, [this] {
-        const QString name = tr("Config %1").arg(m_comboBox->count() + 1);
-        saveConfigAs(name);
-        m_comboBox->addItem(name, name);
-        m_comboBox->setDisabled(false);
-    });
-
-    m_removeButton = new QPushButton(this);
-    m_removeButton->setText(tr("Remove Config"));
-    layout->addWidget(m_removeButton);
-
-    connect(m_removeButton, &QPushButton::clicked, this, [this] {
-        m_config.deleteGroup(m_comboBox->currentData().toString());
-        m_comboBox->removeItem(m_comboBox->currentIndex());
-
-        if (m_comboBox->count() == 0) {
-            m_comboBox->setDisabled(true);
-        } else {
-            selectConfig(m_comboBox->currentData().toString());
+    connect(m_configWidget->copyButton, &QPushButton::pressed, this, [this] {
+        const auto name = m_configWidget->currentConfigComboBox->currentText();
+        auto copyName = QStringLiteral("Copy of %1").arg(name);
+        if (name.isEmpty()) {
+            copyName = QStringLiteral("Config");
         }
+        saveConfig(copyName);
+        m_configWidget->currentConfigComboBox->addItem(copyName, copyName);
+        m_configWidget->currentConfigComboBox->setCurrentIndex(m_configWidget->currentConfigComboBox->count() - 1);
+        emit configsChanged();
     });
 
-    setLayout(layout);
+    connect(m_configWidget->deleteButton, &QPushButton::pressed, this, [this] {
+        const auto currentConfig = m_configWidget->currentConfigComboBox->currentText();
+        m_configWidget->currentConfigComboBox->removeItem(m_configWidget->currentConfigComboBox->currentIndex());
+        m_group.deleteGroup(currentConfig);
+        emit configsChanged();
+    });
+
+    connect(m_configWidget->currentConfigComboBox->lineEdit(), &QLineEdit::returnPressed, this, [this] {
+        const auto oldName = m_configWidget->currentConfigComboBox->currentData().toString();
+        if (!oldName.isEmpty()) {
+            m_group.deleteGroup(oldName);
+        }
+
+        auto newName = m_configWidget->currentConfigComboBox->currentText();
+        if (newName.isEmpty()) {
+            newName = QStringLiteral("Config %1").arg(m_configWidget->currentConfigComboBox->currentIndex());
+        }
+        m_configWidget->currentConfigComboBox->setItemData(m_configWidget->currentConfigComboBox->currentIndex(),
+                                                           newName);
+        saveConfig(newName);
+    });
 }
 
 MultiConfigWidget::~MultiConfigWidget() = default;
 
-QString MultiConfigWidget::currentConfig() const
+void MultiConfigWidget::setChildWidget(QWidget* widget, const QVector<QWidget*>& formWidgets)
 {
-    return m_comboBox->currentData().toString();
+    m_formWidgets = formWidgets;
+    m_child = widget;
+    m_child->setParent(this);
+    auto placeholder = m_configWidget->layout->replaceWidget(m_configWidget->placeholder, m_child);
+    Q_ASSERT(placeholder);
+    delete placeholder;
 }
 
-void MultiConfigWidget::setConfig(const KConfigGroup& group)
+void MultiConfigWidget::setConfigGroup(const KConfigGroup& group)
 {
-    m_comboBox->clear();
-    m_config = group;
-
-    if (!m_config.isValid())
+    m_group = group;
+    if (!m_group.isValid()) {
         return;
+    }
 
-    const auto groups = m_config.groupList();
-    for (const auto& config : groups) {
-        if (m_config.hasGroup(config)) {
-            // item data is used to get the old name after renaming
-            m_comboBox->addItem(config, config);
-            m_comboBox->setDisabled(false);
+    m_configWidget->currentConfigComboBox->clear();
+    auto configGroups = configs();
+    for (const auto& config : configGroups) {
+        m_configWidget->currentConfigComboBox->addItem(config, config);
+    }
+
+    m_configWidget->currentConfigComboBox->setCurrentIndex(0);
+
+    if (!configGroups.isEmpty()) {
+        loadConfig(currentConfig());
+    }
+    emit configsChanged();
+}
+
+void MultiConfigWidget::loadConfig(const QString& name)
+{
+    if (m_saving) {
+        return;
+    }
+
+    if (m_child == nullptr) {
+        return;
+    }
+
+    if (name.isEmpty() || !m_group.isValid()) {
+        return;
+    }
+
+    if (!m_group.hasGroup(name)) {
+        return;
+    }
+
+    const auto& group = m_group.group(name);
+
+    for (auto formWidget : std::as_const(m_formWidgets)) {
+        const auto& name = formWidget->objectName();
+        if (auto widget = qobject_cast<QLineEdit*>(formWidget)) {
+            auto text = group.readEntry(name, QString {});
+            widget->setText(text);
+        } else if (auto widget = qobject_cast<KUrlRequester*>(formWidget)) {
+            auto text = group.readEntry(name, QString {});
+            widget->setText(text);
+        } else if (auto widget = qobject_cast<KEditListWidget*>(formWidget)) {
+            auto items = group.readEntry(name, QString {}).split(QLatin1Char(':'));
+            widget->setItems(items);
+        } else if (auto widget = qobject_cast<QComboBox*>(formWidget)) {
+            auto value = group.readEntry(name, QString {});
+            if (value.isEmpty()) {
+                continue;
+            }
+            auto index = widget->findText(value);
+            if (index == -1) {
+                index = widget->count();
+                widget->addItem(value);
+            }
+            widget->setCurrentIndex(index);
+        } else {
+            qWarning() << formWidget->metaObject()->className() << "is not supported in MultiConfigWidget";
         }
     }
 }
 
-void MultiConfigWidget::saveConfigAs(const QString& name)
+void MultiConfigWidget::saveConfig(const QString& name)
 {
-    if (!name.isEmpty()) {
-        emit saveConfig(m_config.group(name));
+    if (!m_child) {
+        return;
     }
+
+    if (name.isEmpty() || !m_group.isValid()) {
+        return;
+    }
+
+    m_saving = true;
+
+    auto group = m_group.group(name);
+
+    for (const auto formWidget : std::as_const(m_formWidgets)) {
+        const auto& name = formWidget->objectName();
+        if (auto widget = qobject_cast<const QLineEdit*>(formWidget)) {
+            group.writeEntry(name, widget->text());
+        } else if (auto widget = qobject_cast<const KUrlRequester*>(formWidget)) {
+            group.writeEntry(name, widget->text());
+        } else if (auto widget = qobject_cast<const KEditListWidget*>(formWidget)) {
+            auto data = widget->items().join(QLatin1Char(':'));
+            group.writeEntry(name, data);
+        } else if (auto widget = qobject_cast<const QComboBox*>(formWidget)) {
+            group.writeEntry(name, widget->currentText());
+        } else {
+            qWarning() << formWidget->metaObject()->className() << "is not supported in MultiConfigWidget";
+        }
+    }
+
+    m_saving = false;
 }
 
-void MultiConfigWidget::updateCurrentConfig()
+void MultiConfigWidget::saveCurrentConfig()
 {
-    if (m_comboBox->currentIndex() != -1) {
-        saveConfigAs(m_comboBox->currentData().toString());
-    }
+    saveConfig(currentConfig());
 }
 
-void MultiConfigWidget::selectConfig(const QString& name)
+QString MultiConfigWidget::currentConfig() const
 {
-    m_config.sync();
-    if (!name.isEmpty() && m_config.hasGroup(name)) {
-        emit restoreConfig(m_config.group(name));
-    }
+    return m_configWidget->currentConfigComboBox->currentText();
 }
 
-void MultiConfigWidget::restoreCurrent()
+QStringList MultiConfigWidget::configs() const
 {
-    if (m_comboBox->currentIndex() != -1) {
-        selectConfig(m_comboBox->currentData().toString());
-    }
+    auto configs = m_group.groupList();
+    // KConfig is weird in regards to deleted groups
+    // they are still in groupList but are no longer valid
+    // TODO: C++20 use filter
+    configs.erase(std::remove_if(configs.begin(), configs.end(),
+                                 [group = m_group](const QString& groupName) {
+                                     return !group.hasGroup(groupName) || !group.group(groupName).exists();
+                                 }),
+                  configs.end());
+    return configs;
 }

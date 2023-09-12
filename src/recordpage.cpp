@@ -40,7 +40,6 @@
 #include <Solid/Device>
 #include <Solid/Processor>
 
-#include "multiconfigwidget.h"
 #include "perfoutputwidgetkonsole.h"
 #include "perfoutputwidgettext.h"
 #include "perfrecord.h"
@@ -192,13 +191,19 @@ RecordPage::RecordPage(QWidget* parent)
         }
     });
 
-    connect(m_recordHost, &RecordHost::clientApplicationChanged, this, [this](const QString& filePath) {
-        const auto config = applicationConfig(filePath);
-        ui->workingDirectory->setText(config.readEntry("workingDir", QString()));
-        ui->applicationParametersBox->setText(config.readEntry("params", QString()));
+    ui->multiConfig->setChildWidget(ui->launchWidget, {ui->applicationParametersBox, ui->workingDirectory});
 
-        m_multiConfig->setConfig(applicationConfig(ui->applicationName->text()));
-    });
+    connect(m_recordHost, &RecordHost::clientApplicationChanged, this,
+            [this](const QString& app) { ui->multiConfig->setConfigGroup(applicationConfig(app)); });
+
+    connect(ui->workingDirectory, qOverload<const QString&>(&KUrlRequester::returnPressed), this,
+            [this](const QString& cwd) {
+                ui->multiConfig->saveCurrentConfig();
+                m_recordHost->setCurrentWorkingDirectory(cwd);
+            });
+
+    connect(ui->applicationParametersBox, &QLineEdit::editingFinished, this,
+            [this] { ui->multiConfig->saveCurrentConfig(); });
 
     ui->compressionComboBox->addItem(tr("Disabled"), -1);
     ui->compressionComboBox->addItem(tr("Enabled (Default Level)"), 0);
@@ -270,30 +275,6 @@ RecordPage::RecordPage(QWidget* parent)
 
     connect(m_perfOutput, &PerfOutputWidget::sendInput, this,
             [this](const QByteArray& input) { m_perfRecord->sendInput(input); });
-
-    auto saveFunction = [this](KConfigGroup group) {
-        group.writeEntry("params", ui->applicationParametersBox->text());
-        group.writeEntry("workingDir", ui->workingDirectory->text());
-    };
-
-    auto restoreFunction = [this](const KConfigGroup& group) {
-        ui->applicationParametersBox->setText(group.readEntry("params", ""));
-        ui->workingDirectory->setText(group.readEntry("workingDir", ""));
-        setError({});
-    };
-
-    m_multiConfig = new MultiConfigWidget(this);
-
-    connect(m_multiConfig, &MultiConfigWidget::saveConfig, this, saveFunction);
-    connect(m_multiConfig, &MultiConfigWidget::restoreConfig, this, restoreFunction);
-
-    m_multiConfig->setConfig(applicationConfig(ui->applicationName->text()));
-
-    ui->launchAppBox->layout()->addWidget(m_multiConfig);
-
-    connect(ui->applicationParametersBox, &QLineEdit::editingFinished, m_multiConfig,
-            &MultiConfigWidget::updateCurrentConfig);
-    connect(ui->workingDirectory, &KUrlRequester::textChanged, m_multiConfig, &MultiConfigWidget::updateCurrentConfig);
 
     auto columnResizer = new KColumnResizer(this);
     columnResizer->addWidgetsFromLayout(ui->formLayout);
