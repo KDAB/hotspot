@@ -247,10 +247,16 @@ void Settings::loadFromFile()
     setSSHPath(sharedConfig->group("SSH").readEntry("ssh"));
     setSSHCopyKeyPath(sharedConfig->group("SSH").readEntry("ssh-copy-id"));
 
+    const auto& ssh = sharedConfig->group("SSH");
+    setSSHPath(ssh.readEntry("ssh"));
+    setSSHCopyKeyPath(ssh.readEntry("ssh-copy-id"));
+
     connect(this, &Settings::sshPathChanged, this,
             [sharedConfig](const QString& path) { sharedConfig->group("SSH").writeEntry("ssh", path); });
     connect(this, &Settings::sshCopyIdPathChanged, this,
             [sharedConfig](const QString& path) { sharedConfig->group("SSH").writeEntry("ssh-copy-id", path); });
+
+    setDevices(ssh.groupList());
 }
 
 void Settings::setSourceCodePaths(const QString& paths)

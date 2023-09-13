@@ -55,6 +55,7 @@ set(HOTSPOT_SRCS
     errnoutil.cpp
     recordhost.cpp
     copyabletreeview.cpp
+    remotedevice.cpp
     # ui files:
     mainwindow.ui
     aboutdialog.ui

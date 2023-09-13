@@ -8,6 +8,7 @@
 #pragma once
 
 #include "jobtracker.h"
+#include "remotedevice.h"
 
 #include <QObject>
 
@@ -60,6 +61,12 @@ public:
     }
     void setClientApplication(const QString& clientApplication);
 
+    QString clientApplicationArguments() const
+    {
+        return m_clientApplicationArguments;
+    }
+    void setClientApplicationArguments(const QString& arguments);
+
     QString outputFileName() const
     {
         return m_outputFileName;
@@ -105,6 +112,7 @@ signals:
     void hostChanged();
     void currentWorkingDirectoryChanged(const QString& cwd); // Maybe QUrl
     void clientApplicationChanged(const QString& clientApplication);
+    void clientApplicationArgumentsChanged(const QString& arguments);
     void perfCapabilitiesChanged(RecordHost::PerfCapabilities perfCapabilities);
     void isPerfInstalledChanged(bool isInstalled);
     void outputFileNameChanged(const QString& outputFileName);
@@ -112,12 +120,14 @@ signals:
     void pidsChanged();
 
 private:
+    void checkRequirements();
     bool isLocal() const;
 
     QString m_host;
     QString m_error;
     QString m_cwd;
     QString m_clientApplication;
+    QString m_clientApplicationArguments;
     QString m_outputFileName;
     PerfCapabilities m_perfCapabilities;
     JobTracker m_checkPerfCapabilitiesJob;
@@ -125,6 +135,7 @@ private:
     RecordType m_recordType = RecordType::LaunchApplication;
     bool m_isPerfInstalled = false;
     QStringList m_pids;
+    RemoteDevice m_remoteDevice;
 };
 
 Q_DECLARE_METATYPE(RecordHost::PerfCapabilities)

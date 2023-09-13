@@ -202,8 +202,10 @@ RecordPage::RecordPage(QWidget* parent)
                 m_recordHost->setCurrentWorkingDirectory(cwd);
             });
 
-    connect(ui->applicationParametersBox, &QLineEdit::editingFinished, this,
-            [this] { ui->multiConfig->saveCurrentConfig(); });
+    connect(ui->applicationParametersBox, &QLineEdit::editingFinished, this, [this] {
+        ui->multiConfig->saveCurrentConfig();
+        m_recordHost->setClientApplicationArguments(ui->applicationParametersBox->text());
+    });
 
     ui->compressionComboBox->addItem(tr("Disabled"), -1);
     ui->compressionComboBox->addItem(tr("Enabled (Default Level)"), 0);
