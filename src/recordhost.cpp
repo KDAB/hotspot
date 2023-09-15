@@ -329,7 +329,7 @@ void RecordHost::setClientApplication(const QString& clientApplication)
     }
 }
 
-void RecordHost::setClientApplicationArguments(const QString& arguments)
+void RecordHost::setClientApplicationArguments(const QStringList& arguments)
 {
     Q_ASSERT(QThread::currentThread() == thread());
 

@@ -24,8 +24,8 @@ public:
     explicit PerfRecord(const RecordHost* host, QObject* parent = nullptr);
     ~PerfRecord();
 
-    void record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
-                const QString& exePath, const QStringList& exeOptions, const QString& workingDirectory = QString());
+    void record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges);
+
     void record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
                 const QStringList& pids);
     void recordSystem(const QStringList& perfOptions, const QString& outputPath);
@@ -55,4 +55,6 @@ private:
 
     bool runPerf(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
                  const QString& workingDirectory = QString());
+
+    bool runRemotePerf(const QStringList& perfOptions, const QString& outputPath, const QString& workingDirectory = {});
 };

@@ -61,11 +61,11 @@ public:
     }
     void setClientApplication(const QString& clientApplication);
 
-    QString clientApplicationArguments() const
+    QStringList clientApplicationArguments() const
     {
         return m_clientApplicationArguments;
     }
-    void setClientApplicationArguments(const QString& arguments);
+    void setClientApplicationArguments(const QStringList& arguments);
 
     QString outputFileName() const
     {
@@ -112,7 +112,7 @@ signals:
     void hostChanged();
     void currentWorkingDirectoryChanged(const QString& cwd); // Maybe QUrl
     void clientApplicationChanged(const QString& clientApplication);
-    void clientApplicationArgumentsChanged(const QString& arguments);
+    void clientApplicationArgumentsChanged(const QStringList& arguments);
     void perfCapabilitiesChanged(RecordHost::PerfCapabilities perfCapabilities);
     void isPerfInstalledChanged(bool isInstalled);
     void outputFileNameChanged(const QString& outputFileName);
@@ -127,7 +127,7 @@ private:
     QString m_error;
     QString m_cwd;
     QString m_clientApplication;
-    QString m_clientApplicationArguments;
+    QStringList m_clientApplicationArguments;
     QString m_outputFileName;
     PerfCapabilities m_perfCapabilities;
     JobTracker m_checkPerfCapabilitiesJob;

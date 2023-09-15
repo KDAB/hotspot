@@ -19,8 +19,6 @@
 #include "perfparser.h"
 #include "perfrecord.h"
 #include "recordhost.h"
-#include "unistd.h"
-#include "util.h"
 
 #include "../testutils.h"
 #include <hotspot-config.h>
@@ -429,7 +427,9 @@ private slots:
         QSignalSpy recordingFinishedSpy(&perf, &PerfRecord::recordingFinished);
         QSignalSpy recordingFailedSpy(&perf, &PerfRecord::recordingFailed);
 
-        perf.record({QStringLiteral("--no-buildid-cache")}, tempFile.fileName(), false, exePath, exeOptions);
+        host.setClientApplication(exePath);
+        host.setClientApplicationArguments(exeOptions);
+        perf.record({QStringLiteral("--no-buildid-cache")}, tempFile.fileName(), false);
         perf.sendInput(QByteArrayLiteral("some input\n"));
         QVERIFY(recordingFinishedSpy.wait());
 
@@ -735,11 +735,13 @@ private:
         QSignalSpy recordingFinishedSpy(&perf, &PerfRecord::recordingFinished);
         QSignalSpy recordingFailedSpy(&perf, &PerfRecord::recordingFailed);
 
+        host.setClientApplication(exePath);
+        host.setClientApplicationArguments(exeOptions);
         // always add `-c 1000000`, as perf's frequency mode is too unreliable for testing purposes
         perf.record(
             perfOptions
                 + QStringList {QStringLiteral("-c"), QStringLiteral("1000000"), QStringLiteral("--no-buildid-cache")},
-            fileName, false, exePath, exeOptions);
+            fileName, false);
 
         VERIFY_OR_THROW(recordingFinishedSpy.wait(10000));
 

@@ -21,6 +21,7 @@
 #include <csignal>
 #include <unistd.h>
 
+#include <KShell>
 #include <kwindowsystem_version.h>
 #if KWINDOWSYSTEM_VERSION >= QT_VERSION_CHECK(5, 101, 0)
 #include <KX11Extras>
@@ -174,27 +175,11 @@ void PerfRecord::record(const QStringList& perfOptions, const QString& outputPat
     runPerf(actuallyElevatePrivileges(elevatePrivileges), options, outputPath, {});
 }
 
-void PerfRecord::record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
-                        const QString& exePath, const QStringList& exeOptions, const QString& workingDirectory)
+void PerfRecord::record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges)
 {
-    QFileInfo exeFileInfo(exePath);
-
-    if (!exeFileInfo.exists()) {
-        exeFileInfo.setFile(QStandardPaths::findExecutable(exePath));
-    }
-
-    if (!exeFileInfo.exists()) {
-        emit recordingFailed(tr("File '%1' does not exist.").arg(exePath));
-        return;
-    }
-    if (!exeFileInfo.isFile()) {
-        emit recordingFailed(tr("'%1' is not a file.").arg(exePath));
-        return;
-    }
-    if (!exeFileInfo.isExecutable()) {
-        emit recordingFailed(tr("File '%1' is not executable.").arg(exePath));
-        return;
-    }
+    auto exePath = m_host->clientApplication();
+    auto exeOptions = m_host->clientApplicationArguments();
+    auto workingDirectory = m_host->currentWorkingDirectory();
 
     QStringList options = perfOptions;
     if (actuallyElevatePrivileges(elevatePrivileges)) {
@@ -211,7 +196,7 @@ void PerfRecord::record(const QStringList& perfOptions, const QString& outputPat
 
         m_perfControlFifo.requestStart();
     } else {
-        options.append(exeFileInfo.absoluteFilePath());
+        options.append(exePath);
         options += exeOptions;
         runPerf(false, options, outputPath, workingDirectory);
     }

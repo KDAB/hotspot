@@ -204,7 +204,7 @@ RecordPage::RecordPage(QWidget* parent)
 
     connect(ui->applicationParametersBox, &QLineEdit::editingFinished, this, [this] {
         ui->multiConfig->saveCurrentConfig();
-        m_recordHost->setClientApplicationArguments(ui->applicationParametersBox->text());
+        m_recordHost->setClientApplicationArguments(KShell::splitArgs(ui->applicationParametersBox->text()));
     });
 
     ui->compressionComboBox->addItem(tr("Disabled"), -1);
@@ -628,14 +628,27 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
         switch (recordType) {
         case RecordType::LaunchApplication: {
             const auto applicationName = m_recordHost->clientApplication();
-            const auto appParameters = ui->applicationParametersBox->text();
+            const auto appParameters = m_recordHost->clientApplicationArguments();
             auto workingDir = m_recordHost->currentWorkingDirectory();
             if (workingDir.isEmpty()) {
                 workingDir = ui->workingDirectory->placeholderText();
             }
-            rememberApplication(applicationName, appParameters, workingDir, ui->applicationName->comboBox());
-            m_perfRecord->record(perfOptions, outputFile, elevatePrivileges, applicationName,
-                                 KShell::splitArgs(appParameters), workingDir);
+            rememberApplication(applicationName, appParameters.join(QLatin1Char(' ')), workingDir,
+                                ui->applicationName->comboBox());
+            m_perfRecord->record(perfOptions, outputFile, elevatePrivileges);
+            break;
+        }
+        case RecordType::LaunchRemoteApplication: {
+            // TODO: network record
+            const auto applicationName = m_recordHost->clientApplication();
+            const auto appParameters = m_recordHost->clientApplicationArguments();
+            auto workingDir = m_recordHost->currentWorkingDirectory();
+            if (workingDir.isEmpty()) {
+                workingDir = ui->workingDirectory->placeholderText();
+            }
+            rememberApplication(applicationName, appParameters.join(QLatin1Char(' ')), workingDir,
+                                ui->applicationName->comboBox());
+            m_perfRecord->record(perfOptions, outputFile, elevatePrivileges);
             break;
         }
         case RecordType::AttachToProcess: {
