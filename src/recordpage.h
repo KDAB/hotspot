@@ -59,7 +59,7 @@ private slots:
 
 private:
     void recordingStopped();
-    void updateRecordType();
+    void updateRecordType(RecordType type);
     void appendOutput(const QString& text);
     void setError(const QString& message);
 

@@ -14,6 +14,8 @@
 
 #include <KConfigGroup>
 
+#include <memory>
+
 class QProcess;
 
 class RemoteDevice : public QObject
@@ -33,16 +35,17 @@ public:
     bool checkIfFileExists(const QString& file) const;
     QByteArray getProgramOutput(const QStringList& args) const;
 
+    std::unique_ptr<QProcess> runPerf(const QString& cdw, const QStringList& perfOptions) const;
+
 signals:
     void connected();
     void disconnected();
     void failedToConnect();
 
 private:
-    QProcess* sshProcess(const QStringList& args);
-    QProcess* sshProcess(const QStringList& args) const;
+    std::unique_ptr<QProcess> sshProcess(const QStringList& args) const;
 
-    QProcess* m_connection = nullptr;
+    std::unique_ptr<QProcess> m_connection = nullptr;
     QTemporaryDir m_tempDir;
     QFileSystemWatcher m_watcher;
     KConfigGroup m_config;

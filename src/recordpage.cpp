@@ -43,6 +43,7 @@
 #include "perfoutputwidgetkonsole.h"
 #include "perfoutputwidgettext.h"
 #include "perfrecord.h"
+#include "settings.h"
 
 namespace {
 bool isIntel()
@@ -81,10 +82,14 @@ void updateStartRecordingButtonState(const RecordHost* host, const std::unique_p
         return;
     }
 
+    // TODO: move stuff to RecordHost
     bool enabled = false;
     switch (selectedRecordType(ui)) {
     case RecordType::LaunchApplication:
         enabled = ui->applicationName->url().isValid();
+        break;
+    case RecordType::LaunchRemoteApplication:
+        enabled = host->isReady();
         break;
     case RecordType::AttachToProcess:
         enabled = ui->processesTableView->selectionModel()->hasSelection();
@@ -207,6 +212,20 @@ RecordPage::RecordPage(QWidget* parent)
         m_recordHost->setClientApplicationArguments(KShell::splitArgs(ui->applicationParametersBox->text()));
     });
 
+    auto settings = Settings::instance();
+    connect(settings, &Settings::devicesChanged, this, [this](const QStringList& devices) {
+        ui->deviceComboBox->clear();
+        ui->deviceComboBox->insertItem(0, QStringLiteral("localhost"));
+        ui->deviceComboBox->insertItems(1, devices);
+        ui->deviceComboBox->setCurrentIndex(0);
+    });
+    ui->deviceComboBox->insertItem(0, QStringLiteral("localhost"));
+    ui->deviceComboBox->insertItems(1, settings->devices());
+    ui->deviceComboBox->setCurrentIndex(0);
+
+    connect(ui->deviceComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
+            [this] { m_recordHost->setHost(ui->deviceComboBox->currentText()); });
+
     ui->compressionComboBox->addItem(tr("Disabled"), -1);
     ui->compressionComboBox->addItem(tr("Enabled (Default Level)"), 0);
     ui->compressionComboBox->addItem(tr("Level 1 (Fastest)"), 1);
@@ -254,6 +273,7 @@ RecordPage::RecordPage(QWidget* parent)
             });
 
     m_recordHost->setHost(QStringLiteral("localhost"));
+    m_recordHost->setRecordType(RecordType::LaunchApplication);
 
     ui->applicationName->comboBox()->setEditable(true);
     ui->applicationName->setMode(KFile::File | KFile::ExistingOnly | KFile::LocalOnly);
@@ -289,7 +309,11 @@ RecordPage::RecordPage(QWidget* parent)
     connect(ui->startRecordingButton, &QPushButton::toggled, this, &RecordPage::onStartRecordingButtonClicked);
     connect(ui->workingDirectory, &KUrlRequester::textChanged, m_recordHost,
             &RecordHost::currentWorkingDirectoryChanged);
-    connect(ui->viewPerfRecordResultsButton, &QPushButton::clicked, this, [this] { emit openFile(m_resultsFile); });
+    connect(ui->viewPerfRecordResultsButton, &QPushButton::clicked, this, [this] {
+        // we are done recording, disconnect from device
+        m_recordHost->disconnectFromDevice();
+        emit openFile(m_resultsFile);
+    });
     connect(ui->outputFile, &KUrlRequester::textChanged, this, &RecordPage::onOutputFileNameChanged);
     connect(ui->outputFile, static_cast<void (KUrlRequester::*)(const QString&)>(&KUrlRequester::returnPressed), this,
             &RecordPage::onOutputFileNameSelected);
@@ -297,15 +321,18 @@ RecordPage::RecordPage(QWidget* parent)
 
     ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-build")), tr("Launch Application"),
                                     QVariant::fromValue(RecordType::LaunchApplication));
+    ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-build")), tr("Launch Remote Application"),
+                                    QVariant::fromValue(RecordType::LaunchRemoteApplication));
     ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-install")), tr("Attach To Process(es)"),
                                     QVariant::fromValue(RecordType::AttachToProcess));
     ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-build-install-root")), tr("Profile System"),
                                     QVariant::fromValue(RecordType::ProfileSystem));
-    connect(ui->recordTypeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), this,
-            &RecordPage::updateRecordType);
+
     connect(ui->recordTypeComboBox, qOverload<int>(&QComboBox::currentIndexChanged), m_recordHost,
             [this] { m_recordHost->setRecordType(ui->recordTypeComboBox->currentData().value<RecordType>()); });
-    connect(m_recordHost, &RecordHost::clientApplicationChanged, this, &RecordPage::updateRecordType);
+
+    connect(m_recordHost, &RecordHost::recordTypeChanged, this, &RecordPage::updateRecordType);
+    updateRecordType(RecordType::LaunchApplication);
 
     {
         ui->callGraphComboBox->addItem(tr("None"), QVariant::fromValue(QString()));
@@ -511,7 +538,7 @@ void RecordPage::showRecordPage()
 {
     m_resultsFile.clear();
     setError({});
-    updateRecordType();
+    m_recordHost->setRecordType(RecordType::LaunchApplication);
     ui->viewPerfRecordResultsButton->setEnabled(false);
 }
 
@@ -748,16 +775,23 @@ void RecordPage::setError(const QString& message)
     ui->applicationRecordErrorMessage->setVisible(!message.isEmpty());
 }
 
-void RecordPage::updateRecordType()
+void RecordPage::updateRecordType(RecordType recordType)
 {
     setError({});
 
-    const auto recordType = selectedRecordType(ui);
-    ui->launchAppBox->setVisible(recordType == RecordType::LaunchApplication);
+    ui->launchAppBox->setVisible(recordType == RecordType::LaunchApplication
+                                 || recordType == RecordType::LaunchRemoteApplication);
     ui->attachAppBox->setVisible(recordType == RecordType::AttachToProcess);
+    ui->remoteDeviceBox->setVisible(recordType == RecordType::LaunchRemoteApplication);
 
     m_perfOutput->setInputVisible(recordType == RecordType::LaunchApplication);
     m_perfOutput->clear();
+
+    if (recordType == RecordType::LaunchRemoteApplication) {
+        ui->applicationName->clear();
+    } else if (recordType == RecordType::LaunchApplication) {
+        restoreCombobox(config(), QStringLiteral("applications"), ui->applicationName->comboBox());
+    }
 
     if (recordType == RecordType::AttachToProcess) {
         updateProcesses();

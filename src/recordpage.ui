@@ -50,6 +50,25 @@
     </layout>
    </item>
    <item>
+    <widget class="QGroupBox" name="remoteDeviceBox">
+     <property name="title">
+      <string>Remote Device</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_4">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Device:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="deviceComboBox"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="launchAppBox">
      <property name="title">
       <string>Launch Application</string>

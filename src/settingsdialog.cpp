@@ -288,6 +288,13 @@ void SettingsDialog::addSSHPage()
     sshSettingsPage->messageWidget->hide();
     sshSettingsPage->errorWidget->hide();
 
+    bool ksshaskpassFound = !QStandardPaths()::findExe(QStringLiteral("ksshaskpass")).isEmpty();
+    if (!qEnvironmentVariableIsSet("SSH_ASKPASS") && !ksshaskpassFound) {
+        sshSettingsPage->errorWidget->setText(
+            tr("<tt>SSH_ASKPASS<tt> is not set please install <tt>ksshaskpass<tt> or set <tt>SSH_ASKPASS<tt>"));
+        sshSettingsPage->errorWidget->show();
+    }
+
     auto configGroup = KSharedConfig::openConfig()->group("SSH");
     sshSettingsPage->deviceConfig->setChildWidget(
         sshSettingsPage->deviceSettings,

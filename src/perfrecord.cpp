@@ -70,59 +70,29 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
         m_perfControlFifo.close();
         m_perfRecordProcess->kill();
     }
+
+    m_outputPath = outputPath;
+    m_userTerminated = false;
+
+    if (m_host->isLocal()) {
+        return runPerfLocal(elevatePrivileges, perfOptions, outputPath, workingDirectory);
+    } else {
+        return runPerfRemote(perfOptions, outputPath, workingDirectory);
+    }
+}
+
+bool PerfRecord::runPerfLocal(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
+                              const QString& workingDirectory)
+{
     m_perfRecordProcess = std::make_unique<QProcess>(this);
     m_perfRecordProcess->setProcessChannelMode(QProcess::MergedChannels);
 
-    const auto outputFileInfo = QFileInfo(outputPath);
-    const auto folderPath = outputFileInfo.dir().path();
-    const auto folderInfo = QFileInfo(folderPath);
-    if (!folderInfo.exists()) {
-        emit recordingFailed(tr("Folder '%1' does not exist.").arg(folderPath));
-        return false;
-    }
-    if (!folderInfo.isDir()) {
-        emit recordingFailed(tr("'%1' is not a folder.").arg(folderPath));
-        return false;
-    }
-    if (!folderInfo.isWritable()) {
-        emit recordingFailed(tr("Folder '%1' is not writable.").arg(folderPath));
-        return false;
-    }
-
-    connect(m_perfRecordProcess.get(), static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-            this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
-                Q_UNUSED(exitStatus)
-
-                const auto outputFileInfo = QFileInfo(m_outputPath);
-                if ((exitCode == EXIT_SUCCESS || (exitCode == SIGTERM && m_userTerminated) || outputFileInfo.size() > 0)
-                    && outputFileInfo.exists()) {
-                    if (exitCode != EXIT_SUCCESS && !m_userTerminated) {
-                        emit debuggeeCrashed();
-                    }
-                    emit recordingFinished(m_outputPath);
-                } else {
-                    emit recordingFailed(tr("Failed to record perf data, error code %1.").arg(exitCode));
-                }
-                m_userTerminated = false;
-            });
-
-    connect(m_perfRecordProcess.get(), &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
-        Q_UNUSED(error)
-        if (!m_userTerminated) {
-            emit recordingFailed(m_perfRecordProcess->errorString());
-        }
-    });
-
-    connect(m_perfRecordProcess.get(), &QProcess::started, this,
-            [this] { emit recordingStarted(m_perfRecordProcess->program(), m_perfRecordProcess->arguments()); });
+    connectRecordingProcessErrors();
 
     connect(m_perfRecordProcess.get(), &QProcess::readyRead, this, [this]() {
         const auto output = QString::fromUtf8(m_perfRecordProcess->readAll());
         emit recordingOutput(output);
     });
-
-    m_outputPath = outputPath;
-    m_userTerminated = false;
 
     if (!workingDirectory.isEmpty()) {
         m_perfRecordProcess->setWorkingDirectory(workingDirectory);
@@ -157,6 +127,36 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
         m_perfRecordProcess->start(m_host->perfBinaryPath(), perfCommand);
     }
 
+    return true;
+}
+
+bool PerfRecord::runPerfRemote(const QStringList& perfOptions, const QString& outputPath,
+                               const QString& workingDirectory)
+{
+    m_perfRecordProcess = m_host->remoteDevice()->runPerf(workingDirectory, perfOptions);
+
+    auto output = new QFile(outputPath, m_perfRecordProcess.get());
+    if (!output->open(QIODevice::WriteOnly)) {
+        emit recordingFailed(QStringLiteral("Failed to create output file: %1").arg(outputPath));
+        return false;
+    }
+
+    connect(m_perfRecordProcess.get(), &QProcess::readyReadStandardOutput, m_perfRecordProcess.get(),
+            [process = m_perfRecordProcess.get(), output] {
+                auto data = process->readAllStandardOutput();
+                output->write(data);
+            });
+    connect(m_perfRecordProcess.get(), &QProcess::readyReadStandardError, m_perfRecordProcess.get(),
+            [this] { emit recordingOutput(QString::fromUtf8(m_perfRecordProcess->readAllStandardError())); });
+
+    connect(m_perfRecordProcess.get(), qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this, [output] {
+        output->close();
+        output->deleteLater();
+    });
+
+    connectRecordingProcessErrors();
+
+    m_perfRecordProcess->start();
     return true;
 }
 
@@ -244,4 +244,34 @@ bool PerfRecord::actuallyElevatePrivileges(bool elevatePrivileges) const
 {
     const auto capabilities = m_host->perfCapabilities();
     return elevatePrivileges && capabilities.canElevatePrivileges && !capabilities.privilegesAlreadyElevated;
+}
+
+void PerfRecord::connectRecordingProcessErrors()
+{
+    connect(m_perfRecordProcess.get(), qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this,
+            [this](int exitCode, QProcess::ExitStatus exitStatus) {
+                Q_UNUSED(exitStatus)
+
+                const auto outputFileInfo = QFileInfo(m_outputPath);
+                if ((exitCode == EXIT_SUCCESS || (exitCode == SIGTERM && m_userTerminated) || outputFileInfo.size() > 0)
+                    && outputFileInfo.exists()) {
+                    if (exitCode != EXIT_SUCCESS && !m_userTerminated) {
+                        emit debuggeeCrashed();
+                    }
+                    emit recordingFinished(m_outputPath);
+                } else {
+                    emit recordingFailed(tr("Failed to record perf data, error code %1.").arg(exitCode));
+                }
+                m_userTerminated = false;
+            });
+
+    connect(m_perfRecordProcess.get(), &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
+        Q_UNUSED(error)
+        if (!m_userTerminated) {
+            emit recordingFailed(m_perfRecordProcess->errorString());
+        }
+    });
+
+    connect(m_perfRecordProcess.get(), &QProcess::started, this,
+            [this] { emit recordingStarted(m_perfRecordProcess->program(), m_perfRecordProcess->arguments()); });
 }

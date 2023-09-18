@@ -12,10 +12,10 @@
 #include "perfcontrolfifowrapper.h"
 
 #include <QObject>
+#include <QProcess>
 
 #include <memory>
 
-class QProcess;
 class RecordHost;
 
 class PerfRecord : public QObject
@@ -57,5 +57,12 @@ private:
     bool runPerf(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
                  const QString& workingDirectory = QString());
 
+    bool runPerfLocal(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
+                      const QString& workingDirectory = QString());
+    bool runPerfRemote(const QStringList& perfOptions, const QString& outputPath,
+                       const QString& workingDirectory = QString());
+
     bool runRemotePerf(const QStringList& perfOptions, const QString& outputPath, const QString& workingDirectory = {});
+
+    void connectRecordingProcessErrors();
 };

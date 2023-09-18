@@ -15,9 +15,6 @@
 
 #include "settings.h"
 
-// TODO: remove
-#include <QDebug>
-
 namespace {
 QStringList sshArgs(const QString& dir)
 {
@@ -25,8 +22,8 @@ QStringList sshArgs(const QString& dir)
             QStringLiteral("ControlPath=%1/ssh").arg(dir)};
 }
 
-void setupProcess(QProcess* process, const QString& sshBinary, const KConfigGroup& config, const QString& path,
-                  const QStringList& args)
+void setupProcess(const std::unique_ptr<QProcess>& process, const QString& sshBinary, const KConfigGroup& config,
+                  const QString& path, const QStringList& args)
 {
     process->setProgram(sshBinary);
     const auto options = config.readEntry("options", QString {});
@@ -73,7 +70,12 @@ RemoteDevice::RemoteDevice(QObject* parent)
     connect(settings, &Settings::sshPathChanged, this, findSSHBinary);
 }
 
-RemoteDevice::~RemoteDevice() = default;
+RemoteDevice::~RemoteDevice()
+{
+    if (m_connection) {
+        disconnect();
+    }
+}
 
 void RemoteDevice::connectToDevice(const QString& device)
 {
@@ -89,15 +91,14 @@ void RemoteDevice::connectToDevice(const QString& device)
 
     m_connection = sshProcess({});
 
-    connect(m_connection, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this,
-            [connection = m_connection, path = m_tempDir.path(), this](int exitCode, QProcess::ExitStatus) {
+    connect(m_connection.get(), qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this,
+            [path = m_tempDir.path(), this](int exitCode, QProcess::ExitStatus) {
                 if (exitCode != 0) {
                     emit failedToConnect();
                 } else {
                     emit disconnected();
                 }
-                qDebug() << exitCode << connection->readAll();
-                connection->deleteLater();
+                m_connection = nullptr;
             });
 
     m_connection->start();
@@ -107,12 +108,10 @@ void RemoteDevice::disconnect()
 {
     if (m_connection) {
         if (m_connection->state() == QProcess::ProcessState::Running) {
-            // ssh stops once you clode the write channel
+            // ssh stops once you close the write channel
             // we then use the finished signal for cleanup
             m_connection->closeWriteChannel();
         }
-
-        m_connection = nullptr;
     }
 }
 
@@ -159,30 +158,26 @@ QByteArray RemoteDevice::getProgramOutput(const QStringList& args) const
     ssh->start();
     ssh->waitForFinished();
     auto output = ssh->readAllStandardOutput();
-    ssh->deleteLater();
     return output;
 }
 
-QProcess* RemoteDevice::sshProcess(const QStringList& args)
+std::unique_ptr<QProcess> RemoteDevice::sshProcess(const QStringList& args) const
 {
     if (!m_config.isValid()) {
         return nullptr;
     }
 
-    auto process = new QProcess(this);
+    auto process = std::make_unique<QProcess>(nullptr);
     setupProcess(process, m_sshBinary, m_config, m_tempDir.path(), args);
 
     return process;
 }
 
-QProcess* RemoteDevice::sshProcess(const QStringList& args) const
+std::unique_ptr<QProcess> RemoteDevice::runPerf(const QString& cwd, const QStringList& perfOptions) const
 {
-    if (!m_config.isValid()) {
-        return nullptr;
-    }
-
-    auto process = new QProcess(nullptr);
-    setupProcess(process, m_sshBinary, m_config, m_tempDir.path(), args);
+    const auto perfCommand = QStringLiteral("perf record -o - %1 ").arg(perfOptions.join(QLatin1Char(' ')));
+    const QString command = QStringLiteral("cd %1 ; %2").arg(cwd, perfCommand);
+    auto process = sshProcess({QStringLiteral("sh"), QStringLiteral("-c"), QStringLiteral("\"%1\"").arg(command)});
 
     return process;
 }

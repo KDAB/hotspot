@@ -12,6 +12,8 @@
 
 #include <QObject>
 
+#include <memory>
+
 enum class RecordType
 {
     LaunchApplication,
@@ -104,6 +106,15 @@ public:
     // list of pids to record
     void setPids(const QStringList& pids);
 
+    bool isLocal() const;
+
+    const RemoteDevice* remoteDevice() const
+    {
+        return m_remoteDevice.get();
+    }
+
+    void disconnectFromDevice();
+
 signals:
     /// disallow "start" on recordpage until this is ready and that should only be the case when there's no error
     void isReadyChanged(bool isReady);
@@ -121,7 +132,6 @@ signals:
 
 private:
     void checkRequirements();
-    bool isLocal() const;
 
     QString m_host;
     QString m_error;
@@ -135,7 +145,7 @@ private:
     RecordType m_recordType = RecordType::LaunchApplication;
     bool m_isPerfInstalled = false;
     QStringList m_pids;
-    RemoteDevice m_remoteDevice;
+    std::unique_ptr<RemoteDevice> m_remoteDevice;
 };
 
 Q_DECLARE_METATYPE(RecordHost::PerfCapabilities)
