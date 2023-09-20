@@ -14,7 +14,6 @@
 
 #include <KColorScheme>
 
-#include "../util.h"
 #include "eventmodel.h"
 #include "filterandzoomstack.h"
 
