@@ -60,7 +60,6 @@ signals:
     void perLibraryDataAvailable(const Data::PerLibraryResults& data);
     void callerCalleeDataAvailable(const Data::CallerCalleeResults& data);
     void byFileDataAvailable(const Data::ByFileResults& data);
-    void tracepointDataAvailable(const Data::TracepointResults& data);
     void frequencyDataAvailable(const Data::FrequencyResults& data);
     void eventsAvailable(const Data::EventResults& events);
     void threadNamesAvailable(const Data::ThreadNames& threadNames);
@@ -87,7 +86,6 @@ private:
     Data::BottomUpResults m_bottomUpResults;
     Data::CallerCalleeResults m_callerCalleeResults;
     Data::ByFileResults m_byFileResults;
-    Data::TracepointResults m_tracepointResults;
     Data::EventResults m_events;
     Data::FrequencyResults m_frequencyResults;
     std::atomic<bool> m_isParsing;
