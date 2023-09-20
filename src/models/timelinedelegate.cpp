@@ -160,6 +160,7 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     const auto results = index.data(EventModel::EventResultsRole).value<Data::EventResults>();
     const auto offCpuCostId = results.offCpuTimeCostId;
     const auto lostEventCostId = results.lostEventCostId;
+    const auto tracepointEventCostId = results.tracepointEventCostId;
     const bool is_alternate = option.features & QStyleOptionViewItem::Alternate;
     const auto& palette = option.palette;
 
@@ -229,7 +230,8 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         // see also: https://www.spinics.net/lists/linux-perf-users/msg03486.html
         for (const auto& event : data.events) {
             const auto isLostEvent = event.type == lostEventCostId;
-            if (event.type != m_eventType && !isLostEvent) {
+            const auto isTracepointEvent = event.type == tracepointEventCostId;
+            if (event.type != m_eventType && !isLostEvent && !isTracepointEvent) {
                 continue;
             }
 
