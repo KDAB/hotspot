@@ -10,6 +10,7 @@
 #include <QBuffer>
 #include <QDataStream>
 #include <QDebug>
+#include <QDir>
 #include <QEventLoop>
 #include <QFileInfo>
 #include <QLoggingCategory>
@@ -751,6 +752,9 @@ public:
                 commands.names[threadStart.pid][threadStart.pid] = parentComm;
                 thread->name = parentComm;
             }
+            // check if perf-$pid.map file exists
+            perfMapFileExists |= QFile::exists(QDir::tempPath() + QDir::separator()
+                                               + QLatin1String("perf-%1.map").arg(QString::number(thread->pid)));
             break;
         }
         case EventType::ThreadEnd: {
@@ -1388,6 +1392,7 @@ public:
     qint32 m_schedSwitchCostId = -1;
     QHash<quint32, quint64> m_lastSampleTimePerCore;
     Settings::CostAggregation costAggregation;
+    bool perfMapFileExists = false;
 
     // samples recorded without --call-graph have only one frame
     int m_numSamplesWithMoreThanOneFrame = 0;
@@ -1520,7 +1525,7 @@ bool PerfParser::initParserArgs(const QString& path)
         }
         const auto perfMapPath = settings->perfMapPath();
         if (!perfMapPath.isEmpty()) {
-            parserArgs += {QStringLiteral("--perf-map-path"), QStringLiteral("/home/lieven/KDAB/hotspot")};
+            parserArgs += {QStringLiteral("--perf-map-path"), perfMapPath};
         }
         return parserArgs;
     };
@@ -1568,6 +1573,7 @@ void PerfParser::startParseFile(const QString& path)
             emit eventsAvailable(d.eventResult);
             emit frequencyDataAvailable(d.frequencyResult);
             emit threadNamesAvailable(d.commands);
+            emit perfMapFileExists(d.perfMapFileExists);
 
             if (d.m_numSamplesWithMoreThanOneFrame == 0) {
                 emit parserWarning(tr("Samples contained no call stack frames. Consider passing <code>--call-graph "

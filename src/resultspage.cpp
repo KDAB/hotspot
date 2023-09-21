@@ -179,6 +179,14 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
         m_filterBusyIndicator->setVisible(false);
     });
 
+    connect(parser, &PerfParser::perfMapFileExists, this, [errorWidget = ui->errorWidget](bool exists) {
+        if (exists) {
+            errorWidget->setText(tr("Perf Map file detected. Consider exporting in the perfparser format or copying "
+                                    "it to another location to keep all backtraces"));
+            errorWidget->show();
+        }
+    });
+
     {
         // create a busy indicator
         m_filterBusyIndicator = new QWidget(this);

@@ -65,6 +65,7 @@ signals:
     void progress(float progress);
     void debugInfoDownloadProgress(const QString& module, const QString& url, qint64 numerator, qint64 denominator);
     void stopRequested();
+    void perfMapFileExists(bool exists);
 
     void parserWarning(const QString& errorMessage);
     void exportFinished(const QUrl& url);
