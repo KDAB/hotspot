@@ -44,6 +44,7 @@ public:
         SortRole,
         TotalCostsRole,
         EventResultsRole,
+        IsFavoriteRole,
     };
 
     int rowCount(const QModelIndex& parent = {}) const override;
@@ -74,9 +75,14 @@ public:
         QString name;
     };
 
+public:
+    void addToFavorites(const QModelIndex& index);
+    void removeFromFavorites(const QModelIndex& index);
+
 private:
     Data::EventResults m_data;
     QVector<Process> m_processes;
+    QVector<QModelIndex> m_favourites;
     Data::TimeRange m_time;
     Data::TimeRange m_applicationTime;
     quint64 m_totalOnCpuTime = 0;
