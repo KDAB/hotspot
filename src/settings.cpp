@@ -115,6 +115,12 @@ void Settings::setObjdump(const QString& objdump)
     emit objdumpChanged(m_objdump);
 }
 
+void Settings::setPerfMapPath(const QString& perfMapPath)
+{
+    m_perfMapPath = perfMapPath;
+    emit perfMapPathChanged(m_perfMapPath);
+}
+
 void Settings::setCallgraphParentDepth(int parent)
 {
     if (m_callgraphParentDepth != parent) {
@@ -221,6 +227,7 @@ void Settings::loadFromFile()
         setKallsyms(currentConfig.readEntry("kallsyms", ""));
         setArch(currentConfig.readEntry("arch", ""));
         setObjdump(currentConfig.readEntry("objdump", ""));
+        setPerfMapPath(currentConfig.readEntry("perfMapPath", ""));
     }
 
     setPerfPath(sharedConfig->group("Perf").readEntry("path", ""));

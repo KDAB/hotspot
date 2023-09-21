@@ -151,6 +151,11 @@ QString SettingsDialog::objdump() const
     return unwindPage->lineEditObjdump->text();
 }
 
+QString SettingsDialog::perfMapPath() const
+{
+    return unwindPage->lineEditPerfMapPath->text();
+}
+
 void SettingsDialog::addPerfSettingsPage()
 {
     auto page = new QWidget(this);

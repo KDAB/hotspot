@@ -1518,6 +1518,10 @@ bool PerfParser::initParserArgs(const QString& path)
         if (!arch.isEmpty()) {
             parserArgs += {QStringLiteral("--arch"), arch};
         }
+        const auto perfMapPath = settings->perfMapPath();
+        if (!perfMapPath.isEmpty()) {
+            parserArgs += {QStringLiteral("--perf-map-path"), QStringLiteral("/home/lieven/KDAB/hotspot")};
+        }
         return parserArgs;
     };
 

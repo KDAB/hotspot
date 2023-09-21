@@ -125,6 +125,7 @@ MainWindow::MainWindow(QWidget* parent)
         settings->setKallsyms(m_settingsDialog->kallsyms());
         settings->setArch(m_settingsDialog->arch());
         settings->setObjdump(m_settingsDialog->objdump());
+        settings->setPerfMapPath(m_settingsDialog->perfMapPath());
     });
 
     connect(settings, &Settings::sysrootChanged, m_resultsPage, &ResultsPage::setSysroot);

@@ -40,6 +40,7 @@ public:
     QString kallsyms() const;
     QString arch() const;
     QString objdump() const;
+    QString perfMapPath() const;
 
     void keyPressEvent(QKeyEvent* event) override;
 

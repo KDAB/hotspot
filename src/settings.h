@@ -109,6 +109,11 @@ public:
         return m_objdump;
     }
 
+    QString perfMapPath() const
+    {
+        return m_perfMapPath;
+    }
+
     int callgraphParentDepth() const
     {
         return m_callgraphParentDepth;
@@ -166,6 +171,7 @@ signals:
     void appPathChanged(const QString& path);
     void archChanged(const QString& arch);
     void objdumpChanged(const QString& objdump);
+    void perfMapPathChanged(const QString& perfMapPath);
     void callgraphChanged();
     void lastUsedEnvironmentChanged(const QString& envName);
     void sourceCodePathsChanged(const QString& paths);
@@ -185,6 +191,7 @@ public slots:
     void setAppPath(const QString& path);
     void setArch(const QString& arch);
     void setObjdump(const QString& objdump);
+    void setPerfMapPath(const QString& perfMapPath);
     void setCallgraphParentDepth(int parent);
     void setCallgraphChildDepth(int child);
     void setCallgraphColors(const QColor& active, const QColor& inactive);
@@ -214,6 +221,7 @@ private:
     QString m_arch;
     QString m_objdump;
     QString m_sourceCodePaths;
+    QString m_perfMapPath;
 
     QString m_lastUsedEnvironment;
 
