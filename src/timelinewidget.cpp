@@ -110,6 +110,11 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
                 m_timeLineDelegate->setEventType(typeId);
             });
 
+    connect(m_timeLineDelegate, &TimeLineDelegate::addToFavorites, this,
+            [eventModel](const QModelIndex& index) { eventModel->addToFavorites(index); });
+    connect(m_timeLineDelegate, &TimeLineDelegate::removeFromFavorites, this,
+            [eventModel](const QModelIndex& index) { eventModel->removeFromFavorites(index); });
+
     connect(m_timeLineDelegate, &TimeLineDelegate::stacksHovered, this, [this](const QSet<qint32>& stackIds) {
         if (stackIds.isEmpty()) {
             ++m_currentHoverStacksJobId;
