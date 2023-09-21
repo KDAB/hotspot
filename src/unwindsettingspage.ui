@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>505</width>
+    <width>556</width>
     <height>656</height>
    </rect>
   </property>
@@ -195,6 +195,20 @@
      </property>
      <property name="buddy">
       <cstring>lineEditSysroot</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="0">
+    <widget class="QLabel" name="perfMapPath">
+     <property name="text">
+      <string>Custom perf-$pid.map directory:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="10" column="1">
+    <widget class="KUrlRequester" name="lineEditPerfMapPath">
+     <property name="mode">
+      <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
      </property>
     </widget>
    </item>
