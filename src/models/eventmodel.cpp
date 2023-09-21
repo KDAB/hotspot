@@ -17,12 +17,12 @@ constexpr auto orderProcessByPid = [](const EventModel::Process& process, qint32
 enum class Tag : quint8
 {
     Invalid = 0,
-    Root = 1,
-    Overview = 2,
-    Cpus = 3,
-    Processes = 4,
-    Threads = 5,
-    Tracepoints = 6,
+    Root,
+    Overview,
+    Cpus,
+    Processes,
+    Threads,
+    Tracepoints,
 };
 
 enum OverviewRow : quint8
