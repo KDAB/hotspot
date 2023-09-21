@@ -23,6 +23,7 @@ enum class Tag : quint8
     Processes,
     Threads,
     Tracepoints,
+    Favorites,
 };
 
 enum OverviewRow : quint8
@@ -30,10 +31,11 @@ enum OverviewRow : quint8
     CpuRow,
     ProcessRow,
     TracepointRow,
+    FavoriteRow,
 };
-constexpr auto numRows = TracepointRow + 1;
+constexpr auto numRows = FavoriteRow + 1;
 
-constexpr auto LAST_TAG = Tag::Tracepoints;
+constexpr auto LAST_TAG = Tag::Favorites;
 
 const auto DATATAG_SHIFT = sizeof(Tag) * 8;
 const auto DATATAG_UNSHIFT = (sizeof(quintptr) - sizeof(Tag)) * 8;
@@ -87,6 +89,7 @@ int EventModel::rowCount(const QModelIndex& parent) const
     case Tag::Cpus:
     case Tag::Threads:
     case Tag::Tracepoints:
+    case Tag::Favorites:
         return 0;
     case Tag::Processes:
         return m_processes.value(parent.row()).threads.size();
@@ -98,6 +101,8 @@ int EventModel::rowCount(const QModelIndex& parent) const
             return m_processes.size();
         case OverviewRow::TracepointRow:
             return m_data.tracepoints.size();
+        case OverviewRow::FavoriteRow:
+            return m_favourites.size();
         }
         Q_UNREACHABLE();
     case Tag::Root:
@@ -165,6 +170,8 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
                 return tr("Processes");
             case OverviewRow::TracepointRow:
                 return tr("Tracepoints");
+            case OverviewRow::FavoriteRow:
+                return tr("Favorites");
             }
         } else if (role == Qt::ToolTipRole) {
             switch (static_cast<OverviewRow>(index.row())) {
@@ -175,6 +182,8 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
                 return tr("Event timelines for the individual threads and processes.");
             case OverviewRow::TracepointRow:
                 return tr("Event timelines for tracepoints");
+            case OverviewRow::FavoriteRow:
+                return tr("A list of favourites to group important events");
             }
         } else if (role == SortRole) {
             return index.row();
@@ -242,6 +251,13 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         Q_ASSERT(thread);
     } else if (tag == Tag::Tracepoints) {
         tracepoint = &m_data.tracepoints[index.row()];
+    } else if (tag == Tag::Favorites) {
+        if (role == IsFavoriteRole) {
+            return true;
+        }
+
+        const auto& favourite = m_favourites[index.row()];
+        return data(favourite.siblingAtColumn(index.column()), role);
     }
 
     if (role == ThreadStartRole) {
@@ -255,6 +271,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         case Tag::Processes:
         case Tag::Tracepoints:
             return m_time.start;
+        case Tag::Favorites:
+            // they are handled elsewhere
+            Q_UNREACHABLE();
         }
     } else if (role == ThreadEndRole) {
         switch (tag) {
@@ -267,6 +286,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         case Tag::Processes:
         case Tag::Tracepoints:
             return m_time.end;
+        case Tag::Favorites:
+            // they are handled elsewhere
+            Q_UNREACHABLE();
         }
     } else if (role == ThreadNameRole) {
         switch (tag) {
@@ -280,6 +302,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         case Tag::Processes:
         case Tag::Tracepoints:
             return {};
+        case Tag::Favorites:
+            // they are handled elsewhere
+            Q_UNREACHABLE();
         }
     } else if (role == ThreadIdRole) {
         switch (tag) {
@@ -292,6 +317,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         case Tag::Processes:
         case Tag::Tracepoints:
             return Data::INVALID_TID;
+        case Tag::Favorites:
+            // they are handled elsewhere
+            Q_UNREACHABLE();
         }
     } else if (role == ProcessIdRole) {
         switch (tag) {
@@ -304,6 +332,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         case Tag::Processes:
         case Tag::Tracepoints:
             return Data::INVALID_PID;
+        case Tag::Favorites:
+            // they are handled elsewhere
+            Q_UNREACHABLE();
         }
     } else if (role == CpuIdRole) {
         switch (tag) {
@@ -316,6 +347,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         case Tag::Threads:
         case Tag::Tracepoints:
             return Data::INVALID_CPU_ID;
+        case Tag::Favorites:
+            // they are handled elsewhere
+            Q_UNREACHABLE();
         }
     } else if (role == EventsRole) {
         switch (tag) {
@@ -330,6 +364,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         case Tag::Overview:
         case Tag::Processes:
             return {};
+        case Tag::Favorites:
+            // they are handled elsewhere
+            Q_UNREACHABLE();
         }
     } else if (role == SortRole) {
         if (index.column() == ThreadColumn) {
@@ -345,6 +382,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
             case Tag::Overview:
             case Tag::Processes:
                 return {};
+            case Tag::Favorites:
+                // they are handled elsewhere
+                Q_UNREACHABLE();
             }
         } else {
             switch (tag) {
@@ -359,8 +399,13 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
             case Tag::Overview:
             case Tag::Processes:
                 return {};
+            case Tag::Favorites:
+                // they are handled elsewhere
+                Q_UNREACHABLE();
             }
         }
+    } else if (role == IsFavoriteRole) {
+        return false;
     }
 
     switch (static_cast<Columns>(index.column())) {
@@ -378,6 +423,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
             case Tag::Overview:
             case Tag::Processes:
                 return {};
+            case Tag::Favorites:
+                // they are handled elsewhere
+                Q_UNREACHABLE();
             }
         } else if (role == Qt::ToolTipRole) {
             QString tooltip;
@@ -418,6 +466,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
             case Tag::Overview:
             case Tag::Processes:
                 return {};
+            case Tag::Favorites:
+                // they are handled elsewhere
+                Q_UNREACHABLE();
             }
 
             tooltip += tr("Number of Events: %1 (%2% of the total)")
@@ -439,6 +490,9 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
             case Tag::Overview:
             case Tag::Processes:
                 return {};
+            case Tag::Favorites:
+                // they are handled elsewhere
+                Q_UNREACHABLE();
             }
         }
         break;
@@ -453,6 +507,8 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
 void EventModel::setData(const Data::EventResults& data)
 {
     beginResetModel();
+    m_favourites.clear();
+
     m_data = data;
     m_totalEvents = 0;
     m_maxCost = 0;
@@ -513,6 +569,7 @@ QModelIndex EventModel::index(int row, int column, const QModelIndex& parent) co
     case Tag::Cpus:
     case Tag::Tracepoints:
     case Tag::Threads:
+    case Tag::Favorites:
         break;
     case Tag::Root: // root has the 1st level children: Overview
         return createIndex(row, column, static_cast<quintptr>(Tag::Overview));
@@ -524,6 +581,8 @@ QModelIndex EventModel::index(int row, int column, const QModelIndex& parent) co
             return createIndex(row, column, static_cast<quintptr>(Tag::Processes));
         case OverviewRow::TracepointRow:
             return createIndex(row, column, static_cast<quintptr>(Tag::Tracepoints));
+        case OverviewRow::FavoriteRow:
+            return createIndex(row, column, static_cast<quintptr>(Tag::Favorites));
         }
         Q_UNREACHABLE();
     case Tag::Processes: // 3rd level children: Threads
@@ -545,7 +604,9 @@ QModelIndex EventModel::parent(const QModelIndex& child) const
     case Tag::Processes:
         return createIndex(OverviewRow::ProcessRow, 0, static_cast<quintptr>(Tag::Overview));
     case Tag::Tracepoints:
-        return createIndex(OverviewRow::TracepointRow, 0, static_cast<qintptr>(Tag::Overview));
+        return createIndex(OverviewRow::TracepointRow, 0, static_cast<quintptr>(Tag::Overview));
+    case Tag::Favorites:
+        return createIndex(OverviewRow::FavoriteRow, 0, static_cast<quintptr>(Tag::Overview));
     case Tag::Threads: {
         const auto parentRow = tagData(child.internalId());
         return createIndex(parentRow, 0, static_cast<quintptr>(Tag::Processes));
@@ -553,4 +614,39 @@ QModelIndex EventModel::parent(const QModelIndex& child) const
     }
 
     return {};
+}
+
+void EventModel::addToFavorites(const QModelIndex& index)
+{
+    Q_ASSERT(index.model() == this);
+
+    if (index.column() != 0) {
+        // we only want one index per row, so we force it to be column zero
+        // this way we can easily check if we have duplicate rows
+        addToFavorites(index.siblingAtColumn(0));
+        return;
+    }
+
+    if (m_favourites.contains(index)) {
+        return;
+    }
+
+    const auto row = m_favourites.size();
+
+    beginInsertRows(createIndex(FavoriteRow, 0, static_cast<quintptr>(Tag::Overview)), row, row);
+    m_favourites.push_back(index);
+    endInsertRows();
+}
+
+void EventModel::removeFromFavorites(const QModelIndex& index)
+{
+    Q_ASSERT(index.model() == this);
+    Q_ASSERT(dataTag(index) == Tag::Favorites);
+
+    const auto row = index.row();
+    Q_ASSERT(row >= 0 && row < m_favourites.size());
+
+    beginRemoveRows(createIndex(FavoriteRow, 0, static_cast<quintptr>(Tag::Overview)), row, row);
+    m_favourites.remove(row);
+    endRemoveRows();
 }
