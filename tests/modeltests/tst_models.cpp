@@ -558,72 +558,18 @@ private slots:
 
     void testEventModel()
     {
-        Data::EventResults events;
-        events.cpus.resize(3);
-        events.cpus[0].cpuId = 0;
-        events.cpus[1].cpuId = 1; // empty
-        events.cpus[2].cpuId = 2;
+        const auto events = createEventModelTestData();
         const int nonEmptyCpus = 2;
         const int processes = 2;
 
         const quint64 endTime = 1000;
-        const quint64 deltaTime = 10;
-        events.threads.resize(4);
-        auto& thread1 = events.threads[0];
-        {
-            thread1.pid = 1234;
-            thread1.tid = 1234;
-            thread1.time = {0, endTime};
-            thread1.name = QStringLiteral("foobar");
-        }
-        auto& thread2 = events.threads[1];
-        {
-            thread2.pid = 1234;
-            thread2.tid = 1235;
-            thread2.time = {deltaTime, endTime - deltaTime};
-            thread2.name = QStringLiteral("asdf");
-        }
-        auto& thread3 = events.threads[2];
-        {
-            thread3.pid = 5678;
-            thread3.tid = 5678;
-            thread3.time = {0, endTime};
-            thread3.name = QStringLiteral("barfoo");
-        }
-        auto& thread4 = events.threads[3];
-        {
-            thread4.pid = 5678;
-            thread4.tid = 5679;
-            thread4.time = {endTime - deltaTime, endTime};
-            thread4.name = QStringLiteral("blub");
-        }
-
-        Data::CostSummary costSummary(QStringLiteral("cycles"), 0, 0, Data::Costs::Unit::Unknown);
-        auto generateEvent = [&costSummary, &events](quint64 time, quint32 cpuId) -> Data::Event {
-            Data::Event event;
-            event.cost = 10;
-            event.cpuId = cpuId;
-            event.type = 0;
-            event.time = time;
-            ++costSummary.sampleCount;
-            costSummary.totalPeriod += event.cost;
-            events.cpus[cpuId].events << event;
-            return event;
-        };
-        for (quint64 time = 0; time < endTime; time += deltaTime) {
-            thread1.events << generateEvent(time, 0);
-            if (thread2.time.contains(time)) {
-                thread2.events << generateEvent(time, 2);
-            }
-        }
-        events.totalCosts = {costSummary};
 
         EventModel model;
         QAbstractItemModelTester tester(&model);
         model.setData(events);
 
         QCOMPARE(model.columnCount(), static_cast<int>(EventModel::NUM_COLUMNS));
-        QCOMPARE(model.rowCount(), 2);
+        QCOMPARE(model.rowCount(), 4);
 
         auto simplifiedEvents = events;
         simplifiedEvents.cpus.remove(1);
@@ -703,6 +649,27 @@ private slots:
                 QCOMPARE(idx2.data(EventModel::SortRole).value<int>(), rowEvents.size());
             }
         }
+    }
+
+    void testEventModelFavorites()
+    {
+        const auto events = createEventModelTestData();
+        EventModel model;
+        QAbstractItemModelTester tester(&model);
+        model.setData(events);
+
+        const auto favoritesIndex = model.index(3, 0);
+        const auto processesIndex = model.index(1, 0);
+
+        QCOMPARE(model.rowCount(favoritesIndex), 0);
+        QCOMPARE(model.data(model.index(0, 0, processesIndex)).toString(), QLatin1String("foobar (#1234)"));
+
+        model.addToFavorites(model.index(0, 0, processesIndex));
+        QCOMPARE(model.rowCount(favoritesIndex), 1);
+        QCOMPARE(model.data(model.index(0, 0, favoritesIndex)).toString(), QLatin1String("foobar (#1234)"));
+
+        model.removeFromFavorites(model.index(0, 0, favoritesIndex));
+        QCOMPARE(model.rowCount(favoritesIndex), 0);
     }
 
     void testPrettySymbol_data()
@@ -946,6 +913,69 @@ private:
         auto font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
         font.setPixelSize(10);
         return QFontMetrics(font);
+    }
+
+    Data::EventResults createEventModelTestData()
+    {
+        Data::EventResults events;
+        events.cpus.resize(3);
+        events.cpus[0].cpuId = 0;
+        events.cpus[1].cpuId = 1; // empty
+        events.cpus[2].cpuId = 2;
+
+        const quint64 endTime = 1000;
+        const quint64 deltaTime = 10;
+        events.threads.resize(4);
+        auto& thread1 = events.threads[0];
+        {
+            thread1.pid = 1234;
+            thread1.tid = 1234;
+            thread1.time = {0, endTime};
+            thread1.name = QStringLiteral("foobar");
+        }
+        auto& thread2 = events.threads[1];
+        {
+            thread2.pid = 1234;
+            thread2.tid = 1235;
+            thread2.time = {deltaTime, endTime - deltaTime};
+            thread2.name = QStringLiteral("asdf");
+        }
+        auto& thread3 = events.threads[2];
+        {
+            thread3.pid = 5678;
+            thread3.tid = 5678;
+            thread3.time = {0, endTime};
+            thread3.name = QStringLiteral("barfoo");
+        }
+        auto& thread4 = events.threads[3];
+        {
+            thread4.pid = 5678;
+            thread4.tid = 5679;
+            thread4.time = {endTime - deltaTime, endTime};
+            thread4.name = QStringLiteral("blub");
+        }
+
+        Data::CostSummary costSummary(QStringLiteral("cycles"), 0, 0, Data::Costs::Unit::Unknown);
+        auto generateEvent = [&costSummary, &events](quint64 time, quint32 cpuId) -> Data::Event {
+            Data::Event event;
+            event.cost = 10;
+            event.cpuId = cpuId;
+            event.type = 0;
+            event.time = time;
+            ++costSummary.sampleCount;
+            costSummary.totalPeriod += event.cost;
+            events.cpus[cpuId].events << event;
+            return event;
+        };
+        for (quint64 time = 0; time < endTime; time += deltaTime) {
+            thread1.events << generateEvent(time, 0);
+            if (thread2.time.contains(time)) {
+                thread2.events << generateEvent(time, 2);
+            }
+        }
+        events.totalCosts = {costSummary};
+
+        return events;
     }
 };
 

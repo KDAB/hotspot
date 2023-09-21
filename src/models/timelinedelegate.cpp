@@ -13,6 +13,7 @@
 #include <QHelpEvent>
 #include <QMenu>
 #include <QPainter>
+#include <QSortFilterProxyModel>
 #include <QToolTip>
 
 #include "../util.h"
@@ -459,6 +460,20 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         const auto isMainThread = threadStartTime == minTime && threadEndTime == maxTime;
         const auto cpuId = index.data(EventModel::CpuIdRole).value<quint32>();
         const auto numCpus = index.data(EventModel::NumCpusRole).value<uint>();
+        const auto isFavorite = index.data(EventModel::IsFavoriteRole).value<bool>();
+
+        contextMenu->addAction(QIcon::fromTheme(QStringLiteral("favorite")),
+                               isFavorite ? tr("Remove from favorites") : tr("Add to favorites"), this,
+                               [this, index, isFavorite] {
+                                   auto model = qobject_cast<const QSortFilterProxyModel*>(index.model());
+                                   Q_ASSERT(model);
+                                   if (isFavorite) {
+                                       emit removeFromFavorites(model->mapToSource(index));
+                                   } else {
+                                       emit addToFavorites(model->mapToSource(index));
+                                   }
+                               });
+
         if (isTimeSpanSelected && (minTime != timeSlice.start || maxTime != timeSlice.end)) {
             contextMenu->addAction(QIcon::fromTheme(QStringLiteral("zoom-in")), tr("Zoom In On Selection"), this,
                                    [this, timeSlice]() { m_filterAndZoomStack->zoomIn(timeSlice); });

@@ -64,6 +64,8 @@ public:
 
 signals:
     void stacksHovered(const QSet<qint32>& stacks);
+    void addToFavorites(const QModelIndex& index);
+    void removeFromFavorites(const QModelIndex& index);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
