@@ -142,9 +142,15 @@
         </widget>
        </item>
        <item>
-        <widget class="QTreeView" name="sourceCodeView">
+        <widget class="CopyableTreeView" name="sourceCodeView">
          <property name="alternatingRowColors">
           <bool>true</bool>
+         </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectItems</enum>
          </property>
          <property name="rootIsDecorated">
           <bool>false</bool>
@@ -304,9 +310,15 @@
         </widget>
        </item>
        <item>
-        <widget class="QTreeView" name="assemblyView">
+        <widget class="CopyableTreeView" name="assemblyView">
          <property name="alternatingRowColors">
           <bool>true</bool>
+         </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::ExtendedSelection</enum>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectItems</enum>
          </property>
          <property name="rootIsDecorated">
           <bool>false</bool>
@@ -449,6 +461,11 @@
    <class>KSqueezedTextLabel</class>
    <extends>QLabel</extends>
    <header>ksqueezedtextlabel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>CopyableTreeView</class>
+   <extends>QTreeView</extends>
+   <header>copyabletreeview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

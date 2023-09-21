@@ -54,6 +54,7 @@ set(HOTSPOT_SRCS
     perfcontrolfifowrapper.cpp
     errnoutil.cpp
     recordhost.cpp
+    copyabletreeview.cpp
     # ui files:
     mainwindow.ui
     aboutdialog.ui

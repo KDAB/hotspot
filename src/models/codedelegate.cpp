@@ -58,7 +58,10 @@ void CodeDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
 
     bool ok = false;
     const auto sourceLine = index.data(m_lineNumberRole).toInt(&ok);
-    if (ok && sourceLine >= 0) {
+    if (option.state & QStyle::State_Selected) {
+        painter->setBrush(option.palette.highlight());
+        painter->drawRect(option.rect);
+    } else if (ok && sourceLine >= 0) {
         painter->setBrush(backgroundColor(sourceLine, index.data(m_highlightRole).toBool()));
         painter->drawRect(option.rect);
     }
