@@ -12,8 +12,7 @@
 #include <QPainter>
 #include <QTextLine>
 
-#include "disassemblymodel.h"
-#include "sourcecodemodel.h"
+Q_DECLARE_METATYPE(QTextLine)
 
 namespace {
 QColor backgroundColor(int line, bool isCurrent)
