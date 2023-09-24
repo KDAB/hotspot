@@ -152,7 +152,11 @@ MainWindow::MainWindow(QWidget* parent)
         m_exportAction->setEnabled(true);
 
         auto* notification = new KNotification(QStringLiteral("fileSaved"));
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         notification->setWidget(this);
+#else
+        notification->setWindow(window()->windowHandle());
+#endif
         notification->setUrls({url});
         notification->setText(tr("Processed data saved"));
         notification->sendEvent();
