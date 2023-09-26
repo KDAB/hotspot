@@ -32,6 +32,7 @@
 #include <QScrollBar>
 #include <QStyleOption>
 #include <QSvgGenerator>
+#include <QToolBar>
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QWheelEvent>
@@ -54,6 +55,29 @@ enum SearchMatchType
     NoMatch,
     DirectMatch,
     ChildMatch
+};
+
+template<class CreateInstance>
+class CustomWidgetAction : public QWidgetAction
+{
+public:
+    explicit CustomWidgetAction(CreateInstance createInstance, QWidget* parent)
+        : QWidgetAction(parent)
+        , _createInstance(createInstance)
+    {
+    }
+
+    QWidget* createWidget(QWidget* parent) override
+    {
+        auto widget = new QWidget(parent);
+        auto layout = new QHBoxLayout(widget);
+        layout->setContentsMargins(0, 0, 0, 0);
+        _createInstance(widget, layout);
+        return widget;
+    }
+
+private:
+    CreateInstance _createInstance;
 };
 }
 
@@ -601,8 +625,6 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     , m_view(new QGraphicsView(this))
     , m_displayLabel(new KSqueezedTextLabel(this))
     , m_searchResultsLabel(new QLabel(this))
-    , m_colorSchemeLabel(new QLabel(this))
-    , m_colorSchemeSelector(new QComboBox(this))
 {
     m_displayLabel->setTextElideMode(Qt::ElideRight);
     qRegisterMetaType<FrameGraphicsItem*>();
@@ -634,84 +656,157 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     m_forwardButton->setIcon(QIcon::fromTheme(QStringLiteral("go-next")));
     m_forwardButton->setToolTip(QStringLiteral("Go forward in symbol view history"));
 
-    auto bottomUpCheckbox = new QCheckBox(i18n("Bottom-Up View"), this);
-    connect(this, &FlameGraph::uiResetRequested, bottomUpCheckbox,
-            [bottomUpCheckbox]() { bottomUpCheckbox->setChecked(false); });
-    bottomUpCheckbox->setToolTip(i18n(
-        "Enable the bottom-up flame graph view. When this is unchecked, the top-down view is enabled by default."));
-    bottomUpCheckbox->setChecked(m_showBottomUpData);
-    connect(bottomUpCheckbox, &QCheckBox::toggled, this, [this, bottomUpCheckbox] {
-        const auto showBottomUpData = bottomUpCheckbox->isChecked();
-        if (showBottomUpData == m_showBottomUpData) {
-            return;
-        }
+    auto bottomUpAction = new CustomWidgetAction(
+        [this](QWidget* widget, QHBoxLayout* layout) {
+            auto bottomUpCheckbox = new QCheckBox(i18n("Bottom-Up View"), widget);
+            layout->addWidget(bottomUpCheckbox);
+            connect(this, &FlameGraph::uiResetRequested, bottomUpCheckbox,
+                    [bottomUpCheckbox]() { bottomUpCheckbox->setChecked(false); });
+            bottomUpCheckbox->setToolTip(i18n("Enable the bottom-up flame graph view. When this is unchecked, the "
+                                              "top-down view is enabled by default."));
+            bottomUpCheckbox->setChecked(m_showBottomUpData);
+            connect(bottomUpCheckbox, &QCheckBox::toggled, this, [this, bottomUpCheckbox] {
+                const auto showBottomUpData = bottomUpCheckbox->isChecked();
+                if (showBottomUpData == m_showBottomUpData) {
+                    return;
+                }
 
-        m_showBottomUpData = showBottomUpData;
-        for (auto& stack : m_hoveredStacks) {
-            std::reverse(stack.begin(), stack.end());
-        }
-        showData();
-    });
+                m_showBottomUpData = showBottomUpData;
+                for (auto& stack : m_hoveredStacks) {
+                    std::reverse(stack.begin(), stack.end());
+                }
+                showData();
+            });
+        },
+        this);
 
-    auto collapseRecursionCheckbox = new QCheckBox(i18n("Collapse Recursion"), this);
-    connect(this, &FlameGraph::uiResetRequested, collapseRecursionCheckbox,
-            [collapseRecursionCheckbox]() { collapseRecursionCheckbox->setChecked(false); });
-    collapseRecursionCheckbox->setChecked(m_collapseRecursion);
-    collapseRecursionCheckbox->setToolTip(
-        i18n("Collapse stack frames for functions calling themselves. "
-             "When this is unchecked, recursive frames will be visualized separately."));
-    connect(collapseRecursionCheckbox, &QCheckBox::toggled, this, [this, collapseRecursionCheckbox] {
-        m_collapseRecursion = collapseRecursionCheckbox->isChecked();
-        showData();
-    });
+    m_costThreshold = DEFAULT_COST_THRESHOLD;
 
-    auto costThreshold = new QDoubleSpinBox(this);
-    costThreshold->setDecimals(2);
-    costThreshold->setMinimum(0);
-    costThreshold->setMaximum(99.90);
-    costThreshold->setPrefix(i18n("Cost Threshold: "));
-    costThreshold->setSuffix(QStringLiteral("%"));
-    costThreshold->setValue(DEFAULT_COST_THRESHOLD);
-    connect(this, &FlameGraph::uiResetRequested, costThreshold,
-            [costThreshold]() { costThreshold->setValue(DEFAULT_COST_THRESHOLD); });
-    costThreshold->setSingleStep(0.01);
-    costThreshold->setToolTip(
-        i18n("<qt>The cost threshold defines a fractional cut-off value. "
-             "Items with a relative cost below this value will not be shown in the flame graph. "
-             "This is done as an optimization to quickly generate graphs for large data sets with "
-             "low memory overhead. If you need more details, decrease the threshold value, or set it to zero.</qt>"));
-    connect(costThreshold, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this,
-            [this](double threshold) {
+    auto costThresholdAction = new CustomWidgetAction(
+        [this](QWidget* widget, QHBoxLayout* layout) {
+            auto costThreshold = new QDoubleSpinBox(widget);
+            costThreshold->setDecimals(2);
+            costThreshold->setMinimum(0);
+            costThreshold->setMaximum(99.90);
+            costThreshold->setPrefix(i18n("Cost Threshold: "));
+            costThreshold->setSuffix(QStringLiteral("%"));
+            costThreshold->setValue(m_costThreshold);
+            connect(this, &FlameGraph::uiResetRequested, costThreshold,
+                    [costThreshold]() { costThreshold->setValue(DEFAULT_COST_THRESHOLD); });
+            costThreshold->setSingleStep(0.01);
+            costThreshold->setToolTip(
+                i18n("<qt>The cost threshold defines a fractional cut-off value. "
+                     "Items with a relative cost below this value will not be shown in the flame graph. "
+                     "This is done as an optimization to quickly generate graphs for large data sets with "
+                     "low memory overhead. If you need more details, decrease the threshold value, or set it to "
+                     "zero.</qt>"));
+
+            connect(costThreshold, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this](double threshold) {
                 m_costThreshold = threshold;
                 showData();
             });
+            layout->addWidget(costThreshold);
+        },
+        this);
 
-    auto costAggregation = new QComboBox(this);
-    ResultsUtil::setupResultsAggregation(costAggregation);
-    auto costAggregationLabel = new QLabel(tr("Aggregate cost by:"));
-    costAggregationLabel->setBuddy(costAggregation);
+    auto collapseRecursionAction = new CustomWidgetAction(
+        [this](QWidget* widget, QHBoxLayout* layout) {
+            auto checkbox = new QCheckBox(tr("Collapse Recursion"), widget);
+            checkbox->setChecked(m_collapseRecursion);
+            layout->addWidget(checkbox);
 
-    m_searchInput = new QLineEdit(this);
-    m_searchInput->setPlaceholderText(i18n("Search..."));
-    m_searchInput->setToolTip(i18n("<qt>Search the flame graph for a symbol.</qt>"));
-    m_searchInput->setClearButtonEnabled(true);
-    connect(m_searchInput, &QLineEdit::textChanged, this, &FlameGraph::setSearchValue);
-    connect(this, &FlameGraph::uiResetRequested, this, [this]() { m_searchInput->clear(); });
+            connect(checkbox, &QCheckBox::clicked, widget, [this](bool checked) {
+                m_collapseRecursion = checked;
+                showData();
+            });
+        },
+        this);
 
-    auto controls = new QWidget(this);
-    controls->setLayout(new QHBoxLayout);
+    auto costAggregation = new CustomWidgetAction(
+        [](QWidget* widget, QHBoxLayout* layout) {
+            auto costAggregationLabel = new QLabel(tr("Aggregate cost by:"), widget);
+            layout->addWidget(costAggregationLabel);
+
+            auto costAggregation = new QComboBox(widget);
+            ResultsUtil::setupResultsAggregation(costAggregation);
+            layout->addWidget(costAggregation);
+        },
+        this);
+
+    auto colorSchemeSelector = new CustomWidgetAction(
+        [this](QWidget* widget, QHBoxLayout* layout) {
+            auto label = new QLabel(tr("Color Scheme:"), widget);
+            layout->addWidget(label);
+
+            auto comboBox = new QComboBox(widget);
+            layout->addWidget(comboBox);
+
+            comboBox->addItem(tr("Default"), QVariant::fromValue(Settings::ColorScheme::Default));
+            comboBox->addItem(tr("Binary"), QVariant::fromValue(Settings::ColorScheme::Binary));
+            comboBox->addItem(tr("Kernel"), QVariant::fromValue(Settings::ColorScheme::Kernel));
+            comboBox->addItem(tr("System"), QVariant::fromValue(Settings::ColorScheme::System));
+            comboBox->addItem(tr("Cost Ratio"), QVariant::fromValue(Settings::ColorScheme::CostRatio));
+
+            auto setColorScheme = [this](Settings::ColorScheme scheme) {
+                Settings::instance()->setColorScheme(scheme);
+
+                if (m_rootItem) {
+                    const auto children = m_rootItem->childItems();
+                    // don't recolor the root item
+                    for (const auto& child : children) {
+                        updateFlameGraphColorScheme(static_cast<FrameGraphicsItem*>(child), scheme, m_rootItem->cost());
+                    }
+                }
+            };
+
+            connect(comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [comboBox, setColorScheme] {
+                setColorScheme(comboBox->currentData().value<Settings::ColorScheme>());
+            });
+
+            connect(Settings::instance(), &Settings::pathsChanged, this, [setColorScheme] {
+                if (Settings::instance()->colorScheme() == Settings::ColorScheme::System) {
+                    // setColorScheme triggers a redraw
+                    // we only need to redraw the flamegraph if the current color scheme is affected by the changed
+                    // paths
+                    setColorScheme(Settings::ColorScheme::System);
+                }
+            });
+        },
+        this);
+
+    auto searchInput = new CustomWidgetAction(
+        [this](QWidget* widget, QHBoxLayout* layout) {
+            auto searchInput = new QLineEdit(widget);
+            searchInput->setMinimumWidth(200);
+            layout->addWidget(searchInput);
+
+            searchInput->setPlaceholderText(i18n("Search..."));
+            searchInput->setToolTip(i18n("<qt>Search the flame graph for a symbol.</qt>"));
+            searchInput->setClearButtonEnabled(true);
+            connect(searchInput, &QLineEdit::textChanged, this, &FlameGraph::setSearchValue);
+            connect(this, &FlameGraph::uiResetRequested, this, [this, searchInput] {
+                m_search.clear();
+                searchInput->clear();
+            });
+        },
+        this);
+
+    // use a QToolBar to automatically hide widgets in a menu that don't fit into the window
+    auto controls = new QToolBar(this);
     controls->layout()->setContentsMargins(0, 0, 0, 0);
-    controls->layout()->addWidget(m_backButton);
-    controls->layout()->addWidget(m_forwardButton);
-    controls->layout()->addWidget(m_costSource);
-    controls->layout()->addWidget(bottomUpCheckbox);
-    controls->layout()->addWidget(collapseRecursionCheckbox);
-    controls->layout()->addWidget(costThreshold);
-    controls->layout()->addWidget(costAggregationLabel);
-    controls->layout()->addWidget(costAggregation);
-    controls->layout()->addWidget(m_searchInput);
-    controls->layout()->addWidget(m_colorSchemeLabel);
-    controls->layout()->addWidget(m_colorSchemeSelector);
+
+    // these control widgets can stay as they are, since they should always be visible
+    controls->addWidget(m_backButton);
+    controls->addWidget(m_forwardButton);
+    controls->addWidget(m_costSource);
+
+    // these can be hidden as necessary
+    controls->addAction(searchInput);
+    controls->addAction(costAggregation);
+    controls->addAction(colorSchemeSelector);
+    controls->addAction(bottomUpAction);
+    controls->addAction(collapseRecursionAction);
+    controls->addAction(costThresholdAction);
 
     m_displayLabel->setWordWrap(true);
     m_displayLabel->setTextInteractionFlags(m_displayLabel->textInteractionFlags() | Qt::TextSelectableByMouse);
@@ -741,38 +836,6 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     connect(m_resetAction, &QAction::triggered, this, [this]() { selectItem(0); });
     addAction(m_resetAction);
     updateNavigationActions();
-
-    m_colorSchemeLabel->setText(tr("Color Scheme:"));
-
-    m_colorSchemeSelector->addItem(tr("Default"), QVariant::fromValue(Settings::ColorScheme::Default));
-    m_colorSchemeSelector->addItem(tr("Binary"), QVariant::fromValue(Settings::ColorScheme::Binary));
-    m_colorSchemeSelector->addItem(tr("Kernel"), QVariant::fromValue(Settings::ColorScheme::Kernel));
-    m_colorSchemeSelector->addItem(tr("System"), QVariant::fromValue(Settings::ColorScheme::System));
-    m_colorSchemeSelector->addItem(tr("Cost Ratio"), QVariant::fromValue(Settings::ColorScheme::CostRatio));
-
-    auto setColorScheme = [this](Settings::ColorScheme scheme) {
-        Settings::instance()->setColorScheme(scheme);
-
-        if (m_rootItem) {
-            const auto children = m_rootItem->childItems();
-            // don't recolor the root item
-            for (const auto& child : children) {
-                updateFlameGraphColorScheme(static_cast<FrameGraphicsItem*>(child), scheme, m_rootItem->cost());
-            }
-        }
-    };
-
-    connect(m_colorSchemeSelector, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this, setColorScheme] {
-        setColorScheme(m_colorSchemeSelector->currentData().value<Settings::ColorScheme>());
-    });
-
-    connect(Settings::instance(), &Settings::pathsChanged, this, [setColorScheme] {
-        if (Settings::instance()->colorScheme() == Settings::ColorScheme::System) {
-            // setColorScheme triggers a redraw
-            // we only need to redraw the flamegraph if the current color scheme is affected by the changed paths
-            setColorScheme(Settings::ColorScheme::System);
-        }
-    });
 }
 
 FlameGraph::~FlameGraph() = default;
@@ -1047,8 +1110,8 @@ void FlameGraph::setData(FrameGraphicsItem* rootItem)
     rootItem->setRect(0, 0, 800, m_view->fontMetrics().height() + 4);
     m_scene->addItem(rootItem);
 
-    if (!m_searchInput->text().isEmpty()) {
-        setSearchValue(m_searchInput->text());
+    if (!m_search.isEmpty()) {
+        setSearchValue(m_search);
     }
     if (!m_hoveredStacks.isEmpty()) {
         hoverStacks(rootItem, m_hoveredStacks);
@@ -1109,6 +1172,8 @@ void FlameGraph::setSearchValue(const QString& value)
     if (!m_rootItem) {
         return;
     }
+
+    m_search = value;
 
     auto match = applySearch(m_rootItem, value);
 

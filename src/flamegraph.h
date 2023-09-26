@@ -75,14 +75,11 @@ private:
     QGraphicsView* m_view;
     KSqueezedTextLabel* m_displayLabel;
     QLabel* m_searchResultsLabel;
-    QLineEdit* m_searchInput = nullptr;
     QAction* m_forwardAction = nullptr;
     QAction* m_backAction = nullptr;
     QAction* m_resetAction = nullptr;
     QPushButton* m_backButton = nullptr;
     QPushButton* m_forwardButton = nullptr;
-    QLabel* m_colorSchemeLabel = nullptr;
-    QComboBox* m_colorSchemeSelector = nullptr;
     const FrameGraphicsItem* m_tooltipItem = nullptr;
     FrameGraphicsItem* m_rootItem = nullptr;
     QVector<FrameGraphicsItem*> m_selectionHistory;
@@ -91,6 +88,7 @@ private:
     bool m_showBottomUpData = false;
     bool m_collapseRecursion = false;
     bool m_buildingScene = false;
+    QString m_search;
     // cost threshold in percent, items below that value will not be shown
     static const constexpr double DEFAULT_COST_THRESHOLD = 0.1;
     double m_costThreshold = DEFAULT_COST_THRESHOLD;
