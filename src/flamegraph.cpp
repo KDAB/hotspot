@@ -788,11 +788,16 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     m_forwardAction = KStandardAction::forward(this, &FlameGraph::navigateForward, this);
     m_forwardAction->setToolTip(QStringLiteral("Go forward in symbol view history"));
 
+    m_resetAction = new QAction(QIcon::fromTheme(QStringLiteral("go-first")), tr("Reset View"), this);
+    m_resetAction->setShortcut(tr("Escape"));
+    connect(m_resetAction, &QAction::triggered, this, [this]() { selectItem(0); });
+
     // use a QToolBar to automatically hide widgets in a menu that don't fit into the window
     auto controls = new QToolBar(this);
     controls->layout()->setContentsMargins(0, 0, 0, 0);
 
     // these control widgets can stay as they are, since they should always be visible
+    controls->addAction(m_resetAction);
     controls->addAction(m_backAction);
     controls->addAction(m_forwardAction);
     controls->addWidget(m_costSource);
@@ -821,12 +826,7 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     layout()->addWidget(m_searchResultsLabel);
 
     addAction(m_backAction);
-
     addAction(m_forwardAction);
-
-    m_resetAction = new QAction(QIcon::fromTheme(QStringLiteral("go-first")), tr("Reset View"), this);
-    m_resetAction->setShortcut(tr("Escape"));
-    connect(m_resetAction, &QAction::triggered, this, [this]() { selectItem(0); });
     addAction(m_resetAction);
     updateNavigationActions();
 }
