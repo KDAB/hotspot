@@ -783,9 +783,9 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
         },
         this);
 
-    m_backAction = KStandardAction::back(this, SLOT(navigateBack()), this);
+    m_backAction = KStandardAction::back(this, &FlameGraph::navigateBack, this);
     m_backAction->setToolTip(QStringLiteral("Go back in symbol view history"));
-    m_forwardAction = KStandardAction::forward(this, SLOT(navigateForward()), this);
+    m_forwardAction = KStandardAction::forward(this, &FlameGraph::navigateForward, this);
     m_forwardAction->setToolTip(QStringLiteral("Go forward in symbol view history"));
 
     // use a QToolBar to automatically hide widgets in a menu that don't fit into the window

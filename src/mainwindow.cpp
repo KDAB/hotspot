@@ -172,7 +172,7 @@ MainWindow::MainWindow(QWidget* parent)
     ui->fileMenu->addSeparator();
 
     connect(m_resultsPage, &ResultsPage::navigateToCode, this, &MainWindow::navigateToCode);
-    ui->fileMenu->addAction(KStandardAction::open(this, SLOT(onOpenFileButtonClicked()), this));
+    ui->fileMenu->addAction(KStandardAction::open(this, &MainWindow::onOpenFileButtonClicked, this));
 
     auto openNewWindow = new QAction(QIcon::fromTheme(QStringLiteral("document-open")), tr("Open in new window"), this);
     openNewWindow->setShortcut(tr("Ctrl+Shift+O"));
@@ -182,20 +182,20 @@ MainWindow::MainWindow(QWidget* parent)
             openInNewWindow(fileName);
     });
     ui->fileMenu->addAction(openNewWindow);
-    m_recentFilesAction = KStandardAction::openRecent(this, SLOT(openFile(QUrl)), this);
+    m_recentFilesAction = KStandardAction::openRecent(this, qOverload<const QUrl&>(&MainWindow::openFile), this);
     m_recentFilesAction->loadEntries(m_config->group("RecentFiles"));
     ui->fileMenu->addAction(m_recentFilesAction);
     ui->fileMenu->addSeparator();
-    m_reloadAction = KStandardAction::redisplay(this, SLOT(reload()), this);
+    m_reloadAction = KStandardAction::redisplay(this, &MainWindow::reload, this);
     m_reloadAction->setText(tr("Reload"));
     ui->fileMenu->addAction(m_reloadAction);
     ui->fileMenu->addSeparator();
-    m_exportAction = KStandardAction::saveAs(this, SLOT(saveAs()), this);
+    m_exportAction = KStandardAction::saveAs(this, qOverload<>(&MainWindow::saveAs), this);
     ui->fileMenu->addAction(m_exportAction);
     ui->fileMenu->addSeparator();
-    ui->fileMenu->addAction(KStandardAction::close(this, SLOT(clear()), this));
+    ui->fileMenu->addAction(KStandardAction::close(this, qOverload<>(&MainWindow::clear), this));
     ui->fileMenu->addSeparator();
-    ui->fileMenu->addAction(KStandardAction::quit(this, SLOT(close()), this));
+    ui->fileMenu->addAction(KStandardAction::quit(this, &MainWindow::close, this));
     connect(ui->actionAbout_Qt, &QAction::triggered, qApp, &QApplication::aboutQt);
     connect(ui->actionAbout_KDAB, &QAction::triggered, this, &MainWindow::aboutKDAB);
     connect(ui->settingsAction, &QAction::triggered, this, &MainWindow::openSettingsDialog);
