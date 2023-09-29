@@ -27,7 +27,6 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QMenu>
-#include <QPushButton>
 #include <QRandomGenerator>
 #include <QScrollBar>
 #include <QStyleOption>
@@ -649,13 +648,6 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     // fix for  QTBUG-105237 view->setFont does not update fontMetrics only the rendered font
     m_scene->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
-    m_backButton = new QPushButton(this);
-    m_backButton->setIcon(QIcon::fromTheme(QStringLiteral("go-previous")));
-    m_backButton->setToolTip(QStringLiteral("Go back in symbol view history"));
-    m_forwardButton = new QPushButton(this);
-    m_forwardButton->setIcon(QIcon::fromTheme(QStringLiteral("go-next")));
-    m_forwardButton->setToolTip(QStringLiteral("Go forward in symbol view history"));
-
     auto bottomUpAction = new CustomWidgetAction(
         [this](QWidget* widget, QHBoxLayout* layout) {
             auto bottomUpCheckbox = new QCheckBox(i18n("Bottom-Up View"), widget);
@@ -791,13 +783,18 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
         },
         this);
 
+    m_backAction = KStandardAction::back(this, SLOT(navigateBack()), this);
+    m_backAction->setToolTip(QStringLiteral("Go back in symbol view history"));
+    m_forwardAction = KStandardAction::forward(this, SLOT(navigateForward()), this);
+    m_forwardAction->setToolTip(QStringLiteral("Go forward in symbol view history"));
+
     // use a QToolBar to automatically hide widgets in a menu that don't fit into the window
     auto controls = new QToolBar(this);
     controls->layout()->setContentsMargins(0, 0, 0, 0);
 
     // these control widgets can stay as they are, since they should always be visible
-    controls->addWidget(m_backButton);
-    controls->addWidget(m_forwardButton);
+    controls->addAction(m_backAction);
+    controls->addAction(m_forwardAction);
     controls->addWidget(m_costSource);
 
     // these can be hidden as necessary
@@ -823,13 +820,9 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
     layout()->addWidget(m_displayLabel);
     layout()->addWidget(m_searchResultsLabel);
 
-    m_backAction = KStandardAction::back(this, SLOT(navigateBack()), this);
     addAction(m_backAction);
-    connect(m_backButton, &QPushButton::released, m_backAction, &QAction::trigger);
 
-    m_forwardAction = KStandardAction::forward(this, SLOT(navigateForward()), this);
     addAction(m_forwardAction);
-    connect(m_forwardButton, &QPushButton::released, m_forwardAction, &QAction::trigger);
 
     m_resetAction = new QAction(QIcon::fromTheme(QStringLiteral("go-first")), tr("Reset View"), this);
     m_resetAction->setShortcut(tr("Escape"));
@@ -1208,6 +1201,4 @@ void FlameGraph::updateNavigationActions()
     m_backAction->setEnabled(hasItems);
     m_forwardAction->setEnabled(isNotLastItem);
     m_resetAction->setEnabled(hasItems);
-    m_backButton->setEnabled(hasItems);
-    m_forwardButton->setEnabled(isNotLastItem);
 }

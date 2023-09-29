@@ -17,7 +17,6 @@ class QGraphicsView;
 class QComboBox;
 class QLabel;
 class QLineEdit;
-class QPushButton;
 
 class KSqueezedTextLabel;
 
@@ -78,8 +77,6 @@ private:
     QAction* m_forwardAction = nullptr;
     QAction* m_backAction = nullptr;
     QAction* m_resetAction = nullptr;
-    QPushButton* m_backButton = nullptr;
-    QPushButton* m_forwardButton = nullptr;
     const FrameGraphicsItem* m_tooltipItem = nullptr;
     FrameGraphicsItem* m_rootItem = nullptr;
     QVector<FrameGraphicsItem*> m_selectionHistory;
