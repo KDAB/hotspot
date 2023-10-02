@@ -810,11 +810,10 @@ private slots:
 
     void testCollapseTemplates()
     {
-        QString collapseTemplate(const QString& str, int level);
         QFETCH(QString, original);
         QFETCH(QString, collapsed);
 
-        QCOMPARE(collapseTemplate(original, 1), collapsed);
+        QCOMPARE(Util::collapseTemplate(original, 1), collapsed);
     }
 
     void testSymbolEliding_data()

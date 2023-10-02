@@ -89,7 +89,7 @@ std::pair<QString, QString> elideArguments(const QString& symbolText)
 }
 }
 
-QString collapseTemplate(const QString& str, int level)
+QString Util::collapseTemplate(const QString& str, int level)
 {
     if (str.indexOf(QLatin1Char('<')) == -1) {
         return str;

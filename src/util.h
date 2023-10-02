@@ -66,6 +66,7 @@ QString formatTooltip(const Data::FileLine& fileLine, const Data::Costs& selfCos
 QString formatTooltip(const QString& location, const Data::LocationCost& cost, const Data::Costs& totalCosts);
 
 QString elideSymbol(const QString& symbolText, const QFontMetrics& metrics, int maxWidth);
+QString collapseTemplate(const QString& str, int level);
 
 // the process environment including the custom AppImage-specific LD_LIBRARY_PATH
 // this is initialized on the first call and cached internally afterwards
