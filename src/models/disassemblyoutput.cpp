@@ -119,36 +119,8 @@ QString findBinaryForSymbol(const QStringList& debugPaths, const QStringList& ex
 
     return {};
 }
-}
 
-// not in an anonymous namespace so we can test this
-QString findSourceCodeFile(const QString& originalPath, const QStringList& sourceCodePaths, const QString& sysroot)
-{
-    if (QFile::exists(originalPath)) {
-        return originalPath;
-    }
-
-    QString sysrootPath = sysroot + QDir::separator() + originalPath;
-    if (QFile::exists(sysrootPath)) {
-        return sysrootPath;
-    }
-
-    for (const auto& sourcePath : sourceCodePaths) {
-        for (auto it = originalPath.begin(); it != originalPath.end();
-             it = std::find(++it, originalPath.end(), QDir::separator())) {
-            const auto path =
-                QString(sourcePath + QDir::separator() + QString(it, std::distance(it, originalPath.end())));
-            const auto info = QFileInfo(path);
-            if (info.exists()) {
-                return info.canonicalFilePath();
-            }
-        }
-    }
-
-    return originalPath; // fallback
-}
-
-static ObjectdumpOutput objdumpParse(const QByteArray& output)
+ObjectdumpOutput objdumpParse(const QByteArray& output)
 {
     QVector<DisassemblyOutput::DisassemblyLine> disassemblyLines;
 
@@ -231,6 +203,34 @@ static ObjectdumpOutput objdumpParse(const QByteArray& output)
             {addr, assembly, extractLinkedFunction(asmLine), {currentSourceFileName, sourceCodeLine}});
     }
     return {disassemblyLines, sourceFileName};
+}
+}
+
+// not in an anonymous namespace so we can test this
+QString findSourceCodeFile(const QString& originalPath, const QStringList& sourceCodePaths, const QString& sysroot)
+{
+    if (QFile::exists(originalPath)) {
+        return originalPath;
+    }
+
+    QString sysrootPath = sysroot + QDir::separator() + originalPath;
+    if (QFile::exists(sysrootPath)) {
+        return sysrootPath;
+    }
+
+    for (const auto& sourcePath : sourceCodePaths) {
+        for (auto it = originalPath.begin(); it != originalPath.end();
+             it = std::find(++it, originalPath.end(), QDir::separator())) {
+            const auto path =
+                QString(sourcePath + QDir::separator() + QString(it, std::distance(it, originalPath.end())));
+            const auto info = QFileInfo(path);
+            if (info.exists()) {
+                return info.canonicalFilePath();
+            }
+        }
+    }
+
+    return originalPath; // fallback
 }
 
 DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const QString& arch,

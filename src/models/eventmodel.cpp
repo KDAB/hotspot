@@ -12,12 +12,9 @@
 #include <QDebug>
 #include <QSet>
 
-static bool operator<(const EventModel::Process& process, qint32 pid)
-{
-    return process.pid < pid;
-}
-
 namespace {
+constexpr auto orderProcessByPid = [](const EventModel::Process& process, qint32 pid) { return process.pid < pid; };
+
 enum class Tag : quint8
 {
     Invalid = 0,
@@ -297,7 +294,7 @@ void EventModel::setData(const Data::EventResults& data)
             m_totalOffCpuTime += thread.offCpuTime;
             m_totalOnCpuTime += thread.time.delta() - thread.offCpuTime;
             m_totalEvents += thread.events.size();
-            auto it = std::lower_bound(m_processes.begin(), m_processes.end(), thread.pid);
+            auto it = std::lower_bound(m_processes.begin(), m_processes.end(), thread.pid, orderProcessByPid);
             if (it == m_processes.end() || it->pid != thread.pid) {
                 m_processes.insert(it, {thread.pid, {thread.tid}, thread.name});
             } else {

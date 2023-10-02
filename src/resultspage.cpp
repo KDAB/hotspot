@@ -41,6 +41,15 @@
 #include "frequencypage.h"
 #endif
 
+namespace {
+void showDock(KDDockWidgets::DockWidget* dock)
+{
+    dock->show();
+    dock->setFocus();
+    dock->setAsCurrentTab();
+}
+}
+
 ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     : QWidget(parent)
     , ui(std::make_unique<Ui::ResultsPage>())
@@ -217,13 +226,6 @@ void ResultsPage::setSysroot(const QString& path)
 void ResultsPage::setAppPath(const QString& path)
 {
     m_resultsCallerCalleePage->setAppPath(path);
-}
-
-static void showDock(KDDockWidgets::DockWidget* dock)
-{
-    dock->show();
-    dock->setFocus();
-    dock->setAsCurrentTab();
 }
 
 void ResultsPage::onJumpToCallerCallee(const Data::Symbol& symbol)

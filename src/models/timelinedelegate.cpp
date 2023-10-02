@@ -24,13 +24,15 @@
 #include <algorithm>
 #include <utility>
 
-static QPoint globalPos(const QMouseEvent* event)
+namespace {
+QPoint globalPos(const QMouseEvent* event)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     return event->globalPos();
 #else
     return event->globalPosition().toPoint();
 #endif
+}
 }
 
 TimeLineData::TimeLineData(Data::Events events, quint64 maxCost, Data::TimeRange time, Data::TimeRange threadTime,
