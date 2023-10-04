@@ -60,3 +60,7 @@ end options
 options sonnet
     cmake-options -DSONNET_USE_QML=OFF
 end options
+
+options extra-cmake-modules
+    tag %VERSION%
+end options
