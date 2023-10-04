@@ -187,6 +187,8 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
             }
         } else if (role == SortRole) {
             return index.row();
+        } else if (role == IsFavoritesSectionRole) {
+            return index.row() == OverviewRow::FavoriteRow;
         }
         return {};
     } else if (tag == Tag::Processes) {
