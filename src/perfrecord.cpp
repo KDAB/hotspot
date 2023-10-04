@@ -58,7 +58,6 @@ PerfRecord::~PerfRecord()
     stopRecording();
     if (m_perfRecordProcess) {
         m_perfRecordProcess->waitForFinished(100);
-        delete m_perfRecordProcess;
     }
 }
 
@@ -70,9 +69,8 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
         m_perfControlFifo.requestStop();
         m_perfControlFifo.close();
         m_perfRecordProcess->kill();
-        m_perfRecordProcess->deleteLater();
     }
-    m_perfRecordProcess = new QProcess(this);
+    m_perfRecordProcess = std::make_unique<QProcess>(this);
     m_perfRecordProcess->setProcessChannelMode(QProcess::MergedChannels);
 
     const auto outputFileInfo = QFileInfo(outputPath);
@@ -91,7 +89,7 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
         return false;
     }
 
-    connect(m_perfRecordProcess.data(), static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+    connect(m_perfRecordProcess.get(), static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
             this, [this](int exitCode, QProcess::ExitStatus exitStatus) {
                 Q_UNUSED(exitStatus)
 
@@ -108,17 +106,17 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
                 m_userTerminated = false;
             });
 
-    connect(m_perfRecordProcess.data(), &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
+    connect(m_perfRecordProcess.get(), &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
         Q_UNUSED(error)
         if (!m_userTerminated) {
             emit recordingFailed(m_perfRecordProcess->errorString());
         }
     });
 
-    connect(m_perfRecordProcess.data(), &QProcess::started, this,
+    connect(m_perfRecordProcess.get(), &QProcess::started, this,
             [this] { emit recordingStarted(m_perfRecordProcess->program(), m_perfRecordProcess->arguments()); });
 
-    connect(m_perfRecordProcess.data(), &QProcess::readyRead, this, [this]() {
+    connect(m_perfRecordProcess.get(), &QProcess::readyRead, this, [this]() {
         const auto output = QString::fromUtf8(m_perfRecordProcess->readAll());
         emit recordingOutput(output);
     });

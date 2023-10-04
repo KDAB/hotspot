@@ -12,7 +12,8 @@
 #include "perfcontrolfifowrapper.h"
 
 #include <QObject>
-#include <QPointer>
+
+#include <memory>
 
 class QProcess;
 class RecordHost;
@@ -45,7 +46,7 @@ signals:
 
 private:
     const RecordHost* m_host = nullptr;
-    QPointer<QProcess> m_perfRecordProcess;
+    std::unique_ptr<QProcess> m_perfRecordProcess;
     InitiallyStoppedProcess m_targetProcessForPrivilegedPerf;
     PerfControlFifoWrapper m_perfControlFifo;
     QString m_outputPath;
