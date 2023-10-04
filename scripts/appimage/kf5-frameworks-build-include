@@ -1,0 +1,37 @@
+# kdesrc-build itself, and some "kdesupport" modules needed by KF5, workspace or apps.
+module-set kf5-build-support
+    repository kde-projects
+    use-modules kdesrc-build kde-dev-scripts extra-cmake-modules polkit-qt-1 qca
+end module-set
+
+module-set phonon
+    repository kde-projects
+    use-modules phonon phonon-vlc
+end module-set
+
+options phonon
+  cmake-options -DPHONON_BUILD_QT5=ON -DPHONON_BUILD_QT6=OFF
+end options
+
+module-set kdesupport
+   repository kde-projects
+   use-modules kdesupport/plasma-wayland-protocols
+end module-set
+
+# ============================= KDE Frameworks ========================
+
+module-set frameworks
+    repository kde-projects
+    use-modules frameworks
+
+    tag %VERSION%
+    branch kf5
+    ignore-modules kdewebkit
+end module-set
+
+module grantlee
+    repository https://github.com/steveire/grantlee.git
+    branch master
+end module
+
+include kf5-common-options-build-include

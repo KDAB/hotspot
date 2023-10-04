@@ -7,6 +7,7 @@
 FROM centos/devtoolset-7-toolchain-centos7 as intermediate
 
 ARG QT_VERSION=5.15.7
+ARG KF5_VERSION v5.110.0
 ARG KDDockWidgets_VERSION=1.6
 ARG QCustomPlot_VERSION=2.1.1
 ARG rust_demangler_VERSION=0.1.21
@@ -96,14 +97,21 @@ RUN cd /opt && mkdir dlang && cd dlang && \
     make && mv libd_demangle.so /usr/lib/ && \
     deactivate && cd /opt && rm -Rf dlang && mv /usr/bin/gpg{~,} && mv /usr/bin/gpg2{~,}
 
+# kdesrc-build dependencies
+RUN yum install -y libcanberra-devel && \
+    cpan YAML::Syck
+
 # kde frameworks
 RUN cd /opt && git clone https://invent.kde.org/sdk/kdesrc-build.git && \
     # everything after this commit requires a dbus session
     cd kdesrc-build && git checkout 6c2c8a83ee25d53bdae91dce4ab3efaaac838a11
 COPY kdesrc-buildrc /opt/kdesrc-build/
+COPY kf5-frameworks-build-include /opt/kdesrc-build/
 RUN ldconfig && \
-    cd /opt/kdesrc-build && sed -i -e "s/FULL_NPROC/$(nproc)/g" -e "s/HALF_NPROC/$(($(nproc)/2))/g" kdesrc-buildrc && \
-    cpan YAML::Syck && \
+    cd /opt/kdesrc-build && \
+    sed -i -e "s/FULL_NPROC/$(nproc)/g" -e "s/HALF_NPROC/$(($(nproc)/2))/g" kdesrc-buildrc && \
+    sed -i -e "s/%VERSION%/${KF5_VERSION}/g" kdesrc-buildrc && \
+    sed -i -e "s/%VERSION%/${KF5_VERSION}/g" kf5-frameworks-build-include && \
     ./kdesrc-build --metadata-only && \
     # fix compile error in kwallet
     ./kdesrc-build --include-dependencies qca && \
