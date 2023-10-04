@@ -21,6 +21,7 @@
 
 #include <models/disassemblymodel.h>
 #include <models/eventmodel.h>
+#include <models/eventmodelproxy.h>
 #include <models/sourcecodemodel.h>
 
 namespace {
@@ -670,6 +671,38 @@ private slots:
 
         model.removeFromFavorites(model.index(0, 0, favoritesIndex));
         QCOMPARE(model.rowCount(favoritesIndex), 0);
+    }
+
+    void testEventModelProxy()
+    {
+        const auto events = createEventModelTestData();
+        EventModel model;
+        QAbstractItemModelTester tester(&model);
+        model.setData(events);
+
+        EventModelProxy proxy;
+        proxy.setSourceModel(&model);
+
+        const auto favoritesIndex = model.index(3, 0);
+        const auto processesIndex = model.index(1, 0);
+
+        QCOMPARE(model.rowCount(), 4);
+        QCOMPARE(proxy.rowCount(), 2);
+
+        proxy.setFilterRegularExpression(QStringLiteral("this does not match"));
+        QCOMPARE(proxy.rowCount(), 0);
+        proxy.setFilterRegularExpression(QString());
+        QCOMPARE(proxy.rowCount(), 2);
+
+        // add the first data trace to favourites
+        // adding the whole process doesn't work currently
+        auto firstProcess = model.index(0, 0, processesIndex);
+        model.addToFavorites(model.index(0, 0, firstProcess));
+
+        QCOMPARE(proxy.rowCount(), 3);
+
+        model.removeFromFavorites(model.index(0, 0, favoritesIndex));
+        QCOMPARE(proxy.rowCount(), 2);
     }
 
     void testPrettySymbol_data()

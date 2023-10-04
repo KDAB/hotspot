@@ -9,6 +9,7 @@
 
 #include "filterandzoomstack.h"
 #include "models/eventmodel.h"
+#include "models/eventmodelproxy.h"
 #include "resultsutil.h"
 #include "timelinedelegate.h"
 
@@ -61,12 +62,8 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
     ui->setupUi(this);
 
     auto* eventModel = new EventModel(this);
-    auto* timeLineProxy = new QSortFilterProxyModel(this);
-    timeLineProxy->setRecursiveFilteringEnabled(true);
+    auto* timeLineProxy = new EventModelProxy(this);
     timeLineProxy->setSourceModel(eventModel);
-    timeLineProxy->setSortRole(EventModel::SortRole);
-    timeLineProxy->setFilterKeyColumn(EventModel::ThreadColumn);
-    timeLineProxy->setFilterRole(Qt::DisplayRole);
     ResultsUtil::connectFilter(ui->timeLineSearch, timeLineProxy, ui->regexCheckBox);
     ui->timeLineView->setModel(timeLineProxy);
     ui->timeLineView->setSortingEnabled(true);
