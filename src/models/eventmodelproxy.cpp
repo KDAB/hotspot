@@ -16,6 +16,7 @@ EventModelProxy::EventModelProxy(QObject* parent)
     setSortRole(EventModel::SortRole);
     setFilterKeyColumn(EventModel::ThreadColumn);
     setFilterRole(Qt::DisplayRole);
+    sort(0);
 }
 
 EventModelProxy::~EventModelProxy() = default;
@@ -40,4 +41,19 @@ bool EventModelProxy::filterAcceptsRow(int source_row, const QModelIndex& source
     }
 
     return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
+}
+
+bool EventModelProxy::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
+{
+    const auto lhsIsFavoritesSection = source_left.data(EventModel::IsFavoritesSectionRole).toBool();
+    const auto rhsIsFavoritesSection = source_right.data(EventModel::IsFavoritesSectionRole).toBool();
+    if (lhsIsFavoritesSection != rhsIsFavoritesSection) {
+        // always put the favorites section on the top
+        if (sortOrder() == Qt::AscendingOrder)
+            return lhsIsFavoritesSection > rhsIsFavoritesSection;
+        else
+            return lhsIsFavoritesSection < rhsIsFavoritesSection;
+    }
+
+    return QSortFilterProxyModel::lessThan(source_left, source_right);
 }
