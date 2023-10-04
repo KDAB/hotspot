@@ -43,6 +43,7 @@ public:
         TotalCostsRole,
         EventResultsRole,
         IsFavoriteRole,
+        IsFavoritesSectionRole,
     };
 
     int rowCount(const QModelIndex& parent = {}) const override;

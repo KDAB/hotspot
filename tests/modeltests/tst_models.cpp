@@ -701,7 +701,26 @@ private slots:
 
         QCOMPARE(proxy.rowCount(), 3);
 
+        {
+            // verify that favorites remain at the top
+            QCOMPARE(proxy.sortOrder(), Qt::AscendingOrder);
+            QCOMPARE(proxy.sortColumn(), 0);
+
+            // favorites on top
+            QVERIFY(proxy.index(0, 0, proxy.index(0, 0)).data(EventModel::IsFavoriteRole).toBool());
+            // followed by CPUs
+            QCOMPARE(proxy.index(0, 0, proxy.index(1, 0)).data(EventModel::CpuIdRole).value<quint32>(), 1);
+
+            proxy.sort(0, Qt::DescendingOrder);
+
+            // favorites are still on top
+            QVERIFY(proxy.index(0, 0, proxy.index(0, 0)).data(EventModel::IsFavoriteRole).toBool());
+            // followed by processes
+            QCOMPARE(proxy.index(0, 0, proxy.index(1, 0)).data(EventModel::ProcessIdRole).value<quint32>(), 1234);
+        }
+
         model.removeFromFavorites(model.index(0, 0, favoritesIndex));
+
         QCOMPARE(proxy.rowCount(), 2);
     }
 
@@ -952,9 +971,9 @@ private:
     {
         Data::EventResults events;
         events.cpus.resize(3);
-        events.cpus[0].cpuId = 0;
-        events.cpus[1].cpuId = 1; // empty
-        events.cpus[2].cpuId = 2;
+        events.cpus[0].cpuId = 1;
+        events.cpus[1].cpuId = 2; // empty
+        events.cpus[2].cpuId = 3;
 
         const quint64 endTime = 1000;
         const quint64 deltaTime = 10;
@@ -997,13 +1016,13 @@ private:
             event.time = time;
             ++costSummary.sampleCount;
             costSummary.totalPeriod += event.cost;
-            events.cpus[cpuId].events << event;
+            events.cpus[cpuId - 1].events << event;
             return event;
         };
         for (quint64 time = 0; time < endTime; time += deltaTime) {
-            thread1.events << generateEvent(time, 0);
+            thread1.events << generateEvent(time, 1);
             if (thread2.time.contains(time)) {
-                thread2.events << generateEvent(time, 2);
+                thread2.events << generateEvent(time, 3);
             }
         }
         events.totalCosts = {costSummary};
