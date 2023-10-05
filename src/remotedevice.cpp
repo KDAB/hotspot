@@ -11,6 +11,8 @@
 #include <QStandardPaths>
 #include <QThread>
 
+#include <QCoroProcess>
+
 #include <KSharedConfig>
 
 #include "settings.h"
@@ -74,6 +76,10 @@ RemoteDevice::~RemoteDevice()
 {
     if (m_connection) {
         disconnect();
+        QTimer::singleShot(0, this, [connection = m_connection.release()]() -> QCoro::Task<void> {
+            co_await qCoro(connection).waitForFinished();
+            delete connection;
+        });
     }
 }
 
@@ -122,34 +128,36 @@ bool RemoteDevice::isConnected() const
 
 bool RemoteDevice::checkIfProgramExists(const QString& program) const
 {
+    Q_ASSERT(QThread::currentThread() != thread());
+    // this is only used to check if perf is installed and is run in a background thread
     auto ssh = sshProcess({QStringLiteral("command"), program});
     ssh->start();
     ssh->waitForFinished();
     auto exitCode = ssh->exitCode();
-    ssh->deleteLater();
     // 128 -> not found
     // perf will return 1 and display the help message
     return exitCode != 128;
 }
 
-bool RemoteDevice::checkIfDirectoryExists(const QString& directory) const
+QCoro::Task<bool> RemoteDevice::checkIfDirectoryExists(const QString& directory) const
 {
-    auto ssh = sshProcess({QStringLiteral("test"), QStringLiteral("-d"), directory});
-    ssh->start();
-    ssh->waitForFinished();
-    auto exitCode = ssh->exitCode();
-    ssh->deleteLater();
-    return exitCode == 0;
+    auto _ssh = sshProcess({QStringLiteral("test"), QStringLiteral("-d"), directory});
+    auto ssh = qCoro(_ssh.get());
+    co_await ssh.start();
+    co_await ssh.waitForFinished();
+    auto exitCode = _ssh->exitCode();
+    co_return exitCode == 0;
 }
 
-bool RemoteDevice::checkIfFileExists(const QString& file) const
+QCoro::Task<bool> RemoteDevice::checkIfFileExists(const QString& file) const
 {
-    auto ssh = sshProcess({QStringLiteral("test"), QStringLiteral("-f"), file});
-    ssh->start();
-    ssh->waitForFinished();
-    auto exitCode = ssh->exitCode();
-    ssh->deleteLater();
-    return exitCode == 0;
+    auto _ssh = sshProcess({QStringLiteral("test"), QStringLiteral("-f"), file});
+
+    auto ssh = qCoro(_ssh.get());
+    co_await ssh.start();
+    co_await ssh.waitForFinished();
+    auto exitCode = _ssh->exitCode();
+    co_return exitCode == 0;
 }
 
 QByteArray RemoteDevice::getProgramOutput(const QStringList& args) const

@@ -120,6 +120,7 @@ target_link_libraries(
     models
     PrefixTickLabels
     KDAB::kddockwidgets
+    QCoro::Core
 )
 
 if(KFArchive_FOUND)

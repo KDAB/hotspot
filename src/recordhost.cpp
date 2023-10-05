@@ -11,6 +11,9 @@
 #include <QProcess>
 #include <QStandardPaths>
 #include <QThread>
+#include <QTimer>
+
+#include <QCoroCore>
 
 #include <KShell>
 #include <KUser>
@@ -284,13 +287,17 @@ void RecordHost::setCurrentWorkingDirectory(const QString& cwd)
             emit currentWorkingDirectoryChanged(cwd);
         }
     } else {
-        if (!m_remoteDevice->checkIfDirectoryExists(cwd)) {
-            emit errorOccurred(tr("Working directory folder cannot be found: %1").arg(cwd));
-        } else {
-            emit errorOccurred({});
-            m_cwd = cwd;
-            emit currentWorkingDirectoryChanged(m_cwd);
-        }
+        QTimer::singleShot(0, this, [this, cwd]() -> QCoro::Task<void> {
+            bool exists = co_await m_remoteDevice->checkIfDirectoryExists(cwd);
+            if (!exists) {
+                emit errorOccurred(tr("Working directory folder cannot be found: %1").arg(cwd));
+            } else {
+                emit errorOccurred({});
+                m_cwd = cwd;
+                emit currentWorkingDirectoryChanged(m_cwd);
+            }
+            co_return;
+        });
     }
 }
 
@@ -326,12 +333,17 @@ void RecordHost::setClientApplication(const QString& clientApplication)
     } else {
         if (!m_remoteDevice->isConnected()) {
             emit errorOccurred(tr("Hotspot is not connected to the remote device"));
-        } else if (!m_remoteDevice->checkIfFileExists(clientApplication)) {
-            emit errorOccurred(tr("Application file cannot be found: %1").arg(clientApplication));
         } else {
-            emit errorOccurred({});
-            m_clientApplication = clientApplication;
-            emit clientApplicationChanged(m_clientApplication);
+            QTimer::singleShot(0, this, [this, clientApplication]() -> QCoro::Task<void> {
+                bool exists = co_await m_remoteDevice->checkIfFileExists(clientApplication);
+                if (!exists) {
+                    emit errorOccurred(tr("Application file cannot be found: %1").arg(clientApplication));
+                } else {
+                    emit errorOccurred({});
+                    m_clientApplication = clientApplication;
+                    emit clientApplicationChanged(m_clientApplication);
+                }
+            });
         }
     }
 }

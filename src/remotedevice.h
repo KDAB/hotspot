@@ -12,6 +12,8 @@
 #include <QFileSystemWatcher>
 #include <QTemporaryDir>
 
+#include <QCoroTask>
+
 #include <KConfigGroup>
 
 #include <memory>
@@ -31,8 +33,8 @@ public:
     bool isConnected() const;
 
     bool checkIfProgramExists(const QString& program) const;
-    bool checkIfDirectoryExists(const QString& directory) const;
-    bool checkIfFileExists(const QString& file) const;
+    QCoro::Task<bool> checkIfDirectoryExists(const QString& directory) const;
+    QCoro::Task<bool> checkIfFileExists(const QString& file) const;
     QByteArray getProgramOutput(const QStringList& args) const;
 
     std::unique_ptr<QProcess> runPerf(const QString& cdw, const QStringList& perfOptions) const;
