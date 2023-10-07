@@ -21,8 +21,10 @@ gitversion=$(git -C "$srcdir" describe)
 . /opt/rh/devtoolset-11/enable
 
 mkdir -p "$buildir" && cd "$buildir"
+# KGraphViewer triggers strange crashes in the AppImage, disable it
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_PREFIX_PATH=/opt/rh/devtoolset-11/root/ \
+    -DCMAKE_DISABLE_FIND_PACKAGE_KGraphViewerPart=ON \
     -DAPPIMAGE_BUILD=ON "-DCMAKE_INSTALL_PREFIX=/usr" "$srcdir"
 
 make -j
