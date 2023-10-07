@@ -115,7 +115,8 @@ RUN ldconfig && \
     ./kdesrc-build --metadata-only && \
     # fix compile error in kwallet
     ./kdesrc-build --include-dependencies qca && \
-    ./kdesrc-build --include-dependencies threadweaver kconfigwidgets kcoreaddons kitemviews kitemmodels solid \
+    ./kdesrc-build --include-dependencies threadweaver kconfigwidgets kcoreaddons \
+        kitemviews kitemmodels solid breeze-icons \
         kwindowsystem knotifications kiconthemes karchive syntax-highlighting kio kparts && \
     # without extra dependencies
     ./kdesrc-build kgraphviewer && \
