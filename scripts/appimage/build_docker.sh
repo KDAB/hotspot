@@ -8,4 +8,4 @@
 set -e
 
 cd $(dirname $0)
-docker build --rm -t ghcr.io/kdab/kdesrc-build .
+docker build --ulimit nofile=1024:262144 --rm -t ghcr.io/kdab/kdesrc-build .
