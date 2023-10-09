@@ -140,8 +140,6 @@ set_package_properties(
     TYPE OPTIONAL
 )
 
-feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
-
 include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(ECMAddTests)
@@ -173,3 +171,4 @@ install(
     FILES com.kdab.Hotspot.appdata.xml
     DESTINATION ${KDE_INSTALL_METAINFODIR}
 )
+feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)

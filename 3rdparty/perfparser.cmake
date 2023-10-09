@@ -3,13 +3,18 @@ check_submodule_exists(perfparser perfparser/app/perfdata.h)
 include(CheckSymbolExists)
 set(CMAKE_REQUIRED_INCLUDES ${LIBELF_INCLUDE_DIRS} ${LIBDW_INCLUDE_DIR}/elfutils ${LIBDWARF_INCLUDE_DIRS})
 set(CMAKE_REQUIRED_LIBRARIES ${LIBDW_LIBRARIES} ${LIBELF_LIBRARIES})
-check_symbol_exists(dwfl_get_debuginfod_client "libdwfl.h" HAVE_DWFL_GET_DEBUGINFOD_CLIENT)
+check_symbol_exists(dwfl_get_debuginfod_client "libdwfl.h" HAVE_DWFL_GET_DEBUGINFOD_CLIENT_SYMBOL)
+set(CMAKE_REQUIRED_LIBRARIES ${LIBDEBUGINFOD_LIBRARIES})
+check_symbol_exists(debuginfod_set_user_data "debuginfod.h" HAVE_DEBUGINFOD_SET_USER_DATA)
+
+
 
 include_directories(
     ${LIBELF_INCLUDE_DIRS}
     ${LIBDW_INCLUDE_DIR}/elfutils
     ${LIBDWARF_INCLUDE_DIRS}
     perfparser/app
+    ${CMAKE_CURRENT_BINARY_DIR}/perfparser/app
 )
 
 add_library(libhotspot-perfparser STATIC
@@ -41,13 +46,17 @@ PUBLIC
 if (Zstd_FOUND)
     target_include_directories(libhotspot-perfparser PUBLIC ${Zstd_INCLUDE_DIR})
     target_link_libraries(libhotspot-perfparser PUBLIC ${Zstd_LIBRARY})
-    target_compile_definitions(libhotspot-perfparser PUBLIC HAVE_ZSTD=1)
+    set(HAVE_ZSTD 1)
 endif()
 
-if (HAVE_DWFL_GET_DEBUGINFOD_CLIENT AND LIBDEBUGINFOD_LIBRARIES)
+if (HAVE_DWFL_GET_DEBUGINFOD_CLIENT_SYMBOL AND HAVE_DEBUGINFOD_SET_USER_DATA)
     target_link_libraries(libhotspot-perfparser PRIVATE ${LIBDEBUGINFOD_LIBRARIES})
-    target_compile_definitions(libhotspot-perfparser PRIVATE HAVE_DWFL_GET_DEBUGINFOD_CLIENT=1)
+    set(HAVE_DWFL_GET_DEBUGINFOD_CLIENT 1)
 endif()
+
+add_feature_info(debuginfod HAVE_DWFL_GET_DEBUGINFOD_CLIENT "libdwfl and libdebuginfod are useful for on-demand fetching of debug symbols")
+
+configure_file(perfparser/app/config-perfparser.h.in perfparser/app/config-perfparser.h)
 
 add_executable(hotspot-perfparser
     perfparser/app/main.cpp
