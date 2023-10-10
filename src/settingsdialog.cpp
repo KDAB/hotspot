@@ -10,9 +10,9 @@
 
 #include "ui_callgraphsettingspage.h"
 #include "ui_debuginfodpage.h"
+#include "ui_disassemblysettingspage.h"
 #include "ui_flamegraphsettingspage.h"
 #include "ui_perfsettingspage.h"
-#include "ui_sourcepathsettings.h"
 #include "ui_unwindsettingspage.h"
 
 #include "multiconfigwidget.h"
@@ -64,7 +64,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     , unwindPage(new Ui::UnwindSettingsPage)
     , flamegraphPage(new Ui::FlamegraphSettingsPage)
     , debuginfodPage(new Ui::DebuginfodPage)
-    , sourcePathPage(new Ui::SourcePathSettingsPage)
+    , disassemblyPage(new Ui::DisassemblySettingsPage)
 #if KGraphViewerPart_FOUND
     , callgraphPage(new Ui::CallgraphSettingsPage)
 #endif
@@ -321,19 +321,19 @@ void SettingsDialog::addCallgraphPage()
 void SettingsDialog::addSourcePathPage()
 {
     auto page = new QWidget(this);
-    auto item = addPage(page, tr("Source Path"));
-    item->setHeader(tr("Source Path Settings"));
+    auto item = addPage(page, tr("Disassembly"));
+    item->setHeader(tr("Disassembly Settings"));
     item->setIcon(QIcon::fromTheme(QStringLiteral("preferences-system-windows-behavior")));
 
-    sourcePathPage->setupUi(page);
+    disassemblyPage->setupUi(page);
 
     const auto colon = QLatin1Char(':');
     connect(Settings::instance(), &Settings::sourceCodePathsChanged, this,
-            [this, colon](const QString& paths) { sourcePathPage->sourcePaths->setItems(paths.split(colon)); });
+            [this, colon](const QString& paths) { disassemblyPage->sourcePaths->setItems(paths.split(colon)); });
 
-    setupMultiPath(sourcePathPage->sourcePaths, sourcePathPage->label, buttonBox()->button(QDialogButtonBox::Ok));
+    setupMultiPath(disassemblyPage->sourcePaths, disassemblyPage->label, buttonBox()->button(QDialogButtonBox::Ok));
 
     connect(buttonBox(), &QDialogButtonBox::accepted, this, [this, colon] {
-        Settings::instance()->setSourceCodePaths(sourcePathPage->sourcePaths->items().join(colon));
+        Settings::instance()->setSourceCodePaths(disassemblyPage->sourcePaths->items().join(colon));
     });
 }

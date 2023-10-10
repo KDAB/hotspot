@@ -17,7 +17,7 @@ class UnwindSettingsPage;
 class FlamegraphSettingsPage;
 class DebuginfodPage;
 class CallgraphSettingsPage;
-class SourcePathSettingsPage;
+class DisassemblySettingsPage;
 class PerfSettingsPage;
 }
 
@@ -56,7 +56,7 @@ private:
     std::unique_ptr<Ui::UnwindSettingsPage> unwindPage;
     std::unique_ptr<Ui::FlamegraphSettingsPage> flamegraphPage;
     std::unique_ptr<Ui::DebuginfodPage> debuginfodPage;
-    std::unique_ptr<Ui::SourcePathSettingsPage> sourcePathPage;
+    std::unique_ptr<Ui::DisassemblySettingsPage> disassemblyPage;
     std::unique_ptr<Ui::CallgraphSettingsPage> callgraphPage;
     MultiConfigWidget* m_configs;
 };
