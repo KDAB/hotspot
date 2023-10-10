@@ -74,7 +74,7 @@ set(HOTSPOT_SRCS
     callgraphwidget.ui
     callgraphsettingspage.ui
     frequencypage.ui
-    sourcepathsettings.ui
+    disassemblysettingspage.ui
     perfsettingspage.ui
     # resources:
     resources.qrc

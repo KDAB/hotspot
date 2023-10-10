@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SourcePathSettingsPage</class>
- <widget class="QWidget" name="SourcePathSettingsPage">
+ <class>DisassemblySettingsPage</class>
+ <widget class="QWidget" name="DisassemblySettingsPage">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -32,17 +32,31 @@
    <property name="bottomMargin">
     <number>0</number>
    </property>
-   <item row="0" column="0">
+   <item row="1" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
       <string>Source Code Search Paths:</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
+   <item row="1" column="1">
     <widget class="KEditListWidget" name="sourcePaths">
      <property name="buttons">
       <set>KEditListWidget::All</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Show branches:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QCheckBox" name="showBranches">
+     <property name="text">
+      <string/>
      </property>
     </widget>
    </item>
