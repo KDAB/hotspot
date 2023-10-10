@@ -80,6 +80,8 @@ QVariant DisassemblyModel::headerData(int section, Qt::Orientation orientation, 
 
     if (section == AddrColumn)
         return tr("Address");
+    else if (section == BranchColumn)
+        return tr("Branches");
     else if (section == DisassemblyColumn)
         return tr("Assembly / Disassembly");
 
@@ -116,6 +118,8 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
                 if (!data.addr)
                     return {};
                 return QString::number(data.addr, 16);
+            } else if (index.column() == BranchColumn) {
+                return data.branchVisualisation;
             } else if (index.column() == DisassemblyColumn) {
                 const auto block = m_document->findBlockByLineNumber(index.row());
                 if (role == SyntaxHighlightRole)

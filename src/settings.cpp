@@ -191,10 +191,6 @@ void Settings::loadFromFile()
         sharedConfig->group("PathSettings").writeEntry("userPaths", this->userPaths());
         sharedConfig->group("PathSettings").writeEntry("systemPaths", this->systemPaths());
     });
-    setSourceCodePaths(sharedConfig->group("PathSettings").readEntry("sourceCodePaths", QString()));
-    connect(this, &Settings::sourceCodePathsChanged, this, [sharedConfig](const QString& paths) {
-        sharedConfig->group("PathSettings").writeEntry("sourceCodePaths", paths);
-    });
 
     // fix build error in app image build
     const auto colorScheme = KColorScheme(QPalette::Normal, KColorScheme::View, sharedConfig);
@@ -237,6 +233,16 @@ void Settings::loadFromFile()
     connect(this, &Settings::lastUsedEnvironmentChanged, this, [sharedConfig](const QString& envName) {
         sharedConfig->group("PerfPaths").writeEntry("lastUsed", envName);
     });
+
+    setSourceCodePaths(sharedConfig->group("Disassembly").readEntry("sourceCodePaths", QString()));
+    connect(this, &Settings::sourceCodePathsChanged, this, [sharedConfig](const QString& paths) {
+        sharedConfig->group("Disassembly").writeEntry("sourceCodePaths", paths);
+    });
+
+    setShowBranches(sharedConfig->group("Disassembly").readEntry("showBranches", true));
+    connect(this, &Settings::showBranchesChanged, [sharedConfig](bool showBranches) {
+        sharedConfig->group("Disassembly").writeEntry("showBranches", showBranches);
+    });
 }
 
 void Settings::setSourceCodePaths(const QString& paths)
@@ -252,5 +258,13 @@ void Settings::setPerfPath(const QString& path)
     if (m_perfPath != path) {
         m_perfPath = path;
         emit perfPathChanged(m_perfPath);
+    }
+}
+
+void Settings::setShowBranches(bool showBranches)
+{
+    if (m_showBranches != showBranches) {
+        m_showBranches = showBranches;
+        emit showBranchesChanged(m_showBranches);
     }
 }

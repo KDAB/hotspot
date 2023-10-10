@@ -154,6 +154,11 @@ public:
         return m_perfPath;
     }
 
+    bool showBranches() const
+    {
+        return m_showBranches;
+    }
+
     void loadFromFile();
 
 signals:
@@ -176,6 +181,7 @@ signals:
     void lastUsedEnvironmentChanged(const QString& envName);
     void sourceCodePathsChanged(const QString& paths);
     void perfPathChanged(const QString& perfPath);
+    void showBranchesChanged(bool showBranches);
 
 public slots:
     void setPrettifySymbols(bool prettifySymbols);
@@ -199,6 +205,7 @@ public slots:
     void setLastUsedEnvironment(const QString& envName);
     void setSourceCodePaths(const QString& paths);
     void setPerfPath(const QString& path);
+    void setShowBranches(bool showBranches);
 
 private:
     Settings() = default;
@@ -222,6 +229,7 @@ private:
     QString m_objdump;
     QString m_sourceCodePaths;
     QString m_perfMapPath;
+    bool m_showBranches = true;
 
     QString m_lastUsedEnvironment;
 

@@ -120,6 +120,11 @@ QString findBinaryForSymbol(const QStringList& debugPaths, const QStringList& ex
     return {};
 }
 
+bool isHexCharacter(QChar c)
+{
+    return (c >= QLatin1Char('0') && c <= QLatin1Char('9')) || (c >= QLatin1Char('a') && c <= QLatin1Char('f'));
+}
+
 ObjectdumpOutput objdumpParse(const QByteArray& output)
 {
     QVector<DisassemblyOutput::DisassemblyLine> disassemblyLines;
@@ -199,8 +204,19 @@ ObjectdumpOutput objdumpParse(const QByteArray& output)
             assembly = asmLine;
         }
 
-        disassemblyLines.push_back(
-            {addr, assembly, extractLinkedFunction(asmLine), {currentSourceFileName, sourceCodeLine}});
+        // format is the following:
+        //    /-  a5 54 12 ...
+        //    |   64 a3 ....
+        //    \-> 65 23 ....
+        // so we can simply skip all characters until we meet a letter or a number
+        const auto branchVisualisationRange =
+            std::distance(assembly.cbegin(), std::find_if(assembly.cbegin(), assembly.cend(), isHexCharacter));
+
+        disassemblyLines.push_back({addr,
+                                    assembly.mid(branchVisualisationRange),
+                                    branchVisualisationRange ? assembly.left(branchVisualisationRange) : QString {},
+                                    extractLinkedFunction(asmLine),
+                                    {currentSourceFileName, sourceCodeLine}});
     }
     return {disassemblyLines, sourceFileName};
 }
