@@ -327,13 +327,18 @@ void SettingsDialog::addSourcePathPage()
 
     disassemblyPage->setupUi(page);
 
+    auto settings = Settings::instance();
+
     const auto colon = QLatin1Char(':');
-    connect(Settings::instance(), &Settings::sourceCodePathsChanged, this,
+    connect(settings, &Settings::sourceCodePathsChanged, this,
             [this, colon](const QString& paths) { disassemblyPage->sourcePaths->setItems(paths.split(colon)); });
 
     setupMultiPath(disassemblyPage->sourcePaths, disassemblyPage->label, buttonBox()->button(QDialogButtonBox::Ok));
 
-    connect(buttonBox(), &QDialogButtonBox::accepted, this, [this, colon] {
-        Settings::instance()->setSourceCodePaths(disassemblyPage->sourcePaths->items().join(colon));
+    disassemblyPage->showBranches->setChecked(settings->showBranches());
+
+    connect(buttonBox(), &QDialogButtonBox::accepted, this, [this, colon, settings] {
+        settings->setSourceCodePaths(disassemblyPage->sourcePaths->items().join(colon));
+        settings->setShowBranches(disassemblyPage->showBranches->isChecked());
     });
 }

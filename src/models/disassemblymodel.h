@@ -54,6 +54,7 @@ public:
     enum Columns
     {
         AddrColumn,
+        BranchColumn,
         DisassemblyColumn,
         COLUMN_COUNT
     };

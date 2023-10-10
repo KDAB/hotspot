@@ -101,7 +101,6 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
     connect(settings, &Settings::sourceCodePathsChanged, this, [this](const QString&) { showDisassembly(); });
 
     connect(ui->assemblyView, &QTreeView::entered, this, updateFromDisassembly);
-
     connect(ui->sourceCodeView, &QTreeView::entered, this, updateFromSource);
 
     ui->sourceCodeView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -253,6 +252,12 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
                          ui->disasmSearchWidget, ui->disasmSearchEdit, ui->assemblyView, ui->disasmEndReachedWidget,
                          m_disassemblyModel, &m_currentDisasmSearchIndex, 0);
 
+    ui->assemblyView->setColumnHidden(DisassemblyModel::BranchColumn, !settings->showBranches());
+
+    connect(settings, &Settings::showBranchesChanged, this, [this](bool showBranches) {
+        ui->assemblyView->setColumnHidden(DisassemblyModel::BranchColumn, !showBranches);
+    });
+
 #if KFSyntaxHighlighting_FOUND
     QStringList schemes;
 
@@ -308,7 +313,9 @@ void ResultsDisassemblyPage::setupAsmViewModel()
 
     ui->assemblyView->header()->setStretchLastSection(false);
     ui->assemblyView->header()->setSectionResizeMode(DisassemblyModel::AddrColumn, QHeaderView::ResizeToContents);
+    ui->assemblyView->header()->setSectionResizeMode(DisassemblyModel::BranchColumn, QHeaderView::ResizeToContents);
     ui->assemblyView->header()->setSectionResizeMode(DisassemblyModel::DisassemblyColumn, QHeaderView::Stretch);
+    ui->assemblyView->setItemDelegateForColumn(DisassemblyModel::BranchColumn, m_disassemblyDelegate);
     ui->assemblyView->setItemDelegateForColumn(DisassemblyModel::DisassemblyColumn, m_disassemblyDelegate);
 
     for (int col = DisassemblyModel::COLUMN_COUNT; col < m_disassemblyModel->columnCount(); col++) {
