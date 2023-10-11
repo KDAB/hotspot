@@ -238,7 +238,6 @@ void ResultsPage::onJumpToDisassembly(const Data::Symbol& symbol)
 {
     m_disassemblyDock->toggleAction()->setEnabled(true);
     m_resultsDisassemblyPage->setSymbol(symbol);
-    m_resultsDisassemblyPage->showDisassembly();
     showDock(m_disassemblyDock);
 }
 

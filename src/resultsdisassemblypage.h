@@ -52,7 +52,6 @@ public:
 
     void clear();
     void setupAsmViewModel();
-    void showDisassembly();
     void setSymbol(const Data::Symbol& data);
     void setCostsMap(const Data::CallerCalleeResults& callerCalleeResults);
     void setObjdump(const QString& objdump);
@@ -65,6 +64,7 @@ signals:
 
 private:
     void showDisassembly(const DisassemblyOutput& disassemblyOutput);
+    void showDisassembly();
 
     std::unique_ptr<Ui::ResultsDisassemblyPage> ui;
 #if KFSyntaxHighlighting_FOUND
