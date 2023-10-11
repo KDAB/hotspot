@@ -130,9 +130,11 @@ RecordHost::PerfCapabilities fetchLocalPerfCapabilities(const QString& perfPath)
     const auto help = perfRecordHelp(perfPath);
     capabilities.canCompress = Zstd_FOUND && buildOptions.contains("zstd: [ on  ]");
     capabilities.canUseAio = buildOptions.contains("aio: [ on  ]");
+    capabilities.libtraceeventSupport = buildOptions.contains("libtraceevent: [ on  ]");
     capabilities.canSwitchEvents = help.contains("--switch-events");
     capabilities.canSampleCpu = help.contains("--sample-cpu");
-    capabilities.canProfileOffCpu = canTrace(QStringLiteral("events/sched/sched_switch"));
+    capabilities.canProfileOffCpu =
+        capabilities.libtraceeventSupport && canTrace(QStringLiteral("events/sched/sched_switch"));
 
     const auto isElevated = privsAlreadyElevated();
     capabilities.privilegesAlreadyElevated = isElevated;
