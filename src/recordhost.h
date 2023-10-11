@@ -79,6 +79,7 @@ public:
         bool canCompress = false;
         bool canElevatePrivileges = false;
         bool privilegesAlreadyElevated = false;
+        bool libtraceeventSupport = false;
     };
     PerfCapabilities perfCapabilities() const
     {

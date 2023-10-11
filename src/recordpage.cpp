@@ -227,6 +227,14 @@ RecordPage::RecordPage(QWidget* parent)
                 ui->compressionComboBox->setVisible(capabilities.canCompress);
                 ui->compressionLabel->setVisible(capabilities.canCompress);
 
+                ui->offCpuCheckBox->setCheckable(capabilities.libtraceeventSupport);
+
+                if (!capabilities.libtraceeventSupport) {
+                    ui->offCpuCheckBox->setChecked(false);
+                    ui->offCpuCheckBox->setText(
+                        tr("perf doesn't support libtraceevent, you may need to build perf manually to support this"));
+                }
+
                 if (!capabilities.canElevatePrivileges) {
                     ui->elevatePrivilegesCheckBox->setChecked(false);
                     ui->elevatePrivilegesCheckBox->setEnabled(false);
@@ -441,7 +449,7 @@ RecordPage::RecordPage(QWidget* parent)
 
     auto updateOffCpuCheckboxState = [this](RecordHost::PerfCapabilities capabilities) {
         const bool enableOffCpuProfiling = (ui->elevatePrivilegesCheckBox->isChecked() || capabilities.canProfileOffCpu)
-            && capabilities.canSwitchEvents;
+            && capabilities.canSwitchEvents && capabilities.libtraceeventSupport;
 
         if (enableOffCpuProfiling == ui->offCpuCheckBox->isEnabled()) {
             return;
