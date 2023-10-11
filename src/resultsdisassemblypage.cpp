@@ -27,7 +27,6 @@
 #include <KColorScheme>
 #include <KStandardAction>
 
-#include "parsers/perf/perfparser.h"
 #include "resultsutil.h"
 
 #if KFSyntaxHighlighting_FOUND
@@ -43,11 +42,8 @@
 #include "models/codedelegate.h"
 #include "models/costdelegate.h"
 #include "models/disassemblymodel.h"
-#include "models/hashmodel.h"
 #include "models/search.h"
 #include "models/sourcecodemodel.h"
-#include "models/topproxy.h"
-#include "models/treemodel.h"
 #include "settings.h"
 
 namespace {
