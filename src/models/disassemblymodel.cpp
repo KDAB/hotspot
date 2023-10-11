@@ -11,7 +11,6 @@
 #include <QTextDocument>
 
 #include "disassemblymodel.h"
-#include "hotspot-config.h"
 
 #include "highlighter.hpp"
 #include "search.h"
