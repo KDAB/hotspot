@@ -1,6 +1,6 @@
 #
 # SPDX-FileCopyrightText: Milian Wolff <milian.wolff@kdab.com>
-# SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+# SPDX-FileCopyrightText: 2023 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
@@ -20,7 +20,7 @@ RUN sed -i 's#enabled=1#enabled=0#' /etc/yum/pluginconf.d/fastestmirror.conf && 
     yum install -y deltarpm && \
     yum update -y && yum install -y epel-release centos-release-scl && \
     yum install -y \
-        devtoolset-11 devtoolset-11-elfutils-devel devtoolset-11-elfutils-debuginfod flex bison file \
+        devtoolset-12 devtoolset-12-elfutils-devel devtoolset-12-elfutils-debuginfod flex bison file \
         rh-perl530-perl rh-perl530-perl-IO-Socket-SSL rh-perl530-perl-YAML \
         gperf wget cmake3 which rh-git227-git python3 libzstd-devel \
         polkit-devel libxslt-devel docbook-style-xsl \
@@ -46,10 +46,10 @@ RUN sed -i 's#enabled=1#enabled=0#' /etc/yum/pluginconf.d/fastestmirror.conf && 
         fuse fuse-libs bzip2 && \
     ln -s /usr/bin/cmake3 /usr/bin/cmake && \
     rm -Rf /var/cache/yum && \
-    . /opt/rh/devtoolset-11/enable
+    . /opt/rh/devtoolset-12/enable
 
-ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/devtoolset-11/root/usr/lib64/dyninst:/opt/rh/devtoolset-11/root/usr/lib/dyninst:/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/httpd24/root/usr/lib64:/opt/rh/rh-perl530/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}} \
-    PATH=/opt/rh/devtoolset-11/root/usr/bin:/opt/rh/rh-git227/root/usr/bin:/opt/rh/rh-perl530/root/usr/local/bin:/opt/rh/rh-perl530/root/usr/bin${PATH:+:${PATH}}
+ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-12/root/usr/lib64:/opt/rh/devtoolset-12/root/usr/lib:/opt/rh/devtoolset-12/root/usr/lib64/dyninst:/opt/rh/devtoolset-12/root/usr/lib/dyninst:/opt/rh/devtoolset-12/root/usr/lib64:/opt/rh/devtoolset-12/root/usr/lib:/opt/rh/httpd24/root/usr/lib64:/opt/rh/rh-perl530/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}} \
+    PATH=/opt/rh/devtoolset-12/root/usr/bin:/opt/rh/rh-git227/root/usr/bin:/opt/rh/rh-perl530/root/usr/local/bin:/opt/rh/rh-perl530/root/usr/bin${PATH:+:${PATH}}
 
 # qt5
 RUN wget https://download.qt.io/official_releases/qt/5.15/${QT_VERSION}/single/qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
