@@ -65,7 +65,7 @@ RUN wget https://download.qt.io/official_releases/qt/5.15/${QT_VERSION}/single/q
     make -j && make install && cd .. && rm -Rf build qt-everywhere-*
 
 # appimage build tools
-RUN wget https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20220822-1/linuxdeploy-x86_64.AppImage &&     chmod +x linuxdeploy-x86_64.AppImage && \
+RUN wget https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20230713-1/linuxdeploy-x86_64.AppImage &&     chmod +x linuxdeploy-x86_64.AppImage && \
     wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage && chmod +x linuxdeploy-plugin-qt-x86_64.AppImage && mv linuxdeploy* /usr/bin/
 
 # qcustomplot
