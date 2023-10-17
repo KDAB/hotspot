@@ -82,6 +82,26 @@ private slots:
                      3);
         }
     }
+
+    void testArrayIsEmpty()
+    {
+        const std::array<int, 0> testArray;
+
+        for (int i = 0; i < 2; i++) {
+            QCOMPARE(search(
+                         testArray, i, Direction::Forward, [](int) { return true; }, [] {}),
+                     -1);
+        }
+    }
+
+    void testOutOfRangeIfCurrentIsEnd()
+    {
+        const std::array<int, 1> testArray = {0};
+
+        QCOMPARE(search(
+                     testArray, 1, Direction::Forward, [](int i) { return i == 0; }, [] {}),
+                 0);
+    }
 };
 
 QTEST_GUILESS_MAIN(TestSearch)

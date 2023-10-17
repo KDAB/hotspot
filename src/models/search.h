@@ -29,7 +29,7 @@ int search_impl(iter begin, iter end, iter current, SearchFunc searchFunc, EndRe
     if (begin == end)
         return -1;
 
-    auto start = current + 1;
+    const auto start = (current == end) ? begin : (current + 1);
     auto found = std::find_if(start, end, searchFunc);
 
     if (found != end) {
