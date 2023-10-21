@@ -64,7 +64,7 @@ public:
         : QStyledItemDelegate(parent)
     {
     }
-    ~ColumnSpanDelegate() = default;
+    ~ColumnSpanDelegate() override = default;
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
     {
@@ -82,7 +82,7 @@ public:
         : QStyledItemDelegate(parent)
     {
     }
-    ~BranchDelegate() = default;
+    ~BranchDelegate() override = default;
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
     {
@@ -190,7 +190,7 @@ private:
         // when we take the jumps from siblings, we only want to draw the vertical lines
         bool fromSibling = false;
     };
-    Jumps findJumps(QModelIndex index) const
+    static Jumps findJumps(QModelIndex index) const
     {
         bool fromSibling = false;
         // find row that might have jumps (i.e. has valid addr column)
