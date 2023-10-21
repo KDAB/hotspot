@@ -17,12 +17,14 @@
 #include <QListWidgetItem>
 #include <QMenu>
 #include <QMessageBox>
+#include <QPainter>
 #include <QProcess>
 #include <QStandardItemModel>
 #include <QStandardPaths>
 #include <QString>
 #include <QTemporaryFile>
 #include <QTextStream>
+#include <QVarLengthArray>
 
 #include <KColorScheme>
 #include <KStandardAction>
@@ -53,6 +55,114 @@ void connectModel(ModelType* model, ResultFound resultFound, EndReached endReach
     QObject::connect(model, &ModelType::resultFound, model, resultFound);
     QObject::connect(model, &ModelType::searchEndReached, model, endReached);
 }
+
+class BranchDelegate : public QStyledItemDelegate
+{
+    Q_OBJECT
+public:
+    explicit BranchDelegate(QObject* parent = nullptr)
+        : QStyledItemDelegate(parent)
+    {
+    }
+    ~BranchDelegate() = default;
+
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+    {
+        const auto jumps = findJumps(index);
+        if (jumps.data.isEmpty())
+            return;
+
+        const auto top = option.rect.top();
+        const auto right = option.rect.right();
+        const auto bottom = option.rect.bottom();
+        const auto left = option.rect.left();
+        const auto horizontalAdvance = option.rect.height() / 2;
+        const auto horizontalMidAdvance = horizontalAdvance / 2;
+        const auto ymid = top + option.rect.height() / 2;
+
+        // we merge horizontal lines into one long line
+        int horizontalLineStart = -1;
+
+        QVarLengthArray<QLine, 64> lines;
+        auto x = left;
+        for (auto c : jumps.data) {
+            const auto xend = x + horizontalAdvance;
+            const auto xmid = x + horizontalMidAdvance;
+            if (xmid > right)
+                break;
+
+            switch (c.toLatin1()) {
+            case ' ':
+                break;
+            case '|':
+                lines.append({xmid, top, xmid, bottom});
+                break;
+            case '-':
+                if (horizontalLineStart == -1)
+                    horizontalLineStart = x;
+                break;
+            case '\\':
+                if (!jumps.fromSibling) {
+                    lines.append({xmid, top, xend, ymid});
+                    if (horizontalLineStart == -1)
+                        horizontalLineStart = xend;
+                }
+                break;
+            case '/':
+                if (!jumps.fromSibling) {
+                    lines.append({xmid, bottom, xend, ymid});
+                    if (horizontalLineStart == -1)
+                        horizontalLineStart = xend;
+                } else {
+                    lines.append({xmid, top, xmid, bottom});
+                }
+                break;
+            case '>':
+                if (!jumps.fromSibling) {
+                    lines.append({xmid, top, xend, ymid});
+                    lines.append({xmid, bottom, xend, ymid});
+                    if (horizontalLineStart == -1)
+                        horizontalLineStart = xend;
+                } else {
+                    lines.append({xmid, top, xmid, bottom});
+                }
+                break;
+            default:
+                qWarning("unexpected jump visualization char: %c", c.toLatin1());
+                break;
+            }
+
+            x = xend;
+        }
+
+        if (!jumps.fromSibling && horizontalLineStart != -1)
+            lines.append({horizontalLineStart, ymid, right, ymid});
+
+        auto pen = QPen(option.palette.color(QPalette::Link), 1);
+        pen.setCosmetic(true);
+        painter->setPen(pen);
+
+        painter->drawLines(lines.constData(), lines.size());
+    }
+
+private:
+    struct Jumps
+    {
+        QString data;
+        // when we take the jumps from siblings, we only want to draw the vertical lines
+        bool fromSibling = false;
+    };
+    Jumps findJumps(QModelIndex index) const
+    {
+        bool fromSibling = false;
+        // find row that might have jumps (i.e. has valid addr column)
+        while (index.row() > 0 && !index.data(DisassemblyModel::AddrRole).toULongLong()) {
+            index = index.siblingAtRow(index.row() - 1);
+            fromSibling = true;
+        }
+        return {index.data().toString(), fromSibling};
+    }
+};
 }
 
 ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu, QWidget* parent)
@@ -72,6 +182,7 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
                                              DisassemblyModel::SyntaxHighlightRole, this))
     , m_sourceCodeDelegate(new CodeDelegate(SourceCodeModel::RainbowLineNumberRole, SourceCodeModel::HighlightRole,
                                             SourceCodeModel::SyntaxHighlightRole, this))
+    , m_branchesDelegate(new BranchDelegate(this))
 {
     // TODO: the auto resize behavior is broken with these models that don't have the stretch column on the left
     auto setCostHeader = [this, costContextMenu](QTreeView* view) {
@@ -312,18 +423,19 @@ void ResultsDisassemblyPage::clear()
 
 void ResultsDisassemblyPage::setupAsmViewModel()
 {
+
+    ui->sourceCodeView->setItemDelegateForColumn(SourceCodeModel::SourceCodeColumn, m_sourceCodeDelegate);
     ui->sourceCodeView->header()->setStretchLastSection(false);
     ui->sourceCodeView->header()->setSectionResizeMode(SourceCodeModel::SourceCodeLineNumber,
                                                        QHeaderView::ResizeToContents);
     ui->sourceCodeView->header()->setSectionResizeMode(SourceCodeModel::SourceCodeColumn, QHeaderView::Stretch);
-    ui->sourceCodeView->setItemDelegateForColumn(SourceCodeModel::SourceCodeColumn, m_sourceCodeDelegate);
 
+    ui->assemblyView->setItemDelegateForColumn(DisassemblyModel::BranchColumn, m_branchesDelegate);
+    ui->assemblyView->setItemDelegateForColumn(DisassemblyModel::DisassemblyColumn, m_disassemblyDelegate);
     ui->assemblyView->header()->setStretchLastSection(false);
     ui->assemblyView->header()->setSectionResizeMode(DisassemblyModel::AddrColumn, QHeaderView::ResizeToContents);
-    ui->assemblyView->header()->setSectionResizeMode(DisassemblyModel::BranchColumn, QHeaderView::ResizeToContents);
+    ui->assemblyView->header()->setSectionResizeMode(DisassemblyModel::BranchColumn, QHeaderView::Interactive);
     ui->assemblyView->header()->setSectionResizeMode(DisassemblyModel::DisassemblyColumn, QHeaderView::Stretch);
-    ui->assemblyView->setItemDelegateForColumn(DisassemblyModel::BranchColumn, m_disassemblyDelegate);
-    ui->assemblyView->setItemDelegateForColumn(DisassemblyModel::DisassemblyColumn, m_disassemblyDelegate);
 
     for (int col = DisassemblyModel::COLUMN_COUNT; col < m_disassemblyModel->columnCount(); col++) {
         ui->assemblyView->setColumnWidth(col, 100);
@@ -445,3 +557,5 @@ void ResultsDisassemblyPage::setArch(const QString& arch)
 {
     m_arch = arch.trimmed().toLower();
 }
+
+#include "resultsdisassemblypage.moc"

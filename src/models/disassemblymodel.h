@@ -64,6 +64,7 @@ public:
         CostRole = Qt::UserRole,
         TotalCostRole = Qt::UserRole + 1,
         HighlightRole,
+        AddrRole,
         LinkedFunctionNameRole,
         LinkedFunctionOffsetRole,
         RainbowLineNumberRole,

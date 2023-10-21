@@ -110,6 +110,8 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
     }
 
     const auto& data = m_data.disassemblyLines.at(index.row());
+    if (role == AddrRole)
+        return data.addr;
 
     if (role == Qt::DisplayRole || role == CostRole || role == TotalCostRole || role == SyntaxHighlightRole
         || role == Qt::ToolTipRole) {

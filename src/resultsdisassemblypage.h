@@ -16,7 +16,7 @@
 
 #include <memory>
 
-class QMenu;
+class QStyledItemDelegate;
 
 namespace Ui {
 class ResultsDisassemblyPage;
@@ -27,10 +27,6 @@ struct Symbol;
 struct DisassemblyResult;
 }
 
-class QTreeView;
-
-class QStandardItemModel;
-class QTemporaryFile;
 class CostDelegate;
 class CodeDelegate;
 class DisassemblyDelegate;
@@ -86,6 +82,7 @@ private:
     CostDelegate* m_sourceCodeCostDelegate;
     CodeDelegate* m_disassemblyDelegate;
     CodeDelegate* m_sourceCodeDelegate;
+    QStyledItemDelegate* m_branchesDelegate;
 
     QVector<Data::Symbol> m_symbolStack;
     int m_stackIndex = 0;
