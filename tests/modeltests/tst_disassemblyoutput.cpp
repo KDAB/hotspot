@@ -35,6 +35,10 @@ private slots:
     void initTestCase()
     {
         qRegisterMetaType<Data::Symbol>();
+
+        mObjdumpBinary = QStandardPaths::findExecutable(QStringLiteral("objdump"));
+        if (mObjdumpBinary.isEmpty())
+            QSKIP("cannot use disassembly without objdump binary");
     }
 
     void testSymbol_data()
@@ -68,7 +72,7 @@ private slots:
         QTextStream disassemblyStream(&actual);
 
         const auto disassemblyOutput =
-            DisassemblyOutput::disassemble(QStringLiteral("objdump"), QStringLiteral("x86_64"), {}, {}, {}, {}, symbol);
+            DisassemblyOutput::disassemble(mObjdumpBinary, QStringLiteral("x86_64"), {}, {}, {}, {}, symbol);
         for (const auto& disassemblyLine : disassemblyOutput.disassemblyLines) {
             disassemblyStream << Qt::hex << disassemblyLine.addr << '\t' << disassemblyLine.disassembly << '\n';
         }
@@ -140,24 +144,18 @@ private slots:
 
     void testCustomDebugPath()
     {
-        const QString objdump = QStandardPaths::findExecutable(QStringLiteral("objdump"));
-
-        if (objdump.isEmpty()) {
-            QSKIP("objdump not found");
-        }
-
         const Data::Symbol symbol = {QStringLiteral("fib(int)"), 4361, 67, QStringLiteral("libfib.so")};
 
-        auto result = DisassemblyOutput::disassemble(objdump, {}, {}, {}, {}, {}, symbol);
+        auto result = DisassemblyOutput::disassemble(mObjdumpBinary, {}, {}, {}, {}, {}, symbol);
         QVERIFY(!result.errorMessage.isEmpty());
         QVERIFY(result.errorMessage.contains(QLatin1String("Could not find libfib.so")));
 
         QFETCH(QStringList, searchPath);
 
-        result = DisassemblyOutput::disassemble(objdump, {}, QStringList(searchPath), {}, {}, {}, symbol);
+        result = DisassemblyOutput::disassemble(mObjdumpBinary, {}, QStringList(searchPath), {}, {}, {}, symbol);
         QVERIFY(result.errorMessage.isEmpty());
 
-        result = DisassemblyOutput::disassemble(objdump, {}, {}, QStringList(searchPath), {}, {}, symbol);
+        result = DisassemblyOutput::disassemble(mObjdumpBinary, {}, {}, QStringList(searchPath), {}, {}, symbol);
         QVERIFY(result.errorMessage.isEmpty());
     }
 
@@ -204,10 +202,8 @@ private slots:
 
         const auto symbol = Data::Symbol {QStringLiteral("fib(int)"), address, size, QStringLiteral("libfib.so")};
 
-        const QString objdump = QStandardPaths::findExecutable(QStringLiteral("objdump"));
-        QVERIFY(!objdump.isEmpty());
         const auto result =
-            DisassemblyOutput::disassemble(objdump, {}, QStringList {lib.absolutePath()}, {}, {}, {}, symbol);
+            DisassemblyOutput::disassemble(mObjdumpBinary, {}, QStringList {lib.absolutePath()}, {}, {}, {}, symbol);
         QVERIFY(result.errorMessage.isEmpty());
 
         auto isValidVisualisationCharacter = [](QChar character) {
@@ -275,19 +271,11 @@ private:
         return {address, size};
     }
 
-    static bool supportsVisualizeJumps()
+    bool supportsVisualizeJumps()
     {
-        const QString objdump = QStandardPaths::findExecutable(QStringLiteral("objdump"));
-        VERIFY_OR_THROW(!objdump.isEmpty());
-
-        if (objdump.isEmpty()) {
-            qWarning() << "objdump not found";
-            return false;
-        }
-
         QProcess process;
         process.setProcessChannelMode(QProcess::ForwardedErrorChannel);
-        process.start(objdump, {QStringLiteral("-H")});
+        process.start(mObjdumpBinary, {QStringLiteral("-H")});
         if (!process.waitForFinished(1000)) {
             qWarning() << "failed to query objdump output";
             return false;
@@ -295,6 +283,8 @@ private:
         const auto help = process.readAllStandardOutput();
         return help.contains("--visualize-jumps");
     }
+
+    QString mObjdumpBinary;
 };
 
 QTEST_GUILESS_MAIN(TestDisassemblyOutput)
