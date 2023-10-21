@@ -18,9 +18,15 @@ public:
     explicit CostHeaderView(CostContextMenu* contextMenu, QWidget* parent = nullptr);
     ~CostHeaderView();
 
+    void setAutoResize(bool autoResize)
+    {
+        m_autoResize = autoResize;
+    }
+
 private:
     void resizeEvent(QResizeEvent* event) override;
     void resizeColumns(bool reset);
 
     bool m_isResizing = false;
+    bool m_autoResize = true;
 };

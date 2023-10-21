@@ -73,13 +73,20 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
     , m_sourceCodeDelegate(new CodeDelegate(SourceCodeModel::RainbowLineNumberRole, SourceCodeModel::HighlightRole,
                                             SourceCodeModel::SyntaxHighlightRole, this))
 {
+    // TODO: the auto resize behavior is broken with these models that don't have the stretch column on the left
+    auto setCostHeader = [this, costContextMenu](QTreeView* view) {
+        auto header = new CostHeaderView(costContextMenu, this);
+        header->setAutoResize(false);
+        view->setHeader(header);
+    };
+
     ui->setupUi(this);
     ui->assemblyView->setModel(m_disassemblyModel);
     ui->assemblyView->setMouseTracking(true);
-    ui->assemblyView->setHeader(new CostHeaderView(costContextMenu, this));
+    setCostHeader(ui->assemblyView);
     ui->sourceCodeView->setModel(m_sourceCodeModel);
     ui->sourceCodeView->setMouseTracking(true);
-    ui->sourceCodeView->setHeader(new CostHeaderView(costContextMenu, this));
+    setCostHeader(ui->sourceCodeView);
 
     auto settings = Settings::instance();
     m_sourceCodeModel->setSysroot(settings->sysroot());

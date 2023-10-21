@@ -26,7 +26,7 @@ CostHeaderView::CostHeaderView(CostContextMenu* contextMenu, QWidget* parent)
     setStretchLastSection(false);
     connect(this, &QHeaderView::sectionCountChanged, this, [this]() { resizeColumns(false); });
     connect(this, &QHeaderView::sectionResized, this, [this](int index, int oldSize, int newSize) {
-        if (m_isResizing)
+        if (m_isResizing || !m_autoResize)
             return;
         const auto guard = QScopedValueRollback<bool>(m_isResizing, true);
         if (index != 0) {
@@ -80,7 +80,8 @@ CostHeaderView::~CostHeaderView() = default;
 void CostHeaderView::resizeEvent(QResizeEvent* event)
 {
     QHeaderView::resizeEvent(event);
-    resizeColumns(false);
+    if (m_autoResize)
+        resizeColumns(false);
 }
 
 void CostHeaderView::resizeColumns(bool reset)
