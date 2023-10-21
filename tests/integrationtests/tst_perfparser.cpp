@@ -101,7 +101,7 @@ struct ComparableSymbol
 
     bool operator==(const ComparableSymbol& rhs) const
     {
-        Q_ASSERT(isPattern != rhs.isPattern);
+        VERIFY_OR_THROW(isPattern != rhs.isPattern);
         auto cmp = [](const Data::Symbol& symbol, const QVector<QPair<QString, QString>>& pattern) {
             return std::any_of(pattern.begin(), pattern.end(), [&symbol](const QPair<QString, QString>& pattern) {
                 return symbol.symbol.contains(pattern.first) && symbol.binary.contains(pattern.second);

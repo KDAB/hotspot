@@ -20,6 +20,24 @@
 
 #include <algorithm>
 
+#define VERIFY_OR_THROW(statement)                                                                                     \
+    do {                                                                                                               \
+        if (!QTest::qVerify(static_cast<bool>(statement), #statement, "", __FILE__, __LINE__))                         \
+            throw std::logic_error("verify failed: " #statement);                                                      \
+    } while (false)
+
+#define VERIFY_OR_THROW2(statement, description)                                                                       \
+    do {                                                                                                               \
+        if (!QTest::qVerify(static_cast<bool>(statement), #statement, description, __FILE__, __LINE__))                \
+            throw std::logic_error(description);                                                                       \
+    } while (false)
+
+#define COMPARE_OR_THROW(actual, expected)                                                                             \
+    do {                                                                                                               \
+        if (!QTest::qCompare(actual, expected, #actual, #expected, __FILE__, __LINE__))                                \
+            throw std::logic_error("compare failed: " #actual #expected);                                              \
+    } while (false)
+
 template<typename Data, typename Results>
 QString printCost(const Data& node, const Results& results)
 {
@@ -75,7 +93,7 @@ inline QStringList printMap(const Data::CallerCalleeResults& results)
     list.reserve(results.entries.size());
     QSet<quint32> ids;
     for (auto it = results.entries.begin(), end = results.entries.end(); it != end; ++it) {
-        Q_ASSERT(!ids.contains(it->id));
+        VERIFY_OR_THROW(!ids.contains(it->id));
         ids.insert(it->id);
         list.push_back(it.key().symbol + QLatin1Char('=') + printCost(it.value(), results));
         QStringList subList;
@@ -152,24 +170,6 @@ QStringList printModel(const QAbstractItemModel* model)
     printModelImpl(model, {}, {}, &ret);
     return ret;
 }
-
-#define VERIFY_OR_THROW(statement)                                                                                     \
-    do {                                                                                                               \
-        if (!QTest::qVerify(static_cast<bool>(statement), #statement, "", __FILE__, __LINE__))                         \
-            throw std::logic_error("verify failed: " #statement);                                                      \
-    } while (false)
-
-#define VERIFY_OR_THROW2(statement, description)                                                                       \
-    do {                                                                                                               \
-        if (!QTest::qVerify(static_cast<bool>(statement), #statement, description, __FILE__, __LINE__))                \
-            throw std::logic_error(description);                                                                       \
-    } while (false)
-
-#define COMPARE_OR_THROW(actual, expected)                                                                             \
-    do {                                                                                                               \
-        if (!QTest::qCompare(actual, expected, #actual, #expected, __FILE__, __LINE__))                                \
-            throw std::logic_error("compare failed: " #actual #expected);                                              \
-    } while (false)
 
 inline QString findExe(const QString& name)
 {

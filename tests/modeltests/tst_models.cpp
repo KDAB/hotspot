@@ -40,7 +40,7 @@ Data::BottomUpResults buildBottomUpTree(const QByteArray& stacks)
             const auto& frame = *it;
             const auto symbol = Data::Symbol {QString::fromUtf8(frame), {}};
             auto node = parent->entryForSymbol(symbol, &maxId);
-            Q_ASSERT(!ids.contains(node->id) || ids[node->id] == symbol);
+            VERIFY_OR_THROW(!ids.contains(node->id) || ids[node->id] == symbol);
             ids[node->id] = symbol;
             ret.costs.increment(0, node->id);
             parent = node;
@@ -417,17 +417,17 @@ private slots:
         readelf.waitForFinished();
 
         const auto output = readelf.readAllStandardOutput();
-        Q_ASSERT(!output.isEmpty());
+        QVERIFY(!output.isEmpty());
 
         auto match = regex.match(QString::fromUtf8(output));
 
-        Q_ASSERT(match.hasMatch());
+        QVERIFY(match.hasMatch());
 
         bool ok = false;
         const quint64 address = match.captured(1).toInt(&ok, 16);
-        Q_ASSERT(ok);
+        QVERIFY(ok);
         const quint64 size = match.captured(2).toInt(&ok, 10);
-        Q_ASSERT(ok);
+        QVERIFY(ok);
 
         Data::Symbol symbol = {QStringLiteral("main"), address, size, QStringLiteral("cpp-recursion"), {}, binary};
 
