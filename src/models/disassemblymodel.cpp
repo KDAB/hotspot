@@ -96,7 +96,7 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
     if (!hasIndex(index.row(), index.column(), index.parent()))
         return {};
 
-    if (index.row() > m_data.disassemblyLines.count() || index.row() < 0)
+    if (index.row() >= m_data.disassemblyLines.count() || index.row() < 0)
         return {};
 
     if (role == Qt::FontRole) {
