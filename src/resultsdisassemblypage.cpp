@@ -94,8 +94,8 @@ public:
         const auto right = option.rect.right();
         const auto bottom = option.rect.bottom();
         const auto left = option.rect.left();
-        const auto horizontalAdvance = option.rect.height() / 2;
-        const auto horizontalMidAdvance = horizontalAdvance / 2;
+        const auto horizontalAdvance = 3;
+        const auto horizontalMidAdvance = 1;
         const auto ymid = top + option.rect.height() / 2;
 
         // we merge horizontal lines into one long line
@@ -103,12 +103,13 @@ public:
 
         QVarLengthArray<QLine, 64> lines;
         auto x = left;
-        for (auto c : jumps.data) {
+        for (int i = 0, size = jumps.data.size(); i < size; ++i) {
             const auto xend = x + horizontalAdvance;
             const auto xmid = x + horizontalMidAdvance;
             if (xmid > right)
                 break;
 
+            const auto c = jumps.data[i];
             switch (c.toLatin1()) {
             case ' ':
                 break;
@@ -121,14 +122,14 @@ public:
                 break;
             case '\\':
                 if (!jumps.fromSibling) {
-                    lines.append({xmid, top, xend, ymid});
+                    lines.append({xmid, top, xmid, ymid});
                     if (horizontalLineStart == -1)
                         horizontalLineStart = xend;
                 }
                 break;
             case '/':
                 if (!jumps.fromSibling) {
-                    lines.append({xmid, bottom, xend, ymid});
+                    lines.append({xmid, bottom, xmid, ymid});
                     if (horizontalLineStart == -1)
                         horizontalLineStart = xend;
                 } else {
@@ -137,8 +138,12 @@ public:
                 break;
             case '>':
                 if (!jumps.fromSibling) {
-                    lines.append({xmid, top, xend, ymid});
-                    lines.append({xmid, bottom, xend, ymid});
+                    if (i == size - 2) {
+                        // jump target ends with "> "
+                    } else {
+                        // branch intersection
+                        lines.append({xmid, top, xmid, bottom});
+                    }
                     if (horizontalLineStart == -1)
                         horizontalLineStart = xend;
                 } else {
@@ -153,8 +158,23 @@ public:
             x = xend;
         }
 
-        if (!jumps.fromSibling && horizontalLineStart != -1)
-            lines.append({horizontalLineStart, ymid, right, ymid});
+        if (!jumps.fromSibling && horizontalLineStart != -1) {
+            auto lineEnd = right;
+
+            const auto arrowSize = 4;
+            if (jumps.data.endsWith(QLatin1String("> "))) {
+                // jump target
+                lines.append({right - arrowSize, ymid + arrowSize, right, ymid});
+                lines.append({right - arrowSize, ymid - arrowSize, right, ymid});
+            } else {
+                // jump
+                lines.append({right, ymid + arrowSize, right - arrowSize, ymid});
+                lines.append({right, ymid - arrowSize, right - arrowSize, ymid});
+                lineEnd -= arrowSize;
+            }
+
+            lines.append({horizontalLineStart, ymid, lineEnd, ymid});
+        }
 
         auto pen = QPen(option.palette.color(QPalette::Link), 1);
         pen.setCosmetic(true);
