@@ -190,7 +190,7 @@ private:
         // when we take the jumps from siblings, we only want to draw the vertical lines
         bool fromSibling = false;
     };
-    static Jumps findJumps(QModelIndex index) const
+    static Jumps findJumps(QModelIndex index)
     {
         bool fromSibling = false;
         // find row that might have jumps (i.e. has valid addr column)
