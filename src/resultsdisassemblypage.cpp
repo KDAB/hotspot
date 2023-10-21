@@ -56,6 +56,24 @@ void connectModel(ModelType* model, ResultFound resultFound, EndReached endReach
     QObject::connect(model, &ModelType::searchEndReached, model, endReached);
 }
 
+class ColumnSpanDelegate : public QStyledItemDelegate
+{
+    Q_OBJECT
+public:
+    explicit ColumnSpanDelegate(QObject* parent = nullptr)
+        : QStyledItemDelegate(parent)
+    {
+    }
+    ~ColumnSpanDelegate() = default;
+
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+    {
+        auto opt = option;
+        opt.index = index.siblingAtColumn(DisassemblyModel::DisassemblyColumn);
+        QStyledItemDelegate::paint(painter, opt, opt.index);
+    }
+};
+
 class BranchDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
@@ -195,6 +213,8 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
     ui->assemblyView->setModel(m_disassemblyModel);
     ui->assemblyView->setMouseTracking(true);
     setCostHeader(ui->assemblyView);
+    ui->assemblyView->setDrawColumnSpanDelegate(new ColumnSpanDelegate(this));
+
     ui->sourceCodeView->setModel(m_sourceCodeModel);
     ui->sourceCodeView->setMouseTracking(true);
     setCostHeader(ui->sourceCodeView);

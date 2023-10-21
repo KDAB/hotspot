@@ -176,6 +176,20 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
     return {};
 }
 
+QSize DisassemblyModel::span(const QModelIndex& index) const
+{
+    if (!hasIndex(index.row(), index.column(), index.parent()))
+        return {};
+
+    if (index.row() >= m_data.disassemblyLines.count() || index.row() < 0)
+        return {};
+
+    const auto& data = m_data.disassemblyLines.at(index.row());
+    if (data.addr == 0)
+        return QSize(columnCount(), 1);
+    return {1, 1};
+}
+
 int DisassemblyModel::columnCount(const QModelIndex& parent) const
 {
     return parent.isValid() ? 0 : COLUMN_COUNT + m_numTypes;

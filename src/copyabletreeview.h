@@ -16,6 +16,15 @@ public:
     explicit CopyableTreeView(QWidget* parent = nullptr);
     ~CopyableTreeView() override;
 
+    void setDrawColumnSpanDelegate(QAbstractItemDelegate* delegate)
+    {
+        mDrawColumnSpanDelegate = delegate;
+    }
+
 protected:
     void keyPressEvent(QKeyEvent* event) override;
+    void drawRow(QPainter* painter, const QStyleOptionViewItem& options, const QModelIndex& index) const override;
+
+private:
+    QAbstractItemDelegate* mDrawColumnSpanDelegate = nullptr;
 };

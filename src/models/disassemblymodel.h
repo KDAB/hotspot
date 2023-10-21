@@ -42,6 +42,7 @@ public:
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QSize span(const QModelIndex& index) const override;
 
     Data::FileLine fileLineForIndex(const QModelIndex& index) const;
     QModelIndex indexForFileLine(const Data::FileLine& line) const;

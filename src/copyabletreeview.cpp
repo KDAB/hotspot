@@ -10,6 +10,7 @@
 #include <QClipboard>
 #include <QGuiApplication>
 #include <QKeyEvent>
+#include <QPainter>
 
 CopyableTreeView::CopyableTreeView(QWidget* parent)
     : QTreeView(parent)
@@ -42,4 +43,20 @@ void CopyableTreeView::keyPressEvent(QKeyEvent* event)
     } else {
         QTreeView::keyPressEvent(event);
     }
+}
+
+void CopyableTreeView::drawRow(QPainter* painter, const QStyleOptionViewItem& options, const QModelIndex& index) const
+{
+    if (mDrawColumnSpanDelegate) {
+        auto span = index.model()->span(index);
+        if (span.width() > 1) {
+            const auto& background = (alternatingRowColors() && (index.row() % 2) == 1)
+                ? options.palette.alternateBase()
+                : options.palette.base();
+            painter->fillRect(options.rect, background);
+            mDrawColumnSpanDelegate->paint(painter, options, index);
+            return;
+        }
+    }
+    QTreeView::drawRow(painter, options, index);
 }
