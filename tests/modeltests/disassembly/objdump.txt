@@ -1,0 +1,292 @@
+
+/home/milian/.debug/home/milian/projects/kdab/rnd/hotspot/build/tests/test-clients/cpp-inlining/cpp-inlining/1e80c02c17c9d5f0f0dfb1795949574b1267c8c4/elf:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000001970 <main>:
+main():
+/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp:16
+    1970:	                                        48 83 ec 18          	sub    $0x18,%rsp
+/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp:19
+    1974:	                                        66 0f ef c9          	pxor   %xmm1,%xmm1
+    1978:	                                        f2 0f 10 2d 20 ee ff 	movsd  -0x11e0(%rip),%xmm5        # 7a0 <.LC2>
+    197f:	                                        ff
+    1980:	                                        f2 0f 10 25 30 ee ff 	movsd  -0x11d0(%rip),%xmm4        # 7b8 <.LC3>
+    1987:	                                        ff
+/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp:16
+    1988:	                                        64 48 8b 04 25 28 00 	mov    %fs:0x28,%rax
+    198f:	                                        00 00
+    1991:	                                        48 89 44 24 08       	mov    %rax,0x8(%rsp)
+    1996:	                                        31 c0                	xor    %eax,%eax
+double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&):
+/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp:20 (discriminator 1)
+    1998:	                                        bf 80 96 98 00       	mov    $0x989680,%edi
+std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>::seed(unsigned long):
+/usr/include/c++/13.2.1/bits/random.tcc:125 (discriminator 1)
+    199d:	                                        ba 01 00 00 00       	mov    $0x1,%edx
+double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&):
+/usr/include/c++/13.2.1/bits/random.tcc:3364 (discriminator 1)
+    19a2:	                                        66 0f 28 d1          	movapd %xmm1,%xmm2
+    19a6:	                                        f2 0f 10 1d 22 ee ff 	movsd  -0x11de(%rip),%xmm3        # 7d0 <.LC4>
+    19ad:	                                        ff
+double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&, std::uniform_real_distribution<double>::param_type const&):
+/usr/include/c++/13.2.1/bits/random.h:1909 (discriminator 2)
+    19ae:	                                        f2 0f 10 3d fa ed ff 	movsd  -0x1206(%rip),%xmm7        # 7b0 <.LC5>
+    19b5:	                                        ff
+std::__detail::_Mod<unsigned long, 2147483647ul, 16807ul, 0ul, true, true>::__calc(unsigned long):
+/usr/include/c++/13.2.1/bits/random.h:143
+    19b6:	                                        48 be 05 00 00 00 02 	movabs $0x200000005,%rsi
+    19bd:	                                        00 00 00
+double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&, std::uniform_real_distribution<double>::param_type const&):
+/usr/include/c++/13.2.1/bits/random.h:1909 (discriminator 3)
+    19c0:	                                        f2 0f 10 35 e0 ed ff 	movsd  -0x1220(%rip),%xmm6        # 7a8 <.LC6>
+    19c7:	                                        ff
+double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&):
+/usr/include/c++/13.2.1/bits/random.h:1909 (discriminator 3)
+    19c8:	                                        f2 44 0f 10 05 ef ed 	movsd  -0x1211(%rip),%xmm8        # 7c0 <.LC0>
+    19cf:	                                        ff ff
+    19d1:	/-------------------------------------- e9 45 01 00 00       	jmp    1b1b <main+0x1ab>
+    19d6:	|                                       66 2e 0f 1f 84 00 00 	cs nopw 0x0(%rax,%rax,1)
+    19dd:	|                                       00 00 00
+/usr/include/c++/13.2.1/bits/random.tcc:3364 (discriminator 1)
+    19e0:	|                 /-------------------> 66 0f ef c0          	pxor   %xmm0,%xmm0
+    19e4:	|                 |                     f2 48 0f 2a c0       	cvtsi2sd %rax,%xmm0
+std::__detail::_Mod<unsigned long, 2147483647ul, 16807ul, 0ul, true, true>::__calc(unsigned long):
+/usr/include/c++/13.2.1/bits/random.h:141
+    19e9:	|              /--|-------------------> 48 69 ca a7 41 00 00 	imul   $0x41a7,%rdx,%rcx
+double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&):
+/usr/include/c++/13.2.1/bits/random.tcc:3364 (discriminator 1)
+    19f0:	|              |  |                     f2 0f 58 c2          	addsd  %xmm2,%xmm0
+std::__detail::_Mod<unsigned long, 2147483647ul, 16807ul, 0ul, true, true>::__calc(unsigned long):
+/usr/include/c++/13.2.1/bits/random.h:143
+    19f4:	|              |  |                     48 89 c8             	mov    %rcx,%rax
+    19f7:	|              |  |                     48 f7 e6             	mul    %rsi
+    19fa:	|              |  |                     48 89 c8             	mov    %rcx,%rax
+    19fd:	|              |  |                     48 29 d0             	sub    %rdx,%rax
+    1a00:	|              |  |                     48 d1 e8             	shr    %rax
+    1a03:	|              |  |                     48 01 c2             	add    %rax,%rdx
+    1a06:	|              |  |                     48 c1 ea 1e          	shr    $0x1e,%rdx
+    1a0a:	|              |  |                     48 89 d0             	mov    %rdx,%rax
+    1a0d:	|              |  |                     48 c1 e0 1f          	shl    $0x1f,%rax
+    1a11:	|              |  |                     48 29 d0             	sub    %rdx,%rax
+    1a14:	|              |  |                     48 29 c1             	sub    %rax,%rcx
+double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&):
+/usr/include/c++/13.2.1/bits/random.tcc:3364 (discriminator 1)
+    1a17:	|              |  |                     48 89 c8             	mov    %rcx,%rax
+std::__detail::_Mod<unsigned long, 2147483647ul, 16807ul, 0ul, true, true>::__calc(unsigned long):
+/usr/include/c++/13.2.1/bits/random.h:143
+    1a1a:	|              |  |                     48 89 ca             	mov    %rcx,%rdx
+double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&):
+/usr/include/c++/13.2.1/bits/random.tcc:3364 (discriminator 1)
+    1a1d:	|              |  |                     48 83 e8 01          	sub    $0x1,%rax
+    1a21:	|     /--------|--|-------------------- 0f 88 99 01 00 00    	js     1bc0 <main+0x250>
+    1a27:	|     |        |  |                     66 45 0f ef c9       	pxor   %xmm9,%xmm9
+    1a2c:	|     |        |  |                     f2 4c 0f 2a c8       	cvtsi2sd %rax,%xmm9
+    1a31:	|  /--|--------|--|-------------------> f2 44 0f 59 cd       	mulsd  %xmm5,%xmm9
+    1a36:	|  |  |        |  |                     f2 44 0f 58 c8       	addsd  %xmm0,%xmm9
+/usr/include/c++/13.2.1/bits/random.tcc:3367
+    1a3b:	|  |  |        |  |                     f2 44 0f 5e cc       	divsd  %xmm4,%xmm9
+/usr/include/c++/13.2.1/bits/random.tcc:3368 (discriminator 1)
+    1a40:	|  |  |        |  |                     66 44 0f 2f cb       	comisd %xmm3,%xmm9
+    1a45:	|  |  |  /-----|--|-------------------- 0f 83 95 01 00 00    	jae    1be0 <main+0x270>
+double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&, std::uniform_real_distribution<double>::param_type const&):
+/usr/include/c++/13.2.1/bits/random.h:1909 (discriminator 2)
+    1a4b:	|  |  |  |     |  |                     f2 44 0f 59 cf       	mulsd  %xmm7,%xmm9
+/usr/include/c++/13.2.1/bits/random.h:1909 (discriminator 3)
+    1a50:	|  |  |  |     |  |                     f2 44 0f 5c ce       	subsd  %xmm6,%xmm9
+double std::_Norm_helper<true>::_S_do_it<double>(std::complex<double> const&):
+/usr/include/c++/13.2.1/complex:948
+    1a55:	|  |  |  |     |  |                     f2 45 0f 59 c9       	mulsd  %xmm9,%xmm9
+std::__detail::_Mod<unsigned long, 2147483647ul, 16807ul, 0ul, true, true>::__calc(unsigned long):
+/usr/include/c++/13.2.1/bits/random.h:141
+    1a5a:	|  |  |  |  /--|--|-------------------> 48 69 ca a7 41 00 00 	imul   $0x41a7,%rdx,%rcx
+/usr/include/c++/13.2.1/bits/random.h:143
+    1a61:	|  |  |  |  |  |  |                     48 89 c8             	mov    %rcx,%rax
+    1a64:	|  |  |  |  |  |  |                     48 f7 e6             	mul    %rsi
+    1a67:	|  |  |  |  |  |  |                     48 89 c8             	mov    %rcx,%rax
+    1a6a:	|  |  |  |  |  |  |                     48 29 d0             	sub    %rdx,%rax
+    1a6d:	|  |  |  |  |  |  |                     48 d1 e8             	shr    %rax
+    1a70:	|  |  |  |  |  |  |                     48 01 c2             	add    %rax,%rdx
+    1a73:	|  |  |  |  |  |  |                     48 c1 ea 1e          	shr    $0x1e,%rdx
+    1a77:	|  |  |  |  |  |  |                     48 89 d0             	mov    %rdx,%rax
+    1a7a:	|  |  |  |  |  |  |                     48 c1 e0 1f          	shl    $0x1f,%rax
+    1a7e:	|  |  |  |  |  |  |                     48 29 d0             	sub    %rdx,%rax
+    1a81:	|  |  |  |  |  |  |                     48 29 c1             	sub    %rax,%rcx
+double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&):
+/usr/include/c++/13.2.1/bits/random.tcc:3364 (discriminator 1)
+    1a84:	|  |  |  |  |  |  |                     48 89 c8             	mov    %rcx,%rax
+std::__detail::_Mod<unsigned long, 2147483647ul, 16807ul, 0ul, true, true>::__calc(unsigned long):
+/usr/include/c++/13.2.1/bits/random.h:143
+    1a87:	|  |  |  |  |  |  |                     48 89 ca             	mov    %rcx,%rdx
+double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&):
+/usr/include/c++/13.2.1/bits/random.tcc:3364 (discriminator 1)
+    1a8a:	|  |  |  |  |  |  |                     48 83 e8 01          	sub    $0x1,%rax
+    1a8e:	|  |  |  |  |  |  |     /-------------- 0f 88 0c 01 00 00    	js     1ba0 <main+0x230>
+    1a94:	|  |  |  |  |  |  |     |               66 45 0f ef d2       	pxor   %xmm10,%xmm10
+    1a99:	|  |  |  |  |  |  |     |               f2 4c 0f 2a d0       	cvtsi2sd %rax,%xmm10
+std::__detail::_Mod<unsigned long, 2147483647ul, 16807ul, 0ul, true, true>::__calc(unsigned long):
+/usr/include/c++/13.2.1/bits/random.h:141
+    1a9e:	|  |  |  |  |  |  |  /--|-------------> 48 69 ca a7 41 00 00 	imul   $0x41a7,%rdx,%rcx
+double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&):
+/usr/include/c++/13.2.1/bits/random.tcc:3364 (discriminator 1)
+    1aa5:	|  |  |  |  |  |  |  |  |               f2 44 0f 58 d2       	addsd  %xmm2,%xmm10
+std::__detail::_Mod<unsigned long, 2147483647ul, 16807ul, 0ul, true, true>::__calc(unsigned long):
+/usr/include/c++/13.2.1/bits/random.h:143
+    1aaa:	|  |  |  |  |  |  |  |  |               48 89 c8             	mov    %rcx,%rax
+    1aad:	|  |  |  |  |  |  |  |  |               48 f7 e6             	mul    %rsi
+    1ab0:	|  |  |  |  |  |  |  |  |               48 89 c8             	mov    %rcx,%rax
+    1ab3:	|  |  |  |  |  |  |  |  |               48 29 d0             	sub    %rdx,%rax
+    1ab6:	|  |  |  |  |  |  |  |  |               48 d1 e8             	shr    %rax
+    1ab9:	|  |  |  |  |  |  |  |  |               48 01 c2             	add    %rax,%rdx
+    1abc:	|  |  |  |  |  |  |  |  |               48 c1 ea 1e          	shr    $0x1e,%rdx
+    1ac0:	|  |  |  |  |  |  |  |  |               48 89 d0             	mov    %rdx,%rax
+    1ac3:	|  |  |  |  |  |  |  |  |               48 c1 e0 1f          	shl    $0x1f,%rax
+    1ac7:	|  |  |  |  |  |  |  |  |               48 29 d0             	sub    %rdx,%rax
+    1aca:	|  |  |  |  |  |  |  |  |               48 29 c1             	sub    %rax,%rcx
+double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&):
+/usr/include/c++/13.2.1/bits/random.tcc:3364 (discriminator 1)
+    1acd:	|  |  |  |  |  |  |  |  |               48 89 c8             	mov    %rcx,%rax
+std::__detail::_Mod<unsigned long, 2147483647ul, 16807ul, 0ul, true, true>::__calc(unsigned long):
+/usr/include/c++/13.2.1/bits/random.h:143
+    1ad0:	|  |  |  |  |  |  |  |  |               48 89 ca             	mov    %rcx,%rdx
+double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&):
+/usr/include/c++/13.2.1/bits/random.tcc:3364 (discriminator 1)
+    1ad3:	|  |  |  |  |  |  |  |  |               48 83 e8 01          	sub    $0x1,%rax
+    1ad7:	|  |  |  |  |  |  |  |  |           /-- 0f 88 9b 00 00 00    	js     1b78 <main+0x208>
+    1add:	|  |  |  |  |  |  |  |  |           |   66 0f ef c0          	pxor   %xmm0,%xmm0
+    1ae1:	|  |  |  |  |  |  |  |  |           |   f2 48 0f 2a c0       	cvtsi2sd %rax,%xmm0
+    1ae6:	|  |  |  |  |  |  |  |  |        /--|-> f2 0f 59 c5          	mulsd  %xmm5,%xmm0
+    1aea:	|  |  |  |  |  |  |  |  |        |  |   f2 41 0f 58 c2       	addsd  %xmm10,%xmm0
+/usr/include/c++/13.2.1/bits/random.tcc:3367
+    1aef:	|  |  |  |  |  |  |  |  |        |  |   f2 0f 5e c4          	divsd  %xmm4,%xmm0
+/usr/include/c++/13.2.1/bits/random.tcc:3368 (discriminator 1)
+    1af3:	|  |  |  |  |  |  |  |  |        |  |   66 0f 2f c3          	comisd %xmm3,%xmm0
+    1af7:	|  |  |  |  |  |  |  |  |  /-----|--|-- 0f 83 f3 00 00 00    	jae    1bf0 <main+0x280>
+double std::uniform_real_distribution<double>::operator()<std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&, std::uniform_real_distribution<double>::param_type const&):
+/usr/include/c++/13.2.1/bits/random.h:1909 (discriminator 2)
+    1afd:	|  |  |  |  |  |  |  |  |  |     |  |   f2 0f 59 c7          	mulsd  %xmm7,%xmm0
+/usr/include/c++/13.2.1/bits/random.h:1909 (discriminator 3)
+    1b01:	|  |  |  |  |  |  |  |  |  |     |  |   f2 0f 5c c6          	subsd  %xmm6,%xmm0
+double std::_Norm_helper<true>::_S_do_it<double>(std::complex<double> const&):
+/usr/include/c++/13.2.1/complex:948
+    1b05:	|  |  |  |  |  |  |  |  |  |     |  |   f2 0f 59 c0          	mulsd  %xmm0,%xmm0
+    1b09:	|  |  |  |  |  |  |  |  |  |     |  |   f2 41 0f 58 c1       	addsd  %xmm9,%xmm0
+main():
+/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp:21 (discriminator 6)
+    1b0e:	|  |  |  |  |  |  |  |  |  |     |  |   f2 0f 58 c8          	addsd  %xmm0,%xmm1
+/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp:20 (discriminator 1)
+    1b12:	|  |  |  |  |  |  |  |  |  |     |  |   83 ef 01             	sub    $0x1,%edi
+    1b15:	|  |  |  |  |  |  |  |  |  |  /--|--|-- 0f 84 ec 00 00 00    	je     1c07 <main+0x297>
+std::__detail::_Mod<unsigned long, 2147483647ul, 16807ul, 0ul, true, true>::__calc(unsigned long):
+/usr/include/c++/13.2.1/bits/random.h:141
+    1b1b:	>--|--|--|--|--|--|--|--|--|--|--|--|-> 48 69 ca a7 41 00 00 	imul   $0x41a7,%rdx,%rcx
+/usr/include/c++/13.2.1/bits/random.h:143
+    1b22:	|  |  |  |  |  |  |  |  |  |  |  |  |   48 89 c8             	mov    %rcx,%rax
+    1b25:	|  |  |  |  |  |  |  |  |  |  |  |  |   48 f7 e6             	mul    %rsi
+    1b28:	|  |  |  |  |  |  |  |  |  |  |  |  |   48 89 c8             	mov    %rcx,%rax
+    1b2b:	|  |  |  |  |  |  |  |  |  |  |  |  |   48 29 d0             	sub    %rdx,%rax
+    1b2e:	|  |  |  |  |  |  |  |  |  |  |  |  |   48 d1 e8             	shr    %rax
+    1b31:	|  |  |  |  |  |  |  |  |  |  |  |  |   48 01 c2             	add    %rax,%rdx
+    1b34:	|  |  |  |  |  |  |  |  |  |  |  |  |   48 c1 ea 1e          	shr    $0x1e,%rdx
+    1b38:	|  |  |  |  |  |  |  |  |  |  |  |  |   48 89 d0             	mov    %rdx,%rax
+    1b3b:	|  |  |  |  |  |  |  |  |  |  |  |  |   48 c1 e0 1f          	shl    $0x1f,%rax
+    1b3f:	|  |  |  |  |  |  |  |  |  |  |  |  |   48 29 d0             	sub    %rdx,%rax
+    1b42:	|  |  |  |  |  |  |  |  |  |  |  |  |   48 29 c1             	sub    %rax,%rcx
+double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&):
+/usr/include/c++/13.2.1/bits/random.tcc:3364 (discriminator 1)
+    1b45:	|  |  |  |  |  |  |  |  |  |  |  |  |   48 89 c8             	mov    %rcx,%rax
+std::__detail::_Mod<unsigned long, 2147483647ul, 16807ul, 0ul, true, true>::__calc(unsigned long):
+/usr/include/c++/13.2.1/bits/random.h:143
+    1b48:	|  |  |  |  |  |  |  |  |  |  |  |  |   48 89 ca             	mov    %rcx,%rdx
+double std::generate_canonical<double, 53ul, std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul> >(std::linear_congruential_engine<unsigned long, 16807ul, 0ul, 2147483647ul>&):
+/usr/include/c++/13.2.1/bits/random.tcc:3364 (discriminator 1)
+    1b4b:	|  |  |  |  |  |  |  |  |  |  |  |  |   48 83 e8 01          	sub    $0x1,%rax
+    1b4f:	|  |  |  |  |  |  \--|--|--|--|--|--|-- 0f 89 8b fe ff ff    	jns    19e0 <main+0x70>
+    1b55:	|  |  |  |  |  |     |  |  |  |  |  |   48 89 c1             	mov    %rax,%rcx
+    1b58:	|  |  |  |  |  |     |  |  |  |  |  |   83 e0 01             	and    $0x1,%eax
+    1b5b:	|  |  |  |  |  |     |  |  |  |  |  |   66 0f ef c0          	pxor   %xmm0,%xmm0
+    1b5f:	|  |  |  |  |  |     |  |  |  |  |  |   48 d1 e9             	shr    %rcx
+    1b62:	|  |  |  |  |  |     |  |  |  |  |  |   48 09 c1             	or     %rax,%rcx
+    1b65:	|  |  |  |  |  |     |  |  |  |  |  |   f2 48 0f 2a c1       	cvtsi2sd %rcx,%xmm0
+    1b6a:	|  |  |  |  |  |     |  |  |  |  |  |   f2 0f 58 c0          	addsd  %xmm0,%xmm0
+    1b6e:	|  |  |  |  |  \-----|--|--|--|--|--|-- e9 76 fe ff ff       	jmp    19e9 <main+0x79>
+    1b73:	|  |  |  |  |        |  |  |  |  |  |   0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+    1b78:	|  |  |  |  |        |  |  |  |  |  \-> 48 89 c1             	mov    %rax,%rcx
+    1b7b:	|  |  |  |  |        |  |  |  |  |      83 e0 01             	and    $0x1,%eax
+    1b7e:	|  |  |  |  |        |  |  |  |  |      66 0f ef c0          	pxor   %xmm0,%xmm0
+    1b82:	|  |  |  |  |        |  |  |  |  |      48 d1 e9             	shr    %rcx
+    1b85:	|  |  |  |  |        |  |  |  |  |      48 09 c1             	or     %rax,%rcx
+    1b88:	|  |  |  |  |        |  |  |  |  |      f2 48 0f 2a c1       	cvtsi2sd %rcx,%xmm0
+    1b8d:	|  |  |  |  |        |  |  |  |  |      f2 0f 58 c0          	addsd  %xmm0,%xmm0
+    1b91:	|  |  |  |  |        |  |  |  |  \----- e9 50 ff ff ff       	jmp    1ae6 <main+0x176>
+    1b96:	|  |  |  |  |        |  |  |  |         66 2e 0f 1f 84 00 00 	cs nopw 0x0(%rax,%rax,1)
+    1b9d:	|  |  |  |  |        |  |  |  |         00 00 00
+    1ba0:	|  |  |  |  |        |  \--|--|-------> 48 89 c1             	mov    %rax,%rcx
+    1ba3:	|  |  |  |  |        |     |  |         83 e0 01             	and    $0x1,%eax
+    1ba6:	|  |  |  |  |        |     |  |         66 45 0f ef d2       	pxor   %xmm10,%xmm10
+    1bab:	|  |  |  |  |        |     |  |         48 d1 e9             	shr    %rcx
+    1bae:	|  |  |  |  |        |     |  |         48 09 c1             	or     %rax,%rcx
+    1bb1:	|  |  |  |  |        |     |  |         f2 4c 0f 2a d1       	cvtsi2sd %rcx,%xmm10
+    1bb6:	|  |  |  |  |        |     |  |         f2 45 0f 58 d2       	addsd  %xmm10,%xmm10
+    1bbb:	|  |  |  |  |        \-----|--|-------- e9 de fe ff ff       	jmp    1a9e <main+0x12e>
+    1bc0:	|  |  \--|--|--------------|--|-------> 48 89 c1             	mov    %rax,%rcx
+    1bc3:	|  |     |  |              |  |         83 e0 01             	and    $0x1,%eax
+    1bc6:	|  |     |  |              |  |         66 45 0f ef c9       	pxor   %xmm9,%xmm9
+    1bcb:	|  |     |  |              |  |         48 d1 e9             	shr    %rcx
+    1bce:	|  |     |  |              |  |         48 09 c1             	or     %rax,%rcx
+    1bd1:	|  |     |  |              |  |         f2 4c 0f 2a c9       	cvtsi2sd %rcx,%xmm9
+    1bd6:	|  |     |  |              |  |         f2 45 0f 58 c9       	addsd  %xmm9,%xmm9
+    1bdb:	|  \-----|--|--------------|--|-------- e9 51 fe ff ff       	jmp    1a31 <main+0xc1>
+    1be0:	|        \--|--------------|--|-------> 66 45 0f 28 c8       	movapd %xmm8,%xmm9
+    1be5:	|           \--------------|--|-------- e9 70 fe ff ff       	jmp    1a5a <main+0xea>
+    1bea:	|                          |  |         66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+    1bf0:	|                          \--|-------> 66 41 0f 28 c0       	movapd %xmm8,%xmm0
+double std::_Norm_helper<true>::_S_do_it<double>(std::complex<double> const&):
+/usr/include/c++/13.2.1/complex:948
+    1bf5:	|                             |         f2 41 0f 58 c1       	addsd  %xmm9,%xmm0
+main():
+/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp:21 (discriminator 6)
+    1bfa:	|                             |         f2 0f 58 c8          	addsd  %xmm0,%xmm1
+/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp:20 (discriminator 1)
+    1bfe:	|                             |         83 ef 01             	sub    $0x1,%edi
+    1c01:	\-----------------------------|-------- 0f 85 14 ff ff ff    	jne    1b1b <main+0x1ab>
+std::ostream::operator<<(double):
+/usr/include/c++/13.2.1/ostream:223
+    1c07:	                              \-------> 48 8d 3d 32 23 00 00 	lea    0x2332(%rip),%rdi        # 3f40 <std::cout@GLIBCXX_3.4>
+    1c0e:	                                        66 0f 28 c1          	movapd %xmm1,%xmm0
+    1c12:	                                        e8 e9 fb ff ff       	call   1800 <_ZNSo9_M_insertIdEERSoT_$plt>
+    1c17:	                                        c6 44 24 07 0a       	movb   $0xa,0x7(%rsp)
+    1c1c:	                                        48 89 c7             	mov    %rax,%rdi
+std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char):
+/usr/include/c++/13.2.1/ostream:572
+    1c1f:	                                        48 8b 00             	mov    (%rax),%rax
+std::ios_base::width() const:
+/usr/include/c++/13.2.1/bits/ios_base.h:756
+    1c22:	                                        48 8b 40 e8          	mov    -0x18(%rax),%rax
+std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char):
+/usr/include/c++/13.2.1/ostream:572 (discriminator 1)
+    1c26:	                                        48 83 7c 07 10 00    	cmpq   $0x0,0x10(%rdi,%rax,1)
+    1c2c:	                              /-------- 74 26                	je     1c54 <main+0x2e4>
+/usr/include/c++/13.2.1/ostream:573
+    1c2e:	                              |         48 8d 74 24 07       	lea    0x7(%rsp),%rsi
+    1c33:	                              |         ba 01 00 00 00       	mov    $0x1,%edx
+    1c38:	                              |         e8 d3 fb ff ff       	call   1810 <_ZSt16__ostream_insertIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_PKS3_l$plt>
+main():
+/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp:25
+    1c3d:	                              |  /----> 48 8b 44 24 08       	mov    0x8(%rsp),%rax
+    1c42:	                              |  |      64 48 2b 04 25 28 00 	sub    %fs:0x28,%rax
+    1c49:	                              |  |      00 00
+    1c4b:	                              |  |  /-- 75 13                	jne    1c60 <main+0x2f0>
+    1c4d:	                              |  |  |   31 c0                	xor    %eax,%eax
+    1c4f:	                              |  |  |   48 83 c4 18          	add    $0x18,%rsp
+    1c53:	                              |  |  |   c3                   	ret
+std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char):
+/usr/include/c++/13.2.1/ostream:574
+    1c54:	                              \--|--|-> be 0a 00 00 00       	mov    $0xa,%esi
+    1c59:	                                 |  |   e8 c2 fb ff ff       	call   1820 <_ZNSo3putEc$plt>
+/usr/include/c++/13.2.1/ostream:575
+    1c5e:	                                 \--|-- eb dd                	jmp    1c3d <main+0x2cd>
+main():
+/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp:25
+    1c60:	                                    \-> e8 cb fb ff ff       	call   1830 <__stack_chk_fail$plt>

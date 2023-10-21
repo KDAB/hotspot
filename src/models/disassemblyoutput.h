@@ -44,6 +44,13 @@ struct DisassemblyOutput
         return errorMessage.isEmpty();
     }
 
+    struct ObjectdumpOutput
+    {
+        QVector<DisassemblyOutput::DisassemblyLine> disassemblyLines;
+        QString mainSourceFileName;
+    };
+    static ObjectdumpOutput objdumpParse(const QByteArray& objdumpOutput);
+
     static DisassemblyOutput disassemble(const QString& objdump, const QString& arch, const QStringList& debugPaths,
                                          const QStringList& extraLibPaths, const QStringList& sourceCodePaths,
                                          const QString& sysroot, const Data::Symbol& symbol);

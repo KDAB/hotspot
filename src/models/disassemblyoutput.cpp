@@ -20,12 +20,6 @@
 namespace {
 Q_LOGGING_CATEGORY(disassemblyoutput, "hotspot.disassemblyoutput")
 
-struct ObjectdumpOutput
-{
-    QVector<DisassemblyOutput::DisassemblyLine> disassemblyLines;
-    QString mainSourceFileName;
-};
-
 bool canVisualizeJumps(const QString& objdump)
 {
     QProcess process;
@@ -124,8 +118,36 @@ bool isHexCharacter(QChar c)
 {
     return (c >= QLatin1Char('0') && c <= QLatin1Char('9')) || (c >= QLatin1Char('a') && c <= QLatin1Char('f'));
 }
+}
 
-ObjectdumpOutput objdumpParse(const QByteArray& output)
+// not in an anonymous namespace so we can test this
+QString findSourceCodeFile(const QString& originalPath, const QStringList& sourceCodePaths, const QString& sysroot)
+{
+    if (QFile::exists(originalPath)) {
+        return originalPath;
+    }
+
+    QString sysrootPath = sysroot + QDir::separator() + originalPath;
+    if (QFile::exists(sysrootPath)) {
+        return sysrootPath;
+    }
+
+    for (const auto& sourcePath : sourceCodePaths) {
+        for (auto it = originalPath.begin(); it != originalPath.end();
+             it = std::find(++it, originalPath.end(), QDir::separator())) {
+            const auto path =
+                QString(sourcePath + QDir::separator() + QString(it, std::distance(it, originalPath.end())));
+            const auto info = QFileInfo(path);
+            if (info.exists()) {
+                return info.canonicalFilePath();
+            }
+        }
+    }
+
+    return originalPath; // fallback
+}
+
+DisassemblyOutput::ObjectdumpOutput DisassemblyOutput::objdumpParse(const QByteArray& output)
 {
     QVector<DisassemblyOutput::DisassemblyLine> disassemblyLines;
 
@@ -185,68 +207,54 @@ ObjectdumpOutput objdumpParse(const QByteArray& output)
             continue;
         }
 
-        quint64 addr = 0;
-        QString assembly;
-
         // detect lines like:
-        // 4f616:\t<jumps>84 c0\ttest %al,%al
-        const auto addrEnd = asmLine.indexOf(QLatin1String(":\t"));
-        if (addrEnd != -1) {
+        //     4f616:\t<jumps>84 c0\ttest %al,%al
+        auto lineRest = QStringView(asmLine);
+
+        // <four spaces><hex addr>:\t
+        const auto addr = [&]() -> quint64 {
+            const auto prefix = QLatin1String("    ");
+            const auto suffix = QLatin1String(":\t");
+            if (!lineRest.startsWith(prefix))
+                return 0;
+
+            const auto addrEnd = lineRest.indexOf(suffix, prefix.size());
+            if (addrEnd == -1)
+                return 0;
+
             bool ok = false;
-            addr = QStringView(asmLine).mid(0, addrEnd).toULongLong(&ok, 16);
+            auto ret = lineRest.mid(0, addrEnd).toULongLong(&ok, 16);
             if (!ok) {
                 qCWarning(disassemblyoutput) << "unhandled asm line format:" << asmLine;
-                continue;
+                return 0;
             }
 
-            assembly = asmLine.mid(addrEnd + 2);
-        } else {
-            assembly = asmLine;
-        }
+            lineRest = lineRest.mid(addrEnd + suffix.size());
+            return ret;
+        }();
 
         // format is the following:
         //    /-  a5 54 12 ...
         //    |   64 a3 ....
         //    \-> 65 23 ....
         // so we can simply skip all characters until we meet a letter or a number
-        const auto branchVisualisationRange =
-            std::distance(assembly.cbegin(), std::find_if(assembly.cbegin(), assembly.cend(), isHexCharacter));
+        const auto branchVisualisation = [&]() -> QStringView {
+            if (!addr)
+                return {};
+            auto firstHexIt = std::find_if(lineRest.cbegin(), lineRest.cend(), isHexCharacter);
+            auto size = std::distance(lineRest.cbegin(), firstHexIt);
+            auto ret = lineRest.mid(0, size);
+            lineRest = lineRest.mid(size);
+            return ret;
+        }();
 
         disassemblyLines.push_back({addr,
-                                    assembly.mid(branchVisualisationRange),
-                                    branchVisualisationRange ? assembly.left(branchVisualisationRange) : QString {},
+                                    lineRest.toString(),
+                                    branchVisualisation.toString(),
                                     extractLinkedFunction(asmLine),
                                     {currentSourceFileName, sourceCodeLine}});
     }
     return {disassemblyLines, sourceFileName};
-}
-}
-
-// not in an anonymous namespace so we can test this
-QString findSourceCodeFile(const QString& originalPath, const QStringList& sourceCodePaths, const QString& sysroot)
-{
-    if (QFile::exists(originalPath)) {
-        return originalPath;
-    }
-
-    QString sysrootPath = sysroot + QDir::separator() + originalPath;
-    if (QFile::exists(sysrootPath)) {
-        return sysrootPath;
-    }
-
-    for (const auto& sourcePath : sourceCodePaths) {
-        for (auto it = originalPath.begin(); it != originalPath.end();
-             it = std::find(++it, originalPath.end(), QDir::separator())) {
-            const auto path =
-                QString(sourcePath + QDir::separator() + QString(it, std::distance(it, originalPath.end())));
-            const auto info = QFileInfo(path);
-            if (info.exists()) {
-                return info.canonicalFilePath();
-            }
-        }
-    }
-
-    return originalPath; // fallback
 }
 
 DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const QString& arch,

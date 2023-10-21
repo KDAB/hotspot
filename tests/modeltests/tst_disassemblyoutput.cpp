@@ -237,6 +237,30 @@ private slots:
         }
     }
 
+    void testParse()
+    {
+        auto dataFile = QFile(QFINDTESTDATA("disassembly/objdump.txt"));
+        QVERIFY(dataFile.open(QFile::Text | QFile::ReadOnly));
+        const auto parsed = DisassemblyOutput::objdumpParse(dataFile.readAll());
+        QCOMPARE(parsed.mainSourceFileName,
+                 QStringLiteral("/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp"));
+        QCOMPARE(parsed.disassemblyLines.size(), 227);
+        for (const auto& line : parsed.disassemblyLines) {
+            QVERIFY(!line.fileLine.file.isEmpty());
+            QVERIFY(line.fileLine.line > 0);
+            if (line.addr) {
+                QVERIFY(line.addr >= 0x1970);
+                QVERIFY(line.addr <= 0x1c60);
+
+                QCOMPARE(line.branchVisualisation.size(), 40);
+                QVERIFY(std::all_of(line.branchVisualisation.begin(), line.branchVisualisation.end(),
+                                    [](QChar c) { return QLatin1String(" |\\/->").contains(c); }));
+            } else {
+                QVERIFY(line.branchVisualisation.isEmpty());
+            }
+        }
+    }
+
 private:
     struct FunctionData
     {
