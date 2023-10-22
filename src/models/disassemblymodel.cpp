@@ -186,7 +186,7 @@ QSize DisassemblyModel::span(const QModelIndex& index) const
 
     const auto& data = m_data.disassemblyLines.at(index.row());
     if (data.addr == 0)
-        return QSize(columnCount(), 1);
+        return {columnCount(), 1};
     return {1, 1};
 }
 
