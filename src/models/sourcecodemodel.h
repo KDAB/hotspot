@@ -39,7 +39,7 @@ class SourceCodeModel : public QAbstractTableModel
     Q_OBJECT
 public:
     explicit SourceCodeModel(KSyntaxHighlighting::Repository* repository, QObject* parent = nullptr);
-    ~SourceCodeModel();
+    ~SourceCodeModel() override;
 
     void clear();
     void setDisassembly(const DisassemblyOutput& disassemblyOutput, const Data::CallerCalleeResults& results);

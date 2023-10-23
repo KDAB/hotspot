@@ -30,7 +30,7 @@ class DisassemblyModel : public QAbstractTableModel
     Q_OBJECT
 public:
     explicit DisassemblyModel(KSyntaxHighlighting::Repository* repository, QObject* parent = nullptr);
-    ~DisassemblyModel();
+    ~DisassemblyModel() override;
 
     void setDisassembly(const DisassemblyOutput& disassemblyOutput, const Data::CallerCalleeResults& results);
 
