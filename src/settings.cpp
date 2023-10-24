@@ -245,6 +245,11 @@ void Settings::loadFromFile()
     connect(this, &Settings::showBranchesChanged, [sharedConfig](bool showBranches) {
         sharedConfig->group("Disassembly").writeEntry("showBranches", showBranches);
     });
+
+    setShowBranches(sharedConfig->group("Disassembly").readEntry("showHexdump", false));
+    connect(this, &Settings::showHexdumpChanged, [sharedConfig](bool showHexdump) {
+        sharedConfig->group("Disassembly").writeEntry("showHexdump", showHexdump);
+    });
 }
 
 void Settings::setSourceCodePaths(const QString& paths)
@@ -268,5 +273,13 @@ void Settings::setShowBranches(bool showBranches)
     if (m_showBranches != showBranches) {
         m_showBranches = showBranches;
         emit showBranchesChanged(m_showBranches);
+    }
+}
+
+void Settings::setShowHexdump(bool showHexdump)
+{
+    if (m_showHexdump != showHexdump) {
+        m_showHexdump = showHexdump;
+        emit showHexdumpChanged(m_showHexdump);
     }
 }

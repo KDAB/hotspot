@@ -25,6 +25,7 @@ struct DisassemblyOutput
         quint64 addr = 0;
         QString disassembly;
         QString branchVisualisation;
+        QString hexdump;
         LinkedFunction linkedFunction;
         Data::FileLine fileLine;
     };

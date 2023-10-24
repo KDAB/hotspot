@@ -158,6 +158,10 @@ public:
     {
         return m_showBranches;
     }
+    bool showHexdump() const
+    {
+        return m_showHexdump;
+    }
 
     void loadFromFile();
 
@@ -182,6 +186,7 @@ signals:
     void sourceCodePathsChanged(const QString& paths);
     void perfPathChanged(const QString& perfPath);
     void showBranchesChanged(bool showBranches);
+    void showHexdumpChanged(bool showHexdump);
 
 public slots:
     void setPrettifySymbols(bool prettifySymbols);
@@ -206,6 +211,7 @@ public slots:
     void setSourceCodePaths(const QString& paths);
     void setPerfPath(const QString& path);
     void setShowBranches(bool showBranches);
+    void setShowHexdump(bool showHexdump);
 
 private:
     using QObject::QObject;
@@ -230,6 +236,7 @@ private:
     QString m_sourceCodePaths;
     QString m_perfMapPath;
     bool m_showBranches = true;
+    bool m_showHexdump = false;
 
     QString m_lastUsedEnvironment;
 

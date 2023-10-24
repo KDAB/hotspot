@@ -425,9 +425,14 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
                          m_disassemblyModel, &m_currentDisasmSearchIndex, 0);
 
     ui->assemblyView->setColumnHidden(DisassemblyModel::BranchColumn, !settings->showBranches());
+    ui->assemblyView->setColumnHidden(DisassemblyModel::HexdumpColumn, !settings->showHexdump());
 
     connect(settings, &Settings::showBranchesChanged, this, [this](bool showBranches) {
         ui->assemblyView->setColumnHidden(DisassemblyModel::BranchColumn, !showBranches);
+    });
+
+    connect(settings, &Settings::showHexdumpChanged, this, [this](bool showHexdump) {
+        ui->assemblyView->setColumnHidden(DisassemblyModel::HexdumpColumn, !showHexdump);
     });
 
 #if KFSyntaxHighlighting_FOUND
@@ -502,6 +507,7 @@ void ResultsDisassemblyPage::setupAsmViewModel()
     ui->assemblyView->header()->setStretchLastSection(false);
     ui->assemblyView->header()->setSectionResizeMode(DisassemblyModel::AddrColumn, QHeaderView::ResizeToContents);
     ui->assemblyView->header()->setSectionResizeMode(DisassemblyModel::BranchColumn, QHeaderView::Interactive);
+    ui->assemblyView->header()->setSectionResizeMode(DisassemblyModel::HexdumpColumn, QHeaderView::Interactive);
     ui->assemblyView->header()->setSectionResizeMode(DisassemblyModel::DisassemblyColumn, QHeaderView::Stretch);
 
     for (int col = DisassemblyModel::COLUMN_COUNT; col < m_disassemblyModel->columnCount(); col++) {
