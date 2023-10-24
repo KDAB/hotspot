@@ -336,9 +336,11 @@ void SettingsDialog::addSourcePathPage()
     setupMultiPath(disassemblyPage->sourcePaths, disassemblyPage->label, buttonBox()->button(QDialogButtonBox::Ok));
 
     disassemblyPage->showBranches->setChecked(settings->showBranches());
+    disassemblyPage->showHexdump->setChecked(settings->showHexdump());
 
     connect(buttonBox(), &QDialogButtonBox::accepted, this, [this, colon, settings] {
         settings->setSourceCodePaths(disassemblyPage->sourcePaths->items().join(colon));
         settings->setShowBranches(disassemblyPage->showBranches->isChecked());
+        settings->setShowHexdump(disassemblyPage->showHexdump->isChecked());
     });
 }

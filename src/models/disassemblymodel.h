@@ -56,6 +56,7 @@ public:
     {
         AddrColumn,
         BranchColumn,
+        HexdumpColumn,
         DisassemblyColumn,
         COLUMN_COUNT
     };

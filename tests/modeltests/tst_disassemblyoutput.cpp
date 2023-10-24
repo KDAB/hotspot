@@ -242,10 +242,20 @@ private slots:
         QVERIFY(result.errorMessage.isEmpty());
 
         auto isValidVisualisationCharacter = [](QChar character) {
-            const static auto validCharacters =
-                std::initializer_list<QChar> {QLatin1Char(' '),  QLatin1Char('\t'), QLatin1Char('|'), QLatin1Char('/'),
-                                              QLatin1Char('\\'), QLatin1Char('-'),  QLatin1Char('>'), QLatin1Char('+')};
+            const static auto validCharacters = std::initializer_list<QChar> {
+                QLatin1Char(' '), QLatin1Char('\t'), QLatin1Char('|'), QLatin1Char('/'), QLatin1Char('\\'),
+                QLatin1Char('-'), QLatin1Char('>'),  QLatin1Char('+'), QLatin1Char('X')};
 
+            return std::any_of(validCharacters.begin(), validCharacters.end(),
+                               [character](auto validCharacter) { return character == validCharacter; });
+        };
+
+        auto isValidHexdumpCharacter = [](QChar character) {
+            const static auto validCharacters = std::initializer_list<QChar> {
+                QLatin1Char(' '), QLatin1Char('0'), QLatin1Char('1'), QLatin1Char('2'), QLatin1Char('3'),
+                QLatin1Char('4'), QLatin1Char('5'), QLatin1Char('6'), QLatin1Char('7'), QLatin1Char('8'),
+                QLatin1Char('9'), QLatin1Char('a'), QLatin1Char('b'), QLatin1Char('c'), QLatin1Char('d'),
+                QLatin1Char('e'), QLatin1Char('f')};
             return std::any_of(validCharacters.begin(), validCharacters.end(),
                                [character](auto validCharacter) { return character == validCharacter; });
         };
@@ -257,15 +267,7 @@ private slots:
             QVERIFY(std::all_of(line.branchVisualisation.cbegin(), line.branchVisualisation.cend(),
                                 isValidVisualisationCharacter));
 
-            QVERIFY(!line.disassembly.isEmpty());
-            // check that we removed everyting before the hexdump
-            bool ok = false;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            line.disassembly.leftRef(2).toInt(&ok, 16);
-#else
-            line.disassembly.left(2).toInt(&ok, 16);
-#endif
-            QVERIFY(ok);
+            QVERIFY(std::all_of(line.hexdump.cbegin(), line.hexdump.cend(), isValidHexdumpCharacter));
 
             // Check that address is valid
             QVERIFY(line.addr >= address && line.addr < address + size);
@@ -310,6 +312,23 @@ private slots:
         const auto parsed = DisassemblyOutput::objdumpParse(dataFile.readAll());
         QCOMPARE(parsed.mainSourceFileName, mainSourceFileName);
         QCOMPARE(parsed.disassemblyLines.size(), numLines);
+
+        auto checkForMultiLineInstruction = [](const QString& lastDisasm) {
+            // some instructions translate to multiple lines
+            // like 66 41 83 ba 00 80 ff 7f 00 which translates to:
+            // 0:  66 41 83 ba 00 80 ff    cmp    WORD PTR [r10+0x7fff8000],0x0
+            // 7:  7f 00
+
+            const auto multiLineOpcodes = {
+                QLatin1String("movsbl"), QLatin1String("compb"),     QLatin1String("movsd"), QLatin1String("%fs"),
+                QLatin1String("movabs"), QLatin1String("cs nopw"),   QLatin1String("cmpq"),  QLatin1String("cmpb"),
+                QLatin1String("cmpw"),   QLatin1String("lea    0x0")};
+
+            return std::any_of(multiLineOpcodes.begin(), multiLineOpcodes.end(),
+                               [lastDisasm](const auto& opcode) { return lastDisasm.contains(opcode); });
+        };
+
+        QString lastOpcode;
         for (const auto& line : parsed.disassemblyLines) {
             if (line.fileLine.file.isEmpty()) {
                 QCOMPARE(line.fileLine.line, -1);
@@ -320,12 +339,17 @@ private slots:
             if (line.addr) {
                 QVERIFY(line.addr >= minAddr);
                 QVERIFY(line.addr <= maxAddr);
-                QVERIFY(!line.disassembly.isEmpty());
+                QVERIFY(!line.disassembly.isEmpty()
+                        || (line.disassembly.isEmpty() && checkForMultiLineInstruction(lastOpcode)));
 
-                if (!line.branchVisualisation.isEmpty()) {
+                if (!line.branchVisualisation.isEmpty())
+
+                {
                     QVERIFY(std::all_of(line.branchVisualisation.begin(), line.branchVisualisation.end(),
                                         [](QChar c) { return QLatin1String(" |\\/->+X").contains(c); }));
                 }
+
+                lastOpcode = line.disassembly;
             } else {
                 QVERIFY(line.branchVisualisation.isEmpty());
             }

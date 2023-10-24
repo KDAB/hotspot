@@ -207,29 +207,37 @@ DisassemblyOutput::ObjectdumpOutput DisassemblyOutput::objdumpParse(const QByteA
             continue;
         }
 
-        // detect lines like:
-        //     4f616:\t<jumps>84 c0\ttest %al,%al
-        auto lineRest = QStringView(asmLine);
+        // a line looks like this:
+        // [spaces]addr:\t [branch visualization] [hexdump]\tdiassembly
+        // we can simplify parsing by splitting it into three parts
 
-        // <four spaces><hex addr>:\t
-        const auto addr = [&]() -> quint64 {
-            const auto prefix = QLatin1String("    ");
-            const auto suffix = QLatin1String(":\t");
-            if (!lineRest.startsWith(prefix))
-                return 0;
+        const auto parts = asmLine.split(QLatin1Char('\t'));
 
-            const auto addrEnd = lineRest.indexOf(suffix, prefix.size());
-            if (addrEnd == -1)
+        if (parts.size() == 1 && asmLine.endsWith(QLatin1Char(':'))) {
+            // we got a line like:
+            // std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_local_data():
+            // pass them to the disassembler since this can be used for inlining
+            disassemblyLines.push_back({0, asmLine, {}, {}, {}, {currentSourceFileName, sourceCodeLine}});
+            continue;
+        }
+
+        const auto addr = [addrString = parts.value(0).trimmed(), &asmLine]() -> uint64_t {
+            const auto suffix = QLatin1Char(':');
+            if (!addrString.endsWith(suffix))
                 return 0;
 
             bool ok = false;
-            auto ret = lineRest.mid(0, addrEnd).toULongLong(&ok, 16);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            auto ret = addrString.leftRef(addrString.length() - 1).toULongLong(&ok, 16);
+#else
+            auto ret = addrString.left(addrString.length() - 1).toULongLong(&ok, 16);
+#endif
+
             if (!ok) {
                 qCWarning(disassemblyoutput) << "unhandled asm line format:" << asmLine;
                 return 0;
             }
 
-            lineRest = lineRest.mid(addrEnd + suffix.size());
             return ret;
         }();
 
@@ -238,19 +246,23 @@ DisassemblyOutput::ObjectdumpOutput DisassemblyOutput::objdumpParse(const QByteA
         //    |   64 a3 ....
         //    \-> 65 23 ....
         // so we can simply skip all characters until we meet a letter or a number
-        const auto branchVisualisation = [&]() -> QStringView {
-            if (!addr)
-                return {};
-            auto firstHexIt = std::find_if(lineRest.cbegin(), lineRest.cend(), isHexCharacter);
-            auto size = std::distance(lineRest.cbegin(), firstHexIt);
-            auto ret = lineRest.mid(0, size);
-            lineRest = lineRest.mid(size);
-            return ret;
+        struct BranchesAndHexdump
+        {
+            QString branchVisualisation;
+            QString hexdump;
+        };
+        const auto [branchVisualisation, hexdump] = [branchesAndHex = parts.value(1)]() -> BranchesAndHexdump {
+            auto firstHexIt = std::find_if(branchesAndHex.cbegin(), branchesAndHex.cend(), isHexCharacter);
+            auto size = std::distance(branchesAndHex.cbegin(), firstHexIt);
+            auto branchVisualisation = branchesAndHex.mid(0, size);
+            auto hexdump = branchesAndHex.mid(size);
+            return {branchVisualisation, hexdump.trimmed()};
         }();
 
         disassemblyLines.push_back({addr,
-                                    lineRest.toString(),
-                                    branchVisualisation.toString(),
+                                    parts.value(2).trimmed(),
+                                    branchVisualisation,
+                                    hexdump,
                                     extractLinkedFunction(asmLine),
                                     {currentSourceFileName, sourceCodeLine}});
     }
