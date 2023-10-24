@@ -178,9 +178,11 @@ public:
 
         auto pen = QPen(option.palette.color(QPalette::Link), 1);
         pen.setCosmetic(true);
+        const auto oldPen = painter->pen();
         painter->setPen(pen);
 
         painter->drawLines(lines.constData(), lines.size());
+        painter->setPen(oldPen);
     }
 
 private:
