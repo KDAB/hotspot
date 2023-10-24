@@ -8,8 +8,6 @@
 #include <array>
 #include <QObject>
 #include <QTest>
-#include <qtest.h>
-#include <qtestcase.h>
 
 #include <iterator>
 #include <models/search.h>
