@@ -35,8 +35,8 @@ public:
         auto maybeSetData = [jobCancelled, setData = std::forward<SetData>(setData),
                              isRunning = &m_isRunning](auto&& results) {
             if (!jobCancelled()) {
-                setData(std::forward<decltype(results)>(results));
                 *isRunning = false;
+                setData(std::forward<decltype(results)>(results));
             }
         };
 
