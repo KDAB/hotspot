@@ -277,6 +277,9 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
         return disassemblyOutput;
     }
 
+    // NOTE: make sure to declare `output` before `asmProcess`, as when the latter gets destroyed it might
+    //       emit `readyRead` which then needs to access `output`, see also:
+    //       https://github.com/KDAB/hotspot/issues/542
     QByteArray output;
     QProcess asmProcess;
     QObject::connect(&asmProcess, &QProcess::readyRead, [&asmProcess, &disassemblyOutput, &output]() {
