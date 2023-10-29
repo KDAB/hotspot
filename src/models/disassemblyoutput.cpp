@@ -277,8 +277,8 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
         return disassemblyOutput;
     }
 
-    QProcess asmProcess;
     QByteArray output;
+    QProcess asmProcess;
     QObject::connect(&asmProcess, &QProcess::readyRead, [&asmProcess, &disassemblyOutput, &output]() {
         output += asmProcess.readAllStandardOutput();
         disassemblyOutput.errorMessage += QString::fromStdString(asmProcess.readAllStandardError().toStdString());
