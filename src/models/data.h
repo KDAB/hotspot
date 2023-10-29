@@ -64,6 +64,11 @@ struct Symbol
     {
         return !symbol.isEmpty() || !binary.isEmpty() || !path.isEmpty();
     }
+
+    bool canDisassemble() const
+    {
+        return !symbol.isEmpty() && !path.isEmpty() && relAddr > 0 && size > 0;
+    }
 };
 
 QDebug operator<<(QDebug stream, const Symbol& symbol);

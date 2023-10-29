@@ -113,6 +113,7 @@ void setupContextMenu(QTreeView* view, CostContextMenu* costContextMenu, int sym
                 auto* viewDisassembly = contextMenu.addAction(QCoreApplication::translate("Util", "Disassembly"));
                 QObject::connect(viewDisassembly, &QAction::triggered, &contextMenu,
                                  [symbol, callback]() { callback(CallbackAction::ViewDisassembly, symbol); });
+                viewDisassembly->setEnabled(symbol.canDisassemble());
             }
             contextMenu.addSeparator();
             costContextMenu->addToMenu(view->header(),

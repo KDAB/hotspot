@@ -904,10 +904,12 @@ bool FlameGraph::eventFilter(QObject* object, QEvent* event)
                     [this, item]() { emit jumpToCallerCallee(item->symbol()); });
             auto* openEditorAction = contextMenu.addAction(tr("Open in Editor"));
             connect(openEditorAction, &QAction::triggered, this, [this, item]() { emit openEditor(item->symbol()); });
+            openEditorAction->setEnabled(item->symbol().isValid());
             contextMenu.addSeparator();
             auto* viewDisassembly = contextMenu.addAction(tr("Disassembly"));
             connect(viewDisassembly, &QAction::triggered, this,
                     [this, item]() { emit jumpToDisassembly(item->symbol()); });
+            viewDisassembly->setEnabled(item->symbol().canDisassemble());
 
             auto* copy = contextMenu.addAction(QIcon::fromTheme(QStringLiteral("edit-copy")), tr("Copy"));
             connect(copy, &QAction::triggered, this, [item]() { qApp->clipboard()->setText(item->description()); });
