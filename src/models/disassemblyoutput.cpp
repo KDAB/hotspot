@@ -311,7 +311,7 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
     }
     arguments.append(binary);
 
-    asmProcess.start(objdump, arguments);
+    asmProcess.start(processPath, arguments);
 
     if (!asmProcess.waitForStarted()) {
         disassemblyOutput.errorMessage += QApplication::translate("DisassemblyOutput", "Process was not started.");
@@ -326,7 +326,7 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
 
     if (output.isEmpty()) {
         disassemblyOutput.errorMessage +=
-            QApplication::tr("Empty output of command %1 %2").arg(objdump, arguments.join(QLatin1Char(' ')));
+            QApplication::tr("Empty output of command %1 %2").arg(processPath, arguments.join(QLatin1Char(' ')));
     }
 
     const auto objdumpOutput = objdumpParse(output);
