@@ -80,3 +80,14 @@ ecm_add_test(
     tst_search
 )
 set_target_properties(tst_search PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}")
+
+ecm_add_test(
+    tst_formatting.cpp
+    LINK_LIBRARIES
+    Qt::Test
+    models
+    KF${QT_MAJOR_VERSION}::ConfigWidgets
+    TEST_NAME
+    tst_formatting
+)
+set_target_properties(tst_formatting PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}")
