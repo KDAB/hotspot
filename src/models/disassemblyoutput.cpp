@@ -17,6 +17,8 @@
 #include <QProcess>
 #include <QStandardPaths>
 
+#include "formattingutils.h"
+
 namespace {
 Q_LOGGING_CATEGORY(disassemblyoutput, "hotspot.disassemblyoutput")
 
@@ -37,12 +39,21 @@ bool canVisualizeJumps(const QString& objdump)
     return objdumpHelp(objdump).contains("--visualize-jumps");
 }
 
-DisassemblyOutput::LinkedFunction extractLinkedFunction(const QString& disassembly)
+bool canUseSyntaxHighlighting(const QString& objdump)
+{
+    return objdumpHelp(objdump).contains("--disassembler-color");
+}
+
+DisassemblyOutput::LinkedFunction extractLinkedFunction(const QString& disassemblyWithAnsi)
 {
     DisassemblyOutput::LinkedFunction function = {};
 
+    const auto disassembly =
+        disassemblyWithAnsi.contains(Util::escapeChar) ? Util::removeAnsi(disassemblyWithAnsi) : disassemblyWithAnsi;
+
     const auto leftBracketIndex = disassembly.indexOf(QLatin1Char('<'));
     const auto rightBracketIndex = disassembly.indexOf(QLatin1Char('>'));
+
     if (leftBracketIndex != -1 && rightBracketIndex != -1) {
         if (leftBracketIndex < rightBracketIndex) {
             function.name = disassembly.mid(leftBracketIndex + 1, rightBracketIndex - leftBracketIndex - 1);
@@ -330,6 +341,12 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
         arguments.append(QStringLiteral("--visualize-jumps"));
     else
         qCInfo(disassemblyoutput) << "objdump binary does not support `--visualize-jumps`:" << processPath;
+
+    if (canUseSyntaxHighlighting(processPath)) {
+        arguments.append(QStringLiteral("--disassembler-color=color"));
+    } else {
+        qCInfo(disassemblyoutput) << "objdump binary does not support `--disassembler-color`:" << processPath;
+    }
 
     auto binary = findBinaryForSymbol(debugPaths, extraLibPaths, symbol);
     if (binary.isEmpty()) {

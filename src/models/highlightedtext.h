@@ -38,8 +38,17 @@ public:
     QTextLine lineAt(int index) const;
     QString definition() const;
 
+    bool isUsingAnsi() const
+    {
+        return m_isUsingAnsi;
+    }
+
+    // for testing
+    QTextLayout* layout() const;
+
 signals:
     void definitionChanged(const QString& definition);
+    void usesAnsiChanged(bool usesAnsi);
 
 private slots:
     void applyFormatting();
@@ -54,4 +63,5 @@ private:
     std::unique_ptr<QTextLayout> m_layout;
     QStringList m_lines;
     QStringList m_cleanedLines;
+    bool m_isUsingAnsi = false;
 };

@@ -477,6 +477,9 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
 
     connectCompletion(sourceCodeDefinitionModel, ui->sourceCodeComboBox, m_sourceCodeModel);
     connectCompletion(assemblySchemesModel, ui->assemblyComboBox, m_disassemblyModel);
+
+    connect(m_disassemblyModel->highlightedText(), &HighlightedText::usesAnsiChanged, this,
+            [this](bool usesAnsi) { ui->customAssemblyHighlighting->setVisible(!usesAnsi); });
 #else
     ui->customSourceCodeHighlighting->setVisible(false);
     ui->customAssemblyHighlighting->setVisible(false);
