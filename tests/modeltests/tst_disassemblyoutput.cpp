@@ -148,7 +148,7 @@ private slots:
 
         auto result = DisassemblyOutput::disassemble(mObjdumpBinary, {}, {}, {}, {}, {}, symbol);
         QVERIFY(!result.errorMessage.isEmpty());
-        QVERIFY(result.errorMessage.contains(QLatin1String("Could not find libfib.so")));
+        QVERIFY(result.errorMessage.contains(QLatin1String("Could not find binary")));
 
         QFETCH(QStringList, searchPath);
 
@@ -189,6 +189,38 @@ private slots:
         // test if relative paths are working
         QCOMPARE(findSourceCodeFile(QStringLiteral("./liba/lib.c"), {tempDir.path()}, QString()),
                  tempDir.path() + QDir::separator() + QStringLiteral("liba/lib.c"));
+    }
+
+    /* tests for check results via error messages,
+       note: as they are formatted and may be changed later, we check for the components separately */
+    void testDisassembleChecks()
+    {
+        const auto libName = QStringLiteral("libfib.so");
+
+        const auto lib = QFileInfo(findLib(libName));
+        QVERIFY(lib.exists());
+        const auto libPath = lib.absoluteFilePath();
+
+        QString message;
+
+        // test for empty symbol
+        message = dissassembleErrorMessage(mObjdumpBinary, QStringLiteral(""), 4361, 67, libPath);
+        QVERIFY(message.contains(QLatin1String("Empty symbol")));
+        QVERIFY(message.contains(QLatin1String("??")));
+
+        // test for unknown details
+        message = dissassembleErrorMessage(mObjdumpBinary, QStringLiteral("fib(int)"), 0, 67, libPath);
+        QVERIFY(message.contains(QLatin1String("unknown details")));
+        QVERIFY(message.contains(QLatin1String("fib(int)")));
+        message = dissassembleErrorMessage(mObjdumpBinary, QStringLiteral("fib(int)"), 4361, 0, libPath);
+        QVERIFY(message.contains(QLatin1String("unknown details")));
+        QVERIFY(message.contains(QLatin1String("fib(int)")));
+
+        // test for missing objdump
+        const auto badObjdump = QStringLiteral("banana");
+        message = dissassembleErrorMessage(badObjdump, QStringLiteral("fib(int)"), 4361, 67, libName);
+        QVERIFY(message.contains(QLatin1String("Cannot find objdump process")));
+        QVERIFY(message.contains(badObjdump));
     }
 
     void testDetectBranches()
@@ -306,6 +338,17 @@ private:
         }
         const auto help = process.readAllStandardOutput();
         return help.contains("--visualize-jumps");
+    }
+
+    QString dissassembleErrorMessage(const QString& objdump, const QString& symbolDeclaration, const quint64 offset,
+                                     const quint64 size, const QString& library)
+    {
+        const Data::Symbol symbol = {symbolDeclaration, offset, size, library};
+
+        auto result = DisassemblyOutput::disassemble(objdump, {}, {}, {}, {}, {}, symbol);
+        qDebug("Error message is '%s'", qPrintable(result.errorMessage));
+
+        return result.errorMessage;
     }
 
     QString mObjdumpBinary;
