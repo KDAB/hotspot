@@ -377,11 +377,11 @@ QBrush brushSystem(const Data::Symbol& symbol)
 {
     static const auto system = QBrush(QColor(0, 125, 0, 125));
     static const auto user = QBrush(QColor(200, 200, 0, 125));
-    static const auto unkown = QBrush(QColor(50, 50, 50, 125));
+    static const auto unknown = QBrush(QColor(50, 50, 50, 125));
 
     // I have seen [ only on kernel calls
     if (symbol.path.isEmpty() || symbol.path.startsWith(QLatin1Char('['))) {
-        return unkown;
+        return unknown;
     } else if (isSystemPath(symbol.path)) {
         if (isUserPath(symbol.path)) {
             return user;
