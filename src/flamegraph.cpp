@@ -379,13 +379,10 @@ QBrush brushSystem(const Data::Symbol& symbol)
     static const auto user = QBrush(QColor(200, 200, 0, 125));
     static const auto unknown = QBrush(QColor(50, 50, 50, 125));
 
-    // I have seen [ only on kernel calls
+    // remark lievenhey: I have seen [ only on kernel calls
     if (symbol.path.isEmpty() || symbol.path.startsWith(QLatin1Char('['))) {
         return unknown;
-    } else if (isSystemPath(symbol.path)) {
-        if (isUserPath(symbol.path)) {
-            return user;
-        }
+    } else if (!isUserPath(symbol.path) && isSystemPath(symbol.path)) {
         return system;
     }
     return user;
