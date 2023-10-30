@@ -265,18 +265,26 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
     DisassemblyOutput disassemblyOutput;
     disassemblyOutput.symbol = symbol;
     if (symbol.symbol.isEmpty()) {
-        disassemblyOutput.errorMessage = QApplication::tr("Empty symbol ?? is selected");
+        disassemblyOutput.errorMessage =
+            QApplication::translate("DisassemblyOutput",
+                                    "<qt>Empty symbol <tt>"
+                                    "??" // note: using string concatenation to prevent -Wtrigraph
+                                    "</tt> is selected.");
         return disassemblyOutput;
     }
     if (symbol.relAddr == 0 || symbol.size == 0) {
-        disassemblyOutput.errorMessage = QApplication::tr("Symbol with unknown details is selected");
+        disassemblyOutput.errorMessage =
+            QApplication::translate("DisassemblyOutput", "<qt>Symbol <tt>%1</tt> with unknown details is selected.")
+                .arg(symbol.symbol);
         return disassemblyOutput;
     }
 
     const auto processPath = QStandardPaths::findExecutable(objdump);
     if (processPath.isEmpty()) {
         disassemblyOutput.errorMessage =
-            QApplication::tr("Cannot find objdump process %1, please install the missing binutils package for arch %2")
+            QApplication::translate("DisassemblyOutput",
+                                    "<qt>Cannot find objdump process <tt>%1</tt>, please install "
+                                    "the missing binutils package for arch <tt>%2</tt>.")
                 .arg(objdump, arch);
         return disassemblyOutput;
     }
@@ -310,7 +318,7 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
     auto binary = findBinaryForSymbol(debugPaths, extraLibPaths, symbol);
     if (binary.isEmpty()) {
         disassemblyOutput.errorMessage +=
-            QApplication::translate("DisassemblyOutput", "Could not find %1").arg(symbol.binary);
+            QApplication::translate("DisassemblyOutput", "<qt>Could not find binary <tt>%1</tt>.").arg(symbol.binary);
         return disassemblyOutput;
     }
     arguments.append(binary);
@@ -318,19 +326,25 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
     asmProcess.start(processPath, arguments);
 
     if (!asmProcess.waitForStarted()) {
-        disassemblyOutput.errorMessage += QApplication::translate("DisassemblyOutput", "Process was not started.");
+        disassemblyOutput.errorMessage +=
+            QApplication::translate("DisassemblyOutput",
+                                    "<qt>Process failed to start: <tt>%1 %2</tt> returned <tt>%3</tt>.")
+                .arg(processPath, arguments.join(QLatin1Char(' ')), asmProcess.errorString());
         return disassemblyOutput;
     }
 
     if (!asmProcess.waitForFinished()) {
         disassemblyOutput.errorMessage +=
-            QApplication::translate("DisassemblyOutput", "Process was not finished. Stopped by timeout");
+            QApplication::translate("DisassemblyOutput",
+                                    "<qt>Process not finished: <tt>%1 %2</tt>, stopped by timeout.")
+                .arg(processPath, arguments.join(QLatin1Char(' ')));
         return disassemblyOutput;
     }
 
     if (output.isEmpty()) {
         disassemblyOutput.errorMessage +=
-            QApplication::tr("Empty output of command %1 %2").arg(processPath, arguments.join(QLatin1Char(' ')));
+            QApplication::translate("DisassemblyOutput", "<qt>Empty output of command <tt>%1 %2</tt>.")
+                .arg(processPath, arguments.join(QLatin1Char(' ')));
     }
 
     const auto objdumpOutput = objdumpParse(output);
