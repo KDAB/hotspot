@@ -268,6 +268,10 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
         disassemblyOutput.errorMessage = QApplication::tr("Empty symbol ?? is selected");
         return disassemblyOutput;
     }
+    if (symbol.relAddr == 0 || symbol.size == 0) {
+        disassemblyOutput.errorMessage = QApplication::tr("Symbol with unknown details is selected");
+        return disassemblyOutput;
+    }
 
     const auto processPath = QStandardPaths::findExecutable(objdump);
     if (processPath.isEmpty()) {
