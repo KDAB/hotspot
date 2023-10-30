@@ -309,7 +309,7 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
                 m_stackIndex++;
                 emit stackChanged();
             } else {
-                ui->symbolNotFound->setText(tr("unkown symbol %1").arg(functionName));
+                ui->symbolNotFound->setText(tr("unknown symbol %1").arg(functionName));
                 ui->symbolNotFound->show();
             }
         }
