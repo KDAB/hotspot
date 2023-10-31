@@ -11,8 +11,9 @@ add_library(
     disassemblyoutput.cpp
     eventmodel.cpp
     filterandzoomstack.cpp
+    formattingutils.cpp
     frequencymodel.cpp
-    highlighter.cpp
+    highlightedtext.cpp
     processfiltermodel.cpp
     processlist_unix.cpp
     processmodel.cpp

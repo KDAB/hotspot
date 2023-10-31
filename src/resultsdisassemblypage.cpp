@@ -32,7 +32,6 @@
 #include "resultsutil.h"
 
 #if KFSyntaxHighlighting_FOUND
-#include "highlighter.hpp"
 #include <KSyntaxHighlighting/definition.h>
 #include <KSyntaxHighlighting/repository.h>
 #include <QCompleter>
@@ -467,13 +466,12 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
         completer->setCompletionMode(QCompleter::PopupCompletion);
         box->setCompleter(completer);
         box->setModel(definitionModel);
-        box->setCurrentText(model->highlighter()->definition());
+        box->setCurrentText(model->highlightedText()->definition());
 
         connect(box, qOverload<int>(&QComboBox::activated), this, [this, model, box]() {
-            model->highlighter()->setDefinition(m_repository->definitionForName(box->currentText()));
+            model->highlightedText()->setDefinition(m_repository->definitionForName(box->currentText()));
         });
-
-        connect(model->highlighter(), &Highlighter::definitionChanged,
+        connect(model->highlightedText(), &HighlightedText::definitionChanged,
                 [box](const QString& definition) { box->setCurrentText(definition); });
     };
 
@@ -566,12 +564,6 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
     Q_ASSERT(!m_symbolStack.isEmpty());
     const auto& curSymbol = m_symbolStack[m_stackIndex];
 
-#if KFSyntaxHighlighting_FOUND
-    m_sourceCodeModel->highlighter()->setDefinition(
-        m_repository->definitionForFileName(disassemblyOutput.mainSourceFileName));
-    m_disassemblyModel->highlighter()->setDefinition(m_repository->definitionForName(QStringLiteral("GNU Assembler")));
-#endif
-
     const auto& entry = m_callerCalleeResults.entry(curSymbol);
 
     ui->filenameLabel->setText(disassemblyOutput.mainSourceFileName);
@@ -589,6 +581,13 @@ void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassembl
 
     m_disassemblyModel->setDisassembly(disassemblyOutput, m_callerCalleeResults);
     m_sourceCodeModel->setDisassembly(disassemblyOutput, m_callerCalleeResults);
+
+#if KFSyntaxHighlighting_FOUND
+    m_sourceCodeModel->highlightedText()->setDefinition(
+        m_repository->definitionForFileName(disassemblyOutput.mainSourceFileName));
+    m_disassemblyModel->highlightedText()->setDefinition(
+        m_repository->definitionForName(QStringLiteral("GNU Assembler")));
+#endif
 
     ResultsUtil::hideEmptyColumns(m_callerCalleeResults.selfCosts, ui->assemblyView, DisassemblyModel::COLUMN_COUNT);
 

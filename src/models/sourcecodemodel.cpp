@@ -18,7 +18,6 @@
 #include <iterator>
 #include <limits>
 
-#include "highlighter.hpp"
 #include "search.h"
 #include <climits>
 
@@ -26,10 +25,8 @@ Q_LOGGING_CATEGORY(sourcecodemodel, "hotspot.sourcecodemodel", QtWarningMsg)
 
 SourceCodeModel::SourceCodeModel(KSyntaxHighlighting::Repository* repository, QObject* parent)
     : QAbstractTableModel(parent)
-    , m_document(new QTextDocument(this))
-    , m_highlighter(new Highlighter(m_document, repository, this))
+    , m_highlightedText(repository)
 {
-    m_document->setUndoRedoEnabled(false);
     qRegisterMetaType<QTextLine>();
 }
 
@@ -38,7 +35,7 @@ SourceCodeModel::~SourceCodeModel() = default;
 void SourceCodeModel::clear()
 {
     beginResetModel();
-    m_document->clear();
+    m_highlightedText.setText({});
     endResetModel();
 }
 
@@ -55,19 +52,6 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     if (disassemblyOutput.mainSourceFileName.isEmpty()) {
         return;
     }
-
-    QFile file(disassemblyOutput.realSourceFileName);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return;
-    }
-
-    const auto sourceCode = QString::fromUtf8(file.readAll());
-
-    m_sourceCodeLines.clear();
-    m_document->clear();
-
-    m_document->setPlainText(sourceCode);
-    m_document->setTextWidth(m_document->idealWidth());
 
     int maxLineNumber = 0;
     int minLineNumber = std::numeric_limits<int>::max();
@@ -123,15 +107,16 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     m_startLine = minLineNumber - 1; // convert to index
     m_numLines = maxLineNumber - minLineNumber + 1; // include minLineNumber
 
-    m_sourceCodeLines.reserve(m_numLines);
-
-    for (int i = m_startLine; i < m_startLine + m_numLines; i++) {
-        auto block = m_document->findBlockByLineNumber(i);
-        if (!block.isValid())
-            continue;
-
-        m_sourceCodeLines.push_back({block.text(), block.layout()->lineAt(0)});
+    QFile file(disassemblyOutput.realSourceFileName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return;
     }
+
+    const auto sourceCode = QString::fromUtf8(file.readAll());
+
+    m_lines = sourceCode.split(QLatin1Char('\n'));
+
+    m_highlightedText.setText(m_lines);
 }
 
 QVariant SourceCodeModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -183,9 +168,11 @@ QVariant SourceCodeModel::data(const QModelIndex& index, int role) const
                 return m_prettySymbol;
             }
 
-            if (role == SyntaxHighlightRole)
-                return QVariant::fromValue(m_sourceCodeLines[index.row() - 1].line);
-            return m_sourceCodeLines[index.row() - 1].text;
+            const int lineNumber = m_startLine + index.row() - 1;
+            if (role == SyntaxHighlightRole) {
+                return QVariant::fromValue(m_highlightedText.lineAt(lineNumber));
+            }
+            return m_highlightedText.textAt(lineNumber);
         }
 
         if (index.column() == SourceCodeLineNumber) {
@@ -264,13 +251,11 @@ void SourceCodeModel::setSysroot(const QString& sysroot)
 
 void SourceCodeModel::find(const QString& search, Direction direction, int current)
 {
-    auto searchFunc = [&search](const SourceCodeLine& line) {
-        return line.text.indexOf(search, 0, Qt::CaseInsensitive) != -1;
-    };
+    auto searchFunc = [&search](const QString& line) { return line.indexOf(search, 0, Qt::CaseInsensitive) != -1; };
 
     auto endReached = [this] { emit searchEndReached(); };
 
-    const int resultIndex = ::search(m_sourceCodeLines, current, direction, searchFunc, endReached);
+    const int resultIndex = ::search(m_lines, current, direction, searchFunc, endReached);
 
     if (resultIndex >= 0) {
         emit resultFound(createIndex(resultIndex + 1, SourceCodeColumn));

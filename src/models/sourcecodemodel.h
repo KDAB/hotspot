@@ -9,26 +9,16 @@
 
 #include "data.h"
 #include "disassemblyoutput.h"
+#include "highlightedtext.h"
 
 #include <memory>
 #include <QAbstractTableModel>
 #include <QTextLine>
 
-class QTextDocument;
-
-class Highlighter;
-
 namespace KSyntaxHighlighting {
 class Repository;
 class Definition;
 }
-
-struct SourceCodeLine
-{
-    QString text;
-    QTextLine line;
-};
-Q_DECLARE_TYPEINFO(SourceCodeLine, Q_MOVABLE_TYPE);
 
 enum class Direction;
 
@@ -53,9 +43,9 @@ public:
     Data::FileLine fileLineForIndex(const QModelIndex& index) const;
     QModelIndex indexForFileLine(const Data::FileLine& line) const;
 
-    Highlighter* highlighter() const
+    HighlightedText* highlightedText()
     {
-        return m_highlighter;
+        return &m_highlightedText;
     }
 
     enum Columns
@@ -88,14 +78,13 @@ public slots:
 private:
     QString m_sysroot;
     QSet<int> m_validLineNumbers;
-    QTextDocument* m_document = nullptr;
-    QVector<SourceCodeLine> m_sourceCodeLines;
-    Highlighter* m_highlighter = nullptr;
+    HighlightedText m_highlightedText;
     Data::Costs m_selfCosts;
     Data::Costs m_inclusiveCosts;
     QString m_mainSourceFileName;
     QString m_prettySymbol;
     int m_startLine = 0;
     int m_numLines = 0;
+    QStringList m_lines;
     int m_highlightLine = 0;
 };
