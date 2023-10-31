@@ -20,17 +20,21 @@
 namespace {
 Q_LOGGING_CATEGORY(disassemblyoutput, "hotspot.disassemblyoutput")
 
-bool canVisualizeJumps(const QString& objdump)
+QByteArray objdumpHelp(const QString& objdump)
 {
     QProcess process;
     process.setProcessChannelMode(QProcess::ForwardedErrorChannel);
     process.start(objdump, {QStringLiteral("-H")});
     if (!process.waitForFinished(1000)) {
         qCWarning(disassemblyoutput) << "failed to query objdump help output:" << objdump << process.errorString();
-        return false;
+        return {};
     }
-    const auto help = process.readAllStandardOutput();
-    return help.contains("--visualize-jumps");
+    return process.readAllStandardOutput();
+}
+
+bool canVisualizeJumps(const QString& objdump)
+{
+    return objdumpHelp(objdump).contains("--visualize-jumps");
 }
 
 DisassemblyOutput::LinkedFunction extractLinkedFunction(const QString& disassembly)
