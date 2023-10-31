@@ -14,9 +14,7 @@
 
 #include "data.h"
 #include "disassemblyoutput.h"
-
-class QTextDocument;
-class Highlighter;
+#include "highlightedtext.h"
 
 namespace KSyntaxHighlighting {
 class Definition;
@@ -47,9 +45,9 @@ public:
     Data::FileLine fileLineForIndex(const QModelIndex& index) const;
     QModelIndex indexForFileLine(const Data::FileLine& line) const;
 
-    Highlighter* highlighter() const
+    HighlightedText* highlightedText()
     {
-        return m_highlighter;
+        return &m_highlightedText;
     }
 
     enum Columns
@@ -82,8 +80,7 @@ public slots:
     void find(const QString& search, Direction direction, int offset);
 
 private:
-    QTextDocument* m_document;
-    Highlighter* m_highlighter;
+    HighlightedText m_highlightedText;
     DisassemblyOutput m_data;
     Data::CallerCalleeResults m_results;
     int m_numTypes = 0;

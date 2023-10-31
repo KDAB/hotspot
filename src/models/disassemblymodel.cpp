@@ -6,22 +6,15 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
-#include <QFontDatabase>
-#include <QTextBlock>
-#include <QTextDocument>
-
 #include "disassemblymodel.h"
 
-#include "highlighter.hpp"
 #include "search.h"
 #include "sourcecodemodel.h"
 
 DisassemblyModel::DisassemblyModel(KSyntaxHighlighting::Repository* repository, QObject* parent)
     : QAbstractTableModel(parent)
-    , m_document(new QTextDocument(this))
-    , m_highlighter(new Highlighter(m_document, repository, this))
+    , m_highlightedText(repository)
 {
-    m_document->setUndoRedoEnabled(false);
 }
 
 DisassemblyModel::~DisassemblyModel() = default;
@@ -56,17 +49,13 @@ void DisassemblyModel::setDisassembly(const DisassemblyOutput& disassemblyOutput
     m_results = results;
     m_numTypes = results.selfCosts.numTypes();
 
-    m_document->clear();
+    QStringList assemblyLines;
+    assemblyLines.reserve(disassemblyOutput.disassemblyLines.size());
+    std::transform(disassemblyOutput.disassemblyLines.cbegin(), disassemblyOutput.disassemblyLines.cend(),
+                   std::back_inserter(assemblyLines),
+                   [](const DisassemblyOutput::DisassemblyLine& line) { return line.disassembly; });
 
-    QTextCursor cursor(m_document);
-    cursor.beginEditBlock();
-    for (const auto& it : disassemblyOutput.disassemblyLines) {
-        cursor.insertText(it.disassembly);
-        cursor.insertBlock();
-    }
-    cursor.endEditBlock();
-
-    m_document->setTextWidth(m_document->idealWidth());
+    m_highlightedText.setText(assemblyLines);
 
     endResetModel();
 }
@@ -112,6 +101,7 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
     }
 
     const auto& data = m_data.disassemblyLines.at(index.row());
+    const auto& line = m_highlightedText.textAt(index.row());
     if (role == AddrRole)
         return data.addr;
 
@@ -127,10 +117,10 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
             } else if (index.column() == HexdumpColumn) {
                 return data.hexdump;
             } else if (index.column() == DisassemblyColumn) {
-                const auto block = m_document->findBlockByLineNumber(index.row());
-                if (role == SyntaxHighlightRole)
-                    return QVariant::fromValue(block.layout()->lineAt(0));
-                return block.text();
+                if (role == SyntaxHighlightRole) {
+                    return QVariant::fromValue(m_highlightedText.lineAt(index.row()));
+                }
+                return m_highlightedText.textAt(index.row());
             }
         }
 
@@ -153,7 +143,7 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
                 return totalCost;
             } else if (role == Qt::ToolTipRole) {
                 auto tooltip = tr("addr: <tt>%1</tt><br/>assembly: <tt>%2</tt><br/>disassembly: <tt>%3</tt>")
-                                   .arg(QString::number(data.addr, 16), data.disassembly);
+                                   .arg(QString::number(data.addr, 16), line);
                 return Util::formatTooltip(tooltip, locationCost, m_results.selfCosts);
             }
 
@@ -162,8 +152,7 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
             return Util::formatCostRelative(costLine, totalCost, true);
         } else {
             if (role == Qt::ToolTipRole)
-                return tr("<qt><tt>%1</tt><hr/>No samples at this location.</qt>")
-                    .arg(data.disassembly.toHtmlEscaped());
+                return tr("<qt><tt>%1</tt><hr/>No samples at this location.</qt>").arg(line.toHtmlEscaped());
             else
                 return QString();
         }
