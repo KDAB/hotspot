@@ -129,6 +129,7 @@ private slots:
         }
 
         file->write(text.toUtf8());
+        file->flush();
 
         return file->fileName();
     }
