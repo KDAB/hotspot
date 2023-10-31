@@ -204,7 +204,7 @@ private slots:
         QString message;
 
         // test for empty symbol
-        message = dissassembleErrorMessage(mObjdumpBinary, QStringLiteral(""), 4361, 67, libPath);
+        message = dissassembleErrorMessage(mObjdumpBinary, {}, 4361, 67, libPath);
         QVERIFY(message.contains(QLatin1String("Empty symbol")));
         QVERIFY(message.contains(QLatin1String("??")));
 
