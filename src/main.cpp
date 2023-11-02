@@ -59,10 +59,20 @@ void Q_DECL_UNUSED initRCCIconTheme()
 
 std::unique_ptr<QCoreApplication> createApplication(int& argc, char* argv[])
 {
+    const std::initializer_list<std::string_view> nonGUIOptions = {"--version", "-v", "--exportTo",
+                                                                   "--help",    "-h", "--help-all"};
+
+    // create command line app if one of the command-line only options are used
     for (int i = 1; i < argc; ++i) {
-        if (!qstrcmp(argv[i], "--exportTo"))
+        if (std::find(nonGUIOptions.begin(), nonGUIOptions.end(), argv[i]) != nonGUIOptions.end()) {
             return std::make_unique<QCoreApplication>(argc, argv);
+        }
     }
+
+    // otherwise create full gui app
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+#endif
     return std::make_unique<QApplication>(argc, argv);
 }
 
@@ -73,9 +83,6 @@ int main(int argc, char** argv)
     QCoreApplication::setOrganizationDomain(QStringLiteral("kdab.com"));
     QCoreApplication::setApplicationName(QStringLiteral("hotspot"));
     QCoreApplication::setApplicationVersion(QStringLiteral(HOTSPOT_VERSION_STRING));
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
-#endif
 
     auto app = createApplication(argc, argv);
 
@@ -83,7 +90,6 @@ int main(int argc, char** argv)
     Util::appImageEnvironment();
 
 #if APPIMAGE_BUILD
-
     // cleanup the environment when we are running from within the AppImage
     // to allow launching system applications using Qt without them loading
     // the bundled Qt we ship in the AppImage
