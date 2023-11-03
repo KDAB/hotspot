@@ -1,0 +1,124 @@
+# X11 default option to be able to test the result in the browser
+image: gitpod/workspace-full-vnc
+ports:
+  - port: 5900
+    onOpen: ignore
+  - port: 6080
+    onOpen: open-preview
+
+# build tasks, run in order but waiting on sync-points
+# last one is seen first
+tasks:
+  - name: setup coding environment on Ubuntu 22.04
+    before: |
+      sudo apt-get update
+      sudo apt-get -y upgrade
+      sudo apt-get install -y qtbase5-dev qtbase5-private-dev libqt5svg5-dev libqt5x11extras5-dev \
+          cmake libdwarf-dev mesa-common-dev libqcustomplot-dev \
+          libboost-iostreams-dev libboost-program-options-dev libboost-system-dev libboost-filesystem-dev \
+          build-essential curl git wget autotools-dev autoconf libtool liblzma-dev libz-dev gettext cmake \
+          libzstd-dev ninja-build libdw-dev libelf-dev extra-cmake-modules \
+          libkf5archive-dev libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev \
+          libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libkf5kio-dev libkf5parts-dev \
+          libkf5solid-dev libkf5windowsystem-dev libkf5notifications-dev libkf5iconthemes-dev libkf5syntaxhighlighting-dev \
+          appstream \
+          libqt5x11extras5-dev \
+            || (echo ERROR: broken setup && exit 1)
+          # note: appstream and libqt5x11extras5-dev are optional for Hotspot, the later is required for KDDockWidgets
+      gp sync-done system-prepare
+    init: |
+      mkdir /workspace/kdevelop-plugins-gdb-printers
+      cd /workspace/kdevelop-plugins-gdb-printers
+      wget "https://invent.kde.org/kdevelop/kdevelop/-/raw/master/plugins/gdb/printers/gdbinit"
+      wget "https://invent.kde.org/kdevelop/kdevelop/-/raw/master/plugins/gdb/printers/helper.py"
+      wget "https://invent.kde.org/kdevelop/kdevelop/-/raw/master/plugins/gdb/printers/kde.py"
+      wget "https://invent.kde.org/kdevelop/kdevelop/-/raw/master/plugins/gdb/printers/qt.py"
+    command: |
+      echo "setup system-wide KDE+QT pretty-printers for GDB"
+      echo "python"                                                          | sudo tee -a /etc/gdb/gdbinit
+      echo "import sys"                                                      | sudo tee -a /etc/gdb/gdbinit
+      echo "sys.path.insert(0, '/workspace/kdevelop-plugins-gdb-printers')"  | sudo tee -a /etc/gdb/gdbinit
+      echo "from qt import register_qt_printers"                             | sudo tee -a /etc/gdb/gdbinit
+      echo "from kde import register_kde_printers"                           | sudo tee -a /etc/gdb/gdbinit
+      echo "register_qt_printers (None)"                                     | sudo tee -a /etc/gdb/gdbinit
+      echo "register_kde_printers (None)"                                    | sudo tee -a /etc/gdb/gdbinit
+      echo "end"                                                             | sudo tee -a /etc/gdb/gdbinit
+
+  - name: manual addition of KDDockWidgets (once)
+    env:
+      KDDW_VER: 1.7.0
+    before: |
+      gp sync-await system-prepare
+    init: |
+      cd /workspace
+      wget https://github.com/KDAB/KDDockWidgets/releases/download/v$KDDW_VER/kddockwidgets-$KDDW_VER.tar.gz
+      tar -xf kddockwidgets-$KDDW_VER.tar.gz
+      cd kddockwidgets-$KDDW_VER
+      cmake -DCMAKE_INSTALL_PREFIX=/opt/KDAB -DCMAKE_BUILD_TYPE=Debug .
+    command: |
+      gp sync-done kddw-prepared
+
+  - name: manual addition of KDDockWidgets (install)
+    env:
+      KDDW_VER: 1.7.0
+    command: |
+      gp sync-await kddw-prepared
+      cd /workspace/kddockwidgets-$KDDW_VER
+      nice make -j $(nproc) && sudo make install
+      gp sync-done kddw-installed
+
+  - name: manual addition of perf
+    env:
+      # PERF_VER: perf-tools-for-v6.1-2-2022-10-16
+      # KERNEL_REPO: https://github.com/torvalds/linux.git
+      PERF_VER: perf-tools-fixes-for-v6.1-1-2023-01-06
+      KERNEL_REPO: git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux.git # use mirror above, when needed
+    before: |
+      gp sync-await system-prepare
+      sudo apt install -y linux-tools-generic libtraceevent1 libpython3-dev  # to have the general perf and depedencies setup
+      export PERF_EXEC_PATH="/workspace/linux/tools/perf"; export PATH="/workspace/linux/tools/perf:${PATH}"
+    init: |
+      gp sync-await system-prepare
+      sudo apt install -y bison flex libelf-dev libnewt-dev libdw-dev libaudit-dev libiberty-dev libunwind-dev \
+          libcap-dev libzstd-dev liblzma-dev libnuma-dev libssl-dev systemtap-sdt-dev libbabeltrace-ctf-dev \
+          libperl-dev libtraceevent-dev \
+          binutils-dev gcc-multilib \
+          python3-dev \
+          libgtk2.0-dev
+      #   asciidoc                 optional, only for manpages, depdencies are huge
+      cd /workspace
+      git clone --depth 1 --filter=blob:none --sparse $KERNEL_REPO
+      cd linux
+      git sparse-checkout set tools scripts arch
+      git fetch --depth 1 origin $PERF_VER
+      nice make -C tools/perf -j $(nproc) PYTHON=/usr/bin/python3
+    command: |
+      perf --version
+      gp sync-done perf-prepared
+
+  - name: aditional checking tools
+    before: |
+      nice gem update
+      gem install mdl
+      npm install -g markdown-toc
+
+  - name: actual building and running of hotspot
+    before: | # necessary when re-running the workspace
+      export PERF_EXEC_PATH="/workspace/linux/tools/perf"; export PATH="/workspace/linux/tools/perf:${PATH}"
+    init: |
+      mkdir -p build
+      cd build
+      gp sync-await kddw-installed
+      cmake -DCMAKE_INSTALL_PREFIX=/opt/KDAB -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=1 ..
+      nice make -j $(nproc)
+    command: |
+      gp sync-await kddw-installed
+      gp sync-await perf-prepared
+      $GITPOD_REPO_ROOTS/build/bin/hotspot $GITPOD_REPO_ROOTS/tests/integrationtests/custom_cost_aggregation_testfiles/custom_cost_aggregation.perfparser
+
+# some config to ease working in the browser
+vscode:
+  extensions:
+    - twxs.cmake
+    - llvm-vs-code-extensions.vscode-clangd
+    - webfreak.debug
