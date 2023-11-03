@@ -18,6 +18,7 @@
   - [Arch Linux](#arch-linux)
   - [OpenSUSE](#opensuse)
   - [Building Hotspot itself](#building-hotspot-itself)
+- [Online](#online)
 - [Debugging the AppImage](#debugging-the-appimage)
   - [AppImage-Debugging using manual symbol loading](#appimage-debugging-using-manual-symbol-loading)
   - [AppImage-Debugging using debuginfod](#appimage-debugging-using-debuginfod)
@@ -124,6 +125,19 @@ make
 ```
 
 If you need help building this project for your platform, [contact us for help](https://www.kdab.com/about/contact/).
+
+## Online
+
+Instead of installing all dependencies and building Hotspot locally you may do so online with the following link:
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io#https://github.com/GitMensch/hotspot)
+This environment uses a clean, pre-configured Ubuntu 22.04 LTS environment. Just open, possibly
+have a look at the multiple building tasks, wait a bit until building is finished which is done
+as soon as a hotspot window opens in the preview and you can start coding / debugging hotspot.
+
+Notes:
+
+- This Gitpod setup is maintained by @GitMensch and not used by @KDAB directly.
+- Building may take a while as we don't use pre-builts or a special docker container in this environment yet.
 
 ## Debugging the AppImage
 
