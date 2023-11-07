@@ -19,13 +19,10 @@
 #include "perfparser.h"
 #include "perfrecord.h"
 #include "recordhost.h"
-#include "unistd.h"
 #include "util.h"
 
 #include "../testutils.h"
 #include <hotspot-config.h>
-
-#include <exception>
 
 namespace {
 template<typename T>
@@ -744,11 +741,11 @@ private:
                 + QStringList {QStringLiteral("-c"), QStringLiteral("1000000"), QStringLiteral("--no-buildid-cache")},
             fileName, false, exePath, exeOptions);
 
-        VERIFY_OR_THROW(recordingFinishedSpy.wait(10000));
+        QVERIFY(recordingFinishedSpy.wait(10000));
 
-        COMPARE_OR_THROW(recordingFailedSpy.count(), 0);
-        COMPARE_OR_THROW(recordingFinishedSpy.count(), 1);
-        COMPARE_OR_THROW(QFileInfo::exists(fileName), true);
+        QCOMPARE(recordingFailedSpy.count(), 0);
+        QCOMPARE(recordingFinishedSpy.count(), 1);
+        QCOMPARE(QFileInfo::exists(fileName), true);
 
         m_perfCommand = perf.perfCommand();
     }
@@ -771,7 +768,7 @@ private:
                     r = p;
                 }
             }
-            VERIFY_OR_THROW(hasCost);
+            QVERIFY(hasCost);
         }
         for (const auto& child : row.children) {
             validateCosts(costs, child);
@@ -793,39 +790,38 @@ private:
 
         parser.startParseFile(fileName);
 
-        VERIFY_OR_THROW(parsingFinishedSpy.wait(6000));
+        QVERIFY(parsingFinishedSpy.wait(6000));
 
         // Verify that the test passed
-        COMPARE_OR_THROW(parsingFailedSpy.count(), 0);
-        COMPARE_OR_THROW(parsingFinishedSpy.count(), 1);
+        QCOMPARE(parsingFailedSpy.count(), 0);
+        QCOMPARE(parsingFinishedSpy.count(), 1);
 
         // Verify the summary data isn't empty
-        COMPARE_OR_THROW(summaryDataSpy.count(), 1);
+        QCOMPARE(summaryDataSpy.count(), 1);
         QList<QVariant> summaryDataArgs = summaryDataSpy.takeFirst();
         m_summaryData = qvariant_cast<Data::Summary>(summaryDataArgs.at(0));
-        COMPARE_OR_THROW(m_perfCommand, m_summaryData.command);
-        VERIFY_OR_THROW(m_summaryData.sampleCount > 0);
-        VERIFY_OR_THROW(m_summaryData.applicationTime.delta() > 0);
-        VERIFY_OR_THROW(m_summaryData.cpusAvailable > 0);
-        COMPARE_OR_THROW(m_summaryData.processCount, quint32(1)); // for now we always have a single process
-        VERIFY_OR_THROW(m_summaryData.threadCount > 0); // and at least one thread
-        COMPARE_OR_THROW(m_summaryData.cpuArchitecture, m_cpuArchitecture);
-        COMPARE_OR_THROW(m_summaryData.linuxKernelVersion, m_linuxKernelVersion);
-        COMPARE_OR_THROW(m_summaryData.hostName, m_machineHostName);
+        QCOMPARE(m_perfCommand, m_summaryData.command);
+        QVERIFY(m_summaryData.sampleCount > 0);
+        QVERIFY(m_summaryData.applicationTime.delta() > 0);
+        QVERIFY(m_summaryData.cpusAvailable > 0);
+        QCOMPARE(m_summaryData.processCount, quint32(1)); // for now we always have a single process
+        QVERIFY(m_summaryData.threadCount > 0); // and at least one thread
+        QCOMPARE(m_summaryData.cpuArchitecture, m_cpuArchitecture);
+        QCOMPARE(m_summaryData.linuxKernelVersion, m_linuxKernelVersion);
+        QCOMPARE(m_summaryData.hostName, m_machineHostName);
 
         if (checkFrequency) {
             // Verify the sample frequency is acceptable, greater than 500Hz
             double frequency = (1E9 * m_summaryData.sampleCount) / m_summaryData.applicationTime.delta();
-            VERIFY_OR_THROW2(frequency > 500,
-                             qPrintable(QLatin1String("Low Frequency: ") + QString::number(frequency)));
+            QVERIFY2(frequency > 500, qPrintable(QLatin1String("Low Frequency: ") + QString::number(frequency)));
         }
 
         // Verify the top Bottom-Up symbol result contains the expected data
-        COMPARE_OR_THROW(bottomUpDataSpy.count(), 1);
+        QCOMPARE(bottomUpDataSpy.count(), 1);
         QList<QVariant> bottomUpDataArgs = bottomUpDataSpy.takeFirst();
         m_bottomUpData = bottomUpDataArgs.at(0).value<Data::BottomUpResults>();
         validateCosts(m_bottomUpData.costs, m_bottomUpData.root);
-        VERIFY_OR_THROW(m_bottomUpData.root.children.count() > 0);
+        QVERIFY(m_bottomUpData.root.children.count() > 0);
 
         if (topBottomUpSymbol.isValid()) {
             int bottomUpTopIndex = maxElementTopIndex(m_bottomUpData);
@@ -834,14 +830,14 @@ private:
             if (actualTopBottomUpSymbol == ComparableSymbol(QStringLiteral("__FRAME_END__"), {})) {
                 QEXPECT_FAIL("", "bad symbol offsets - bug in mmap handling or symbol cache?", Continue);
             }
-            COMPARE_OR_THROW(actualTopBottomUpSymbol, topBottomUpSymbol);
+            QCOMPARE(actualTopBottomUpSymbol, topBottomUpSymbol);
         }
 
         // Verify the top Top-Down symbol result contains the expected data
-        COMPARE_OR_THROW(topDownDataSpy.count(), 1);
+        QCOMPARE(topDownDataSpy.count(), 1);
         QList<QVariant> topDownDataArgs = topDownDataSpy.takeFirst();
         m_topDownData = topDownDataArgs.at(0).value<Data::TopDownResults>();
-        VERIFY_OR_THROW(m_topDownData.root.children.count() > 0);
+        QVERIFY(m_topDownData.root.children.count() > 0);
 
         if (topTopDownSymbol.isValid()
             && QLatin1String(QTest::currentTestFunction()) != QLatin1String("testCppRecursionCallGraphDwarf")) {
@@ -851,40 +847,40 @@ private:
             if (actualTopTopDownSymbol == ComparableSymbol(QStringLiteral("__FRAME_END__"), {})) {
                 QEXPECT_FAIL("", "bad symbol offsets - bug in mmap handling or symbol cache?", Continue);
             }
-            COMPARE_OR_THROW(actualTopTopDownSymbol, topTopDownSymbol);
+            QCOMPARE(actualTopTopDownSymbol, topTopDownSymbol);
         }
 
         // Verify the Caller/Callee data isn't empty
-        COMPARE_OR_THROW(callerCalleeDataSpy.count(), 1);
+        QCOMPARE(callerCalleeDataSpy.count(), 1);
         QList<QVariant> callerCalleeDataArgs = callerCalleeDataSpy.takeFirst();
         m_callerCalleeData = callerCalleeDataArgs.at(0).value<Data::CallerCalleeResults>();
-        VERIFY_OR_THROW(m_callerCalleeData.entries.count() > 0);
+        QVERIFY(m_callerCalleeData.entries.count() > 0);
 
         // Verify that no individual cost in the Caller/Callee data is greater than the total cost of all samples
         for (const auto& entry : std::as_const(m_callerCalleeData.entries)) {
-            VERIFY_OR_THROW(m_callerCalleeData.inclusiveCosts.cost(0, entry.id)
-                            <= static_cast<qint64>(m_summaryData.costs[0].totalPeriod));
+            QVERIFY(m_callerCalleeData.inclusiveCosts.cost(0, entry.id)
+                    <= static_cast<qint64>(m_summaryData.costs[0].totalPeriod));
         }
 
         // Verify that the events data is not empty and somewhat sane
-        COMPARE_OR_THROW(eventsDataSpy.count(), 1);
+        QCOMPARE(eventsDataSpy.count(), 1);
         m_eventData = eventsDataSpy.first().first().value<Data::EventResults>();
-        VERIFY_OR_THROW(!m_eventData.stacks.isEmpty());
-        VERIFY_OR_THROW(!m_eventData.threads.isEmpty());
-        COMPARE_OR_THROW(static_cast<quint32>(m_eventData.threads.size()), m_summaryData.threadCount);
+        QVERIFY(!m_eventData.stacks.isEmpty());
+        QVERIFY(!m_eventData.threads.isEmpty());
+        QCOMPARE(static_cast<quint32>(m_eventData.threads.size()), m_summaryData.threadCount);
         for (const auto& thread : std::as_const(m_eventData.threads)) {
-            VERIFY_OR_THROW(!thread.name.isEmpty());
-            VERIFY_OR_THROW(thread.pid != 0);
-            VERIFY_OR_THROW(thread.tid != 0);
-            VERIFY_OR_THROW(thread.time.isValid());
-            VERIFY_OR_THROW(thread.time.end > thread.time.start);
-            VERIFY_OR_THROW(thread.offCpuTime == 0 || thread.offCpuTime < thread.time.delta());
+            QVERIFY(!thread.name.isEmpty());
+            QVERIFY(thread.pid != 0);
+            QVERIFY(thread.tid != 0);
+            QVERIFY(thread.time.isValid());
+            QVERIFY(thread.time.end > thread.time.start);
+            QVERIFY(thread.offCpuTime == 0 || thread.offCpuTime < thread.time.delta());
         }
-        VERIFY_OR_THROW(!m_eventData.totalCosts.isEmpty());
+        QVERIFY(!m_eventData.totalCosts.isEmpty());
         for (const auto& costs : std::as_const(m_eventData.totalCosts)) {
-            VERIFY_OR_THROW(!costs.label.isEmpty());
-            VERIFY_OR_THROW(costs.sampleCount > 0);
-            VERIFY_OR_THROW(costs.totalPeriod > 0);
+            QVERIFY(!costs.label.isEmpty());
+            QVERIFY(costs.sampleCount > 0);
+            QVERIFY(costs.totalPeriod > 0);
         }
     }
 };
