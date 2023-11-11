@@ -343,12 +343,8 @@ private:
     QString dissassembleErrorMessage(const QString& objdump, const QString& symbolDeclaration, const quint64 offset,
                                      const quint64 size, const QString& library)
     {
-        const Data::Symbol symbol = {symbolDeclaration, offset, size, library};
-
-        auto result = DisassemblyOutput::disassemble(objdump, {}, {}, {}, {}, {}, symbol);
-        qDebug("Error message is '%s'", qPrintable(result.errorMessage));
-
-        return result.errorMessage;
+        const auto symbol = Data::Symbol {symbolDeclaration, offset, size, library};
+        return DisassemblyOutput::disassemble(objdump, {}, {}, {}, {}, {}, symbol).errorMessage;
     }
 
     QString mObjdumpBinary;
