@@ -1,0 +1,756 @@
+
+/tmp/gnucobol-bug-hunting/libcob/.libs/libcob.so:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000042ed3 <indexed_start_internal>:
+indexed_start_internal():
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3868
+   42ed3:	                   55                   	push   %rbp
+   42ed4:	                   48 89 e5             	mov    %rsp,%rbp
+   42ed7:	                   48 83 ec 50          	sub    $0x50,%rsp
+   42edb:	                   48 89 7d c8          	mov    %rdi,-0x38(%rbp)
+   42edf:	                   89 75 c4             	mov    %esi,-0x3c(%rbp)
+   42ee2:	                   48 89 55 b8          	mov    %rdx,-0x48(%rbp)
+   42ee6:	                   89 4d c0             	mov    %ecx,-0x40(%rbp)
+   42ee9:	                   44 89 45 b4          	mov    %r8d,-0x4c(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3869
+   42eed:	                   48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   42ef1:	                   48 8b 40 30          	mov    0x30(%rax),%rax
+   42ef5:	                   48 89 45 f0          	mov    %rax,-0x10(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3872
+   42ef9:	                   48 8d 4d dc          	lea    -0x24(%rbp),%rcx
+   42efd:	                   48 8d 55 e0          	lea    -0x20(%rbp),%rdx
+   42f01:	                   48 8b 75 b8          	mov    -0x48(%rbp),%rsi
+   42f05:	                   48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   42f09:	                   48 89 c7             	mov    %rax,%rdi
+   42f0c:	                   e8 34 a0 ff ff       	callq  3cf45 <cob_findkey_attr>
+   42f11:	                   89 c2                	mov    %eax,%edx
+   42f13:	                   48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   42f17:	                   66 89 90 80 00 00 00 	mov    %dx,0x80(%rax)
+   42f1e:	                   48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   42f22:	                   0f b7 80 80 00 00 00 	movzwl 0x80(%rax),%eax
+   42f29:	                   98                   	cwtl   
+   42f2a:	                   89 45 ec             	mov    %eax,-0x14(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3874
+   42f2d:	                   c7 45 d8 00 00 00 00 	movl   $0x0,-0x28(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3875
+   42f34:	                   c7 45 fc 00 00 00 00 	movl   $0x0,-0x4(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3877
+   42f3b:	                   83 7d ec 00          	cmpl   $0x0,-0x14(%rbp)
+   42f3f:	               /-- 79 0a                	jns    42f4b <indexed_start_internal+0x78>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3878
+   42f41:	               |   b8 17 00 00 00       	mov    $0x17,%eax
+   42f46:	/--------------|-- e9 f3 08 00 00       	jmpq   4383e <indexed_start_internal+0x96b>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3880
+   42f4b:	|              \-> 48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   42f4f:	|                  8b 55 ec             	mov    -0x14(%rbp),%edx
+   42f52:	|                  89 50 60             	mov    %edx,0x60(%rax)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3881
+   42f55:	|                  8b 45 ec             	mov    -0x14(%rbp),%eax
+   42f58:	|                  89 c2                	mov    %eax,%edx
+   42f5a:	|                  48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   42f5e:	|                  66 89 50 7e          	mov    %dx,0x7e(%rax)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3884
+   42f62:	|                  8b 55 ec             	mov    -0x14(%rbp),%edx
+   42f65:	|                  48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   42f69:	|                  89 d6                	mov    %edx,%esi
+   42f6b:	|                  48 89 c7             	mov    %rax,%rdi
+   42f6e:	|                  e8 44 a5 ff ff       	callq  3d4b7 <bdb_setkey>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3885
+   42f73:	|                  8b 45 dc             	mov    -0x24(%rbp),%eax
+   42f76:	|                  89 c2                	mov    %eax,%edx
+   42f78:	|                  48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   42f7c:	|                  89 90 80 00 00 00    	mov    %edx,0x80(%rax)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3887
+   42f82:	|                  83 7d ec 00          	cmpl   $0x0,-0x14(%rbp)
+   42f86:	|              /-- 74 33                	je     42fbb <indexed_start_internal+0xe8>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3888
+   42f88:	|              |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   42f8c:	|              |   48 8b 00             	mov    (%rax),%rax
+   42f8f:	|              |   48 8b 00             	mov    (%rax),%rax
+   42f92:	|              |   4c 8b 80 48 02 00 00 	mov    0x248(%rax),%r8
+   42f99:	|              |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   42f9d:	|              |   48 8b 50 08          	mov    0x8(%rax),%rdx
+   42fa1:	|              |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   42fa5:	|              |   48 8b 00             	mov    (%rax),%rax
+   42fa8:	|              |   48 8b 00             	mov    (%rax),%rax
+   42fab:	|              |   b9 00 00 00 00       	mov    $0x0,%ecx
+   42fb0:	|              |   be 00 00 00 00       	mov    $0x0,%esi
+   42fb5:	|              |   48 89 c7             	mov    %rax,%rdi
+   42fb8:	|              |   41 ff d0             	callq  *%r8
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3890
+   42fbb:	|              \-> 48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   42fbf:	|                  48 8b 10             	mov    (%rax),%rdx
+   42fc2:	|                  8b 45 ec             	mov    -0x14(%rbp),%eax
+   42fc5:	|                  48 98                	cltq   
+   42fc7:	|                  48 c1 e0 03          	shl    $0x3,%rax
+   42fcb:	|                  48 01 d0             	add    %rdx,%rax
+   42fce:	|                  48 8b 00             	mov    (%rax),%rax
+   42fd1:	|                  4c 8b 80 48 02 00 00 	mov    0x248(%rax),%r8
+   42fd8:	|                  48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   42fdc:	|                  48 8b 50 08          	mov    0x8(%rax),%rdx
+   42fe0:	|                  8b 45 ec             	mov    -0x14(%rbp),%eax
+   42fe3:	|                  48 98                	cltq   
+   42fe5:	|                  48 c1 e0 03          	shl    $0x3,%rax
+   42fe9:	|                  48 01 c2             	add    %rax,%rdx
+   42fec:	|                  48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   42ff0:	|                  48 8b 08             	mov    (%rax),%rcx
+   42ff3:	|                  8b 45 ec             	mov    -0x14(%rbp),%eax
+   42ff6:	|                  48 98                	cltq   
+   42ff8:	|                  48 c1 e0 03          	shl    $0x3,%rax
+   42ffc:	|                  48 01 c8             	add    %rcx,%rax
+   42fff:	|                  48 8b 00             	mov    (%rax),%rax
+   43002:	|                  b9 00 00 00 00       	mov    $0x0,%ecx
+   43007:	|                  be 00 00 00 00       	mov    $0x0,%esi
+   4300c:	|                  48 89 c7             	mov    %rax,%rdi
+   4300f:	|                  41 ff d0             	callq  *%r8
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3891
+   43012:	|                  83 7d c4 07          	cmpl   $0x7,-0x3c(%rbp)
+   43016:	|              /-- 75 5b                	jne    43073 <indexed_start_internal+0x1a0>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3892
+   43018:	|              |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4301c:	|              |   48 8b 50 08          	mov    0x8(%rax),%rdx
+   43020:	|              |   8b 45 ec             	mov    -0x14(%rbp),%eax
+   43023:	|              |   48 98                	cltq   
+   43025:	|              |   48 c1 e0 03          	shl    $0x3,%rax
+   43029:	|              |   48 01 d0             	add    %rdx,%rax
+   4302c:	|              |   48 8b 00             	mov    (%rax),%rax
+   4302f:	|              |   4c 8b 80 88 01 00 00 	mov    0x188(%rax),%r8
+   43036:	|              |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4303a:	|              |   48 8d 90 a0 00 00 00 	lea    0xa0(%rax),%rdx
+   43041:	|              |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43045:	|              |   48 8d 70 78          	lea    0x78(%rax),%rsi
+   43049:	|              |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4304d:	|              |   48 8b 48 08          	mov    0x8(%rax),%rcx
+   43051:	|              |   8b 45 ec             	mov    -0x14(%rbp),%eax
+   43054:	|              |   48 98                	cltq   
+   43056:	|              |   48 c1 e0 03          	shl    $0x3,%rax
+   4305a:	|              |   48 01 c8             	add    %rcx,%rax
+   4305d:	|              |   48 8b 00             	mov    (%rax),%rax
+   43060:	|              |   b9 07 00 00 00       	mov    $0x7,%ecx
+   43065:	|              |   48 89 c7             	mov    %rax,%rdi
+   43068:	|              |   41 ff d0             	callq  *%r8
+   4306b:	|              |   89 45 fc             	mov    %eax,-0x4(%rbp)
+   4306e:	|           /--|-- e9 b4 00 00 00       	jmpq   43127 <indexed_start_internal+0x254>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3893
+   43073:	|           |  \-> 83 7d c4 08          	cmpl   $0x8,-0x3c(%rbp)
+   43077:	|           |  /-- 75 58                	jne    430d1 <indexed_start_internal+0x1fe>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3894
+   43079:	|           |  |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4307d:	|           |  |   48 8b 50 08          	mov    0x8(%rax),%rdx
+   43081:	|           |  |   8b 45 ec             	mov    -0x14(%rbp),%eax
+   43084:	|           |  |   48 98                	cltq   
+   43086:	|           |  |   48 c1 e0 03          	shl    $0x3,%rax
+   4308a:	|           |  |   48 01 d0             	add    %rdx,%rax
+   4308d:	|           |  |   48 8b 00             	mov    (%rax),%rax
+   43090:	|           |  |   4c 8b 80 88 01 00 00 	mov    0x188(%rax),%r8
+   43097:	|           |  |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4309b:	|           |  |   48 8d 90 a0 00 00 00 	lea    0xa0(%rax),%rdx
+   430a2:	|           |  |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   430a6:	|           |  |   48 8d 70 78          	lea    0x78(%rax),%rsi
+   430aa:	|           |  |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   430ae:	|           |  |   48 8b 48 08          	mov    0x8(%rax),%rcx
+   430b2:	|           |  |   8b 45 ec             	mov    -0x14(%rbp),%eax
+   430b5:	|           |  |   48 98                	cltq   
+   430b7:	|           |  |   48 c1 e0 03          	shl    $0x3,%rax
+   430bb:	|           |  |   48 01 c8             	add    %rcx,%rax
+   430be:	|           |  |   48 8b 00             	mov    (%rax),%rax
+   430c1:	|           |  |   b9 0f 00 00 00       	mov    $0xf,%ecx
+   430c6:	|           |  |   48 89 c7             	mov    %rax,%rdi
+   430c9:	|           |  |   41 ff d0             	callq  *%r8
+   430cc:	|           |  |   89 45 fc             	mov    %eax,-0x4(%rbp)
+   430cf:	|           +--|-- eb 56                	jmp    43127 <indexed_start_internal+0x254>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3896
+   430d1:	|           |  \-> 48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   430d5:	|           |      48 8b 50 08          	mov    0x8(%rax),%rdx
+   430d9:	|           |      8b 45 ec             	mov    -0x14(%rbp),%eax
+   430dc:	|           |      48 98                	cltq   
+   430de:	|           |      48 c1 e0 03          	shl    $0x3,%rax
+   430e2:	|           |      48 01 d0             	add    %rdx,%rax
+   430e5:	|           |      48 8b 00             	mov    (%rax),%rax
+   430e8:	|           |      4c 8b 80 88 01 00 00 	mov    0x188(%rax),%r8
+   430ef:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   430f3:	|           |      48 8d 90 a0 00 00 00 	lea    0xa0(%rax),%rdx
+   430fa:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   430fe:	|           |      48 8d 70 78          	lea    0x78(%rax),%rsi
+   43102:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43106:	|           |      48 8b 48 08          	mov    0x8(%rax),%rcx
+   4310a:	|           |      8b 45 ec             	mov    -0x14(%rbp),%eax
+   4310d:	|           |      48 98                	cltq   
+   4310f:	|           |      48 c1 e0 03          	shl    $0x3,%rax
+   43113:	|           |      48 01 c8             	add    %rcx,%rax
+   43116:	|           |      48 8b 00             	mov    (%rax),%rax
+   43119:	|           |      b9 1b 00 00 00       	mov    $0x1b,%ecx
+   4311e:	|           |      48 89 c7             	mov    %rax,%rdi
+   43121:	|           |      41 ff d0             	callq  *%r8
+   43124:	|           |      89 45 fc             	mov    %eax,-0x4(%rbp)
+   43127:	|           \----> 83 7d c4 08          	cmpl   $0x8,-0x3c(%rbp)
+   4312b:	|  /-------------- 0f 87 db 03 00 00    	ja     4350c <indexed_start_internal+0x639>
+   43131:	|  |               8b 45 c4             	mov    -0x3c(%rbp),%eax
+   43134:	|  |               48 8d 14 85 00 00 00 	lea    0x0(,%rax,4),%rdx
+   4313b:	|  |               00 
+   4313c:	|  |               48 8d 05 e1 d3 03 00 	lea    0x3d3e1(%rip),%rax        # 80524 <status_exception+0x304>
+   43143:	|  |               8b 04 02             	mov    (%rdx,%rax,1),%eax
+   43146:	|  |               48 98                	cltq   
+   43148:	|  |               48 8d 15 d5 d3 03 00 	lea    0x3d3d5(%rip),%rdx        # 80524 <status_exception+0x304>
+   4314f:	|  |               48 01 d0             	add    %rdx,%rax
+   43152:	|  |               ff e0                	jmpq   *%rax
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3900
+   43154:	|  |               83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+   43158:	|  |  /----------- 0f 85 a7 03 00 00    	jne    43505 <indexed_start_internal+0x632>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3901
+   4315e:	|  |  |            8b 7d dc             	mov    -0x24(%rbp),%edi
+   43161:	|  |  |            48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   43165:	|  |  |            48 8b 40 18          	mov    0x18(%rax),%rax
+   43169:	|  |  |            48 8b 50 08          	mov    0x8(%rax),%rdx
+   4316d:	|  |  |            48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43171:	|  |  |            48 8b 70 78          	mov    0x78(%rax),%rsi
+   43175:	|  |  |            8b 4d ec             	mov    -0x14(%rbp),%ecx
+   43178:	|  |  |            48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   4317c:	|  |  |            41 89 f8             	mov    %edi,%r8d
+   4317f:	|  |  |            48 89 c7             	mov    %rax,%rdi
+   43182:	|  |  |            e8 b0 a3 ff ff       	callq  3d537 <bdb_cmpkey>
+   43187:	|  |  |            89 45 fc             	mov    %eax,-0x4(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3903
+   4318a:	|  |  +----------- e9 76 03 00 00       	jmpq   43505 <indexed_start_internal+0x632>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3905
+   4318f:	|  |  |            83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+   43193:	|  |  |        /-- 74 5b                	je     431f0 <indexed_start_internal+0x31d>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3906
+   43195:	|  |  |        |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43199:	|  |  |        |   48 8b 50 08          	mov    0x8(%rax),%rdx
+   4319d:	|  |  |        |   8b 45 ec             	mov    -0x14(%rbp),%eax
+   431a0:	|  |  |        |   48 98                	cltq   
+   431a2:	|  |  |        |   48 c1 e0 03          	shl    $0x3,%rax
+   431a6:	|  |  |        |   48 01 d0             	add    %rdx,%rax
+   431a9:	|  |  |        |   48 8b 00             	mov    (%rax),%rax
+   431ac:	|  |  |        |   4c 8b 80 88 01 00 00 	mov    0x188(%rax),%r8
+   431b3:	|  |  |        |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   431b7:	|  |  |        |   48 8d 90 a0 00 00 00 	lea    0xa0(%rax),%rdx
+   431be:	|  |  |        |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   431c2:	|  |  |        |   48 8d 70 78          	lea    0x78(%rax),%rsi
+   431c6:	|  |  |        |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   431ca:	|  |  |        |   48 8b 48 08          	mov    0x8(%rax),%rcx
+   431ce:	|  |  |        |   8b 45 ec             	mov    -0x14(%rbp),%eax
+   431d1:	|  |  |        |   48 98                	cltq   
+   431d3:	|  |  |        |   48 c1 e0 03          	shl    $0x3,%rax
+   431d7:	|  |  |        |   48 01 c8             	add    %rcx,%rax
+   431da:	|  |  |        |   48 8b 00             	mov    (%rax),%rax
+   431dd:	|  |  |        |   b9 0f 00 00 00       	mov    $0xf,%ecx
+   431e2:	|  |  |        |   48 89 c7             	mov    %rax,%rdi
+   431e5:	|  |  |        |   41 ff d0             	callq  *%r8
+   431e8:	|  |  |        |   89 45 fc             	mov    %eax,-0x4(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3910
+   431eb:	|  +--|--------|-- e9 1c 03 00 00       	jmpq   4350c <indexed_start_internal+0x639>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3908
+   431f0:	|  |  |        \-> 48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   431f4:	|  |  |            48 8b 50 08          	mov    0x8(%rax),%rdx
+   431f8:	|  |  |            8b 45 ec             	mov    -0x14(%rbp),%eax
+   431fb:	|  |  |            48 98                	cltq   
+   431fd:	|  |  |            48 c1 e0 03          	shl    $0x3,%rax
+   43201:	|  |  |            48 01 d0             	add    %rdx,%rax
+   43204:	|  |  |            48 8b 00             	mov    (%rax),%rax
+   43207:	|  |  |            4c 8b 80 88 01 00 00 	mov    0x188(%rax),%r8
+   4320e:	|  |  |            48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43212:	|  |  |            48 8d 90 a0 00 00 00 	lea    0xa0(%rax),%rdx
+   43219:	|  |  |            48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4321d:	|  |  |            48 8d 70 78          	lea    0x78(%rax),%rsi
+   43221:	|  |  |            48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43225:	|  |  |            48 8b 48 08          	mov    0x8(%rax),%rcx
+   43229:	|  |  |            8b 45 ec             	mov    -0x14(%rbp),%eax
+   4322c:	|  |  |            48 98                	cltq   
+   4322e:	|  |  |            48 c1 e0 03          	shl    $0x3,%rax
+   43232:	|  |  |            48 01 c8             	add    %rcx,%rax
+   43235:	|  |  |            48 8b 00             	mov    (%rax),%rax
+   43238:	|  |  |            b9 17 00 00 00       	mov    $0x17,%ecx
+   4323d:	|  |  |            48 89 c7             	mov    %rax,%rdi
+   43240:	|  |  |            41 ff d0             	callq  *%r8
+   43243:	|  |  |            89 45 fc             	mov    %eax,-0x4(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3910
+   43246:	|  +--|----------- e9 c1 02 00 00       	jmpq   4350c <indexed_start_internal+0x639>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3912
+   4324b:	|  |  |            83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+   4324f:	|  |  |        /-- 74 5b                	je     432ac <indexed_start_internal+0x3d9>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3913
+   43251:	|  |  |        |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43255:	|  |  |        |   48 8b 50 08          	mov    0x8(%rax),%rdx
+   43259:	|  |  |        |   8b 45 ec             	mov    -0x14(%rbp),%eax
+   4325c:	|  |  |        |   48 98                	cltq   
+   4325e:	|  |  |        |   48 c1 e0 03          	shl    $0x3,%rax
+   43262:	|  |  |        |   48 01 d0             	add    %rdx,%rax
+   43265:	|  |  |        |   48 8b 00             	mov    (%rax),%rax
+   43268:	|  |  |        |   4c 8b 80 88 01 00 00 	mov    0x188(%rax),%r8
+   4326f:	|  |  |        |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43273:	|  |  |        |   48 8d 90 a0 00 00 00 	lea    0xa0(%rax),%rdx
+   4327a:	|  |  |        |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4327e:	|  |  |        |   48 8d 70 78          	lea    0x78(%rax),%rsi
+   43282:	|  |  |        |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43286:	|  |  |        |   48 8b 48 08          	mov    0x8(%rax),%rcx
+   4328a:	|  |  |        |   8b 45 ec             	mov    -0x14(%rbp),%eax
+   4328d:	|  |  |        |   48 98                	cltq   
+   4328f:	|  |  |        |   48 c1 e0 03          	shl    $0x3,%rax
+   43293:	|  |  |        |   48 01 c8             	add    %rcx,%rax
+   43296:	|  |  |        |   48 8b 00             	mov    (%rax),%rax
+   43299:	|  |  |        |   b9 0f 00 00 00       	mov    $0xf,%ecx
+   4329e:	|  |  |        |   48 89 c7             	mov    %rax,%rdi
+   432a1:	|  |  |        |   41 ff d0             	callq  *%r8
+   432a4:	|  |  |        |   89 45 fc             	mov    %eax,-0x4(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3924
+   432a7:	|  |  |  /-----|-- e9 5c 02 00 00       	jmpq   43508 <indexed_start_internal+0x635>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3914
+   432ac:	|  |  |  |     \-> 8b 7d dc             	mov    -0x24(%rbp),%edi
+   432af:	|  |  |  |         48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   432b3:	|  |  |  |         48 8b 40 18          	mov    0x18(%rax),%rax
+   432b7:	|  |  |  |         48 8b 50 08          	mov    0x8(%rax),%rdx
+   432bb:	|  |  |  |         48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   432bf:	|  |  |  |         48 8b 70 78          	mov    0x78(%rax),%rsi
+   432c3:	|  |  |  |         8b 4d ec             	mov    -0x14(%rbp),%ecx
+   432c6:	|  |  |  |         48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   432ca:	|  |  |  |         41 89 f8             	mov    %edi,%r8d
+   432cd:	|  |  |  |         48 89 c7             	mov    %rax,%rdi
+   432d0:	|  |  |  |         e8 62 a2 ff ff       	callq  3d537 <bdb_cmpkey>
+   432d5:	|  |  |  |         85 c0                	test   %eax,%eax
+   432d7:	|  |  |  |     /-- 74 5b                	je     43334 <indexed_start_internal+0x461>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3915
+   432d9:	|  |  |  |     |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   432dd:	|  |  |  |     |   48 8b 50 08          	mov    0x8(%rax),%rdx
+   432e1:	|  |  |  |     |   8b 45 ec             	mov    -0x14(%rbp),%eax
+   432e4:	|  |  |  |     |   48 98                	cltq   
+   432e6:	|  |  |  |     |   48 c1 e0 03          	shl    $0x3,%rax
+   432ea:	|  |  |  |     |   48 01 d0             	add    %rdx,%rax
+   432ed:	|  |  |  |     |   48 8b 00             	mov    (%rax),%rax
+   432f0:	|  |  |  |     |   4c 8b 80 88 01 00 00 	mov    0x188(%rax),%r8
+   432f7:	|  |  |  |     |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   432fb:	|  |  |  |     |   48 8d 90 a0 00 00 00 	lea    0xa0(%rax),%rdx
+   43302:	|  |  |  |     |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43306:	|  |  |  |     |   48 8d 70 78          	lea    0x78(%rax),%rsi
+   4330a:	|  |  |  |     |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4330e:	|  |  |  |     |   48 8b 48 08          	mov    0x8(%rax),%rcx
+   43312:	|  |  |  |     |   8b 45 ec             	mov    -0x14(%rbp),%eax
+   43315:	|  |  |  |     |   48 98                	cltq   
+   43317:	|  |  |  |     |   48 c1 e0 03          	shl    $0x3,%rax
+   4331b:	|  |  |  |     |   48 01 c8             	add    %rcx,%rax
+   4331e:	|  |  |  |     |   48 8b 00             	mov    (%rax),%rax
+   43321:	|  |  |  |     |   b9 17 00 00 00       	mov    $0x17,%ecx
+   43326:	|  |  |  |     |   48 89 c7             	mov    %rax,%rdi
+   43329:	|  |  |  |     |   41 ff d0             	callq  *%r8
+   4332c:	|  |  |  |     |   89 45 fc             	mov    %eax,-0x4(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3924
+   4332f:	|  |  |  +-----|-- e9 d4 01 00 00       	jmpq   43508 <indexed_start_internal+0x635>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3916
+   43334:	|  |  |  |     \-> 48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   43338:	|  |  |  |         48 8b 48 28          	mov    0x28(%rax),%rcx
+   4333c:	|  |  |  |         8b 45 ec             	mov    -0x14(%rbp),%eax
+   4333f:	|  |  |  |         48 63 d0             	movslq %eax,%rdx
+   43342:	|  |  |  |         48 89 d0             	mov    %rdx,%rax
+   43345:	|  |  |  |         48 01 c0             	add    %rax,%rax
+   43348:	|  |  |  |         48 01 d0             	add    %rdx,%rax
+   4334b:	|  |  |  |         48 c1 e0 02          	shl    $0x2,%rax
+   4334f:	|  |  |  |         48 01 d0             	add    %rdx,%rax
+   43352:	|  |  |  |         48 c1 e0 03          	shl    $0x3,%rax
+   43356:	|  |  |  |         48 01 c8             	add    %rcx,%rax
+   43359:	|  |  |  |         8b 40 0c             	mov    0xc(%rax),%eax
+   4335c:	|  |  |  |         85 c0                	test   %eax,%eax
+   4335e:	|  |  |  +-------- 0f 84 a4 01 00 00    	je     43508 <indexed_start_internal+0x635>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3917
+   43364:	|  |  |  |         48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43368:	|  |  |  |         48 8b 50 08          	mov    0x8(%rax),%rdx
+   4336c:	|  |  |  |         8b 45 ec             	mov    -0x14(%rbp),%eax
+   4336f:	|  |  |  |         48 98                	cltq   
+   43371:	|  |  |  |         48 c1 e0 03          	shl    $0x3,%rax
+   43375:	|  |  |  |         48 01 d0             	add    %rdx,%rax
+   43378:	|  |  |  |         48 8b 00             	mov    (%rax),%rax
+   4337b:	|  |  |  |         4c 8b 80 88 01 00 00 	mov    0x188(%rax),%r8
+   43382:	|  |  |  |         48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43386:	|  |  |  |         48 8d 90 a0 00 00 00 	lea    0xa0(%rax),%rdx
+   4338d:	|  |  |  |         48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43391:	|  |  |  |         48 8d 70 78          	lea    0x78(%rax),%rsi
+   43395:	|  |  |  |         48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43399:	|  |  |  |         48 8b 48 08          	mov    0x8(%rax),%rcx
+   4339d:	|  |  |  |         8b 45 ec             	mov    -0x14(%rbp),%eax
+   433a0:	|  |  |  |         48 98                	cltq   
+   433a2:	|  |  |  |         48 c1 e0 03          	shl    $0x3,%rax
+   433a6:	|  |  |  |         48 01 c8             	add    %rcx,%rax
+   433a9:	|  |  |  |         48 8b 00             	mov    (%rax),%rax
+   433ac:	|  |  |  |         b9 12 00 00 00       	mov    $0x12,%ecx
+   433b1:	|  |  |  |         48 89 c7             	mov    %rax,%rdi
+   433b4:	|  |  |  |         41 ff d0             	callq  *%r8
+   433b7:	|  |  |  |         89 45 fc             	mov    %eax,-0x4(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3918
+   433ba:	|  |  |  |         83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+   433be:	|  |  |  |     /-- 74 5b                	je     4341b <indexed_start_internal+0x548>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3919
+   433c0:	|  |  |  |     |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   433c4:	|  |  |  |     |   48 8b 50 08          	mov    0x8(%rax),%rdx
+   433c8:	|  |  |  |     |   8b 45 ec             	mov    -0x14(%rbp),%eax
+   433cb:	|  |  |  |     |   48 98                	cltq   
+   433cd:	|  |  |  |     |   48 c1 e0 03          	shl    $0x3,%rax
+   433d1:	|  |  |  |     |   48 01 d0             	add    %rdx,%rax
+   433d4:	|  |  |  |     |   48 8b 00             	mov    (%rax),%rax
+   433d7:	|  |  |  |     |   4c 8b 80 88 01 00 00 	mov    0x188(%rax),%r8
+   433de:	|  |  |  |     |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   433e2:	|  |  |  |     |   48 8d 90 a0 00 00 00 	lea    0xa0(%rax),%rdx
+   433e9:	|  |  |  |     |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   433ed:	|  |  |  |     |   48 8d 70 78          	lea    0x78(%rax),%rsi
+   433f1:	|  |  |  |     |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   433f5:	|  |  |  |     |   48 8b 48 08          	mov    0x8(%rax),%rcx
+   433f9:	|  |  |  |     |   8b 45 ec             	mov    -0x14(%rbp),%eax
+   433fc:	|  |  |  |     |   48 98                	cltq   
+   433fe:	|  |  |  |     |   48 c1 e0 03          	shl    $0x3,%rax
+   43402:	|  |  |  |     |   48 01 c8             	add    %rcx,%rax
+   43405:	|  |  |  |     |   48 8b 00             	mov    (%rax),%rax
+   43408:	|  |  |  |     |   b9 0f 00 00 00       	mov    $0xf,%ecx
+   4340d:	|  |  |  |     |   48 89 c7             	mov    %rax,%rdi
+   43410:	|  |  |  |     |   41 ff d0             	callq  *%r8
+   43413:	|  |  |  |     |   89 45 fc             	mov    %eax,-0x4(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3924
+   43416:	|  |  |  +-----|-- e9 ed 00 00 00       	jmpq   43508 <indexed_start_internal+0x635>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3921
+   4341b:	|  |  |  |     \-> 48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4341f:	|  |  |  |         48 8b 50 08          	mov    0x8(%rax),%rdx
+   43423:	|  |  |  |         8b 45 ec             	mov    -0x14(%rbp),%eax
+   43426:	|  |  |  |         48 98                	cltq   
+   43428:	|  |  |  |         48 c1 e0 03          	shl    $0x3,%rax
+   4342c:	|  |  |  |         48 01 d0             	add    %rdx,%rax
+   4342f:	|  |  |  |         48 8b 00             	mov    (%rax),%rax
+   43432:	|  |  |  |         4c 8b 80 88 01 00 00 	mov    0x188(%rax),%r8
+   43439:	|  |  |  |         48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4343d:	|  |  |  |         48 8d 90 a0 00 00 00 	lea    0xa0(%rax),%rdx
+   43444:	|  |  |  |         48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43448:	|  |  |  |         48 8d 70 78          	lea    0x78(%rax),%rsi
+   4344c:	|  |  |  |         48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43450:	|  |  |  |         48 8b 48 08          	mov    0x8(%rax),%rcx
+   43454:	|  |  |  |         8b 45 ec             	mov    -0x14(%rbp),%eax
+   43457:	|  |  |  |         48 98                	cltq   
+   43459:	|  |  |  |         48 c1 e0 03          	shl    $0x3,%rax
+   4345d:	|  |  |  |         48 01 c8             	add    %rcx,%rax
+   43460:	|  |  |  |         48 8b 00             	mov    (%rax),%rax
+   43463:	|  |  |  |         b9 17 00 00 00       	mov    $0x17,%ecx
+   43468:	|  |  |  |         48 89 c7             	mov    %rax,%rdi
+   4346b:	|  |  |  |         41 ff d0             	callq  *%r8
+   4346e:	|  |  |  |         89 45 fc             	mov    %eax,-0x4(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3924
+   43471:	|  |  |  +-------- e9 92 00 00 00       	jmpq   43508 <indexed_start_internal+0x635>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3927
+   43476:	|  |  |  |  /----> 48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4347a:	|  |  |  |  |      48 8b 50 08          	mov    0x8(%rax),%rdx
+   4347e:	|  |  |  |  |      8b 45 ec             	mov    -0x14(%rbp),%eax
+   43481:	|  |  |  |  |      48 98                	cltq   
+   43483:	|  |  |  |  |      48 c1 e0 03          	shl    $0x3,%rax
+   43487:	|  |  |  |  |      48 01 d0             	add    %rdx,%rax
+   4348a:	|  |  |  |  |      48 8b 00             	mov    (%rax),%rax
+   4348d:	|  |  |  |  |      4c 8b 80 88 01 00 00 	mov    0x188(%rax),%r8
+   43494:	|  |  |  |  |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43498:	|  |  |  |  |      48 8d 90 a0 00 00 00 	lea    0xa0(%rax),%rdx
+   4349f:	|  |  |  |  |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   434a3:	|  |  |  |  |      48 8d 70 78          	lea    0x78(%rax),%rsi
+   434a7:	|  |  |  |  |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   434ab:	|  |  |  |  |      48 8b 48 08          	mov    0x8(%rax),%rcx
+   434af:	|  |  |  |  |      8b 45 ec             	mov    -0x14(%rbp),%eax
+   434b2:	|  |  |  |  |      48 98                	cltq   
+   434b4:	|  |  |  |  |      48 c1 e0 03          	shl    $0x3,%rax
+   434b8:	|  |  |  |  |      48 01 c8             	add    %rcx,%rax
+   434bb:	|  |  |  |  |      48 8b 00             	mov    (%rax),%rax
+   434be:	|  |  |  |  |      b9 10 00 00 00       	mov    $0x10,%ecx
+   434c3:	|  |  |  |  |      48 89 c7             	mov    %rax,%rdi
+   434c6:	|  |  |  |  |      41 ff d0             	callq  *%r8
+   434c9:	|  |  |  |  |      89 45 fc             	mov    %eax,-0x4(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3926
+   434cc:	|  |  |  |  |      83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+   434d0:	|  |  |  |  |  /-- 75 39                	jne    4350b <indexed_start_internal+0x638>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3926 (discriminator 1)
+   434d2:	|  |  |  |  |  |   8b 7d dc             	mov    -0x24(%rbp),%edi
+   434d5:	|  |  |  |  |  |   48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   434d9:	|  |  |  |  |  |   48 8b 40 18          	mov    0x18(%rax),%rax
+   434dd:	|  |  |  |  |  |   48 8b 50 08          	mov    0x8(%rax),%rdx
+   434e1:	|  |  |  |  |  |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   434e5:	|  |  |  |  |  |   48 8b 70 78          	mov    0x78(%rax),%rsi
+   434e9:	|  |  |  |  |  |   8b 4d ec             	mov    -0x14(%rbp),%ecx
+   434ec:	|  |  |  |  |  |   48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   434f0:	|  |  |  |  |  |   41 89 f8             	mov    %edi,%r8d
+   434f3:	|  |  |  |  |  |   48 89 c7             	mov    %rax,%rdi
+   434f6:	|  |  |  |  |  |   e8 3c a0 ff ff       	callq  3d537 <bdb_cmpkey>
+   434fb:	|  |  |  |  |  |   85 c0                	test   %eax,%eax
+   434fd:	|  |  |  |  \--|-- 0f 84 73 ff ff ff    	je     43476 <indexed_start_internal+0x5a3>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3929
+   43503:	|  |  |  |     +-- eb 06                	jmp    4350b <indexed_start_internal+0x638>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3903
+   43505:	|  |  \--|-----|-> 90                   	nop
+   43506:	|  +-----|-----|-- eb 04                	jmp    4350c <indexed_start_internal+0x639>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3924
+   43508:	|  |     \-----|-> 90                   	nop
+   43509:	|  +-----------|-- eb 01                	jmp    4350c <indexed_start_internal+0x639>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3929
+   4350b:	|  |           \-> 90                   	nop
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3941
+   4350c:	|  \-------------> 83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+   43510:	|           /----- 0f 85 ee 00 00 00    	jne    43604 <indexed_start_internal+0x731>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3941 (discriminator 1)
+   43516:	|           |      83 7d ec 00          	cmpl   $0x0,-0x14(%rbp)
+   4351a:	|           +----- 0f 8e e4 00 00 00    	jle    43604 <indexed_start_internal+0x731>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3943
+   43520:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43524:	|           |      8b 80 80 00 00 00    	mov    0x80(%rax),%eax
+   4352a:	|           |      89 45 e8             	mov    %eax,-0x18(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3944
+   4352d:	|           |      8b 45 e8             	mov    -0x18(%rbp),%eax
+   43530:	|           |      48 63 d0             	movslq %eax,%rdx
+   43533:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43537:	|           |      48 8b 48 78          	mov    0x78(%rax),%rcx
+   4353b:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4353f:	|           |      48 8b 40 20          	mov    0x20(%rax),%rax
+   43543:	|           |      48 89 ce             	mov    %rcx,%rsi
+   43546:	|           |      48 89 c7             	mov    %rax,%rdi
+   43549:	|           |      e8 02 04 fd ff       	callq  13950 <memcpy@plt>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3945
+   4354e:	|           |      48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   43552:	|           |      48 8b 48 28          	mov    0x28(%rax),%rcx
+   43556:	|           |      8b 45 ec             	mov    -0x14(%rbp),%eax
+   43559:	|           |      48 63 d0             	movslq %eax,%rdx
+   4355c:	|           |      48 89 d0             	mov    %rdx,%rax
+   4355f:	|           |      48 01 c0             	add    %rax,%rax
+   43562:	|           |      48 01 d0             	add    %rdx,%rax
+   43565:	|           |      48 c1 e0 02          	shl    $0x2,%rax
+   43569:	|           |      48 01 d0             	add    %rdx,%rax
+   4356c:	|           |      48 c1 e0 03          	shl    $0x3,%rax
+   43570:	|           |      48 01 c8             	add    %rcx,%rax
+   43573:	|           |      8b 40 0c             	mov    0xc(%rax),%eax
+   43576:	|           |      85 c0                	test   %eax,%eax
+   43578:	|           |  /-- 74 22                	je     4359c <indexed_start_internal+0x6c9>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3946
+   4357a:	|           |  |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4357e:	|           |  |   48 8b 90 a0 00 00 00 	mov    0xa0(%rax),%rdx
+   43585:	|           |  |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43589:	|           |  |   8b 40 44             	mov    0x44(%rax),%eax
+   4358c:	|           |  |   48 98                	cltq   
+   4358e:	|           |  |   48 01 d0             	add    %rdx,%rax
+   43591:	|           |  |   8b 00                	mov    (%rax),%eax
+   43593:	|           |  |   89 45 d8             	mov    %eax,-0x28(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3947
+   43596:	|           |  |   8b 45 d8             	mov    -0x28(%rbp),%eax
+   43599:	|           |  |   89 45 d8             	mov    %eax,-0x28(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3949
+   4359c:	|           |  \-> 48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   435a0:	|           |      48 8b 90 a0 00 00 00 	mov    0xa0(%rax),%rdx
+   435a7:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   435ab:	|           |      48 89 50 78          	mov    %rdx,0x78(%rax)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3950
+   435af:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   435b3:	|           |      8b 40 44             	mov    0x44(%rax),%eax
+   435b6:	|           |      89 c2                	mov    %eax,%edx
+   435b8:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   435bc:	|           |      89 90 80 00 00 00    	mov    %edx,0x80(%rax)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3951
+   435c2:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   435c6:	|           |      48 8b 00             	mov    (%rax),%rax
+   435c9:	|           |      48 8b 00             	mov    (%rax),%rax
+   435cc:	|           |      4c 8b 88 78 02 00 00 	mov    0x278(%rax),%r9
+   435d3:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   435d7:	|           |      48 8d 88 a0 00 00 00 	lea    0xa0(%rax),%rcx
+   435de:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   435e2:	|           |      48 8d 50 78          	lea    0x78(%rax),%rdx
+   435e6:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   435ea:	|           |      48 8b 00             	mov    (%rax),%rax
+   435ed:	|           |      48 8b 00             	mov    (%rax),%rax
+   435f0:	|           |      41 b8 00 00 00 00    	mov    $0x0,%r8d
+   435f6:	|           |      be 00 00 00 00       	mov    $0x0,%esi
+   435fb:	|           |      48 89 c7             	mov    %rax,%rdi
+   435fe:	|           |      41 ff d1             	callq  *%r9
+   43601:	|           |      89 45 fc             	mov    %eax,-0x4(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3954
+   43604:	|           \----> 83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+   43608:	|           /----- 0f 85 c2 00 00 00    	jne    436d0 <indexed_start_internal+0x7fd>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3954 (discriminator 1)
+   4360e:	|           |      83 7d b4 00          	cmpl   $0x0,-0x4c(%rbp)
+   43612:	|           +----- 0f 84 b8 00 00 00    	je     436d0 <indexed_start_internal+0x7fd>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3955
+   43618:	|           |      8b 45 c0             	mov    -0x40(%rbp),%eax
+   4361b:	|           |      25 00 01 00 00       	and    $0x100,%eax
+   43620:	|           |      85 c0                	test   %eax,%eax
+   43622:	|           |  /-- 75 51                	jne    43675 <indexed_start_internal+0x7a2>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3956
+   43624:	|           |  |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43628:	|           |  |   8b 90 80 00 00 00    	mov    0x80(%rax),%edx
+   4362e:	|           |  |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43632:	|           |  |   48 8b 48 78          	mov    0x78(%rax),%rcx
+   43636:	|           |  |   48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   4363a:	|           |  |   48 89 ce             	mov    %rcx,%rsi
+   4363d:	|           |  |   48 89 c7             	mov    %rax,%rdi
+   43640:	|           |  |   e8 77 ed ff ff       	callq  423bc <test_record_lock>
+   43645:	|           |  |   89 45 fc             	mov    %eax,-0x4(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3957
+   43648:	|           |  |   83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+   4364c:	|           |  +-- 74 27                	je     43675 <indexed_start_internal+0x7a2>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3958
+   4364e:	|           |  |   8b 55 ec             	mov    -0x14(%rbp),%edx
+   43651:	|           |  |   48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   43655:	|           |  |   89 d6                	mov    %edx,%esi
+   43657:	|           |  |   48 89 c7             	mov    %rax,%rdi
+   4365a:	|           |  |   e8 0d a3 ff ff       	callq  3d96c <bdb_close_index>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3959
+   4365f:	|           |  |   48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   43663:	|           |  |   48 89 c7             	mov    %rax,%rdi
+   43666:	|           |  |   e8 8f a2 ff ff       	callq  3d8fa <bdb_close_cursor>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3960
+   4366b:	|           |  |   b8 33 00 00 00       	mov    $0x33,%eax
+   43670:	+-----------|--|-- e9 c9 01 00 00       	jmpq   4383e <indexed_start_internal+0x96b>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3963
+   43675:	|           |  \-> 8b 45 c0             	mov    -0x40(%rbp),%eax
+   43678:	|           |      83 e0 10             	and    $0x10,%eax
+   4367b:	|           |      85 c0                	test   %eax,%eax
+   4367d:	|           +----- 74 51                	je     436d0 <indexed_start_internal+0x7fd>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3964
+   4367f:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43683:	|           |      8b 90 80 00 00 00    	mov    0x80(%rax),%edx
+   43689:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4368d:	|           |      48 8b 48 78          	mov    0x78(%rax),%rcx
+   43691:	|           |      48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   43695:	|           |      48 89 ce             	mov    %rcx,%rsi
+   43698:	|           |      48 89 c7             	mov    %rax,%rdi
+   4369b:	|           |      e8 34 ec ff ff       	callq  422d4 <lock_record>
+   436a0:	|           |      89 45 fc             	mov    %eax,-0x4(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3965
+   436a3:	|           |      83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+   436a7:	|           +----- 74 27                	je     436d0 <indexed_start_internal+0x7fd>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3966
+   436a9:	|           |      8b 55 ec             	mov    -0x14(%rbp),%edx
+   436ac:	|           |      48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   436b0:	|           |      89 d6                	mov    %edx,%esi
+   436b2:	|           |      48 89 c7             	mov    %rax,%rdi
+   436b5:	|           |      e8 b2 a2 ff ff       	callq  3d96c <bdb_close_index>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3967
+   436ba:	|           |      48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   436be:	|           |      48 89 c7             	mov    %rax,%rdi
+   436c1:	|           |      e8 34 a2 ff ff       	callq  3d8fa <bdb_close_cursor>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3968
+   436c6:	|           |      b8 33 00 00 00       	mov    $0x33,%eax
+   436cb:	+-----------|----- e9 6e 01 00 00       	jmpq   4383e <indexed_start_internal+0x96b>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3973
+   436d0:	|           \----> 83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+   436d4:	|           /----- 0f 85 2f 01 00 00    	jne    43809 <indexed_start_internal+0x936>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3974
+   436da:	|           |      83 7d ec 00          	cmpl   $0x0,-0x14(%rbp)
+   436de:	|           |  /-- 75 2d                	jne    4370d <indexed_start_internal+0x83a>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3975
+   436e0:	|           |  |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   436e4:	|           |  |   8b 40 44             	mov    0x44(%rax),%eax
+   436e7:	|           |  |   48 63 d0             	movslq %eax,%rdx
+   436ea:	|           |  |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   436ee:	|           |  |   48 8b 48 78          	mov    0x78(%rax),%rcx
+   436f2:	|           |  |   48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   436f6:	|           |  |   48 8b 40 28          	mov    0x28(%rax),%rax
+   436fa:	|           |  |   48 8b 00             	mov    (%rax),%rax
+   436fd:	|           |  |   48 89 ce             	mov    %rcx,%rsi
+   43700:	|           |  |   48 89 c7             	mov    %rax,%rdi
+   43703:	|           |  |   e8 48 02 fd ff       	callq  13950 <memcpy@plt>
+   43708:	|           +--|-- e9 fc 00 00 00       	jmpq   43809 <indexed_start_internal+0x936>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3977
+   4370d:	|           |  \-> 8b 55 ec             	mov    -0x14(%rbp),%edx
+   43710:	|           |      48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   43714:	|           |      89 d6                	mov    %edx,%esi
+   43716:	|           |      48 89 c7             	mov    %rax,%rdi
+   43719:	|           |      e8 cc 9a ff ff       	callq  3d1ea <bdb_keylen>
+   4371e:	|           |      89 45 e4             	mov    %eax,-0x1c(%rbp)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3979
+   43721:	|           |      8b 45 dc             	mov    -0x24(%rbp),%eax
+   43724:	|           |      85 c0                	test   %eax,%eax
+   43726:	|           |  /-- 7f 2c                	jg     43754 <indexed_start_internal+0x881>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3980
+   43728:	|           |  |   48 8d 3d 22 cb 03 00 	lea    0x3cb22(%rip),%rdi        # 80251 <status_exception+0x31>
+   4372f:	|           |  |   e8 5c ee fc ff       	callq  12590 <gettext@plt>
+   43734:	|           |  |   48 8d 35 c5 cd 03 00 	lea    0x3cdc5(%rip),%rsi        # 80500 <status_exception+0x2e0>
+   4373b:	|           |  |   48 89 c7             	mov    %rax,%rdi
+   4373e:	|           |  |   b8 00 00 00 00       	mov    $0x0,%eax
+   43743:	|           |  |   e8 58 fb fc ff       	callq  132a0 <cob_runtime_error@plt>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3982
+   43748:	|           |  |   48 8d 3d 29 cb 03 00 	lea    0x3cb29(%rip),%rdi        # 80278 <status_exception+0x58>
+   4374f:	|           |  |   e8 3c fa fc ff       	callq  13190 <cob_hard_failure_internal@plt>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3985
+   43754:	|           |  \-> 8b 45 e4             	mov    -0x1c(%rbp),%eax
+   43757:	|           |      48 63 d0             	movslq %eax,%rdx
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3986
+   4375a:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4375e:	|           |      48 8b 48 20          	mov    0x20(%rax),%rcx
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3985
+   43762:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43766:	|           |      48 8b 70 28          	mov    0x28(%rax),%rsi
+   4376a:	|           |      8b 45 ec             	mov    -0x14(%rbp),%eax
+   4376d:	|           |      48 98                	cltq   
+   4376f:	|           |      48 c1 e0 03          	shl    $0x3,%rax
+   43773:	|           |      48 01 f0             	add    %rsi,%rax
+   43776:	|           |      48 8b 00             	mov    (%rax),%rax
+   43779:	|           |      48 89 ce             	mov    %rcx,%rsi
+   4377c:	|           |      48 89 c7             	mov    %rax,%rdi
+   4377f:	|           |      e8 cc 01 fd ff       	callq  13950 <memcpy@plt>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3988
+   43784:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43788:	|           |      8b 40 44             	mov    0x44(%rax),%eax
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3987
+   4378b:	|           |      48 63 d0             	movslq %eax,%rdx
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3988
+   4378e:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   43792:	|           |      48 8b 48 78          	mov    0x78(%rax),%rcx
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3987
+   43796:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   4379a:	|           |      48 8b 70 28          	mov    0x28(%rax),%rsi
+   4379e:	|           |      8b 45 ec             	mov    -0x14(%rbp),%eax
+   437a1:	|           |      48 63 f8             	movslq %eax,%rdi
+   437a4:	|           |      48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   437a8:	|           |      48 8b 40 60          	mov    0x60(%rax),%rax
+   437ac:	|           |      48 01 f8             	add    %rdi,%rax
+   437af:	|           |      48 c1 e0 03          	shl    $0x3,%rax
+   437b3:	|           |      48 01 f0             	add    %rsi,%rax
+   437b6:	|           |      48 8b 00             	mov    (%rax),%rax
+   437b9:	|           |      48 89 ce             	mov    %rcx,%rsi
+   437bc:	|           |      48 89 c7             	mov    %rax,%rdi
+   437bf:	|           |      e8 8c 01 fd ff       	callq  13950 <memcpy@plt>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3989
+   437c4:	|           |      48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   437c8:	|           |      48 8b 48 28          	mov    0x28(%rax),%rcx
+   437cc:	|           |      8b 45 ec             	mov    -0x14(%rbp),%eax
+   437cf:	|           |      48 63 d0             	movslq %eax,%rdx
+   437d2:	|           |      48 89 d0             	mov    %rdx,%rax
+   437d5:	|           |      48 01 c0             	add    %rax,%rax
+   437d8:	|           |      48 01 d0             	add    %rdx,%rax
+   437db:	|           |      48 c1 e0 02          	shl    $0x2,%rax
+   437df:	|           |      48 01 d0             	add    %rdx,%rax
+   437e2:	|           |      48 c1 e0 03          	shl    $0x3,%rax
+   437e6:	|           |      48 01 c8             	add    %rcx,%rax
+   437e9:	|           |      8b 40 0c             	mov    0xc(%rax),%eax
+   437ec:	|           |      85 c0                	test   %eax,%eax
+   437ee:	|           +----- 74 19                	je     43809 <indexed_start_internal+0x936>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3990
+   437f0:	|           |      48 8b 45 f0          	mov    -0x10(%rbp),%rax
+   437f4:	|           |      48 8b 50 30          	mov    0x30(%rax),%rdx
+   437f8:	|           |      8b 45 ec             	mov    -0x14(%rbp),%eax
+   437fb:	|           |      48 98                	cltq   
+   437fd:	|           |      48 c1 e0 02          	shl    $0x2,%rax
+   43801:	|           |      48 01 c2             	add    %rax,%rdx
+   43804:	|           |      8b 45 d8             	mov    -0x28(%rbp),%eax
+   43807:	|           |      89 02                	mov    %eax,(%rdx)
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3995
+   43809:	|           \----> 8b 55 ec             	mov    -0x14(%rbp),%edx
+   4380c:	|                  48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   43810:	|                  89 d6                	mov    %edx,%esi
+   43812:	|                  48 89 c7             	mov    %rax,%rdi
+   43815:	|                  e8 52 a1 ff ff       	callq  3d96c <bdb_close_index>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3996
+   4381a:	|                  83 7d ec 00          	cmpl   $0x0,-0x14(%rbp)
+   4381e:	|              /-- 74 0c                	je     4382c <indexed_start_internal+0x959>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:3997
+   43820:	|              |   48 8b 45 c8          	mov    -0x38(%rbp),%rax
+   43824:	|              |   48 89 c7             	mov    %rax,%rdi
+   43827:	|              |   e8 ce a0 ff ff       	callq  3d8fa <bdb_close_cursor>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:4000
+   4382c:	|              \-> 83 7d fc 00          	cmpl   $0x0,-0x4(%rbp)
+   43830:	|              /-- 75 07                	jne    43839 <indexed_start_internal+0x966>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:4000 (discriminator 1)
+   43832:	|              |   b8 00 00 00 00       	mov    $0x0,%eax
+   43837:	+--------------|-- eb 05                	jmp    4383e <indexed_start_internal+0x96b>
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:4000 (discriminator 2)
+   43839:	|              \-> b8 17 00 00 00       	mov    $0x17,%eax
+/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c:4001 (discriminator 1)
+   4383e:	\----------------> c9                   	leaveq 
+   4383f:	                   c3                   	retq   

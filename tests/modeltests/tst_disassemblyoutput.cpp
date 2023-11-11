@@ -269,24 +269,43 @@ private slots:
         }
     }
 
+    void testParse_data()
+    {
+        QTest::addColumn<QString>("file");
+        QTest::addColumn<QString>("mainSourceFileName");
+        QTest::addColumn<quint64>("minAddr");
+        QTest::addColumn<quint64>("maxAddr");
+
+        QTest::addRow("objdump.txt")
+            << QFINDTESTDATA("disassembly/objdump.txt")
+            << QStringLiteral("/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp")
+            << quint64(0x1970) << quint64(0x1c60);
+    }
+
     void testParse()
     {
-        auto dataFile = QFile(QFINDTESTDATA("disassembly/objdump.txt"));
+        QFETCH(QString, file);
+        QFETCH(QString, mainSourceFileName);
+        QFETCH(quint64, minAddr);
+        QFETCH(quint64, maxAddr);
+
+        QVERIFY(minAddr < maxAddr);
+
+        auto dataFile = QFile(file);
         QVERIFY(dataFile.open(QFile::Text | QFile::ReadOnly));
         const auto parsed = DisassemblyOutput::objdumpParse(dataFile.readAll());
-        QCOMPARE(parsed.mainSourceFileName,
-                 QStringLiteral("/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp"));
+        QCOMPARE(parsed.mainSourceFileName, mainSourceFileName);
         QCOMPARE(parsed.disassemblyLines.size(), 227);
         for (const auto& line : parsed.disassemblyLines) {
             QVERIFY(!line.fileLine.file.isEmpty());
             QVERIFY(line.fileLine.line > 0);
             if (line.addr) {
-                QVERIFY(line.addr >= 0x1970);
-                QVERIFY(line.addr <= 0x1c60);
+                QVERIFY(line.addr >= minAddr);
+                QVERIFY(line.addr <= maxAddr);
 
                 QCOMPARE(line.branchVisualisation.size(), 40);
                 QVERIFY(std::all_of(line.branchVisualisation.begin(), line.branchVisualisation.end(),
-                                    [](QChar c) { return QLatin1String(" |\\/->").contains(c); }));
+                                    [](QChar c) { return QLatin1String(" |\\/->+").contains(c); }));
             } else {
                 QVERIFY(line.branchVisualisation.isEmpty());
             }

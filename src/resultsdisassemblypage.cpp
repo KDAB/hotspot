@@ -136,6 +136,11 @@ public:
                     lines.append({xmid, top, xmid, bottom});
                 }
                 break;
+            case '+':
+                if (horizontalLineStart == -1)
+                    horizontalLineStart = x;
+                lines.append({xmid, top, xmid, bottom});
+                break;
             case '>':
                 if (!jumps.fromSibling) {
                     if (i == size - 2) {
