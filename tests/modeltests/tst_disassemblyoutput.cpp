@@ -276,19 +276,27 @@ private slots:
     {
         QTest::addColumn<QString>("file");
         QTest::addColumn<QString>("mainSourceFileName");
+        QTest::addColumn<int>("numLines");
         QTest::addColumn<quint64>("minAddr");
         QTest::addColumn<quint64>("maxAddr");
 
         QTest::addRow("objdump.txt")
             << QFINDTESTDATA("disassembly/objdump.txt")
-            << QStringLiteral("/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp")
+            << QStringLiteral("/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp") << 227
             << quint64(0x1970) << quint64(0x1c60);
+
+        QTest::addRow("objdump.indexed_start_internal.txt")
+            << QFINDTESTDATA("disassembly/objdump.indexed_start_internal.txt")
+            << QStringLiteral(
+                   "/mnt/d/Programme/Entwicklung/GnuCOBOL/code_repo_fix/branches/gnucobol-3.x/libcob/fileio.c")
+            << 654 << quint64(0x42ed3) << quint64(0x4383f);
     }
 
     void testParse()
     {
         QFETCH(QString, file);
         QFETCH(QString, mainSourceFileName);
+        QFETCH(int, numLines);
         QFETCH(quint64, minAddr);
         QFETCH(quint64, maxAddr);
 
@@ -298,7 +306,7 @@ private slots:
         QVERIFY(dataFile.open(QFile::Text | QFile::ReadOnly));
         const auto parsed = DisassemblyOutput::objdumpParse(dataFile.readAll());
         QCOMPARE(parsed.mainSourceFileName, mainSourceFileName);
-        QCOMPARE(parsed.disassemblyLines.size(), 227);
+        QCOMPARE(parsed.disassemblyLines.size(), numLines);
         for (const auto& line : parsed.disassemblyLines) {
             QVERIFY(!line.fileLine.file.isEmpty());
             QVERIFY(line.fileLine.line > 0);
