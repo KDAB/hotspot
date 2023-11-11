@@ -109,37 +109,45 @@ public:
             if (xmid > right)
                 break;
 
+            auto verticalLine = [&]() { lines.append({xmid, top, xmid, bottom}); };
+            auto startHorizontalLine = [&horizontalLineStart](int x) {
+                if (horizontalLineStart == -1)
+                    horizontalLineStart = x;
+            };
+            auto topRightEdge = [&]() {
+                if (!jumps.fromSibling) {
+                    lines.append({xmid, top, xmid, ymid});
+                    startHorizontalLine(xend);
+                }
+            };
+            auto bottomLeftEdge = [&]() {
+                if (!jumps.fromSibling) {
+                    lines.append({xmid, bottom, xmid, ymid});
+                    startHorizontalLine(xend);
+                } else {
+                    verticalLine();
+                }
+            };
+
             const auto c = jumps.data[i];
             switch (c.toLatin1()) {
             case ' ':
                 break;
             case '|':
-                lines.append({xmid, top, xmid, bottom});
+                verticalLine();
                 break;
             case '-':
-                if (horizontalLineStart == -1)
-                    horizontalLineStart = x;
-                break;
-            case '\\':
-                if (!jumps.fromSibling) {
-                    lines.append({xmid, top, xmid, ymid});
-                    if (horizontalLineStart == -1)
-                        horizontalLineStart = xend;
-                }
-                break;
-            case '/':
-                if (!jumps.fromSibling) {
-                    lines.append({xmid, bottom, xmid, ymid});
-                    if (horizontalLineStart == -1)
-                        horizontalLineStart = xend;
-                } else {
-                    lines.append({xmid, top, xmid, bottom});
-                }
+                startHorizontalLine(x);
                 break;
             case '+':
-                if (horizontalLineStart == -1)
-                    horizontalLineStart = x;
-                lines.append({xmid, top, xmid, bottom});
+                startHorizontalLine(x);
+                verticalLine();
+                break;
+            case '\\':
+                topRightEdge();
+                break;
+            case '/':
+                bottomLeftEdge();
                 break;
             case '>':
                 if (!jumps.fromSibling) {
@@ -147,12 +155,11 @@ public:
                         // jump target ends with "> "
                     } else {
                         // branch intersection
-                        lines.append({xmid, top, xmid, bottom});
+                        verticalLine();
                     }
-                    if (horizontalLineStart == -1)
-                        horizontalLineStart = xend;
+                    startHorizontalLine(xend);
                 } else {
-                    lines.append({xmid, top, xmid, bottom});
+                    verticalLine();
                 }
                 break;
             default:
