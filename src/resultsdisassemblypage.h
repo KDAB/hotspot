@@ -47,7 +47,6 @@ public:
     ~ResultsDisassemblyPage();
 
     void clear();
-    void setupAsmViewModel();
     void setSymbol(const Data::Symbol& data);
     void setCostsMap(const Data::CallerCalleeResults& callerCalleeResults);
     void setObjdump(const QString& objdump);
@@ -59,6 +58,7 @@ signals:
     void stackChanged();
 
 private:
+    void setupAsmViewModel();
     void showDisassembly(const DisassemblyOutput& disassemblyOutput);
     void showDisassembly();
 
