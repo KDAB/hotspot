@@ -156,7 +156,7 @@ DisassemblyOutput::ObjectdumpOutput DisassemblyOutput::objdumpParse(const QByteA
     QString sourceFileName;
     QString currentSourceFileName;
 
-    int sourceCodeLine = 0;
+    int sourceCodeLine = -1;
     while (stream.readLineInto(&asmLine)) {
         if (asmLine.isEmpty())
             continue;

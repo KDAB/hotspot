@@ -1,0 +1,892 @@
+
+tests/modeltests/libfib.so:     file format elf64-x86-64
+
+
+Disassembly of section .plt:
+
+0000000000001020 <fib(int)@plt-0x10>:
+    1020:	ff 35 ca 4f 00 00    	push   0x4fca(%rip)        # 5ff0 <_GLOBAL_OFFSET_TABLE_+0x8>
+    1026:	ff 25 cc 4f 00 00    	jmp    *0x4fcc(%rip)        # 5ff8 <_GLOBAL_OFFSET_TABLE_+0x10>
+    102c:	0f 1f 40 00          	nopl   0x0(%rax)
+
+0000000000001030 <fib(int)@plt>:
+    1030:	ff 25 ca 4f 00 00    	jmp    *0x4fca(%rip)        # 6000 <fib(int)@@Base+0x3b30>
+    1036:	68 00 00 00 00       	push   $0x0
+    103b:	e9 e0 ff ff ff       	jmp    1020 <_init+0x20>
+
+0000000000001040 <__asan_init@plt>:
+    1040:	ff 25 c2 4f 00 00    	jmp    *0x4fc2(%rip)        # 6008 <__asan_init@Base>
+    1046:	68 01 00 00 00       	push   $0x1
+    104b:	e9 d0 ff ff ff       	jmp    1020 <_init+0x20>
+
+0000000000001050 <__ubsan_handle_sub_overflow@plt>:
+    1050:	ff 25 ba 4f 00 00    	jmp    *0x4fba(%rip)        # 6010 <__ubsan_handle_sub_overflow@Base>
+    1056:	68 02 00 00 00       	push   $0x2
+    105b:	e9 c0 ff ff ff       	jmp    1020 <_init+0x20>
+
+0000000000001060 <__asan_version_mismatch_check_v8@plt>:
+    1060:	ff 25 b2 4f 00 00    	jmp    *0x4fb2(%rip)        # 6018 <__asan_version_mismatch_check_v8@Base>
+    1066:	68 03 00 00 00       	push   $0x3
+    106b:	e9 b0 ff ff ff       	jmp    1020 <_init+0x20>
+
+0000000000001070 <__ubsan_handle_add_overflow@plt>:
+    1070:	ff 25 aa 4f 00 00    	jmp    *0x4faa(%rip)        # 6020 <__ubsan_handle_add_overflow@Base>
+    1076:	68 04 00 00 00       	push   $0x4
+    107b:	e9 a0 ff ff ff       	jmp    1020 <_init+0x20>
+
+Disassembly of section .text:
+
+0000000000001080 <__asan_report_load1_asm-0xd0>:
+    1080:	/----------> 48 8d 3d 11 50 00 00 	lea    0x5011(%rip),%rdi        # 6098 <__TMC_END__>
+    1087:	|            48 8d 05 0a 50 00 00 	lea    0x500a(%rip),%rax        # 6098 <__TMC_END__>
+    108e:	|            48 39 f8             	cmp    %rdi,%rax
+    1091:	|        /-- 74 15                	je     10a8 <__ubsan_handle_add_overflow@plt+0x38>
+    1093:	|        |   48 8b 05 36 4f 00 00 	mov    0x4f36(%rip),%rax        # 5fd0 <_ITM_deregisterTMCloneTable@Base>
+    109a:	|        |   48 85 c0             	test   %rax,%rax
+    109d:	|        +-- 74 09                	je     10a8 <__ubsan_handle_add_overflow@plt+0x38>
+    109f:	|        |   ff e0                	jmp    *%rax
+    10a1:	|        |   0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+    10a8:	|        \-> c3                   	ret
+    10a9:	|            0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+    10b0:	|  /-------> 48 8d 3d e1 4f 00 00 	lea    0x4fe1(%rip),%rdi        # 6098 <__TMC_END__>
+    10b7:	|  |         48 8d 35 da 4f 00 00 	lea    0x4fda(%rip),%rsi        # 6098 <__TMC_END__>
+    10be:	|  |         48 29 fe             	sub    %rdi,%rsi
+    10c1:	|  |         48 89 f0             	mov    %rsi,%rax
+    10c4:	|  |         48 c1 ee 3f          	shr    $0x3f,%rsi
+    10c8:	|  |         48 c1 f8 03          	sar    $0x3,%rax
+    10cc:	|  |         48 01 c6             	add    %rax,%rsi
+    10cf:	|  |         48 d1 fe             	sar    %rsi
+    10d2:	|  |     /-- 74 14                	je     10e8 <__ubsan_handle_add_overflow@plt+0x78>
+    10d4:	|  |     |   48 8b 05 05 4f 00 00 	mov    0x4f05(%rip),%rax        # 5fe0 <_ITM_registerTMCloneTable@Base>
+    10db:	|  |     |   48 85 c0             	test   %rax,%rax
+    10de:	|  |     +-- 74 08                	je     10e8 <__ubsan_handle_add_overflow@plt+0x78>
+    10e0:	|  |     |   ff e0                	jmp    *%rax
+    10e2:	|  |     |   66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+    10e8:	|  |     \-> c3                   	ret
+    10e9:	|  |         0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+    10f0:	|  |         f3 0f 1e fa          	endbr64
+    10f4:	|  |         80 3d 9d 4f 00 00 00 	cmpb   $0x0,0x4f9d(%rip)        # 6098 <__TMC_END__>
+    10fb:	|  |  /----- 75 33                	jne    1130 <__ubsan_handle_add_overflow@plt+0xc0>
+    10fd:	|  |  |      55                   	push   %rbp
+    10fe:	|  |  |      48 83 3d 7a 4e 00 00 	cmpq   $0x0,0x4e7a(%rip)        # 5f80 <__cxa_finalize@GLIBC_2.2.5>
+    1105:	|  |  |      00 
+    1106:	|  |  |      48 89 e5             	mov    %rsp,%rbp
+    1109:	|  |  |  /-- 74 0d                	je     1118 <__ubsan_handle_add_overflow@plt+0xa8>
+    110b:	|  |  |  |   48 8b 3d 1e 4f 00 00 	mov    0x4f1e(%rip),%rdi        # 6030 <__dso_handle>
+    1112:	|  |  |  |   ff 15 68 4e 00 00    	call   *0x4e68(%rip)        # 5f80 <__cxa_finalize@GLIBC_2.2.5>
+    1118:	\--|--|--\-X e8 63 ff ff ff       	call   1080 <__ubsan_handle_add_overflow@plt+0x10>
+    111d:	   |  |      c6 05 74 4f 00 00 01 	movb   $0x1,0x4f74(%rip)        # 6098 <__TMC_END__>
+    1124:	   |  |      5d                   	pop    %rbp
+    1125:	   |  |      c3                   	ret
+    1126:	   |  |      66 2e 0f 1f 84 00 00 	cs nopw 0x0(%rax,%rax,1)
+    112d:	   |  |      00 00 00 
+    1130:	   |  \----> c3                   	ret
+    1131:	   |         66 66 2e 0f 1f 84 00 	data16 cs nopw 0x0(%rax,%rax,1)
+    1138:	   |         00 00 00 00 
+    113c:	   |         0f 1f 40 00          	nopl   0x0(%rax)
+    1140:	   |         f3 0f 1e fa          	endbr64
+    1144:	   \-------- e9 67 ff ff ff       	jmp    10b0 <__ubsan_handle_add_overflow@plt+0x40>
+    1149:	             0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+
+0000000000001150 <__asan_report_load1_asm>:
+    1150:	f3 0f 1e fa          	endbr64
+    1154:	ff 25 4e 4e 00 00    	jmp    *0x4e4e(%rip)        # 5fa8 <__asan_report_load1@Base>
+    115a:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+
+0000000000001160 <__asan_report_load2_asm>:
+    1160:	f3 0f 1e fa          	endbr64
+    1164:	ff 25 36 4e 00 00    	jmp    *0x4e36(%rip)        # 5fa0 <__asan_report_load2@Base>
+    116a:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+
+0000000000001170 <__asan_report_load4_asm>:
+    1170:	f3 0f 1e fa          	endbr64
+    1174:	ff 25 16 4e 00 00    	jmp    *0x4e16(%rip)        # 5f90 <__asan_report_load4@Base>
+    117a:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+
+0000000000001180 <__asan_report_load8_asm>:
+    1180:	f3 0f 1e fa          	endbr64
+    1184:	ff 25 36 4e 00 00    	jmp    *0x4e36(%rip)        # 5fc0 <__asan_report_load8@Base>
+    118a:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+
+0000000000001190 <__asan_report_load16_asm>:
+    1190:	f3 0f 1e fa          	endbr64
+    1194:	ff 25 16 4e 00 00    	jmp    *0x4e16(%rip)        # 5fb0 <__asan_report_load16@Base>
+    119a:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+
+00000000000011a0 <__asan_report_store1_asm>:
+    11a0:	f3 0f 1e fa          	endbr64
+    11a4:	ff 25 0e 4e 00 00    	jmp    *0x4e0e(%rip)        # 5fb8 <__asan_report_store1@Base>
+    11aa:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+
+00000000000011b0 <__asan_report_store2_asm>:
+    11b0:	f3 0f 1e fa          	endbr64
+    11b4:	ff 25 0e 4e 00 00    	jmp    *0x4e0e(%rip)        # 5fc8 <__asan_report_store2@Base>
+    11ba:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+
+00000000000011c0 <__asan_report_store4_asm>:
+    11c0:	f3 0f 1e fa          	endbr64
+    11c4:	ff 25 ae 4d 00 00    	jmp    *0x4dae(%rip)        # 5f78 <__asan_report_store4@Base>
+    11ca:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+
+00000000000011d0 <__asan_report_store8_asm>:
+    11d0:	f3 0f 1e fa          	endbr64
+    11d4:	ff 25 be 4d 00 00    	jmp    *0x4dbe(%rip)        # 5f98 <__asan_report_store8@Base>
+    11da:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+
+00000000000011e0 <__asan_report_store16_asm>:
+    11e0:	f3 0f 1e fa          	endbr64
+    11e4:	ff 25 9e 4d 00 00    	jmp    *0x4d9e(%rip)        # 5f88 <__asan_report_store16@Base>
+
+00000000000011ea <__asan_check_load_add_1_RAX>:
+    11ea:	49 89 c2             	mov    %rax,%r10
+    11ed:	49 c1 ea 03          	shr    $0x3,%r10
+    11f1:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    11f8:	7f 
+    11f9:	45 85 d2             	test   %r10d,%r10d
+    11fc:	75 01                	jne    11ff <.check_load_add_1_RAX>
+
+00000000000011fe <.return_load_add_1_RAX>:
+    11fe:	c3                   	ret
+
+00000000000011ff <.check_load_add_1_RAX>:
+    11ff:	51                   	push   %rcx
+    1200:	48 89 c1             	mov    %rax,%rcx
+    1203:	83 e1 07             	and    $0x7,%ecx
+    1206:	44 39 d1             	cmp    %r10d,%ecx
+    1209:	59                   	pop    %rcx
+    120a:	7c f2                	jl     11fe <.return_load_add_1_RAX>
+    120c:	48 89 c7             	mov    %rax,%rdi
+    120f:	e9 3c ff ff ff       	jmp    1150 <__asan_report_load1_asm>
+
+0000000000001214 <__asan_check_store_add_1_RAX>:
+    1214:	49 89 c2             	mov    %rax,%r10
+    1217:	49 c1 ea 03          	shr    $0x3,%r10
+    121b:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    1222:	7f 
+    1223:	45 85 d2             	test   %r10d,%r10d
+    1226:	75 01                	jne    1229 <.check_store_add_1_RAX>
+
+0000000000001228 <.return_store_add_1_RAX>:
+    1228:	c3                   	ret
+
+0000000000001229 <.check_store_add_1_RAX>:
+    1229:	51                   	push   %rcx
+    122a:	48 89 c1             	mov    %rax,%rcx
+    122d:	83 e1 07             	and    $0x7,%ecx
+    1230:	44 39 d1             	cmp    %r10d,%ecx
+    1233:	59                   	pop    %rcx
+    1234:	7c f2                	jl     1228 <.return_store_add_1_RAX>
+    1236:	48 89 c7             	mov    %rax,%rdi
+    1239:	e9 62 ff ff ff       	jmp    11a0 <__asan_report_store1_asm>
+
+000000000000123e <__asan_check_load_add_2_RAX>:
+    123e:	49 89 c2             	mov    %rax,%r10
+    1241:	49 c1 ea 03          	shr    $0x3,%r10
+    1245:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    124c:	7f 
+    124d:	45 85 d2             	test   %r10d,%r10d
+    1250:	75 01                	jne    1253 <.check_load_add_2_RAX>
+
+0000000000001252 <.return_load_add_2_RAX>:
+    1252:	c3                   	ret
+
+0000000000001253 <.check_load_add_2_RAX>:
+    1253:	51                   	push   %rcx
+    1254:	48 89 c1             	mov    %rax,%rcx
+    1257:	83 e1 07             	and    $0x7,%ecx
+    125a:	83 c1 01             	add    $0x1,%ecx
+    125d:	44 39 d1             	cmp    %r10d,%ecx
+    1260:	59                   	pop    %rcx
+    1261:	7c ef                	jl     1252 <.return_load_add_2_RAX>
+    1263:	48 89 c7             	mov    %rax,%rdi
+    1266:	e9 f5 fe ff ff       	jmp    1160 <__asan_report_load2_asm>
+
+000000000000126b <__asan_check_store_add_2_RAX>:
+    126b:	49 89 c2             	mov    %rax,%r10
+    126e:	49 c1 ea 03          	shr    $0x3,%r10
+    1272:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    1279:	7f 
+    127a:	45 85 d2             	test   %r10d,%r10d
+    127d:	75 01                	jne    1280 <.check_store_add_2_RAX>
+
+000000000000127f <.return_store_add_2_RAX>:
+    127f:	c3                   	ret
+
+0000000000001280 <.check_store_add_2_RAX>:
+    1280:	51                   	push   %rcx
+    1281:	48 89 c1             	mov    %rax,%rcx
+    1284:	83 e1 07             	and    $0x7,%ecx
+    1287:	83 c1 01             	add    $0x1,%ecx
+    128a:	44 39 d1             	cmp    %r10d,%ecx
+    128d:	59                   	pop    %rcx
+    128e:	7c ef                	jl     127f <.return_store_add_2_RAX>
+    1290:	48 89 c7             	mov    %rax,%rdi
+    1293:	e9 18 ff ff ff       	jmp    11b0 <__asan_report_store2_asm>
+
+0000000000001298 <__asan_check_load_add_4_RAX>:
+    1298:	49 89 c2             	mov    %rax,%r10
+    129b:	49 c1 ea 03          	shr    $0x3,%r10
+    129f:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    12a6:	7f 
+    12a7:	45 85 d2             	test   %r10d,%r10d
+    12aa:	75 01                	jne    12ad <.check_load_add_4_RAX>
+
+00000000000012ac <.return_load_add_4_RAX>:
+    12ac:	c3                   	ret
+
+00000000000012ad <.check_load_add_4_RAX>:
+    12ad:	51                   	push   %rcx
+    12ae:	48 89 c1             	mov    %rax,%rcx
+    12b1:	83 e1 07             	and    $0x7,%ecx
+    12b4:	83 c1 03             	add    $0x3,%ecx
+    12b7:	44 39 d1             	cmp    %r10d,%ecx
+    12ba:	59                   	pop    %rcx
+    12bb:	7c ef                	jl     12ac <.return_load_add_4_RAX>
+    12bd:	48 89 c7             	mov    %rax,%rdi
+    12c0:	e9 ab fe ff ff       	jmp    1170 <__asan_report_load4_asm>
+
+00000000000012c5 <__asan_check_store_add_4_RAX>:
+    12c5:	49 89 c2             	mov    %rax,%r10
+    12c8:	49 c1 ea 03          	shr    $0x3,%r10
+    12cc:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    12d3:	7f 
+    12d4:	45 85 d2             	test   %r10d,%r10d
+    12d7:	75 01                	jne    12da <.check_store_add_4_RAX>
+
+00000000000012d9 <.return_store_add_4_RAX>:
+    12d9:	c3                   	ret
+
+00000000000012da <.check_store_add_4_RAX>:
+    12da:	51                   	push   %rcx
+    12db:	48 89 c1             	mov    %rax,%rcx
+    12de:	83 e1 07             	and    $0x7,%ecx
+    12e1:	83 c1 03             	add    $0x3,%ecx
+    12e4:	44 39 d1             	cmp    %r10d,%ecx
+    12e7:	59                   	pop    %rcx
+    12e8:	7c ef                	jl     12d9 <.return_store_add_4_RAX>
+    12ea:	48 89 c7             	mov    %rax,%rdi
+    12ed:	e9 ce fe ff ff       	jmp    11c0 <__asan_report_store4_asm>
+
+00000000000012f2 <__asan_check_load_add_8_RAX>:
+    12f2:	49 89 c2             	mov    %rax,%r10
+    12f5:	49 c1 ea 03          	shr    $0x3,%r10
+    12f9:	41 80 ba 00 80 ff 7f 	cmpb   $0x0,0x7fff8000(%r10)
+    1300:	00 
+    1301:	75 01                	jne    1304 <.fail_load_add_8_RAX>
+    1303:	c3                   	ret
+
+0000000000001304 <.fail_load_add_8_RAX>:
+    1304:	48 89 c7             	mov    %rax,%rdi
+    1307:	e9 74 fe ff ff       	jmp    1180 <__asan_report_load8_asm>
+
+000000000000130c <__asan_check_store_add_8_RAX>:
+    130c:	49 89 c2             	mov    %rax,%r10
+    130f:	49 c1 ea 03          	shr    $0x3,%r10
+    1313:	41 80 ba 00 80 ff 7f 	cmpb   $0x0,0x7fff8000(%r10)
+    131a:	00 
+    131b:	75 01                	jne    131e <.fail_store_add_8_RAX>
+    131d:	c3                   	ret
+
+000000000000131e <.fail_store_add_8_RAX>:
+    131e:	48 89 c7             	mov    %rax,%rdi
+    1321:	e9 aa fe ff ff       	jmp    11d0 <__asan_report_store8_asm>
+
+0000000000001326 <__asan_check_load_add_16_RAX>:
+    1326:	49 89 c2             	mov    %rax,%r10
+    1329:	49 c1 ea 03          	shr    $0x3,%r10
+    132d:	66 41 83 ba 00 80 ff 	cmpw   $0x0,0x7fff8000(%r10)
+    1334:	7f 00 
+    1336:	75 01                	jne    1339 <.fail_load_add_16_RAX>
+    1338:	c3                   	ret
+
+0000000000001339 <.fail_load_add_16_RAX>:
+    1339:	48 89 c7             	mov    %rax,%rdi
+    133c:	e9 4f fe ff ff       	jmp    1190 <__asan_report_load16_asm>
+
+0000000000001341 <__asan_check_store_add_16_RAX>:
+    1341:	49 89 c2             	mov    %rax,%r10
+    1344:	49 c1 ea 03          	shr    $0x3,%r10
+    1348:	66 41 83 ba 00 80 ff 	cmpw   $0x0,0x7fff8000(%r10)
+    134f:	7f 00 
+    1351:	75 01                	jne    1354 <.fail_store_add_16_RAX>
+    1353:	c3                   	ret
+
+0000000000001354 <.fail_store_add_16_RAX>:
+    1354:	48 89 c7             	mov    %rax,%rdi
+    1357:	e9 84 fe ff ff       	jmp    11e0 <__asan_report_store16_asm>
+
+000000000000135c <__asan_check_load_add_1_RBX>:
+    135c:	49 89 da             	mov    %rbx,%r10
+    135f:	49 c1 ea 03          	shr    $0x3,%r10
+    1363:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    136a:	7f 
+    136b:	45 85 d2             	test   %r10d,%r10d
+    136e:	75 01                	jne    1371 <.check_load_add_1_RBX>
+
+0000000000001370 <.return_load_add_1_RBX>:
+    1370:	c3                   	ret
+
+0000000000001371 <.check_load_add_1_RBX>:
+    1371:	51                   	push   %rcx
+    1372:	48 89 d9             	mov    %rbx,%rcx
+    1375:	83 e1 07             	and    $0x7,%ecx
+    1378:	44 39 d1             	cmp    %r10d,%ecx
+    137b:	59                   	pop    %rcx
+    137c:	7c f2                	jl     1370 <.return_load_add_1_RBX>
+    137e:	48 89 df             	mov    %rbx,%rdi
+    1381:	e9 ca fd ff ff       	jmp    1150 <__asan_report_load1_asm>
+
+0000000000001386 <__asan_check_store_add_1_RBX>:
+    1386:	49 89 da             	mov    %rbx,%r10
+    1389:	49 c1 ea 03          	shr    $0x3,%r10
+    138d:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    1394:	7f 
+    1395:	45 85 d2             	test   %r10d,%r10d
+    1398:	75 01                	jne    139b <.check_store_add_1_RBX>
+
+000000000000139a <.return_store_add_1_RBX>:
+    139a:	c3                   	ret
+
+000000000000139b <.check_store_add_1_RBX>:
+    139b:	51                   	push   %rcx
+    139c:	48 89 d9             	mov    %rbx,%rcx
+    139f:	83 e1 07             	and    $0x7,%ecx
+    13a2:	44 39 d1             	cmp    %r10d,%ecx
+    13a5:	59                   	pop    %rcx
+    13a6:	7c f2                	jl     139a <.return_store_add_1_RBX>
+    13a8:	48 89 df             	mov    %rbx,%rdi
+    13ab:	e9 f0 fd ff ff       	jmp    11a0 <__asan_report_store1_asm>
+
+00000000000013b0 <__asan_check_load_add_2_RBX>:
+    13b0:	49 89 da             	mov    %rbx,%r10
+    13b3:	49 c1 ea 03          	shr    $0x3,%r10
+    13b7:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    13be:	7f 
+    13bf:	45 85 d2             	test   %r10d,%r10d
+    13c2:	75 01                	jne    13c5 <.check_load_add_2_RBX>
+
+00000000000013c4 <.return_load_add_2_RBX>:
+    13c4:	c3                   	ret
+
+00000000000013c5 <.check_load_add_2_RBX>:
+    13c5:	51                   	push   %rcx
+    13c6:	48 89 d9             	mov    %rbx,%rcx
+    13c9:	83 e1 07             	and    $0x7,%ecx
+    13cc:	83 c1 01             	add    $0x1,%ecx
+    13cf:	44 39 d1             	cmp    %r10d,%ecx
+    13d2:	59                   	pop    %rcx
+    13d3:	7c ef                	jl     13c4 <.return_load_add_2_RBX>
+    13d5:	48 89 df             	mov    %rbx,%rdi
+    13d8:	e9 83 fd ff ff       	jmp    1160 <__asan_report_load2_asm>
+
+00000000000013dd <__asan_check_store_add_2_RBX>:
+    13dd:	49 89 da             	mov    %rbx,%r10
+    13e0:	49 c1 ea 03          	shr    $0x3,%r10
+    13e4:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    13eb:	7f 
+    13ec:	45 85 d2             	test   %r10d,%r10d
+    13ef:	75 01                	jne    13f2 <.check_store_add_2_RBX>
+
+00000000000013f1 <.return_store_add_2_RBX>:
+    13f1:	c3                   	ret
+
+00000000000013f2 <.check_store_add_2_RBX>:
+    13f2:	51                   	push   %rcx
+    13f3:	48 89 d9             	mov    %rbx,%rcx
+    13f6:	83 e1 07             	and    $0x7,%ecx
+    13f9:	83 c1 01             	add    $0x1,%ecx
+    13fc:	44 39 d1             	cmp    %r10d,%ecx
+    13ff:	59                   	pop    %rcx
+    1400:	7c ef                	jl     13f1 <.return_store_add_2_RBX>
+    1402:	48 89 df             	mov    %rbx,%rdi
+    1405:	e9 a6 fd ff ff       	jmp    11b0 <__asan_report_store2_asm>
+
+000000000000140a <__asan_check_load_add_4_RBX>:
+    140a:	49 89 da             	mov    %rbx,%r10
+    140d:	49 c1 ea 03          	shr    $0x3,%r10
+    1411:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    1418:	7f 
+    1419:	45 85 d2             	test   %r10d,%r10d
+    141c:	75 01                	jne    141f <.check_load_add_4_RBX>
+
+000000000000141e <.return_load_add_4_RBX>:
+    141e:	c3                   	ret
+
+000000000000141f <.check_load_add_4_RBX>:
+    141f:	51                   	push   %rcx
+    1420:	48 89 d9             	mov    %rbx,%rcx
+    1423:	83 e1 07             	and    $0x7,%ecx
+    1426:	83 c1 03             	add    $0x3,%ecx
+    1429:	44 39 d1             	cmp    %r10d,%ecx
+    142c:	59                   	pop    %rcx
+    142d:	7c ef                	jl     141e <.return_load_add_4_RBX>
+    142f:	48 89 df             	mov    %rbx,%rdi
+    1432:	e9 39 fd ff ff       	jmp    1170 <__asan_report_load4_asm>
+
+0000000000001437 <__asan_check_store_add_4_RBX>:
+    1437:	49 89 da             	mov    %rbx,%r10
+    143a:	49 c1 ea 03          	shr    $0x3,%r10
+    143e:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    1445:	7f 
+    1446:	45 85 d2             	test   %r10d,%r10d
+    1449:	75 01                	jne    144c <.check_store_add_4_RBX>
+
+000000000000144b <.return_store_add_4_RBX>:
+    144b:	c3                   	ret
+
+000000000000144c <.check_store_add_4_RBX>:
+    144c:	51                   	push   %rcx
+    144d:	48 89 d9             	mov    %rbx,%rcx
+    1450:	83 e1 07             	and    $0x7,%ecx
+    1453:	83 c1 03             	add    $0x3,%ecx
+    1456:	44 39 d1             	cmp    %r10d,%ecx
+    1459:	59                   	pop    %rcx
+    145a:	7c ef                	jl     144b <.return_store_add_4_RBX>
+    145c:	48 89 df             	mov    %rbx,%rdi
+    145f:	e9 5c fd ff ff       	jmp    11c0 <__asan_report_store4_asm>
+
+0000000000001464 <__asan_check_load_add_8_RBX>:
+    1464:	49 89 da             	mov    %rbx,%r10
+    1467:	49 c1 ea 03          	shr    $0x3,%r10
+    146b:	41 80 ba 00 80 ff 7f 	cmpb   $0x0,0x7fff8000(%r10)
+    1472:	00 
+    1473:	75 01                	jne    1476 <.fail_load_add_8_RBX>
+    1475:	c3                   	ret
+
+0000000000001476 <.fail_load_add_8_RBX>:
+    1476:	48 89 df             	mov    %rbx,%rdi
+    1479:	e9 02 fd ff ff       	jmp    1180 <__asan_report_load8_asm>
+
+000000000000147e <__asan_check_store_add_8_RBX>:
+    147e:	49 89 da             	mov    %rbx,%r10
+    1481:	49 c1 ea 03          	shr    $0x3,%r10
+    1485:	41 80 ba 00 80 ff 7f 	cmpb   $0x0,0x7fff8000(%r10)
+    148c:	00 
+    148d:	75 01                	jne    1490 <.fail_store_add_8_RBX>
+    148f:	c3                   	ret
+
+0000000000001490 <.fail_store_add_8_RBX>:
+    1490:	48 89 df             	mov    %rbx,%rdi
+    1493:	e9 38 fd ff ff       	jmp    11d0 <__asan_report_store8_asm>
+
+0000000000001498 <__asan_check_load_add_16_RBX>:
+    1498:	49 89 da             	mov    %rbx,%r10
+    149b:	49 c1 ea 03          	shr    $0x3,%r10
+    149f:	66 41 83 ba 00 80 ff 	cmpw   $0x0,0x7fff8000(%r10)
+    14a6:	7f 00 
+    14a8:	75 01                	jne    14ab <.fail_load_add_16_RBX>
+    14aa:	c3                   	ret
+
+00000000000014ab <.fail_load_add_16_RBX>:
+    14ab:	48 89 df             	mov    %rbx,%rdi
+    14ae:	e9 dd fc ff ff       	jmp    1190 <__asan_report_load16_asm>
+
+00000000000014b3 <__asan_check_store_add_16_RBX>:
+    14b3:	49 89 da             	mov    %rbx,%r10
+    14b6:	49 c1 ea 03          	shr    $0x3,%r10
+    14ba:	66 41 83 ba 00 80 ff 	cmpw   $0x0,0x7fff8000(%r10)
+    14c1:	7f 00 
+    14c3:	75 01                	jne    14c6 <.fail_store_add_16_RBX>
+    14c5:	c3                   	ret
+
+00000000000014c6 <.fail_store_add_16_RBX>:
+    14c6:	48 89 df             	mov    %rbx,%rdi
+    14c9:	e9 12 fd ff ff       	jmp    11e0 <__asan_report_store16_asm>
+
+00000000000014ce <__asan_check_load_add_1_RCX>:
+    14ce:	49 89 ca             	mov    %rcx,%r10
+    14d1:	49 c1 ea 03          	shr    $0x3,%r10
+    14d5:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    14dc:	7f 
+    14dd:	45 85 d2             	test   %r10d,%r10d
+    14e0:	75 01                	jne    14e3 <.check_load_add_1_RCX>
+
+00000000000014e2 <.return_load_add_1_RCX>:
+    14e2:	c3                   	ret
+
+00000000000014e3 <.check_load_add_1_RCX>:
+    14e3:	51                   	push   %rcx
+    14e4:	48 89 c9             	mov    %rcx,%rcx
+    14e7:	83 e1 07             	and    $0x7,%ecx
+    14ea:	44 39 d1             	cmp    %r10d,%ecx
+    14ed:	59                   	pop    %rcx
+    14ee:	7c f2                	jl     14e2 <.return_load_add_1_RCX>
+    14f0:	48 89 cf             	mov    %rcx,%rdi
+    14f3:	e9 58 fc ff ff       	jmp    1150 <__asan_report_load1_asm>
+
+00000000000014f8 <__asan_check_store_add_1_RCX>:
+    14f8:	49 89 ca             	mov    %rcx,%r10
+    14fb:	49 c1 ea 03          	shr    $0x3,%r10
+    14ff:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    1506:	7f 
+    1507:	45 85 d2             	test   %r10d,%r10d
+    150a:	75 01                	jne    150d <.check_store_add_1_RCX>
+
+000000000000150c <.return_store_add_1_RCX>:
+    150c:	c3                   	ret
+
+000000000000150d <.check_store_add_1_RCX>:
+    150d:	51                   	push   %rcx
+    150e:	48 89 c9             	mov    %rcx,%rcx
+    1511:	83 e1 07             	and    $0x7,%ecx
+    1514:	44 39 d1             	cmp    %r10d,%ecx
+    1517:	59                   	pop    %rcx
+    1518:	7c f2                	jl     150c <.return_store_add_1_RCX>
+    151a:	48 89 cf             	mov    %rcx,%rdi
+    151d:	e9 7e fc ff ff       	jmp    11a0 <__asan_report_store1_asm>
+
+0000000000001522 <__asan_check_load_add_2_RCX>:
+    1522:	49 89 ca             	mov    %rcx,%r10
+    1525:	49 c1 ea 03          	shr    $0x3,%r10
+    1529:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    1530:	7f 
+    1531:	45 85 d2             	test   %r10d,%r10d
+    1534:	75 01                	jne    1537 <.check_load_add_2_RCX>
+
+0000000000001536 <.return_load_add_2_RCX>:
+    1536:	c3                   	ret
+
+0000000000001537 <.check_load_add_2_RCX>:
+    1537:	51                   	push   %rcx
+    1538:	48 89 c9             	mov    %rcx,%rcx
+    153b:	83 e1 07             	and    $0x7,%ecx
+    153e:	83 c1 01             	add    $0x1,%ecx
+    1541:	44 39 d1             	cmp    %r10d,%ecx
+    1544:	59                   	pop    %rcx
+    1545:	7c ef                	jl     1536 <.return_load_add_2_RCX>
+    1547:	48 89 cf             	mov    %rcx,%rdi
+    154a:	e9 11 fc ff ff       	jmp    1160 <__asan_report_load2_asm>
+
+000000000000154f <__asan_check_store_add_2_RCX>:
+    154f:	49 89 ca             	mov    %rcx,%r10
+    1552:	49 c1 ea 03          	shr    $0x3,%r10
+    1556:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    155d:	7f 
+    155e:	45 85 d2             	test   %r10d,%r10d
+    1561:	75 01                	jne    1564 <.check_store_add_2_RCX>
+
+0000000000001563 <.return_store_add_2_RCX>:
+    1563:	c3                   	ret
+
+0000000000001564 <.check_store_add_2_RCX>:
+    1564:	51                   	push   %rcx
+    1565:	48 89 c9             	mov    %rcx,%rcx
+    1568:	83 e1 07             	and    $0x7,%ecx
+    156b:	83 c1 01             	add    $0x1,%ecx
+    156e:	44 39 d1             	cmp    %r10d,%ecx
+    1571:	59                   	pop    %rcx
+    1572:	7c ef                	jl     1563 <.return_store_add_2_RCX>
+    1574:	48 89 cf             	mov    %rcx,%rdi
+    1577:	e9 34 fc ff ff       	jmp    11b0 <__asan_report_store2_asm>
+
+000000000000157c <__asan_check_load_add_4_RCX>:
+    157c:	49 89 ca             	mov    %rcx,%r10
+    157f:	49 c1 ea 03          	shr    $0x3,%r10
+    1583:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    158a:	7f 
+    158b:	45 85 d2             	test   %r10d,%r10d
+    158e:	75 01                	jne    1591 <.check_load_add_4_RCX>
+
+0000000000001590 <.return_load_add_4_RCX>:
+    1590:	c3                   	ret
+
+0000000000001591 <.check_load_add_4_RCX>:
+    1591:	51                   	push   %rcx
+    1592:	48 89 c9             	mov    %rcx,%rcx
+    1595:	83 e1 07             	and    $0x7,%ecx
+    1598:	83 c1 03             	add    $0x3,%ecx
+    159b:	44 39 d1             	cmp    %r10d,%ecx
+    159e:	59                   	pop    %rcx
+    159f:	7c ef                	jl     1590 <.return_load_add_4_RCX>
+    15a1:	48 89 cf             	mov    %rcx,%rdi
+    15a4:	e9 c7 fb ff ff       	jmp    1170 <__asan_report_load4_asm>
+
+00000000000015a9 <__asan_check_store_add_4_RCX>:
+    15a9:	49 89 ca             	mov    %rcx,%r10
+    15ac:	49 c1 ea 03          	shr    $0x3,%r10
+    15b0:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    15b7:	7f 
+    15b8:	45 85 d2             	test   %r10d,%r10d
+    15bb:	75 01                	jne    15be <.check_store_add_4_RCX>
+
+00000000000015bd <.return_store_add_4_RCX>:
+    15bd:	c3                   	ret
+
+00000000000015be <.check_store_add_4_RCX>:
+    15be:	51                   	push   %rcx
+    15bf:	48 89 c9             	mov    %rcx,%rcx
+    15c2:	83 e1 07             	and    $0x7,%ecx
+    15c5:	83 c1 03             	add    $0x3,%ecx
+    15c8:	44 39 d1             	cmp    %r10d,%ecx
+    15cb:	59                   	pop    %rcx
+    15cc:	7c ef                	jl     15bd <.return_store_add_4_RCX>
+    15ce:	48 89 cf             	mov    %rcx,%rdi
+    15d1:	e9 ea fb ff ff       	jmp    11c0 <__asan_report_store4_asm>
+
+00000000000015d6 <__asan_check_load_add_8_RCX>:
+    15d6:	49 89 ca             	mov    %rcx,%r10
+    15d9:	49 c1 ea 03          	shr    $0x3,%r10
+    15dd:	41 80 ba 00 80 ff 7f 	cmpb   $0x0,0x7fff8000(%r10)
+    15e4:	00 
+    15e5:	75 01                	jne    15e8 <.fail_load_add_8_RCX>
+    15e7:	c3                   	ret
+
+00000000000015e8 <.fail_load_add_8_RCX>:
+    15e8:	48 89 cf             	mov    %rcx,%rdi
+    15eb:	e9 90 fb ff ff       	jmp    1180 <__asan_report_load8_asm>
+
+00000000000015f0 <__asan_check_store_add_8_RCX>:
+    15f0:	49 89 ca             	mov    %rcx,%r10
+    15f3:	49 c1 ea 03          	shr    $0x3,%r10
+    15f7:	41 80 ba 00 80 ff 7f 	cmpb   $0x0,0x7fff8000(%r10)
+    15fe:	00 
+    15ff:	75 01                	jne    1602 <.fail_store_add_8_RCX>
+    1601:	c3                   	ret
+
+0000000000001602 <.fail_store_add_8_RCX>:
+    1602:	48 89 cf             	mov    %rcx,%rdi
+    1605:	e9 c6 fb ff ff       	jmp    11d0 <__asan_report_store8_asm>
+
+000000000000160a <__asan_check_load_add_16_RCX>:
+    160a:	49 89 ca             	mov    %rcx,%r10
+    160d:	49 c1 ea 03          	shr    $0x3,%r10
+    1611:	66 41 83 ba 00 80 ff 	cmpw   $0x0,0x7fff8000(%r10)
+    1618:	7f 00 
+    161a:	75 01                	jne    161d <.fail_load_add_16_RCX>
+    161c:	c3                   	ret
+
+000000000000161d <.fail_load_add_16_RCX>:
+    161d:	48 89 cf             	mov    %rcx,%rdi
+    1620:	e9 6b fb ff ff       	jmp    1190 <__asan_report_load16_asm>
+
+0000000000001625 <__asan_check_store_add_16_RCX>:
+    1625:	49 89 ca             	mov    %rcx,%r10
+    1628:	49 c1 ea 03          	shr    $0x3,%r10
+    162c:	66 41 83 ba 00 80 ff 	cmpw   $0x0,0x7fff8000(%r10)
+    1633:	7f 00 
+    1635:	75 01                	jne    1638 <.fail_store_add_16_RCX>
+    1637:	c3                   	ret
+
+0000000000001638 <.fail_store_add_16_RCX>:
+    1638:	48 89 cf             	mov    %rcx,%rdi
+    163b:	e9 a0 fb ff ff       	jmp    11e0 <__asan_report_store16_asm>
+
+0000000000001640 <__asan_check_load_add_1_RDX>:
+    1640:	49 89 d2             	mov    %rdx,%r10
+    1643:	49 c1 ea 03          	shr    $0x3,%r10
+    1647:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    164e:	7f 
+    164f:	45 85 d2             	test   %r10d,%r10d
+    1652:	75 01                	jne    1655 <.check_load_add_1_RDX>
+
+0000000000001654 <.return_load_add_1_RDX>:
+    1654:	c3                   	ret
+
+0000000000001655 <.check_load_add_1_RDX>:
+    1655:	51                   	push   %rcx
+    1656:	48 89 d1             	mov    %rdx,%rcx
+    1659:	83 e1 07             	and    $0x7,%ecx
+    165c:	44 39 d1             	cmp    %r10d,%ecx
+    165f:	59                   	pop    %rcx
+    1660:	7c f2                	jl     1654 <.return_load_add_1_RDX>
+    1662:	48 89 d7             	mov    %rdx,%rdi
+    1665:	e9 e6 fa ff ff       	jmp    1150 <__asan_report_load1_asm>
+
+000000000000166a <__asan_check_store_add_1_RDX>:
+    166a:	49 89 d2             	mov    %rdx,%r10
+    166d:	49 c1 ea 03          	shr    $0x3,%r10
+    1671:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    1678:	7f 
+    1679:	45 85 d2             	test   %r10d,%r10d
+    167c:	75 01                	jne    167f <.check_store_add_1_RDX>
+
+000000000000167e <.return_store_add_1_RDX>:
+    167e:	c3                   	ret
+
+000000000000167f <.check_store_add_1_RDX>:
+    167f:	51                   	push   %rcx
+    1680:	48 89 d1             	mov    %rdx,%rcx
+    1683:	83 e1 07             	and    $0x7,%ecx
+    1686:	44 39 d1             	cmp    %r10d,%ecx
+    1689:	59                   	pop    %rcx
+    168a:	7c f2                	jl     167e <.return_store_add_1_RDX>
+    168c:	48 89 d7             	mov    %rdx,%rdi
+    168f:	e9 0c fb ff ff       	jmp    11a0 <__asan_report_store1_asm>
+
+0000000000001694 <__asan_check_load_add_2_RDX>:
+    1694:	49 89 d2             	mov    %rdx,%r10
+    1697:	49 c1 ea 03          	shr    $0x3,%r10
+    169b:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    16a2:	7f 
+    16a3:	45 85 d2             	test   %r10d,%r10d
+    16a6:	75 01                	jne    16a9 <.check_load_add_2_RDX>
+
+00000000000016a8 <.return_load_add_2_RDX>:
+    16a8:	c3                   	ret
+
+00000000000016a9 <.check_load_add_2_RDX>:
+    16a9:	51                   	push   %rcx
+    16aa:	48 89 d1             	mov    %rdx,%rcx
+    16ad:	83 e1 07             	and    $0x7,%ecx
+    16b0:	83 c1 01             	add    $0x1,%ecx
+    16b3:	44 39 d1             	cmp    %r10d,%ecx
+    16b6:	59                   	pop    %rcx
+    16b7:	7c ef                	jl     16a8 <.return_load_add_2_RDX>
+    16b9:	48 89 d7             	mov    %rdx,%rdi
+    16bc:	e9 9f fa ff ff       	jmp    1160 <__asan_report_load2_asm>
+
+00000000000016c1 <__asan_check_store_add_2_RDX>:
+    16c1:	49 89 d2             	mov    %rdx,%r10
+    16c4:	49 c1 ea 03          	shr    $0x3,%r10
+    16c8:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    16cf:	7f 
+    16d0:	45 85 d2             	test   %r10d,%r10d
+    16d3:	75 01                	jne    16d6 <.check_store_add_2_RDX>
+
+00000000000016d5 <.return_store_add_2_RDX>:
+    16d5:	c3                   	ret
+
+00000000000016d6 <.check_store_add_2_RDX>:
+    16d6:	51                   	push   %rcx
+    16d7:	48 89 d1             	mov    %rdx,%rcx
+    16da:	83 e1 07             	and    $0x7,%ecx
+    16dd:	83 c1 01             	add    $0x1,%ecx
+    16e0:	44 39 d1             	cmp    %r10d,%ecx
+    16e3:	59                   	pop    %rcx
+    16e4:	7c ef                	jl     16d5 <.return_store_add_2_RDX>
+    16e6:	48 89 d7             	mov    %rdx,%rdi
+    16e9:	e9 c2 fa ff ff       	jmp    11b0 <__asan_report_store2_asm>
+
+00000000000016ee <__asan_check_load_add_4_RDX>:
+    16ee:	49 89 d2             	mov    %rdx,%r10
+    16f1:	49 c1 ea 03          	shr    $0x3,%r10
+    16f5:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    16fc:	7f 
+    16fd:	45 85 d2             	test   %r10d,%r10d
+    1700:	75 01                	jne    1703 <.check_load_add_4_RDX>
+
+0000000000001702 <.return_load_add_4_RDX>:
+    1702:	c3                   	ret
+
+0000000000001703 <.check_load_add_4_RDX>:
+    1703:	51                   	push   %rcx
+    1704:	48 89 d1             	mov    %rdx,%rcx
+    1707:	83 e1 07             	and    $0x7,%ecx
+    170a:	83 c1 03             	add    $0x3,%ecx
+    170d:	44 39 d1             	cmp    %r10d,%ecx
+    1710:	59                   	pop    %rcx
+    1711:	7c ef                	jl     1702 <.return_load_add_4_RDX>
+    1713:	48 89 d7             	mov    %rdx,%rdi
+    1716:	e9 55 fa ff ff       	jmp    1170 <__asan_report_load4_asm>
+
+000000000000171b <__asan_check_store_add_4_RDX>:
+    171b:	49 89 d2             	mov    %rdx,%r10
+    171e:	49 c1 ea 03          	shr    $0x3,%r10
+    1722:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    1729:	7f 
+    172a:	45 85 d2             	test   %r10d,%r10d
+    172d:	75 01                	jne    1730 <.check_store_add_4_RDX>
+
+000000000000172f <.return_store_add_4_RDX>:
+    172f:	c3                   	ret
+
+0000000000001730 <.check_store_add_4_RDX>:
+    1730:	51                   	push   %rcx
+    1731:	48 89 d1             	mov    %rdx,%rcx
+    1734:	83 e1 07             	and    $0x7,%ecx
+    1737:	83 c1 03             	add    $0x3,%ecx
+    173a:	44 39 d1             	cmp    %r10d,%ecx
+    173d:	59                   	pop    %rcx
+    173e:	7c ef                	jl     172f <.return_store_add_4_RDX>
+    1740:	48 89 d7             	mov    %rdx,%rdi
+    1743:	e9 78 fa ff ff       	jmp    11c0 <__asan_report_store4_asm>
+
+0000000000001748 <__asan_check_load_add_8_RDX>:
+    1748:	49 89 d2             	mov    %rdx,%r10
+    174b:	49 c1 ea 03          	shr    $0x3,%r10
+    174f:	41 80 ba 00 80 ff 7f 	cmpb   $0x0,0x7fff8000(%r10)
+    1756:	00 
+    1757:	75 01                	jne    175a <.fail_load_add_8_RDX>
+    1759:	c3                   	ret
+
+000000000000175a <.fail_load_add_8_RDX>:
+    175a:	48 89 d7             	mov    %rdx,%rdi
+    175d:	e9 1e fa ff ff       	jmp    1180 <__asan_report_load8_asm>
+
+0000000000001762 <__asan_check_store_add_8_RDX>:
+    1762:	49 89 d2             	mov    %rdx,%r10
+    1765:	49 c1 ea 03          	shr    $0x3,%r10
+    1769:	41 80 ba 00 80 ff 7f 	cmpb   $0x0,0x7fff8000(%r10)
+    1770:	00 
+    1771:	75 01                	jne    1774 <.fail_store_add_8_RDX>
+    1773:	c3                   	ret
+
+0000000000001774 <.fail_store_add_8_RDX>:
+    1774:	48 89 d7             	mov    %rdx,%rdi
+    1777:	e9 54 fa ff ff       	jmp    11d0 <__asan_report_store8_asm>
+
+000000000000177c <__asan_check_load_add_16_RDX>:
+    177c:	49 89 d2             	mov    %rdx,%r10
+    177f:	49 c1 ea 03          	shr    $0x3,%r10
+    1783:	66 41 83 ba 00 80 ff 	cmpw   $0x0,0x7fff8000(%r10)
+    178a:	7f 00 
+    178c:	75 01                	jne    178f <.fail_load_add_16_RDX>
+    178e:	c3                   	ret
+
+000000000000178f <.fail_load_add_16_RDX>:
+    178f:	48 89 d7             	mov    %rdx,%rdi
+    1792:	e9 f9 f9 ff ff       	jmp    1190 <__asan_report_load16_asm>
+
+0000000000001797 <__asan_check_store_add_16_RDX>:
+    1797:	49 89 d2             	mov    %rdx,%r10
+    179a:	49 c1 ea 03          	shr    $0x3,%r10
+    179e:	66 41 83 ba 00 80 ff 	cmpw   $0x0,0x7fff8000(%r10)
+    17a5:	7f 00 
+    17a7:	75 01                	jne    17aa <.fail_store_add_16_RDX>
+    17a9:	c3                   	ret
+
+00000000000017aa <.fail_store_add_16_RDX>:
+    17aa:	48 89 d7             	mov    %rdx,%rdi
+    17ad:	e9 2e fa ff ff       	jmp    11e0 <__asan_report_store16_asm>
+
+00000000000017b2 <__asan_check_load_add_1_RSI>:
+    17b2:	49 89 f2             	mov    %rsi,%r10
+    17b5:	49 c1 ea 03          	shr    $0x3,%r10
+    17b9:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    17c0:	7f 
+    17c1:	45 85 d2             	test   %r10d,%r10d
+    17c4:	75 01                	jne    17c7 <.check_load_add_1_RSI>
+
+00000000000017c6 <.return_load_add_1_RSI>:
+    17c6:	c3                   	ret
+
+00000000000017c7 <.check_load_add_1_RSI>:
+    17c7:	51                   	push   %rcx
+    17c8:	48 89 f1             	mov    %rsi,%rcx
+    17cb:	83 e1 07             	and    $0x7,%ecx
+    17ce:	44 39 d1             	cmp    %r10d,%ecx
+    17d1:	59                   	pop    %rcx
+    17d2:	7c f2                	jl     17c6 <.return_load_add_1_RSI>
+    17d4:	48 89 f7             	mov    %rsi,%rdi
+    17d7:	e9 74 f9 ff ff       	jmp    1150 <__asan_report_load1_asm>
+
+00000000000017dc <__asan_check_store_add_1_RSI>:
+    17dc:	49 89 f2             	mov    %rsi,%r10
+    17df:	49 c1 ea 03          	shr    $0x3,%r10
+    17e3:	45 0f be 92 00 80 ff 	movsbl 0x7fff8000(%r10),%r10d
+    17ea:	7f 
+    17eb:	45 85 d2             	test   %r10d,%r10d
+    17ee:	75 01                	jne    17f1 <.check_store_add_1_RSI>
+
+00000000000017f0 <.return_store_add_1_RSI>:
+    17f0:	c3                   	ret
+
+00000000000017f1 <.check_store_add_1_RSI>:
+    17f1:	51                   	push   %rcx
+    17f2:	48 89 f1             	mov    %rsi,%rcx
+    17f5:	83 e1 07             	and    $0x7,%ecx
+    17f8:	44 39 d1             	cmp    %r10d,%ecx
+    17fb:	59                   	pop    %rcx
+    17fc:	7c f2                	jl     17f0 <.return_store_add_1_RSI>
+    17fe:	48                   	rex.W
+    17ff:	89                   	.byte 0x89

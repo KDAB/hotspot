@@ -285,6 +285,9 @@ private slots:
             << QStringLiteral("/home/milian/projects/kdab/rnd/hotspot/tests/test-clients/cpp-inlining/main.cpp") << 227
             << quint64(0x1970) << quint64(0x1c60);
 
+        QTest::addRow("objdump2.txt") << QFINDTESTDATA("disassembly/objdump2.txt") << QString() << 505
+                                      << quint64(0x1020) << quint64(0x17ff);
+
         QTest::addRow("objdump.indexed_start_internal.txt")
             << QFINDTESTDATA("disassembly/objdump.indexed_start_internal.txt")
             << QStringLiteral(
@@ -308,15 +311,21 @@ private slots:
         QCOMPARE(parsed.mainSourceFileName, mainSourceFileName);
         QCOMPARE(parsed.disassemblyLines.size(), numLines);
         for (const auto& line : parsed.disassemblyLines) {
-            QVERIFY(!line.fileLine.file.isEmpty());
-            QVERIFY(line.fileLine.line > 0);
+            if (line.fileLine.file.isEmpty()) {
+                QCOMPARE(line.fileLine.line, -1);
+            } else {
+                QVERIFY(line.fileLine.line > 0);
+            }
+
             if (line.addr) {
                 QVERIFY(line.addr >= minAddr);
                 QVERIFY(line.addr <= maxAddr);
+                QVERIFY(!line.disassembly.isEmpty());
 
-                QCOMPARE(line.branchVisualisation.size(), 40);
-                QVERIFY(std::all_of(line.branchVisualisation.begin(), line.branchVisualisation.end(),
-                                    [](QChar c) { return QLatin1String(" |\\/->+").contains(c); }));
+                if (!line.branchVisualisation.isEmpty()) {
+                    QVERIFY(std::all_of(line.branchVisualisation.begin(), line.branchVisualisation.end(),
+                                        [](QChar c) { return QLatin1String(" |\\/->+X").contains(c); }));
+                }
             } else {
                 QVERIFY(line.branchVisualisation.isEmpty());
             }
