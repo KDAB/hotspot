@@ -208,8 +208,8 @@ public slots:
     void setShowBranches(bool showBranches);
 
 private:
-    Settings() = default;
-    ~Settings() = default;
+    using QObject::QObject;
+    ~Settings();
 
     bool m_prettifySymbols = true;
     bool m_collapseTemplates = true;

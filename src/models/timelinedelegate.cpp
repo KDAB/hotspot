@@ -140,8 +140,8 @@ Data::Events::const_iterator findEvent(const Data::Events::const_iterator& begin
 }
 }
 
-TimeLineDelegate::TimeLineDelegate(FilterAndZoomStack* filterAndZoomStack, QAbstractItemView* view)
-    : QStyledItemDelegate(view)
+TimeLineDelegate::TimeLineDelegate(FilterAndZoomStack* filterAndZoomStack, QAbstractItemView* view, QObject* parent)
+    : QStyledItemDelegate(parent)
     , m_filterAndZoomStack(filterAndZoomStack)
     , m_view(view)
 {

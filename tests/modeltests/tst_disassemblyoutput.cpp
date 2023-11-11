@@ -31,6 +31,9 @@ inline QString findLib(const QString& name)
 class TestDisassemblyOutput : public QObject
 {
     Q_OBJECT
+public:
+    using QObject::QObject;
+
 private slots:
     void initTestCase()
     {

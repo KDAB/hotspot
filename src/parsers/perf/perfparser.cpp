@@ -608,8 +608,9 @@ class PerfParserPrivate : public QObject
 {
     Q_OBJECT
 public:
-    explicit PerfParserPrivate(Settings::CostAggregation costAggregation = Settings::CostAggregation::BySymbol)
-        : QObject(nullptr)
+    explicit PerfParserPrivate(Settings::CostAggregation costAggregation = Settings::CostAggregation::BySymbol,
+                               QObject* parent = nullptr)
+        : QObject(parent)
         , stopRequested(false)
         , costAggregation(costAggregation)
     {

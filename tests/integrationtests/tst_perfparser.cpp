@@ -155,6 +155,9 @@ void dump(const Data::BottomUp& bottomUp, QTextStream& stream, const QByteArray&
 class TestPerfParser : public QObject
 {
     Q_OBJECT
+public:
+    using QObject::QObject;
+
 private slots:
     void initTestCase()
     {

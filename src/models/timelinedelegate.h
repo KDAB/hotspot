@@ -51,7 +51,7 @@ class TimeLineDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    explicit TimeLineDelegate(FilterAndZoomStack* filterAndZoomStack, QAbstractItemView* view);
+    explicit TimeLineDelegate(FilterAndZoomStack* filterAndZoomStack, QAbstractItemView* view, QObject* parent);
     virtual ~TimeLineDelegate();
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;

@@ -75,7 +75,7 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
     // due to the increased width leading to a zoom effect
     ui->timeLineView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
-    m_timeLineDelegate = new TimeLineDelegate(m_filterAndZoomStack, ui->timeLineView);
+    m_timeLineDelegate = new TimeLineDelegate(m_filterAndZoomStack, ui->timeLineView, ui->timeLineView);
     ui->timeLineEventFilterButton->setMenu(filterMenu);
     ui->timeLineView->setItemDelegateForColumn(EventModel::EventsColumn, m_timeLineDelegate);
 

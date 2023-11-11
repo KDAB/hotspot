@@ -16,6 +16,8 @@
 
 #include "settings.h"
 
+Settings::~Settings() = default;
+
 Settings* Settings::instance()
 {
     static Settings settings;

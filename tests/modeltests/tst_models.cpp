@@ -85,6 +85,9 @@ Data::BottomUpResults generateTreeByThread()
 class TestModels : public QObject
 {
     Q_OBJECT
+public:
+    using QObject::QObject;
+
 private slots:
     void testTreeParents()
     {
