@@ -16,7 +16,6 @@
 
 #include "../util.h"
 
-#include <functional>
 #include <limits>
 #include <tuple>
 #include <valarray>
@@ -68,6 +67,13 @@ struct Symbol
     bool canDisassemble() const
     {
         return !symbol.isEmpty() && !path.isEmpty() && relAddr > 0 && size > 0;
+    }
+
+    bool isBinarySymbol() const
+    {
+        // a "binary only" symbol like used in "Top HotSpots Per File" has these characteristics
+        // while a non-resolved symbol has only a binary but no symbol set
+        return binary.isEmpty() && !symbol.isEmpty() && path.isEmpty();
     }
 };
 
