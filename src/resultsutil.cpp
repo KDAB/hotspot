@@ -69,8 +69,10 @@ void addFilterActions(QMenu* menu, const Data::Symbol& symbol, FilterAndZoomStac
         // don't include symbol-related entries for binary-only symbols (like in Top Hotspots Per File)
         // CHECKME: best would be to check which view we are in and not add this group for "Top Hotspots Per File"
         if (!symbol.isBinarySymbol() && !symbol.symbol.isEmpty()) {
-            filterActions.filterInBySymbol->setData(QVariant::fromValue(symbol));
-            filterActions.filterOutBySymbol->setData(filterActions.filterInBySymbol->data());
+            auto symbolFilter = QVariant::fromValue(symbol);
+
+            filterActions.filterInBySymbol->setData(symbolFilter);
+            filterActions.filterOutBySymbol->setData(symbolFilter);
 
             menu->addAction(filterActions.filterInBySymbol);
             menu->addAction(filterActions.filterOutBySymbol);
@@ -80,8 +82,10 @@ void addFilterActions(QMenu* menu, const Data::Symbol& symbol, FilterAndZoomStac
         // don't include binary-related entries when we don't have this information
         // CHECKME: if we have the information about the view then include but only disable this for all other views
         if (symbol.isBinarySymbol() || !symbol.binary.isEmpty()) {
-            filterActions.filterInByBinary->setData(QVariant::fromValue(symbol.binary));
-            filterActions.filterOutByBinary->setData(filterActions.filterInByBinary->data());
+            auto binaryFilter = QVariant::fromValue(symbol.binary);
+
+            filterActions.filterInByBinary->setData(binaryFilter);
+            filterActions.filterOutByBinary->setData(binaryFilter);
 
             menu->addAction(filterActions.filterInByBinary);
             menu->addAction(filterActions.filterOutByBinary);
