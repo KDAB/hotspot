@@ -196,6 +196,9 @@ void FilterAndZoomStack::applyFilter(Data::FilterAction filter)
         filter.excludeSymbols += lastFilter.excludeSymbols;
         filter.includeSymbols += lastFilter.includeSymbols;
         filter.includeSymbols.subtract(filter.excludeSymbols);
+        filter.excludeBinaries += lastFilter.excludeBinaries;
+        filter.includeBinaries += lastFilter.includeBinaries;
+        filter.includeBinaries.subtract(filter.excludeBinaries);
     }
 
     m_filterStack.push_back(filter);
