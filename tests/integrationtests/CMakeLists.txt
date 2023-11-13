@@ -7,6 +7,7 @@ ecm_add_test(
     ../../src/perfcontrolfifowrapper.cpp
     ../../src/perfrecord.cpp
     ../../src/recordhost.cpp
+    ../../src/remotedevice.cpp
     ../../src/settings.cpp
     ../../src/util.cpp
     ../../src/errnoutil.cpp
@@ -21,6 +22,7 @@ ecm_add_test(
     KF${QT_MAJOR_VERSION}::WindowSystem
     KF${QT_MAJOR_VERSION}::KIOCore
     KF${QT_MAJOR_VERSION}::Parts
+    QCoro::Core
     TEST_NAME
     tst_perfparser
 )

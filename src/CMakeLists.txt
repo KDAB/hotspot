@@ -55,6 +55,7 @@ set(HOTSPOT_SRCS
     errnoutil.cpp
     recordhost.cpp
     copyabletreeview.cpp
+    remotedevice.cpp
     # ui files:
     mainwindow.ui
     aboutdialog.ui
@@ -119,6 +120,7 @@ target_link_libraries(
     models
     PrefixTickLabels
     KDAB::kddockwidgets
+    QCoro::Core
 )
 
 if(KFArchive_FOUND)

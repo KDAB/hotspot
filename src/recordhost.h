@@ -8,12 +8,16 @@
 #pragma once
 
 #include "jobtracker.h"
+#include "remotedevice.h"
 
 #include <QObject>
+
+#include <memory>
 
 enum class RecordType
 {
     LaunchApplication,
+    LaunchRemoteApplication,
     AttachToProcess,
     ProfileSystem,
     NUM_RECORD_TYPES
@@ -59,6 +63,12 @@ public:
     }
     void setClientApplication(const QString& clientApplication);
 
+    QStringList clientApplicationArguments() const
+    {
+        return m_clientApplicationArguments;
+    }
+    void setClientApplicationArguments(const QStringList& arguments);
+
     QString outputFileName() const
     {
         return m_outputFileName;
@@ -96,6 +106,15 @@ public:
     // list of pids to record
     void setPids(const QStringList& pids);
 
+    bool isLocal() const;
+
+    const RemoteDevice* remoteDevice() const
+    {
+        return m_remoteDevice.get();
+    }
+
+    void disconnectFromDevice();
+
 signals:
     /// disallow "start" on recordpage until this is ready and that should only be the case when there's no error
     void isReadyChanged(bool isReady);
@@ -104,6 +123,7 @@ signals:
     void hostChanged();
     void currentWorkingDirectoryChanged(const QString& cwd); // Maybe QUrl
     void clientApplicationChanged(const QString& clientApplication);
+    void clientApplicationArgumentsChanged(const QStringList& arguments);
     void perfCapabilitiesChanged(RecordHost::PerfCapabilities perfCapabilities);
     void isPerfInstalledChanged(bool isInstalled);
     void outputFileNameChanged(const QString& outputFileName);
@@ -111,12 +131,13 @@ signals:
     void pidsChanged();
 
 private:
-    bool isLocal() const;
+    void checkRequirements();
 
     QString m_host;
     QString m_error;
     QString m_cwd;
     QString m_clientApplication;
+    QStringList m_clientApplicationArguments;
     QString m_outputFileName;
     PerfCapabilities m_perfCapabilities;
     JobTracker m_checkPerfCapabilitiesJob;
@@ -124,6 +145,7 @@ private:
     RecordType m_recordType = RecordType::LaunchApplication;
     bool m_isPerfInstalled = false;
     QStringList m_pids;
+    std::unique_ptr<RemoteDevice> m_remoteDevice;
 };
 
 Q_DECLARE_METATYPE(RecordHost::PerfCapabilities)

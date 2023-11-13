@@ -11,6 +11,9 @@
 #include <QProcess>
 #include <QStandardPaths>
 #include <QThread>
+#include <QTimer>
+
+#include <QCoroCore>
 
 #include <KShell>
 #include <KUser>
@@ -142,6 +145,28 @@ RecordHost::PerfCapabilities fetchLocalPerfCapabilities(const QString& perfPath)
 
     return capabilities;
 }
+
+RecordHost::PerfCapabilities fetchRemotePerfCapabilities(const std::unique_ptr<RemoteDevice>& device)
+{
+    RecordHost::PerfCapabilities capabilities;
+
+    const auto buildOptions = device->getProgramOutput(
+        {QStringLiteral("perf"), QStringLiteral("version"), QStringLiteral("--build-options")});
+    const auto help = device->getProgramOutput({QStringLiteral("perf"), QStringLiteral("--help")});
+
+    capabilities.canCompress = Zstd_FOUND && buildOptions.contains("zszd: [ on  ]");
+    capabilities.canSwitchEvents = help.contains("--switch-events");
+    capabilities.canSampleCpu = help.contains("--sample-cpu");
+
+    // TODO: implement
+    capabilities.canProfileOffCpu = false;
+    capabilities.privilegesAlreadyElevated = false;
+
+    capabilities.canUseAio = false; // AIO doesn't work with perf streaming
+    capabilities.canElevatePrivileges = false; // we currently don't support this
+
+    return capabilities;
+}
 }
 
 RecordHost::RecordHost(QObject* parent)
@@ -171,7 +196,13 @@ bool RecordHost::isReady() const
 {
     switch (m_recordType) {
     case RecordType::LaunchApplication:
-        // client application is already validated in  the setter
+        // client application is already validated in the setter
+        if (m_clientApplication.isEmpty() && m_cwd.isEmpty())
+            return false;
+        break;
+    case RecordType::LaunchRemoteApplication:
+        if (!m_remoteDevice || !m_remoteDevice->isConnected())
+            return false;
         if (m_clientApplication.isEmpty() && m_cwd.isEmpty())
             return false;
         break;
@@ -205,6 +236,17 @@ void RecordHost::setHost(const QString& host)
     m_host = host;
     emit hostChanged();
 
+    if (!isLocal()) {
+        m_remoteDevice = std::make_unique<RemoteDevice>(this);
+
+        connect(m_remoteDevice.get(), &RemoteDevice::connected, this, &RecordHost::checkRequirements);
+        connect(m_remoteDevice.get(), &RemoteDevice::connected, this, [this] { emit isReadyChanged(isReady()); });
+        connect(m_remoteDevice.get(), &RemoteDevice::failedToConnect, this,
+                [this] { emit errorOccurred(tr("Failed to connect to: %1").arg(m_host)); });
+    } else {
+        m_remoteDevice = nullptr;
+    }
+
     // invalidate everything
     m_cwd.clear();
     emit currentWorkingDirectoryChanged(m_cwd);
@@ -212,38 +254,18 @@ void RecordHost::setHost(const QString& host)
     m_clientApplication.clear();
     emit clientApplicationChanged(m_clientApplication);
 
+    m_clientApplicationArguments.clear();
+    emit clientApplicationArgumentsChanged(m_clientApplicationArguments);
+
     m_perfCapabilities = {};
     emit perfCapabilitiesChanged(m_perfCapabilities);
 
-    const auto perfPath = perfBinaryPath();
-    m_checkPerfCapabilitiesJob.startJob([perfPath](auto&&) { return fetchLocalPerfCapabilities(perfPath); },
-                                        [this](RecordHost::PerfCapabilities capabilities) {
-                                            Q_ASSERT(QThread::currentThread() == thread());
-
-                                            m_perfCapabilities = capabilities;
-                                            emit perfCapabilitiesChanged(m_perfCapabilities);
-                                        });
-
-    m_checkPerfInstalledJob.startJob(
-        [isLocal = isLocal(), perfPath](auto&&) {
-            if (isLocal) {
-                if (perfPath.isEmpty()) {
-                    return !QStandardPaths::findExecutable(QStringLiteral("perf")).isEmpty();
-                }
-
-                return QFileInfo::exists(perfPath);
-            }
-
-            qWarning() << "remote is not implemented";
-            return false;
-        },
-        [this](bool isInstalled) {
-            if (!isInstalled) {
-                emit errorOccurred(tr("perf is not installed"));
-            }
-            m_isPerfInstalled = isInstalled;
-            emit isPerfInstalledChanged(isInstalled);
-        });
+    if (isLocal()) {
+        checkRequirements();
+    } else {
+        // checkRequirements will be called via RemoteDevice::connected
+        m_remoteDevice->connectToDevice(m_host);
+    }
 }
 
 void RecordHost::setCurrentWorkingDirectory(const QString& cwd)
@@ -264,15 +286,28 @@ void RecordHost::setCurrentWorkingDirectory(const QString& cwd)
             m_cwd = cwd;
             emit currentWorkingDirectoryChanged(cwd);
         }
-        return;
+    } else {
+        QTimer::singleShot(0, this, [this, cwd]() -> QCoro::Task<void> {
+            bool exists = co_await m_remoteDevice->checkIfDirectoryExists(cwd);
+            if (!exists) {
+                emit errorOccurred(tr("Working directory folder cannot be found: %1").arg(cwd));
+            } else {
+                emit errorOccurred({});
+                m_cwd = cwd;
+                emit currentWorkingDirectoryChanged(m_cwd);
+            }
+            co_return;
+        });
     }
-
-    qWarning() << "is not implemented for remote";
 }
 
 void RecordHost::setClientApplication(const QString& clientApplication)
 {
     Q_ASSERT(QThread::currentThread() == thread());
+
+    if (m_clientApplication == clientApplication) {
+        return;
+    }
 
     if (isLocal()) {
         QFileInfo application(KShell::tildeExpand(clientApplication));
@@ -295,38 +330,55 @@ void RecordHost::setClientApplication(const QString& clientApplication)
         if (m_cwd.isEmpty()) {
             setCurrentWorkingDirectory(application.dir().absolutePath());
         }
-        return;
+    } else {
+        if (!m_remoteDevice->isConnected()) {
+            emit errorOccurred(tr("Hotspot is not connected to the remote device"));
+        } else {
+            QTimer::singleShot(0, this, [this, clientApplication]() -> QCoro::Task<void> {
+                bool exists = co_await m_remoteDevice->checkIfFileExists(clientApplication);
+                if (!exists) {
+                    emit errorOccurred(tr("Application file cannot be found: %1").arg(clientApplication));
+                } else {
+                    emit errorOccurred({});
+                    m_clientApplication = clientApplication;
+                    emit clientApplicationChanged(m_clientApplication);
+                }
+            });
+        }
     }
+}
 
-    qWarning() << "is not implemented for remote";
+void RecordHost::setClientApplicationArguments(const QStringList& arguments)
+{
+    Q_ASSERT(QThread::currentThread() == thread());
+
+    if (m_clientApplicationArguments != arguments) {
+        m_clientApplicationArguments = arguments;
+        emit clientApplicationArgumentsChanged(m_clientApplicationArguments);
+    }
 }
 
 void RecordHost::setOutputFileName(const QString& filePath)
 {
-    if (isLocal()) {
-        const auto perfDataExtension = QStringLiteral(".data");
+    const auto perfDataExtension = QStringLiteral(".data");
+    const QFileInfo file(filePath);
+    const QFileInfo folder(file.absolutePath());
 
-        const QFileInfo file(filePath);
-        const QFileInfo folder(file.absolutePath());
-
-        if (!folder.exists()) {
-            emit errorOccurred(tr("Output file directory folder cannot be found: %1").arg(folder.path()));
-        } else if (!folder.isDir()) {
-            emit errorOccurred(tr("Output file directory folder is not valid: %1").arg(folder.path()));
-        } else if (!folder.isWritable()) {
-            emit errorOccurred(tr("Output file directory folder is not writable: %1").arg(folder.path()));
-        } else if (!file.absoluteFilePath().endsWith(perfDataExtension)) {
-            emit errorOccurred(tr("Output file must end with %1").arg(perfDataExtension));
-        } else {
-            emit errorOccurred({});
-            m_outputFileName = filePath;
-            emit outputFileNameChanged(m_outputFileName);
-        }
-
-        return;
+    // the recording data is streamed from the device (currently) so there is no need to use different logic for
+    // local vs remote
+    if (!folder.exists()) {
+        emit errorOccurred(tr("Output file directory folder cannot be found: %1").arg(folder.path()));
+    } else if (!folder.isDir()) {
+        emit errorOccurred(tr("Output file directory folder is not valid: %1").arg(folder.path()));
+    } else if (!folder.isWritable()) {
+        emit errorOccurred(tr("Output file directory folder is not writable: %1").arg(folder.path()));
+    } else if (!file.absoluteFilePath().endsWith(perfDataExtension)) {
+        emit errorOccurred(tr("Output file must end with %1").arg(perfDataExtension));
+    } else {
+        emit errorOccurred({});
+        m_outputFileName = filePath;
+        emit outputFileNameChanged(m_outputFileName);
     }
-
-    qWarning() << "is not implemented for remote";
 }
 
 void RecordHost::setRecordType(RecordType type)
@@ -367,4 +419,54 @@ QString RecordHost::perfBinaryPath() const
         return perf;
     }
     return {};
+}
+
+void RecordHost::checkRequirements()
+{
+    const auto perfPath = perfBinaryPath();
+    m_checkPerfCapabilitiesJob.startJob(
+        [isLocal = isLocal(), &remoteDevice = m_remoteDevice, perfPath](auto&&) {
+            if (isLocal) {
+                return fetchLocalPerfCapabilities(perfPath);
+            } else {
+                return fetchRemotePerfCapabilities(remoteDevice);
+            }
+        },
+        [this](RecordHost::PerfCapabilities capabilities) {
+            Q_ASSERT(QThread::currentThread() == thread());
+
+            m_perfCapabilities = capabilities;
+            emit perfCapabilitiesChanged(m_perfCapabilities);
+        });
+
+    m_checkPerfInstalledJob.startJob(
+        [isLocal = isLocal(), &remoteDevice = m_remoteDevice, perfPath](auto&&) {
+            if (isLocal) {
+                if (perfPath.isEmpty()) {
+                    return !QStandardPaths::findExecutable(QStringLiteral("perf")).isEmpty();
+                }
+
+                return QFileInfo::exists(perfPath);
+            } else {
+                return remoteDevice->checkIfProgramExists(QStringLiteral("perf"));
+            }
+
+            return false;
+        },
+        [this](bool isInstalled) {
+            if (!isInstalled) {
+                emit errorOccurred(tr("perf is not installed"));
+            }
+            m_isPerfInstalled = isInstalled;
+            emit isPerfInstalledChanged(isInstalled);
+        });
+}
+
+void RecordHost::disconnectFromDevice()
+{
+    if (!isLocal()) {
+        if (m_remoteDevice->isConnected()) {
+            m_remoteDevice->disconnect();
+        }
+    }
 }

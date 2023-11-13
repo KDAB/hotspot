@@ -23,7 +23,7 @@ if(NOT CMAKE_BUILD_TYPE)
     )
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(APPIMAGE_BUILD "configure build for bundling in an appimage" OFF)
@@ -57,6 +57,13 @@ find_package(
                Svg
     REQUIRED
 )
+
+find_package(
+    QCoro${QT_MAJOR_VERSION}
+    COMPONENTS Core
+    REQUIRED
+)
+qcoro_enable_coroutines()
 
 find_package(LibElf REQUIRED)
 find_package(ElfUtils REQUIRED)

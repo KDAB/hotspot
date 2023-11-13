@@ -245,6 +245,20 @@ void Settings::loadFromFile()
     connect(this, &Settings::showBranchesChanged, [sharedConfig](bool showBranches) {
         sharedConfig->group("Disassembly").writeEntry("showBranches", showBranches);
     });
+
+    setSSHPath(sharedConfig->group("SSH").readEntry("ssh"));
+    setSSHCopyKeyPath(sharedConfig->group("SSH").readEntry("ssh-copy-id"));
+
+    const auto& ssh = sharedConfig->group("SSH");
+    setSSHPath(ssh.readEntry("ssh"));
+    setSSHCopyKeyPath(ssh.readEntry("ssh-copy-id"));
+
+    connect(this, &Settings::sshPathChanged, this,
+            [sharedConfig](const QString& path) { sharedConfig->group("SSH").writeEntry("ssh", path); });
+    connect(this, &Settings::sshCopyIdPathChanged, this,
+            [sharedConfig](const QString& path) { sharedConfig->group("SSH").writeEntry("ssh-copy-id", path); });
+
+    setDevices(ssh.groupList());
 }
 
 void Settings::setSourceCodePaths(const QString& paths)
@@ -268,5 +282,29 @@ void Settings::setShowBranches(bool showBranches)
     if (m_showBranches != showBranches) {
         m_showBranches = showBranches;
         emit showBranchesChanged(m_showBranches);
+    }
+}
+
+void Settings::setSSHPath(const QString& sshPath)
+{
+    if (m_sshPath != sshPath) {
+        m_sshPath = sshPath;
+        emit sshPathChanged(m_sshPath);
+    }
+}
+
+void Settings::setSSHCopyKeyPath(const QString& sshCopyIdPath)
+{
+    if (m_sshCopyIdPath != sshCopyIdPath) {
+        m_sshCopyIdPath = sshCopyIdPath;
+        emit sshCopyIdPathChanged(m_sshCopyIdPath);
+    }
+}
+
+void Settings::setDevices(const QStringList& devices)
+{
+    if (m_devices != devices) {
+        m_devices = devices;
+        emit devicesChanged(m_devices);
     }
 }

@@ -13,6 +13,8 @@
 #include "ui_disassemblysettingspage.h"
 #include "ui_flamegraphsettingspage.h"
 #include "ui_perfsettingspage.h"
+#include "ui_sourcepathsettings.h"
+#include "ui_sshsettingspage.h"
 #include "ui_unwindsettingspage.h"
 
 #include "multiconfigwidget.h"
@@ -26,15 +28,11 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QListView>
+#include <QProcess>
 
 #include <hotspot-config.h>
 
 namespace {
-KConfigGroup config()
-{
-    return KSharedConfig::openConfig()->group("PerfPaths");
-}
-
 QPushButton* setupMultiPath(KEditListWidget* listWidget, QLabel* buddy, QWidget* previous)
 {
     auto editor = new KUrlRequester(listWidget);
@@ -68,6 +66,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
 #if KGraphViewerPart_FOUND
     , callgraphPage(new Ui::CallgraphSettingsPage)
 #endif
+    , sshSettingsPage(new Ui::SSHSettingsPage)
 {
     addPerfSettingsPage();
     addPathSettingsPage();
@@ -77,6 +76,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     addCallgraphPage();
 #endif
     addSourcePathPage();
+    addSSHPage();
 }
 
 SettingsDialog::~SettingsDialog() = default;
@@ -85,44 +85,18 @@ void SettingsDialog::initSettings()
 {
     const auto configName = Settings::instance()->lastUsedEnvironment();
     if (!configName.isEmpty()) {
-        m_configs->selectConfig(configName);
+        unwindPage->multiConfig->loadConfig(configName);
     }
-}
-
-void SettingsDialog::initSettings(const QString& sysroot, const QString& appPath, const QString& extraLibPaths,
-                                  const QString& debugPaths, const QString& kallsyms, const QString& arch,
-                                  const QString& objdump)
-{
-    auto fromPathString = [](KEditListWidget* listWidget, const QString& string) {
-        listWidget->setItems(string.split(QLatin1Char(':'), Qt::SkipEmptyParts));
-    };
-    fromPathString(unwindPage->extraLibraryPaths, extraLibPaths);
-    fromPathString(unwindPage->debugPaths, debugPaths);
-
-    unwindPage->lineEditSysroot->setText(sysroot);
-    unwindPage->lineEditApplicationPath->setText(appPath);
-    unwindPage->lineEditKallsyms->setText(kallsyms);
-    unwindPage->lineEditObjdump->setText(objdump);
-
-    int itemIndex = 0;
-    if (!arch.isEmpty()) {
-        itemIndex = unwindPage->comboBoxArchitecture->findText(arch);
-        if (itemIndex == -1) {
-            itemIndex = unwindPage->comboBoxArchitecture->count();
-            unwindPage->comboBoxArchitecture->addItem(arch);
-        }
-    }
-    unwindPage->comboBoxArchitecture->setCurrentIndex(itemIndex);
 }
 
 QString SettingsDialog::sysroot() const
 {
-    return unwindPage->lineEditSysroot->text();
+    return unwindPage->sysroot->text();
 }
 
 QString SettingsDialog::appPath() const
 {
-    return unwindPage->lineEditApplicationPath->text();
+    return unwindPage->appPath->text();
 }
 
 QString SettingsDialog::extraLibPaths() const
@@ -137,18 +111,18 @@ QString SettingsDialog::debugPaths() const
 
 QString SettingsDialog::kallsyms() const
 {
-    return unwindPage->lineEditKallsyms->text();
+    return unwindPage->kallsyms->text();
 }
 
 QString SettingsDialog::arch() const
 {
-    const auto sArch = unwindPage->comboBoxArchitecture->currentText();
+    const auto sArch = unwindPage->arch->currentText();
     return (sArch == QLatin1String("auto-detect")) ? QString() : sArch;
 }
 
 QString SettingsDialog::objdump() const
 {
-    return unwindPage->lineEditObjdump->text();
+    return unwindPage->objdump->text();
 }
 
 QString SettingsDialog::perfMapPath() const
@@ -178,61 +152,22 @@ void SettingsDialog::addPathSettingsPage()
     auto item = addPage(page, tr("Unwinding"));
     item->setHeader(tr("Unwind Options"));
     item->setIcon(icon());
-
     unwindPage->setupUi(page);
 
-    auto lastExtraLibsWidget = setupMultiPath(unwindPage->extraLibraryPaths, unwindPage->extraLibraryPathsLabel,
-                                              unwindPage->lineEditApplicationPath);
+    unwindPage->multiConfig->setConfigGroup(KSharedConfig::openConfig()->group("PerfPaths"));
+    unwindPage->multiConfig->setChildWidget(unwindPage->widget,
+                                            {unwindPage->sysroot, unwindPage->appPath, unwindPage->extraLibraryPaths,
+                                             unwindPage->debugPaths, unwindPage->kallsyms, unwindPage->arch,
+                                             unwindPage->objdump});
+
+    auto lastExtraLibsWidget =
+        setupMultiPath(unwindPage->extraLibraryPaths, unwindPage->extraLibraryPathsLabel, unwindPage->appPath);
     setupMultiPath(unwindPage->debugPaths, unwindPage->debugPathsLabel, lastExtraLibsWidget);
 
-    auto* label = new QLabel(this);
-    label->setText(tr("Config:"));
-
-    auto saveFunction = [this](KConfigGroup group) {
-        group.writeEntry("sysroot", sysroot());
-        group.writeEntry("appPath", appPath());
-        group.writeEntry("extraLibPaths", extraLibPaths());
-        group.writeEntry("debugPaths", debugPaths());
-        group.writeEntry("kallsyms", kallsyms());
-        group.writeEntry("arch", arch());
-        group.writeEntry("objdump", objdump());
-    };
-
-    auto restoreFunction = [this](const KConfigGroup& group) {
-        const auto sysroot = group.readEntry("sysroot");
-        const auto appPath = group.readEntry("appPath");
-        const auto extraLibPaths = group.readEntry("extraLibPaths");
-        const auto debugPaths = group.readEntry("debugPaths");
-        const auto kallsyms = group.readEntry("kallsyms");
-        const auto arch = group.readEntry("arch");
-        const auto objdump = group.readEntry("objdump");
-        initSettings(sysroot, appPath, extraLibPaths, debugPaths, kallsyms, arch, objdump);
-        ::config().writeEntry("lastUsed", m_configs->currentConfig());
-    };
-
-    m_configs = new MultiConfigWidget(this);
-    m_configs->setConfig(config());
-    m_configs->restoreCurrent();
-
-    connect(m_configs, &MultiConfigWidget::saveConfig, this, saveFunction);
-    connect(m_configs, &MultiConfigWidget::restoreConfig, this, restoreFunction);
-
-    unwindPage->formLayout->insertRow(0, label, m_configs);
-
-    connect(this, &KPageDialog::accepted, this, [this] { m_configs->updateCurrentConfig(); });
-
-    for (auto field : {unwindPage->lineEditSysroot, unwindPage->lineEditApplicationPath, unwindPage->lineEditKallsyms,
-                       unwindPage->lineEditObjdump}) {
-        connect(field, &KUrlRequester::textEdited, m_configs, &MultiConfigWidget::updateCurrentConfig);
-        connect(field, &KUrlRequester::urlSelected, m_configs, &MultiConfigWidget::updateCurrentConfig);
-    }
-
-    connect(unwindPage->comboBoxArchitecture, QOverload<int>::of(&QComboBox::currentIndexChanged), m_configs,
-            &MultiConfigWidget::updateCurrentConfig);
-
-    connect(unwindPage->debugPaths, &KEditListWidget::changed, m_configs, &MultiConfigWidget::updateCurrentConfig);
-    connect(unwindPage->extraLibraryPaths, &KEditListWidget::changed, m_configs,
-            &MultiConfigWidget::updateCurrentConfig);
+    connect(buttonBox(), &QDialogButtonBox::accepted, this, [this] {
+        unwindPage->multiConfig->saveCurrentConfig();
+        Settings::instance()->setLastUsedEnvironment(unwindPage->multiConfig->currentConfig());
+    });
 }
 
 void SettingsDialog::keyPressEvent(QKeyEvent* event)
@@ -340,5 +275,76 @@ void SettingsDialog::addSourcePathPage()
     connect(buttonBox(), &QDialogButtonBox::accepted, this, [this, colon, settings] {
         settings->setSourceCodePaths(disassemblyPage->sourcePaths->items().join(colon));
         settings->setShowBranches(disassemblyPage->showBranches->isChecked());
+    });
+}
+
+void SettingsDialog::addSSHPage()
+{
+    auto page = new QWidget(this);
+    auto item = addPage(page, tr("SSH Settings"));
+    item->setHeader(tr("SSH Settings Page"));
+    item->setIcon(QIcon::fromTheme(QStringLiteral("preferences-system-windows-behavior")));
+    sshSettingsPage->setupUi(page);
+    sshSettingsPage->messageWidget->hide();
+    sshSettingsPage->errorWidget->hide();
+
+    bool ksshaskpassFound = !QStandardPaths()::findExe(QStringLiteral("ksshaskpass")).isEmpty();
+    if (!qEnvironmentVariableIsSet("SSH_ASKPASS") && !ksshaskpassFound) {
+        sshSettingsPage->errorWidget->setText(
+            tr("<tt>SSH_ASKPASS<tt> is not set please install <tt>ksshaskpass<tt> or set <tt>SSH_ASKPASS<tt>"));
+        sshSettingsPage->errorWidget->show();
+    }
+
+    auto configGroup = KSharedConfig::openConfig()->group("SSH");
+    sshSettingsPage->deviceConfig->setChildWidget(
+        sshSettingsPage->deviceSettings,
+        {sshSettingsPage->username, sshSettingsPage->hostname, sshSettingsPage->options});
+    sshSettingsPage->deviceConfig->setConfigGroup(configGroup);
+
+    connect(sshSettingsPage->copySshKeyButton, &QPushButton::pressed, this, [this] {
+        auto* copyKey = new QProcess(this);
+
+        auto path = sshSettingsPage->sshCopyIdPath->text();
+        if (path.isEmpty()) {
+            path = QStandardPaths::findExecutable(QStringLiteral("ssh-copy-id"));
+        }
+        if (path.isEmpty()) {
+            sshSettingsPage->messageWidget->setText(tr("Could not find ssh-copy-id"));
+            sshSettingsPage->messageWidget->show();
+            return;
+        }
+
+        copyKey->setProgram(path);
+
+        QStringList arguments = {};
+        auto options = sshSettingsPage->options->text();
+        if (!options.isEmpty()) {
+            arguments.append(options.split(QLatin1Char(' ')));
+        }
+        arguments.append(
+            QStringLiteral("%1@%2").arg(sshSettingsPage->username->text(), sshSettingsPage->hostname->text()));
+        copyKey->setArguments(arguments);
+
+        connect(copyKey, qOverload<int, QProcess::ExitStatus>(&QProcess::finished), this,
+                [this, copyKey](int code, QProcess::ExitStatus) {
+                    if (code == 0) {
+                        sshSettingsPage->messageWidget->setText(QStringLiteral("Copy key successfully"));
+                        sshSettingsPage->messageWidget->show();
+                    } else {
+                        sshSettingsPage->errorWidget->setText(QStringLiteral("Failed to copy key"));
+                        sshSettingsPage->errorWidget->show();
+                    }
+                    copyKey->deleteLater();
+                });
+        copyKey->start();
+    });
+
+    connect(buttonBox(), &QDialogButtonBox::accepted, this, [this, configGroup] {
+        sshSettingsPage->deviceConfig->saveCurrentConfig();
+
+        auto settings = Settings::instance();
+        settings->setDevices(configGroup.groupList());
+        settings->setSSHPath(sshSettingsPage->sshBinary->text());
+        settings->setSSHCopyKeyPath(sshSettingsPage->sshCopyIdPath->text());
     });
 }

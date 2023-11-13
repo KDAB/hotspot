@@ -159,6 +159,21 @@ public:
         return m_showBranches;
     }
 
+    QString sshPath() const
+    {
+        return m_sshPath;
+    }
+
+    QString sshCopyIdPath() const
+    {
+        return m_sshCopyIdPath;
+    }
+
+    QStringList devices() const
+    {
+        return m_devices;
+    }
+
     void loadFromFile();
 
 signals:
@@ -182,6 +197,9 @@ signals:
     void sourceCodePathsChanged(const QString& paths);
     void perfPathChanged(const QString& perfPath);
     void showBranchesChanged(bool showBranches);
+    void sshPathChanged(const QString& sshPath);
+    void sshCopyIdPathChanged(const QString& sshCopyIdPath);
+    void devicesChanged(const QStringList& devices);
 
 public slots:
     void setPrettifySymbols(bool prettifySymbols);
@@ -206,6 +224,9 @@ public slots:
     void setSourceCodePaths(const QString& paths);
     void setPerfPath(const QString& path);
     void setShowBranches(bool showBranches);
+    void setSSHPath(const QString& path);
+    void setSSHCopyKeyPath(const QString& path);
+    void setDevices(const QStringList& devices);
 
 private:
     using QObject::QObject;
@@ -239,4 +260,8 @@ private:
     QColor m_callgraphColor;
 
     QString m_perfPath;
+    QString m_sshPath;
+    QString m_sshCopyIdPath;
+
+    QStringList m_devices;
 };

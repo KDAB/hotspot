@@ -27,7 +27,6 @@ class RecordPage;
 class PerfRecord;
 class ProcessModel;
 class ProcessFilterModel;
-class MultiConfigWidget;
 class PerfOutputWidget;
 
 namespace KParts {
@@ -60,7 +59,7 @@ private slots:
 
 private:
     void recordingStopped();
-    void updateRecordType();
+    void updateRecordType(RecordType type);
     void appendOutput(const QString& text);
     void setError(const QString& message);
 
@@ -73,7 +72,6 @@ private:
     QTimer* m_updateRuntimeTimer;
     KParts::ReadOnlyPart* m_konsolePart = nullptr;
     QTemporaryFile* m_konsoleFile = nullptr;
-    MultiConfigWidget* m_multiConfig;
     PerfOutputWidget* m_perfOutput;
 
     ProcessModel* m_processModel;

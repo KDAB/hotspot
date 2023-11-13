@@ -12,9 +12,10 @@
 #include "perfcontrolfifowrapper.h"
 
 #include <QObject>
-#include <QPointer>
+#include <QProcess>
 
-class QProcess;
+#include <memory>
+
 class RecordHost;
 
 class PerfRecord : public QObject
@@ -24,8 +25,8 @@ public:
     explicit PerfRecord(const RecordHost* host, QObject* parent = nullptr);
     ~PerfRecord();
 
-    void record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
-                const QString& exePath, const QStringList& exeOptions, const QString& workingDirectory = QString());
+    void record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges);
+
     void record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
                 const QStringList& pids);
     void recordSystem(const QStringList& perfOptions, const QString& outputPath);
@@ -45,7 +46,7 @@ signals:
 
 private:
     const RecordHost* m_host = nullptr;
-    QPointer<QProcess> m_perfRecordProcess;
+    std::unique_ptr<QProcess> m_perfRecordProcess;
     InitiallyStoppedProcess m_targetProcessForPrivilegedPerf;
     PerfControlFifoWrapper m_perfControlFifo;
     QString m_outputPath;
@@ -55,4 +56,13 @@ private:
 
     bool runPerf(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
                  const QString& workingDirectory = QString());
+
+    bool runPerfLocal(bool elevatePrivileges, const QStringList& perfOptions, const QString& outputPath,
+                      const QString& workingDirectory = QString());
+    bool runPerfRemote(const QStringList& perfOptions, const QString& outputPath,
+                       const QString& workingDirectory = QString());
+
+    bool runRemotePerf(const QStringList& perfOptions, const QString& outputPath, const QString& workingDirectory = {});
+
+    void connectRecordingProcessErrors();
 };
