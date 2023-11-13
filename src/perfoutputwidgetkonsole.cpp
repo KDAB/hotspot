@@ -149,7 +149,7 @@ void PerfOutputWidgetKonsole::addPartToLayout()
     m_konsoleFile = new QTemporaryFile(m_konsolePart);
     m_konsoleFile->open();
 
-    const auto terminalInterface = qobject_cast<TerminalInterfaceV2*>(m_konsolePart);
+    const auto terminalInterface = qobject_cast<TerminalInterface*>(m_konsolePart);
     terminalInterface->startProgram(tailExe(), {tailExe(), QStringLiteral("-f"), m_konsoleFile->fileName()});
 
     m_konsolePart->widget()->focusWidget()->installEventFilter(this);
