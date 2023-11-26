@@ -105,6 +105,9 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
                     emit recordingFailed(tr("Failed to record perf data, error code %1.").arg(exitCode));
                 }
                 m_userTerminated = false;
+                m_perfRecordProcess->deleteLater();
+                m_perfRecordProcess.clear();
+                m_perfControlFifo.close();
             });
 
     connect(m_perfRecordProcess.data(), &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
