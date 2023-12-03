@@ -229,7 +229,7 @@ QVariant PerLibraryModel::rowData(const Data::PerLibrary* row, int column, int r
     if (role == Qt::DisplayRole || role == SortRole) {
         switch (column) {
         case Binary:
-            return Util::formatSymbol(row->symbol);
+            return Util::formatString(row->symbol.binary);
         }
 
         column -= NUM_BASE_COLUMNS;

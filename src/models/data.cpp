@@ -270,7 +270,7 @@ void buildPerLibrary(const TopDown* node, PerLibraryResults& results, QHash<QStr
 
             PerLibrary library;
             library.id = *resultIndexIt;
-            library.symbol = Symbol(binary);
+            library.symbol = Symbol({}, 0, 0, binary);
             results.root.children.push_back(library);
         }
 
