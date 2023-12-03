@@ -111,8 +111,6 @@ void setupContextMenu(QTreeView* view, CostContextMenu* costContextMenu, int sym
 
         QMenu contextMenu;
         if (callback && symbol.isValid() && actions) {
-            // CHECKME: best would be to check which view we are in and not add the first three items for "Top Hotspots
-            // Per File"
             if (actions.testFlag(CallbackAction::ViewCallerCallee)) {
                 auto* viewCallerCallee =
                     contextMenu.addAction(QCoreApplication::translate("Util", "View Caller/Callee"));
@@ -133,10 +131,12 @@ void setupContextMenu(QTreeView* view, CostContextMenu* costContextMenu, int sym
                 viewDisassembly->setEnabled(symbol.canDisassemble());
             }
             contextMenu.addSeparator();
-            costContextMenu->addToMenu(view->header(),
-                                       contextMenu.addMenu(QCoreApplication::translate("Util", "Visible Columns")));
-            contextMenu.addSeparator();
         }
+
+        costContextMenu->addToMenu(view->header(),
+                                   contextMenu.addMenu(QCoreApplication::translate("Util", "Visible Columns")));
+        contextMenu.addSeparator();
+
         addFilterActions(&contextMenu, symbol, filterStack);
 
         if (!contextMenu.actions().isEmpty()) {

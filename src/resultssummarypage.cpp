@@ -53,7 +53,7 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
     ui->topLibraryTreeView->setModel(topLibraryProxy);
     ResultsUtil::setupCostDelegate<PerLibraryModel>(perLibraryModel, ui->topLibraryTreeView);
     ResultsUtil::setupHeaderView(ui->topLibraryTreeView, contextMenu);
-    ResultsUtil::setupContextMenu(ui->topLibraryTreeView, contextMenu, perLibraryModel, filterStack, this);
+    ResultsUtil::setupContextMenu(ui->topLibraryTreeView, contextMenu, perLibraryModel, filterStack, this, {});
 
     connect(ui->eventSourceComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             [topHotspotsProxy, this]() {
