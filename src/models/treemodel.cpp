@@ -254,6 +254,8 @@ QVariant PerLibraryModel::rowData(const Data::PerLibrary* row, int column, int r
 
         column -= m_results.costs.numTypes();
         return m_results.costs.totalCost(column);
+    } else if (role == Qt::ToolTipRole) {
+        return Util::formatBinaryTooltip(row->id, row->symbol, m_results.costs);
     } else {
         return {};
     }
