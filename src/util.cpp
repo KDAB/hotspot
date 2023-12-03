@@ -345,6 +345,11 @@ QString Util::formatFrequency(quint64 occurrences, quint64 nanoseconds)
     return QString::number(hz, 'G', 4) + QLatin1String(*unit);
 }
 
+QString Util::formatBinaryTooltip(int id, const Data::Symbol& symbol, const Data::Costs& costs)
+{
+    return formatTooltipImpl(id, Util::formatString(symbol.binary), nullptr, &costs);
+}
+
 QString Util::formatTooltip(int id, const Data::Symbol& symbol, const Data::Costs& costs)
 {
     return formatTooltipImpl(id, formatForTooltip(symbol), nullptr, &costs);
