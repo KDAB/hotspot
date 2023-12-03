@@ -258,26 +258,27 @@ QString prettifySymbol(QStringView str)
     return result;
 }
 
-void buildPerLibrary(const TopDown* node, PerLibraryResults& results, QHash<QString, int>& binaryToResultIndex,
+void buildPerLibrary(const TopDown* node, PerLibraryResults& results, QHash<QString, int>& pathToResultIndex,
                      const Costs& costs)
 {
     for (const auto& child : node->children) {
-        const auto binary = child.symbol.binary;
+        const auto path = child.symbol.path;
 
-        auto resultIndexIt = binaryToResultIndex.find(binary);
-        if (resultIndexIt == binaryToResultIndex.end()) {
-            resultIndexIt = binaryToResultIndex.insert(binary, binaryToResultIndex.size());
+        auto resultIndexIt = pathToResultIndex.find(path);
+        if (resultIndexIt == pathToResultIndex.end()) {
+            resultIndexIt = pathToResultIndex.insert(path, pathToResultIndex.size());
 
             PerLibrary library;
             library.id = *resultIndexIt;
-            library.symbol = Symbol({}, 0, 0, binary);
+            library.symbol = Symbol({}, 0, 0, child.symbol.binary, child.symbol.path, child.symbol.actualPath,
+                                    child.symbol.isKernel);
             results.root.children.push_back(library);
         }
 
         const auto cost = costs.itemCost(child.id);
         results.costs.add(*resultIndexIt, cost);
 
-        buildPerLibrary(&child, results, binaryToResultIndex, costs);
+        buildPerLibrary(&child, results, pathToResultIndex, costs);
     }
 }
 }
@@ -318,10 +319,10 @@ TopDownResults TopDownResults::fromBottomUp(const BottomUpResults& bottomUpData,
 PerLibraryResults PerLibraryResults::fromTopDown(const TopDownResults& topDownData)
 {
     PerLibraryResults results;
-    QHash<QString, int> binaryToResultIndex;
+    QHash<QString, int> pathToResultIndex;
     results.costs.initializeCostsFrom(topDownData.selfCosts);
 
-    buildPerLibrary(&topDownData.root, results, binaryToResultIndex, topDownData.selfCosts);
+    buildPerLibrary(&topDownData.root, results, pathToResultIndex, topDownData.selfCosts);
 
     PerLibrary::initializeParents(&results.root);
 
