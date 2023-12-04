@@ -184,6 +184,97 @@ private slots:
         m_machineHostName = QSysInfo::machineHostName();
     }
 
+    void testFileErrorHandling_data()
+    {
+        QTest::addColumn<QString>("perfFile");
+        QTest::addColumn<QString>("errorMessagePart");
+
+        QTest::addRow("missing file") << QStringLiteral("not_here") << QStringLiteral("does not exist");
+        QTest::addRow("not a file") << QStringLiteral("../..") << QStringLiteral("is not a file");
+
+        QTest::addRow("permissions") << QString() << QStringLiteral("not readable");
+    }
+
+    void testFileErrorHandling()
+    {
+
+        PerfParser parser(this);
+        QSignalSpy parsingFailedSpy(&parser, &PerfParser::parsingFailed);
+
+        QFETCH(QString, perfFile);
+        QFETCH(QString, errorMessagePart);
+
+        QTemporaryFile tempFile;
+        if (perfFile.isEmpty()) {
+            tempFile.open();
+            tempFile.write("test content");
+            tempFile.close();
+            tempFile.setPermissions({}); // drop all permissons
+            perfFile = tempFile.fileName();
+        }
+
+        parser.initParserArgs(perfFile);
+        QCOMPARE(parsingFailedSpy.count(), 1);
+        auto message = parsingFailedSpy.takeFirst().at(0).toString();
+        QVERIFY(message.contains(perfFile));
+        QVERIFY(message.contains(errorMessagePart));
+    }
+
+    void testFileContent_data()
+    {
+        QTest::addColumn<QString>("perfFile");
+        QTest::addColumn<QString>("errorMessagePart");
+        QTest::addColumn<int>("waitTime");
+
+        QTest::addRow("pre-exported perfparser") << QFINDTESTDATA("file_content/true.perfparser") << QString() << 2000;
+        QTest::addRow("invalid data") << QFINDTESTDATA("tst_perfparser.cpp") << QStringLiteral("invalid perf data file")
+                                      << 1000;
+        QTest::addRow("PERF v1") << QFINDTESTDATA("file_content/perf.data.true.v1")
+                                 << QStringLiteral("invalid perf data file") << 1000;
+
+        // TODO: check why we need this long waittime
+        QTest::addRow("PERF v2") << QFINDTESTDATA("file_content/perf.data.true.v2") << QString() << 9000;
+#if KFArchive_FOUND
+        QTest::addRow("PERF v2, gzipped") << QFINDTESTDATA("file_content/perf.data.true.v2.gz") << QString() << 10000;
+#endif
+    }
+
+    void testFileContent()
+    {
+        // setting the application path as the checked perf files recorded a `true` binary which commonly
+        // is not available in the same place (and we don't get the any reasonable parser output in this case)
+        // the same place as the tests are run
+        Settings::instance()->setAppPath(
+            QFileInfo(QStandardPaths::findExecutable(QStringLiteral("true"))).dir().path());
+        // add extra paths to at least allow manually including the matched libc.so/ld.so during a test
+        Settings::instance()->setExtraLibPaths(QFINDTESTDATA("file_content"));
+
+        PerfParser parser(this);
+        QSignalSpy parsingFailedSpy(&parser, &PerfParser::parsingFailed);
+        QSignalSpy parsingFinishedSpy(&parser, &PerfParser::parsingFinished);
+
+        QFETCH(QString, perfFile);
+        QFETCH(QString, errorMessagePart);
+        QFETCH(int, waitTime);
+
+        QVERIFY(!perfFile.isEmpty() && QFile::exists(perfFile));
+        parser.startParseFile(perfFile);
+
+        if (errorMessagePart.isEmpty()) {
+            // if we don't expect an error message (Null String created by `QString()`)
+            // then expect a finish within the given time frame
+            QTRY_COMPARE_WITH_TIMEOUT(parsingFinishedSpy.count(), 1, waitTime);
+            QCOMPARE(parsingFailedSpy.count(), 0);
+        } else {
+            // otherwise wait for failed parsing, the check for if the required part is
+            // found in the error message (we only check a part to allow adjustments later)
+            QTRY_COMPARE_WITH_TIMEOUT(parsingFailedSpy.count(), 1, waitTime);
+            QCOMPARE(parsingFinishedSpy.count(), 0);
+            const auto message = parsingFailedSpy.takeFirst().at(0).toString();
+            QVERIFY(message.contains(errorMessagePart));
+        }
+    }
+
     void testCppInliningNoOptions()
     {
         const QStringList perfOptions;
