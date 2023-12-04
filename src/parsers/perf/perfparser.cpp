@@ -1476,6 +1476,7 @@ PerfParser::~PerfParser() = default;
 
 bool PerfParser::initParserArgs(const QString& path)
 {
+    // check for common file issues
     const auto info = QFileInfo(path);
     if (!info.exists()) {
         emit parsingFailed(tr("File '%1' does not exist.").arg(path));
@@ -1490,16 +1491,32 @@ bool PerfParser::initParserArgs(const QString& path)
         return false;
     }
 
+    // peek into file header
+    const auto filename = decompressIfNeeded(path);
+    QFile file(filename);
+    file.open(QIODevice::ReadOnly);
+    if (file.peek(8) != "PERFILE2" && file.peek(11) != "QPERFSTREAM") {
+        if (file.peek(8) == "PERFFILE") {
+            emit parsingFailed(tr("Failed to parse file %1: %2").arg(path, tr("Unsupported V1 perf data")));
+        } else {
+            emit parsingFailed(tr("Failed to parse file %1: %2").arg(path, tr("File format unknown")));
+        }
+        file.close();
+        return false;
+    }
+    file.close();
+
+    // check perfparser and set initial values
     auto parserBinary = Util::perfParserBinaryPath();
     if (parserBinary.isEmpty()) {
         emit parsingFailed(tr("Failed to find hotspot-perfparser binary."));
         return false;
     }
 
-    auto parserArgs = [this](const QString& filename) {
+    auto parserArgs = [](const QString& filename) {
         const auto settings = Settings::instance();
-        QStringList parserArgs = {QStringLiteral("--input"), decompressIfNeeded(filename),
-                                  QStringLiteral("--max-frames"), QStringLiteral("1024")};
+        QStringList parserArgs = {QStringLiteral("--input"), filename, QStringLiteral("--max-frames"),
+                                  QStringLiteral("1024")};
         const auto sysroot = settings->sysroot();
         if (!sysroot.isEmpty()) {
             parserArgs += {QStringLiteral("--sysroot"), sysroot};
@@ -1531,7 +1548,7 @@ bool PerfParser::initParserArgs(const QString& path)
         return parserArgs;
     };
 
-    m_parserArgs = parserArgs(path);
+    m_parserArgs = parserArgs(filename);
     m_parserBinary = parserBinary;
     return true;
 }
@@ -1584,22 +1601,23 @@ void PerfParser::startParseFile(const QString& path)
             emit parsingFinished();
         };
 
-        if (path.endsWith(QLatin1String(".perfparser"))) {
-            QFile file(path);
-            if (!file.open(QIODevice::ReadOnly)) {
-                emit parsingFailed(tr("Failed to open file %1: %2").arg(path, file.errorString()));
-                return;
-            }
+        // note: file is always readable and in supported format here,
+        //        already validated in initParserArgs()
+        QFile file(path);
+        file.open(QIODevice::ReadOnly);
+        if (file.peek(11) == "QPERFSTREAM") {
             d.setInput(&file);
             while (!file.atEnd() && !d.stopRequested) {
                 if (!d.tryParse()) {
-                    emit parsingFailed(tr("Failed to parse file"));
+                    // TODO: provide reason
+                    emit parsingFailed(tr("Failed to parse file %1: %2").arg(path, QStringLiteral("Unknown reason")));
                     return;
                 }
             }
             finalize();
             return;
         }
+        file.close();
 
         QProcess process;
         process.setProcessEnvironment(perfparserEnvironment(debuginfodUrls));

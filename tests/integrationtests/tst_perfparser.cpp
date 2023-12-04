@@ -226,11 +226,15 @@ private slots:
         QTest::addColumn<QString>("errorMessagePart");
         QTest::addColumn<int>("waitTime");
 
-        QTest::addRow("pre-exported perfparser") << QFINDTESTDATA("file_content/true.perfparser") << QString() << 2000;
-        QTest::addRow("invalid data") << QFINDTESTDATA("tst_perfparser.cpp") << QStringLiteral("invalid perf data file")
-                                      << 1000;
-        QTest::addRow("PERF v1") << QFINDTESTDATA("file_content/perf.data.true.v1")
-                                 << QStringLiteral("invalid perf data file") << 1000;
+        const auto perfData = QFINDTESTDATA("file_content/true.perfparser");
+        QTest::addRow("pre-exported perfparser") << perfData << QString() << 2000;
+        const auto perfDataSomeName = QStringLiteral("fruitper");
+        QFile::copy(perfData, perfDataSomeName); // we can ignore errors (file exist) here
+        QTest::addRow("pre-exported perfparser \"bad extension\"") << perfDataSomeName << QString() << 2000;
+        QTest::addRow("no expected magic header")
+            << QFINDTESTDATA("tst_perfparser.cpp") << QStringLiteral("File format unknown") << 1000;
+        QTest::addRow("PERF v1") << QFINDTESTDATA("file_content/perf.data.true.v1") << QStringLiteral("V1 perf data")
+                                 << 1000;
 
         // TODO: check why we need this long waittime
         QTest::addRow("PERF v2") << QFINDTESTDATA("file_content/perf.data.true.v2") << QString() << 9000;
@@ -272,6 +276,7 @@ private slots:
             QCOMPARE(parsingFinishedSpy.count(), 0);
             const auto message = parsingFailedSpy.takeFirst().at(0).toString();
             QVERIFY(message.contains(errorMessagePart));
+            QVERIFY(message.contains(perfFile));
         }
     }
 
