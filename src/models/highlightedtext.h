@@ -23,6 +23,7 @@ class Repository;
 }
 
 class HighlightingImplementation;
+class HighlightedLine;
 
 class HighlightedText : public QObject
 {
@@ -44,23 +45,21 @@ public:
     }
 
     // for testing
-    QTextLayout* layout() const;
+    QTextLayout* layoutForLine(int index);
 
 signals:
     void definitionChanged(const QString& definition);
     void usesAnsiChanged(bool usesAnsi);
 
-private slots:
-    void applyFormatting();
-
-private:
+public slots:
     void updateHighlighting();
 
+private:
 #if KFSyntaxHighlighting_FOUND
     KSyntaxHighlighting::Repository* m_repository;
 #endif
     std::unique_ptr<HighlightingImplementation> m_highlighter;
-    std::unique_ptr<QTextLayout> m_layout;
+    mutable std::vector<HighlightedLine> m_highlightedLines;
     QStringList m_lines;
     QStringList m_cleanedLines;
     bool m_isUsingAnsi = false;

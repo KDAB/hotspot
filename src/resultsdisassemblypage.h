@@ -57,6 +57,9 @@ signals:
     void navigateToCode(const QString& file, int lineNumber, int columnNumber);
     void stackChanged();
 
+protected:
+    void changeEvent(QEvent* event) override;
+
 private:
     void setupAsmViewModel();
     void showDisassembly(const DisassemblyOutput& disassemblyOutput);
