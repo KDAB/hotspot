@@ -44,42 +44,43 @@ private slots:
     void testFormattingValidAnsiSequences_data()
     {
         QTest::addColumn<QStringList>("ansiStrings");
-        QTest::addColumn<QVector<QTextLayout::FormatRange>>("formatting");
+        QTest::addColumn<QVector<QVector<QTextLayout::FormatRange>>>("formatting");
 
-        QTest::addRow("no ansi sequence") << QStringList {QStringLiteral(" A  B  C  D  E ")}
-                                          << QVector<QTextLayout::FormatRange> {{0, 16, {}}}; // only default formatting
+        QTest::addRow("no ansi sequence")
+            << QStringList {QStringLiteral(" A  B  C  D  E ")}
+            << QVector<QVector<QTextLayout::FormatRange>> {{{0, 15, {}}}}; // only default formatting
         QTest::addRow("one ansi sequence") << QStringList {QStringLiteral("\u001B[33mHello World\u001B[0m")}
-                                           << QVector<QTextLayout::FormatRange> {{0, 11, {}}};
+                                           << QVector<QVector<QTextLayout::FormatRange>> {{{0, 11, {}}}};
         QTest::addRow("two ansi sequences")
             << QStringList {QStringLiteral("\u001B[33mHello\u001B[0m \u001B[31mWorld\u001B[0m")}
-            << QVector<QTextLayout::FormatRange> {{0, 5, {}}, {6, 5, {}}};
+            << QVector<QVector<QTextLayout::FormatRange>> {{{0, 5, {}}, {6, 5, {}}}};
 
         QTest::addRow("two ansi lines") << QStringList {QStringLiteral("\u001B[33mHello\u001B[0m\n"),
                                                         QStringLiteral("\u001B[31mWorld\u001B[0m")}
-                                        << QVector<QTextLayout::FormatRange> {{0, 5, {}}, {7, 5, {}}};
-
-        QTest::addRow("two ansi sequences without break")
-            << QStringList {QStringLiteral("\u001B[33m\u001B[0mhello\u001B[33m\u001B[0m")}
-            << QVector<QTextLayout::FormatRange> {};
+                                        << QVector<QVector<QTextLayout::FormatRange>> {{{0, 5, {}}}, {{0, 5, {}}}};
     }
 
     void testFormattingValidAnsiSequences()
     {
         QFETCH(QStringList, ansiStrings);
-        QFETCH(QVector<QTextLayout::FormatRange>, formatting);
+        QFETCH(QVector<QVector<QTextLayout::FormatRange>>, formatting);
 
         HighlightedText highlighter(nullptr);
 
         highlighter.setText(ansiStrings);
 
-        auto layout = highlighter.layout();
-        QVERIFY(layout);
-        auto format = layout->formats();
-        QCOMPARE(format.size(), formatting.size());
+        for (int ansiStringIndex = 0; ansiStringIndex < ansiStrings.count(); ansiStringIndex++) {
+            auto layout = highlighter.layoutForLine(ansiStringIndex);
+            QVERIFY(layout);
+            auto format = layout->formats();
 
-        for (int i = 0; i < format.size(); i++) {
-            QCOMPARE(format[i].start, formatting[i].start);
-            QCOMPARE(format[i].length, formatting[i].length);
+            QCOMPARE(format.size(), formatting[ansiStringIndex].size());
+
+            for (int i = 0; i < format.size(); i++) {
+                auto& formattingLine = formatting[ansiStringIndex];
+                QCOMPARE(format[i].start, formattingLine[i].start);
+                QCOMPARE(format[i].length, formattingLine[i].length);
+            }
         }
     }
 };

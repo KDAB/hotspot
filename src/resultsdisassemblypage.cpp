@@ -633,4 +633,12 @@ void ResultsDisassemblyPage::setArch(const QString& arch)
     m_arch = arch.trimmed().toLower();
 }
 
+void ResultsDisassemblyPage::changeEvent(QEvent* event)
+{
+    if (event->type() == QEvent::PaletteChange) {
+        m_sourceCodeModel->highlightedText()->updateHighlighting();
+        m_disassemblyModel->highlightedText()->updateHighlighting();
+    }
+}
+
 #include "resultsdisassemblypage.moc"

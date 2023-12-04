@@ -28,6 +28,7 @@
 #include "formattingutils.h"
 
 #if KFSyntaxHighlighting_FOUND
+// highlighter using KSyntaxHighlighting
 class HighlightingImplementation : public KSyntaxHighlighting::AbstractHighlighter
 {
 public:
@@ -37,18 +38,11 @@ public:
     }
     ~HighlightingImplementation() override = default;
 
-    virtual QVector<QTextLayout::FormatRange> format(const QStringList& text)
+    virtual QVector<QTextLayout::FormatRange> format(const QString& text)
     {
         m_formats.clear();
-        m_offset = 0;
 
-        KSyntaxHighlighting::State state;
-        for (const auto& line : text) {
-            state = highlightLine(line, state);
-
-            // KSyntaxHighlighting uses line offsets but QTextLayout uses global offsets
-            m_offset += line.size();
-        }
+        highlightLine(text, {});
 
         return m_formats;
     }
@@ -84,15 +78,16 @@ protected:
     {
         QTextCharFormat textCharFormat;
         textCharFormat.setForeground(format.textColor(theme()));
-        m_formats.push_back({m_offset + offset, length, textCharFormat});
+        textCharFormat.setFontWeight(format.isBold(theme()) ? QFont::Bold : QFont::Normal);
+        m_formats.push_back({offset, length, textCharFormat});
     }
 
 private:
     KSyntaxHighlighting::Repository* m_repository;
     QVector<QTextLayout::FormatRange> m_formats;
-    int m_offset = 0;
 };
 #else
+// stub incase KSyntaxHighlighting is not available
 class HighlightingImplementation
 {
 public:
@@ -122,7 +117,7 @@ public:
     }
     ~AnsiHighlightingImplementation() override = default;
 
-    QVector<QTextLayout::FormatRange> format(const QStringList& text) final
+    QVector<QTextLayout::FormatRange> format(const QString& text) final
     {
         QVector<QTextLayout::FormatRange> formats;
 
@@ -133,41 +128,39 @@ public:
         constexpr int resetColorSequenceLength = 4;
         constexpr int colorCodeLength = 2;
 
-        for (const auto& line : text) {
-            auto lastToken = line.cbegin();
-            int lineOffset = 0;
-            for (auto escapeIt = std::find(line.cbegin(), line.cend(), Util::escapeChar); escapeIt != line.cend();
-                 escapeIt = std::find(escapeIt, line.cend(), Util::escapeChar)) {
+        auto lastToken = text.begin();
+        for (auto escapeIt = std::find(text.cbegin(), text.cend(), Util::escapeChar); escapeIt != text.cend();
+             escapeIt = std::find(escapeIt, text.cend(), Util::escapeChar)) {
 
-                lineOffset += std::distance(lastToken, escapeIt);
-                Q_ASSERT(*(escapeIt + 1) == QLatin1Char('['));
+            Q_ASSERT(*(escapeIt + 1) == QLatin1Char('['));
 
-                // escapeIt + 2 points to the first color code character
-                auto color = QStringView {escapeIt + 2, colorCodeLength};
-                bool ok = false;
-                const uint8_t colorCode = color.toUInt(&ok);
-                if (ok) {
-                    // only support the 8 default colors
-                    Q_ASSERT(colorCode >= 30 && colorCode <= 37);
+            offset += std::distance(lastToken, escapeIt);
 
-                    format.start = offset + lineOffset;
-                    const auto colorRole = static_cast<KColorScheme::ForegroundRole>(colorCode - 30);
-                    format.format.setForeground(m_colorScheme.foreground(colorRole));
+            // escapeIt + 2 points to the first color code character
+            auto color = QStringView {escapeIt + 2, colorCodeLength};
+            bool ok = false;
+            const uint8_t colorCode = color.toUInt(&ok);
+            if (ok) {
+                // only support the 8 default colors
+                Q_ASSERT(colorCode >= 30 && colorCode <= 37);
 
-                    std::advance(escapeIt, setColorSequenceLength);
-                } else {
-                    // make sure we have a reset sequence
-                    Q_ASSERT(color == QStringLiteral("0m"));
-                    format.length = offset + lineOffset - format.start;
-                    if (format.length) {
-                        formats.push_back(format);
-                    }
+                format.start = offset;
+                const auto colorRole = static_cast<KColorScheme::ForegroundRole>(colorCode - 30);
+                format.format.setForeground(m_colorScheme.foreground(colorRole));
 
-                    std::advance(escapeIt, resetColorSequenceLength);
+                std::advance(escapeIt, setColorSequenceLength);
+            } else {
+                // make sure we have a reset sequence
+                Q_ASSERT(color == QStringLiteral("0m"));
+                format.length = offset - format.start;
+                if (format.length) {
+                    formats.push_back(format);
                 }
-                lastToken = escapeIt;
+
+                std::advance(escapeIt, resetColorSequenceLength);
             }
-            offset += lineOffset + std::distance(lastToken, line.cend());
+
+            lastToken = escapeIt;
         }
 
         return formats;
@@ -188,15 +181,67 @@ private:
     KColorScheme m_colorScheme;
 };
 
+// QTextLayout is slow, this class acts as a cache that only creates and fills the QTextLayout on demand
+class HighlightedLine
+{
+public:
+    HighlightedLine(HighlightingImplementation* highlighter, QString text)
+        : m_highlighter(highlighter)
+        , m_text(std::move(text))
+        , m_layout(nullptr)
+    {
+    }
+
+    ~HighlightedLine() = default;
+
+    HighlightedLine(HighlightedLine&&) = default;
+
+    QTextLayout* layout()
+    {
+        if (!m_layout) {
+            doLayout();
+        }
+        return m_layout.get();
+    }
+
+    void updateHighlighting()
+    {
+        m_layout = nullptr;
+    }
+
+private:
+    void doLayout()
+    {
+        if (!m_layout) {
+            m_layout = std::make_unique<QTextLayout>();
+            m_layout->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+            const auto& ansiFreeLine = Util::removeAnsi(m_text);
+            m_layout->setText(ansiFreeLine);
+        }
+
+        m_layout->setFormats(m_highlighter->format(m_text));
+
+        m_layout->beginLayout();
+
+        // there is at most one line, so we don't need to check this multiple times
+        QTextLine line = m_layout->createLine();
+        if (line.isValid()) {
+            line.setPosition(QPointF(0, 0));
+        }
+        m_layout->endLayout();
+    }
+
+    HighlightingImplementation* m_highlighter;
+    QString m_text;
+    std::unique_ptr<QTextLayout> m_layout;
+};
+
 HighlightedText::HighlightedText(KSyntaxHighlighting::Repository* repository, QObject* parent)
     : QObject(parent)
 #if KFSyntaxHighlighting_FOUND
     , m_repository(repository)
 #endif
-    , m_layout(std::make_unique<QTextLayout>())
 {
-    m_layout->setCacheEnabled(true);
-    m_layout->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 }
 
 HighlightedText::~HighlightedText() = default;
@@ -212,29 +257,20 @@ void HighlightedText::setText(const QStringList& text)
         } else {
             m_highlighter = std::make_unique<HighlightingImplementation>(m_repository);
         }
+        m_highlighter->themeChanged();
         m_isUsingAnsi = usesAnsi;
         emit usesAnsiChanged(usesAnsi);
     }
 
-    m_highlighter->themeChanged();
-    m_highlighter->format(text);
+    m_highlightedLines.reserve(text.size());
+    std::transform(text.cbegin(), text.cend(), std::back_inserter(m_highlightedLines), [this](const QString& text) {
+        return HighlightedLine {m_highlighter.get(), text};
+    });
 
-    m_lines.reserve(text.size());
+    connect(this, &HighlightedText::definitionChanged, this, &HighlightedText::updateHighlighting);
+
     m_cleanedLines.reserve(text.size());
-
-    QString formattedText;
-
-    for (const auto& line : text) {
-        const auto& lineWithNewline = QLatin1String("%1%2").arg(line, QChar::LineSeparator);
-        const auto& ansiFreeLine = Util::removeAnsi(lineWithNewline);
-        m_cleanedLines.push_back(ansiFreeLine);
-        m_lines.push_back(lineWithNewline);
-        formattedText += ansiFreeLine;
-    }
-
-    m_layout->setText(formattedText);
-
-    applyFormatting();
+    std::transform(text.cbegin(), text.cend(), std::back_inserter(m_cleanedLines), Util::removeAnsi);
 }
 
 void HighlightedText::setDefinition(const KSyntaxHighlighting::Definition& definition)
@@ -242,39 +278,18 @@ void HighlightedText::setDefinition(const KSyntaxHighlighting::Definition& defin
     Q_ASSERT(m_highlighter);
     m_highlighter->setHighlightingDefinition(definition);
     emit definitionChanged(definition.name());
-    applyFormatting();
 }
 
 QString HighlightedText::textAt(int index) const
 {
     Q_ASSERT(m_highlighter);
-    Q_ASSERT(index < m_cleanedLines.size());
     return m_cleanedLines.at(index);
 }
 
 QTextLine HighlightedText::lineAt(int index) const
 {
-    Q_ASSERT(m_layout);
-    return m_layout->lineAt(index);
-}
-
-void HighlightedText::applyFormatting()
-{
-    Q_ASSERT(m_highlighter);
-
-    m_layout->setFormats(m_highlighter->format(m_lines));
-
-    m_layout->clearLayout();
-    m_layout->beginLayout();
-
-    while (true) {
-        QTextLine line = m_layout->createLine();
-        if (!line.isValid())
-            break;
-
-        line.setPosition(QPointF(0, 0));
-    }
-    m_layout->endLayout();
+    auto& line = m_highlightedLines[index];
+    return line.layout()->lineAt(0);
 }
 
 QString HighlightedText::definition() const
@@ -284,7 +299,14 @@ QString HighlightedText::definition() const
     return m_highlighter->definitionName();
 }
 
-QTextLayout* HighlightedText::layout() const
+QTextLayout* HighlightedText::layoutForLine(int index)
 {
-    return m_layout.get();
+    return m_highlightedLines[index].layout();
+}
+
+void HighlightedText::updateHighlighting()
+{
+    m_highlighter->themeChanged();
+    std::for_each(m_highlightedLines.begin(), m_highlightedLines.end(),
+                  [](HighlightedLine& line) { line.updateHighlighting(); });
 }
