@@ -26,7 +26,7 @@ QString prettifySymbol(const QString& symbol);
 struct Symbol
 {
     Symbol(const QString& symbol = {}, quint64 relAddr = 0, quint64 size = 0, const QString& binary = {},
-           const QString& path = {}, const QString& actualPath = {}, bool isKernel = false)
+           const QString& path = {}, const QString& actualPath = {}, bool isKernel = false, bool isInline = false)
         : symbol(symbol)
         , prettySymbol(Data::prettifySymbol(symbol))
         , relAddr(relAddr)
@@ -35,6 +35,7 @@ struct Symbol
         , path(path)
         , actualPath(actualPath)
         , isKernel(isKernel)
+        , isInline(isInline)
     {
     }
 
@@ -53,6 +54,7 @@ struct Symbol
     // actual file path
     QString actualPath;
     bool isKernel = false;
+    bool isInline = false;
 
     bool operator<(const Symbol& rhs) const
     {
@@ -66,7 +68,7 @@ struct Symbol
 
     bool canDisassemble() const
     {
-        return !symbol.isEmpty() && !path.isEmpty() && relAddr > 0 && size > 0;
+        return !symbol.isEmpty() && !path.isEmpty() && relAddr > 0 && size > 0 && !isInline;
     }
 };
 

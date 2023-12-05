@@ -228,12 +228,13 @@ struct Symbol
     StringId path;
     StringId actualPath;
     bool isKernel = false;
+    bool isInline = false;
 };
 
 QDataStream& operator>>(QDataStream& stream, Symbol& symbol)
 {
     return stream >> symbol.name >> symbol.binary >> symbol.path >> symbol.isKernel >> symbol.relAddr >> symbol.size
-        >> symbol.actualPath;
+        >> symbol.actualPath >> symbol.isInline;
 }
 
 QDebug operator<<(QDebug stream, const Symbol& symbol)
@@ -245,7 +246,8 @@ QDebug operator<<(QDebug stream, const Symbol& symbol)
                                << "binary=" << symbol.binary << ", "
                                << "path=" << symbol.path << ", "
                                << "actualPath=" << symbol.actualPath << ", "
-                               << "isKernel=" << symbol.isKernel << "}";
+                               << "isKernel=" << symbol.isKernel << ", "
+                               << "isInline=" << symbol.isInline << "}";
     return stream;
 }
 
@@ -1017,8 +1019,9 @@ public:
         const auto pathString = strings.value(symbol.symbol.path.id);
         const auto actualPathString = strings.value(symbol.symbol.actualPath.id);
         const auto isKernel = symbol.symbol.isKernel;
-        bottomUpResult.symbols[symbol.id] = {symbolString, relAddr,          size,    binaryString,
-                                             pathString,   actualPathString, isKernel};
+        const auto isInline = symbol.symbol.isInline;
+        bottomUpResult.symbols[symbol.id] = {symbolString, relAddr,          size,     binaryString,
+                                             pathString,   actualPathString, isKernel, isInline};
 
         // Count total and missing symbols per module for error report
         auto& numSymbols = numSymbolsByModule[symbol.symbol.binary.id];
