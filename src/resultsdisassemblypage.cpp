@@ -433,16 +433,29 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
 #if KFSyntaxHighlighting_FOUND
     QStringList schemes;
 
-    const auto definitions = m_repository->definitions();
+    auto definitions = m_repository->definitions();
     schemes.reserve(definitions.size());
 
     std::transform(definitions.begin(), definitions.end(), std::back_inserter(schemes),
                    [](const auto& definition) { return definition.name(); });
 
-    auto definitionModel = new QStringListModel(this);
-    definitionModel->setStringList(schemes);
+    auto sourceCodeDefinitionModel = new QStringListModel(this);
+    sourceCodeDefinitionModel->setStringList(schemes);
 
-    auto connectCompletion = [definitionModel, schemes, this](QComboBox* box, auto* model) {
+    QStringList assemblySchemes = {QStringLiteral("None")};
+
+    std::transform(definitions.begin(),
+                   std::partition(definitions.begin(), definitions.end(),
+                                  [](const KSyntaxHighlighting::Definition& definition) {
+                                      return definition.section() == QStringLiteral("Assembler");
+                                  }),
+                   std::back_inserter(assemblySchemes),
+                   [](const KSyntaxHighlighting::Definition& definition) { return definition.name(); });
+
+    auto assemblySchemesModel = new QStringListModel(this);
+    assemblySchemesModel->setStringList(assemblySchemes);
+
+    auto connectCompletion = [schemes, this](QStringListModel* definitionModel, QComboBox* box, auto* model) {
         auto completer = new QCompleter(this);
         completer->setModel(definitionModel);
         completer->setCaseSensitivity(Qt::CaseInsensitive);
@@ -459,8 +472,8 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
                 [box](const QString& definition) { box->setCurrentText(definition); });
     };
 
-    connectCompletion(ui->sourceCodeComboBox, m_sourceCodeModel);
-    connectCompletion(ui->assemblyComboBox, m_disassemblyModel);
+    connectCompletion(sourceCodeDefinitionModel, ui->sourceCodeComboBox, m_sourceCodeModel);
+    connectCompletion(assemblySchemesModel, ui->assemblyComboBox, m_disassemblyModel);
 #else
     ui->customSourceCodeHighlighting->setVisible(false);
     ui->customAssemblyHighlighting->setVisible(false);
