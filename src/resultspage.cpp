@@ -27,8 +27,15 @@
 
 #include <KLocalizedString>
 
+#include <kddockwidgets/kddockwidgets_version.h>
+
+#if KDDOCKWIDGETS_VERSION < KDDOCKWIDGETS_VERSION_CHECK(2, 0, 0)
 #include <kddockwidgets/DockWidget.h>
 #include <kddockwidgets/MainWindow.h>
+#else
+#include <kddockwidgets/qtwidgets/DockWidget.h>
+#include <kddockwidgets/qtwidgets/MainWindow.h>
+#endif // KDDOCKWIDGETS_VERSION < KDDOCKWIDGETS_VERSION_CHECK(2, 0, 0)
 
 #include <QDebug>
 #include <QLabel>
@@ -42,11 +49,20 @@
 #endif
 
 namespace {
-void showDock(KDDockWidgets::DockWidget* dock)
+void showDock(DockWidget* dock)
 {
     dock->show();
-    dock->setFocus();
+    dock->setFocus(Qt::FocusReason::NoFocusReason);
     dock->setAsCurrentTab();
+}
+
+CoreDockWidget* toDockWidget(DockWidget* dock)
+{
+#if KDDOCKWIDGETS_VERSION < KDDOCKWIDGETS_VERSION_CHECK(2, 0, 0)
+    return dock;
+#else
+    return dock->dockWidget();
+#endif //  KDDOCKWIDGETS_VERSION < KDDOCKWIDGETS_VERSION_CHECK
 }
 }
 
@@ -90,7 +106,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     ui->lostMessage->hide();
 
     auto dockify = [](QWidget* widget, const QString& id, const QString& title, const QString& shortcut) {
-        auto* dock = new KDDockWidgets::DockWidget(id);
+        auto* dock = new DockWidget(id);
         dock->setWidget(widget);
         dock->setTitle(title);
         dock->toggleAction()->setShortcut(shortcut);
@@ -254,7 +270,7 @@ void ResultsPage::onOpenEditor(const Data::Symbol& symbol)
 void ResultsPage::selectSummaryTab()
 {
     m_summaryPageDock->show();
-    m_summaryPageDock->setFocus();
+    m_summaryPageDock->setFocus(Qt::NoFocusReason);
     m_summaryPageDock->setAsCurrentTab();
 }
 
@@ -312,14 +328,18 @@ void ResultsPage::showError(const QString& message)
     QTimer::singleShot(5000, ui->errorWidget, &KMessageWidget::animatedHide);
 }
 
-void ResultsPage::initDockWidgets(const QVector<KDDockWidgets::DockWidgetBase*>& restored)
+void ResultsPage::initDockWidgets(const QVector<CoreDockWidget*>& restored)
 {
-    Q_ASSERT(restored.contains(m_summaryPageDock));
+    auto summaryPageDock = toDockWidget(m_summaryPageDock);
+
+    Q_ASSERT(restored.contains(summaryPageDock));
 
     const auto docks = {m_bottomUpDock, m_topDownDock,     m_flameGraphDock, m_callerCalleeDock,
                         m_timeLineDock, m_disassemblyDock, m_frequencyDock};
     for (auto dock : docks) {
-        if (!dock || restored.contains(dock))
+        auto dockWidget = toDockWidget(dock);
+
+        if (!dock || restored.contains(dockWidget))
             continue;
 
         auto initialOption = KDDockWidgets::InitialOption {};
