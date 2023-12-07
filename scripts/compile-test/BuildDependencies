@@ -1,10 +1,11 @@
 ARG BASEIMAGE
 FROM $BASEIMAGE
 
+ARG KDDOCKWIDGETS_VERSION="1.6"
 WORKDIR /opt
 
-RUN git clone -b 1.6 https://github.com/KDAB/KDDockWidgets && \
+RUN git clone -b "$KDDOCKWIDGETS_VERSION" https://github.com/KDAB/KDDockWidgets && \
     cd KDDockWidgets && mkdir build && cd build && \
     cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr/ \
-        -DKDDockWidgets_EXAMPLES=OFF -G Ninja .. && \
+        -DKDDockWidgets_EXAMPLES=OFF -DKDDockWidgets_FRONTENDS="qtwidgets" -G Ninja .. && \
     cmake --build . --target install && cd /opt && rm -Rf KDDockWidgets
