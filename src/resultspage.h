@@ -12,6 +12,8 @@
 
 #include <memory>
 
+#include "dockwidgets.h"
+
 class QMenu;
 class QAction;
 
@@ -21,12 +23,6 @@ class ResultsPage;
 
 namespace Data {
 struct Symbol;
-}
-
-namespace KDDockWidgets {
-class MainWindow;
-class DockWidget;
-class DockWidgetBase;
 }
 
 class PerfParser;
@@ -54,7 +50,7 @@ public:
     QMenu* exportMenu() const;
     QList<QAction*> windowActions() const;
 
-    void initDockWidgets(const QVector<KDDockWidgets::DockWidgetBase*>& restored);
+    void initDockWidgets(const QVector<CoreDockWidget*>& restored);
 
 public slots:
     void setSysroot(const QString& path);
@@ -74,27 +70,27 @@ private:
     void repositionFilterBusyIndicator();
 
     std::unique_ptr<Ui::ResultsPage> ui;
-    KDDockWidgets::MainWindow* m_contents;
+    DockMainWindow* m_contents;
     FilterAndZoomStack* m_filterAndZoomStack;
     CostContextMenu* m_costContextMenu;
     QMenu* m_filterMenu;
     QMenu* m_exportMenu;
-    KDDockWidgets::DockWidget* m_summaryPageDock;
+    DockWidget* m_summaryPageDock;
     ResultsSummaryPage* m_resultsSummaryPage;
-    KDDockWidgets::DockWidget* m_bottomUpDock;
+    DockWidget* m_bottomUpDock;
     ResultsBottomUpPage* m_resultsBottomUpPage;
-    KDDockWidgets::DockWidget* m_topDownDock;
+    DockWidget* m_topDownDock;
     ResultsTopDownPage* m_resultsTopDownPage;
-    KDDockWidgets::DockWidget* m_flameGraphDock;
+    DockWidget* m_flameGraphDock;
     ResultsFlameGraphPage* m_resultsFlameGraphPage;
-    KDDockWidgets::DockWidget* m_callerCalleeDock;
+    DockWidget* m_callerCalleeDock;
     ResultsCallerCalleePage* m_resultsCallerCalleePage;
-    KDDockWidgets::DockWidget* m_disassemblyDock;
+    DockWidget* m_disassemblyDock;
     ResultsDisassemblyPage* m_resultsDisassemblyPage;
-    KDDockWidgets::DockWidget* m_timeLineDock;
+    DockWidget* m_timeLineDock;
     TimeLineWidget* m_timeLineWidget;
     FrequencyPage* m_frequencyPage = nullptr;
-    KDDockWidgets::DockWidget* m_frequencyDock = nullptr;
+    DockWidget* m_frequencyDock = nullptr;
     QWidget* m_filterBusyIndicator = nullptr;
     bool m_timelineVisible;
 };
