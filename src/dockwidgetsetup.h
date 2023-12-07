@@ -7,12 +7,10 @@
 
 #pragma once
 
-namespace KDDockWidgets {
-class MainWindow;
-}
+#include "dockwidgets.h"
 
 class QWidget;
 class QString;
 
 void setupDockWidgets();
-KDDockWidgets::MainWindow* createDockingArea(const QString& id, QWidget* parent);
+DockMainWindow* createDockingArea(const QString& id, QWidget* parent);

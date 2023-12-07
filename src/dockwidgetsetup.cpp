@@ -8,15 +8,22 @@
 #include "dockwidgetsetup.h"
 
 #include <kddockwidgets/Config.h>
-#include <kddockwidgets/FrameworkWidgetFactory.h>
+#include <kddockwidgets/kddockwidgets_version.h>
+
+#if KDDOCKWIDGETS_VERSION < KDDOCKWIDGETS_VERSION_CHECK(2, 0, 0)
+#include <kddockwidgets/DefaultWidgetFactory>
 #include <kddockwidgets/MainWindow.h>
+#else
+#include <kddockwidgets/ViewFactory.h>
+#include <kddockwidgets/qtwidgets/MainWindow.h>
+#endif // KDDOCKWIDGETS_VERSION < KDDOCKWIDGETS_VERSION_CHECK(2, 0, 0)
 
 namespace {
-class DockingArea : public KDDockWidgets::MainWindow
+class DockingArea : public DockMainWindow
 {
     Q_OBJECT
 public:
-    using MainWindow::MainWindow;
+    using DockMainWindow::MainWindow;
 
 protected:
     QMargins centerWidgetMargins() const override
@@ -38,12 +45,21 @@ protected:
 
 void setupDockWidgets()
 {
-    KDDockWidgets::Config::self().setFlags(KDDockWidgets::Config::Flag_HideTitleBarWhenTabsVisible
-                                           | KDDockWidgets::Config::Flag_TabsHaveCloseButton);
+    constexpr auto flags =
+        KDDockWidgets::Config::Flag_HideTitleBarWhenTabsVisible | KDDockWidgets::Config::Flag_TabsHaveCloseButton;
+
+#if KDDOCKWIDGETS_VERSION < KDDOCKWIDGETS_VERSION_CHECK(2, 0, 0)
+    KDDockWidgets::Config::self().setFlags(flags);
     KDDockWidgets::DefaultWidgetFactory::s_dropIndicatorType = KDDockWidgets::DropIndicatorType::Segmented;
+
+#else
+    KDDockWidgets::initFrontend(KDDockWidgets::FrontendType::QtWidgets);
+    KDDockWidgets::Config::self().setFlags(flags);
+    KDDockWidgets::Core::ViewFactory::s_dropIndicatorType = KDDockWidgets::DropIndicatorType::Segmented;
+#endif
 }
 
-KDDockWidgets::MainWindow* createDockingArea(const QString& id, QWidget* parent)
+DockMainWindow* createDockingArea(const QString& id, QWidget* parent)
 {
     auto ret = new DockingArea(id, KDDockWidgets::MainWindowOption_None, parent);
 
