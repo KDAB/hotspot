@@ -8,7 +8,7 @@ FROM centos/devtoolset-7-toolchain-centos7 as intermediate
 
 ARG QT_VERSION=5.15.11
 ARG KF5_VERSION v5.110.0
-ARG KDDockWidgets_VERSION=1.7
+ARG KDDockWidgets_VERSION=2.0
 ARG QCustomPlot_VERSION=2.1.1
 ARG rust_demangler_VERSION=0.1.23
 ARG d_demangler_VERSION=0.0.2

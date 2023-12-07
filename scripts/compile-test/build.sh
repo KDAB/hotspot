@@ -23,6 +23,8 @@ buildBase()
 buildDependencies()
 {
     distro=$1
+    kddw_version=$2
+
     tag=$(toLower $distro)
 
     buildBase $distro
@@ -33,13 +35,14 @@ buildDependencies()
     fi
 
     docker build --ulimit nofile=1024:262144 -t hotspot-$tag-dependencies \
-        --build-arg BASEIMAGE=hotspot-$tag-base \
+        --build-arg BASEIMAGE=hotspot-$tag-base --build-arg KDDOCKWIDGETS_VERSION="$kddw_version" \
         -f scripts/compile-test/BuildDependencies$suffix $extraArgs .
 }
 
 buildHotspotWithPresets()
 {
     distro=$1
+    kddw_version=$2
     tag=$(toLower $distro)
 
     suffix=
@@ -47,7 +50,7 @@ buildHotspotWithPresets()
         suffix=Qt6
     fi
 
-    buildDependencies $distro
+    buildDependencies $distro $kddw_version
     docker build --ulimit nofile=1024:262144 -t hotspot-$tag \
         --build-arg BASEIMAGE=hotspot-$tag-dependencies \
         -f scripts/compile-test/BuildHotspotWithPresets$suffix $extraArgs .
@@ -56,18 +59,19 @@ buildHotspotWithPresets()
 buildHotspotWithoutPresets()
 {
     distro=$1
+    kddw_version=$2
     tag=$(toLower $distro)
 
-    buildDependencies $distro
+    buildDependencies $distro $kddw_version
     docker build --ulimit nofile=1024:262144 -t hotspot-$tag \
         --build-arg BASEIMAGE=hotspot-$tag-dependencies \
         -f scripts/compile-test/BuildHotspotWithoutPresets $extraArgs .
 }
 
 export DOCKER_BUILDKIT=1
-buildHotspotWithoutPresets Ubuntu20.04
-buildHotspotWithPresets Ubuntu22.04
-buildHotspotWithPresets Archlinux
-buildHotspotWithPresets OpenSuseTumbleweed
-buildHotspotWithoutPresets Fedora34
-buildHotspotWithPresets NeonQt6
+buildHotspotWithoutPresets Ubuntu20.04 1.6
+buildHotspotWithPresets Ubuntu22.04 2.0
+buildHotspotWithPresets Archlinux 2.0
+buildHotspotWithPresets OpenSuseTumbleweed 2.0
+buildHotspotWithoutPresets Fedora34 2.0
+buildHotspotWithPresets NeonQt6 2.0
