@@ -63,8 +63,9 @@ private slots:
     {
         QFETCH(Data::Symbol, symbol);
 
-        const auto actualBinaryFile = QFINDTESTDATA(symbol.binary);
-        symbol.actualPath = actualBinaryFile;
+        const auto actualBinaryFile = QFINDTESTDATA(symbol.binary());
+        symbol = Data::Symbol(symbol.symbol(), symbol.relAddr(), symbol.size(), symbol.binary(), symbol.path(),
+                              actualBinaryFile, symbol.isKernel());
 
         QVERIFY(!actualBinaryFile.isEmpty() && QFile::exists(actualBinaryFile));
         const auto actualOutputFile = QString(actualBinaryFile + QLatin1String(".actual.txt"));

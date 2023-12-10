@@ -91,7 +91,7 @@ std::pair<QString, QString> elideArguments(const QString& symbolText)
 QString formatForTooltip(const Data::Symbol& symbol)
 {
     return QCoreApplication::translate("Util", "symbol: <tt>%1</tt><br/>binary: <tt>%2</tt>")
-        .arg(Util::formatSymbol(symbol).toHtmlEscaped(), Util::formatString(symbol.binary));
+        .arg(Util::formatSymbol(symbol).toHtmlEscaped(), Util::formatString(symbol.binary()));
 }
 
 QString formatTooltipImpl(int id, const QString& text, const Data::Costs* selfCosts, const Data::Costs* inclusiveCosts)
@@ -258,7 +258,7 @@ QString Util::formatString(const QString& input, bool replaceEmptyString)
 
 QString Util::formatSymbol(const Data::Symbol& symbol, bool replaceEmptyString)
 {
-    QString symbolString = Settings::instance()->prettifySymbols() ? symbol.prettySymbol : symbol.symbol;
+    QString symbolString = Settings::instance()->prettifySymbols() ? symbol.prettySymbol() : symbol.symbol();
     if (Settings::instance()->collapseTemplates()) {
         symbolString = collapseTemplate(symbolString, Settings::instance()->collapseDepth());
     }
@@ -347,7 +347,7 @@ QString Util::formatFrequency(quint64 occurrences, quint64 nanoseconds)
 
 QString Util::formatBinaryTooltip(int id, const Data::Symbol& symbol, const Data::Costs& costs)
 {
-    return formatTooltipImpl(id, Util::formatString(symbol.binary), nullptr, &costs);
+    return formatTooltipImpl(id, Util::formatString(symbol.binary()), nullptr, &costs);
 }
 
 QString Util::formatTooltip(int id, const Data::Symbol& symbol, const Data::Costs& costs)

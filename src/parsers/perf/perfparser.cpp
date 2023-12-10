@@ -1152,8 +1152,8 @@ public:
             if (perfScriptOutput) {
                 *perfScriptOutput << '\t' << Qt::hex << qSetFieldWidth(16) << location.address << qSetFieldWidth(0)
                                   << Qt::dec << ' '
-                                  << (symbol.symbol.isEmpty() ? QStringLiteral("[unknown]") : symbol.symbol) << " ("
-                                  << symbol.binary << ")\n";
+                                  << (symbol.symbol().isEmpty() ? QStringLiteral("[unknown]") : symbol.symbol()) << " ("
+                                  << symbol.binary() << ")\n";
             }
         };
 
@@ -1766,11 +1766,11 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                                 }
                                 includedSymbols.remove(symbol);
 
-                                excluded = filter.excludeBinaries.contains(symbol.binary);
+                                excluded = filter.excludeBinaries.contains(symbol.binary());
                                 if (excluded) {
                                     return false;
                                 }
-                                includedBinaries.remove(symbol.binary);
+                                includedBinaries.remove(symbol.binary());
 
                                 // only stop when we included everything and no exclude filter is
                                 // set

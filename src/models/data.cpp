@@ -262,7 +262,7 @@ void buildPerLibrary(const TopDown* node, PerLibraryResults& results, QHash<QStr
                      const Costs& costs)
 {
     for (const auto& child : node->children) {
-        const auto path = child.symbol.path;
+        const auto path = child.symbol.path();
 
         auto resultIndexIt = pathToResultIndex.find(path);
         if (resultIndexIt == pathToResultIndex.end()) {
@@ -270,8 +270,8 @@ void buildPerLibrary(const TopDown* node, PerLibraryResults& results, QHash<QStr
 
             PerLibrary library;
             library.id = *resultIndexIt;
-            library.symbol = Symbol({}, 0, 0, child.symbol.binary, child.symbol.path, child.symbol.actualPath,
-                                    child.symbol.isKernel);
+            library.symbol = Symbol({}, 0, 0, child.symbol.binary(), child.symbol.path(), child.symbol.actualPath(),
+                                    child.symbol.isKernel());
             results.root.children.push_back(library);
         }
 
@@ -339,10 +339,10 @@ void Data::callerCalleesFromBottomUpData(const BottomUpResults& bottomUpData, Ca
 QDebug Data::operator<<(QDebug stream, const Symbol& symbol)
 {
     stream.noquote().nospace() << "Symbol{"
-                               << "symbol=" << symbol.symbol << ", "
-                               << "relAddr=" << symbol.relAddr << ", "
-                               << "size=" << symbol.size << ", "
-                               << "binary=" << symbol.binary << "}";
+                               << "symbol=" << symbol.symbol() << ", "
+                               << "relAddr=" << symbol.relAddr() << ", "
+                               << "size=" << symbol.size() << ", "
+                               << "binary=" << symbol.binary() << "}";
     return stream.resetFormat().space();
 }
 

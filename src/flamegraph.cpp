@@ -201,7 +201,7 @@ void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
     }
 
     const int height = rect().height();
-    const auto binary = Util::formatString(m_symbol.binary);
+    const auto binary = Util::formatString(m_symbol.binary());
     const auto symbol = Util::formatSymbol(m_symbol, false);
     const auto symbolText = symbol.isEmpty() ? QObject::tr("?? [%1]").arg(binary) : symbol;
     painter->drawText(margin + rect().x(), rect().y(), width, height,
@@ -250,16 +250,16 @@ QString FrameGraphicsItem::description() const
         return i18nc("%1: aggregated sample costs, %2: relative number, %3: function label, %4: binary, %5: cost name",
                      "%1 (%2%) aggregated %5 costs in %3 (%4) and below.",
                      Data::Costs::formatCost(root->unit(), m_cost), Util::formatCostRelative(m_cost, root->cost()),
-                     symbol, m_symbol.binary, root->costName());
+                     symbol, m_symbol.binary(), root->costName());
     case Data::Costs::Unit::Tracepoint:
         return i18nc("%1: number of tracepoint events, %2: relative number, %3: function label, %4: binary",
                      "%1 (%2%) aggregated %5 events in %3 (%4) and below.",
                      Data::Costs::formatCost(root->unit(), m_cost), Util::formatCostRelative(m_cost, root->cost()),
-                     symbol, m_symbol.binary, root->costName());
+                     symbol, m_symbol.binary(), root->costName());
     case Data::Costs::Unit::Time:
         return i18nc("%1: elapsed time, %2: relative number, %3: function label, %4: binary",
                      "%1 (%2%) aggregated %5 in %3 (%4) and below.", Data::Costs::formatCost(root->unit(), m_cost),
-                     Util::formatCostRelative(m_cost, root->cost()), symbol, m_symbol.binary, root->costName());
+                     Util::formatCostRelative(m_cost, root->cost()), symbol, m_symbol.binary(), root->costName());
     }
     Q_UNREACHABLE();
 }
@@ -338,9 +338,9 @@ QBrush brushBinary(const Data::Symbol& symbol)
 {
     static QHash<QString, QBrush> brushes;
 
-    auto& brush = brushes[symbol.binary];
+    auto& brush = brushes[symbol.binary()];
     if (brush == QBrush()) {
-        brush = brushImpl(qHash(symbol.binary), BrushType::Hot);
+        brush = brushImpl(qHash(symbol.binary()), BrushType::Hot);
     }
     return brush;
 }
@@ -350,7 +350,7 @@ QBrush brushKernel(const Data::Symbol& symbol)
     static auto kernel = QBrush(QColor(255, 0, 0, 125));
     static auto user = QBrush(QColor(0, 0, 255, 125));
 
-    if (symbol.isKernel) {
+    if (symbol.isKernel()) {
         return kernel;
     }
     return user;
@@ -380,9 +380,9 @@ QBrush brushSystem(const Data::Symbol& symbol)
     static const auto unknown = QBrush(QColor(50, 50, 50, 125));
 
     // remark lievenhey: I have seen [ only on kernel calls
-    if (symbol.path.isEmpty() || symbol.path.startsWith(QLatin1Char('['))) {
+    if (symbol.path().isEmpty() || symbol.path().startsWith(QLatin1Char('['))) {
         return unknown;
-    } else if (!isUserPath(symbol.path) && isSystemPath(symbol.path)) {
+    } else if (!isUserPath(symbol.path()) && isSystemPath(symbol.path())) {
         return system;
     }
     return user;
@@ -467,7 +467,7 @@ void toGraphicsItems(const Data::Costs& costs, int type, const QVector<Tree>& da
                      const double costThreshold, Settings::ColorScheme colorScheme, bool collapseRecursion)
 {
     foreach (const auto& row, data) {
-        if (collapseRecursion && !row.symbol.symbol.isEmpty() && row.symbol == parent->symbol()) {
+        if (collapseRecursion && !row.symbol.symbol().isEmpty() && row.symbol == parent->symbol()) {
             if (costs.cost(type, row.id) > costThreshold) {
                 toGraphicsItems(costs, type, row.children, parent, costThreshold, colorScheme, collapseRecursion);
             }
@@ -516,9 +516,9 @@ SearchResults applySearch(FrameGraphicsItem* item, const QString& searchValue)
     SearchResults result;
     if (searchValue.isEmpty()) {
         result.matchType = NoSearch;
-    } else if (item->symbol().symbol.contains(searchValue, Qt::CaseInsensitive)
-               || (searchValue == QLatin1String("??") && item->symbol().symbol.isEmpty())
-               || item->symbol().binary.contains(searchValue, Qt::CaseInsensitive)) {
+    } else if (item->symbol().symbol().contains(searchValue, Qt::CaseInsensitive)
+               || (searchValue == QLatin1String("??") && item->symbol().symbol().isEmpty())
+               || item->symbol().binary().contains(searchValue, Qt::CaseInsensitive)) {
         result.directCost += item->cost();
         result.matchType = DirectMatch;
     }

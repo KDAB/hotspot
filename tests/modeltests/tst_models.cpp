@@ -136,19 +136,19 @@ private slots:
         )");
         QCOMPARE(tree.root.children.size(), 3);
         const auto i1 = &tree.root.children.first();
-        QCOMPARE(i1->symbol.symbol, QStringLiteral("1"));
+        QCOMPARE(i1->symbol.symbol(), QStringLiteral("1"));
         QCOMPARE(i1->children.size(), 1);
         const auto i2 = &i1->children.first();
-        QCOMPARE(i2->symbol.symbol, QStringLiteral("2"));
+        QCOMPARE(i2->symbol.symbol(), QStringLiteral("2"));
         QCOMPARE(i2->children.size(), 1);
         const auto i3 = &i2->children.first();
-        QCOMPARE(i3->symbol.symbol, QStringLiteral("3"));
+        QCOMPARE(i3->symbol.symbol(), QStringLiteral("3"));
         QCOMPARE(i3->children.size(), 2);
         const auto i4 = &i3->children.first();
-        QCOMPARE(i4->symbol.symbol, QStringLiteral("4"));
+        QCOMPARE(i4->symbol.symbol(), QStringLiteral("4"));
         QCOMPARE(i4->children.size(), 0);
         const auto i5 = &i3->children.last();
-        QCOMPARE(i5->symbol.symbol, QStringLiteral("5"));
+        QCOMPARE(i5->symbol.symbol(), QStringLiteral("5"));
         QCOMPARE(i5->children.size(), 0);
 
         BottomUpModel model;
@@ -337,8 +337,9 @@ private slots:
     {
         QFETCH(Data::Symbol, symbol);
 
-        const auto actualBinaryFile = QFINDTESTDATA(symbol.binary);
-        symbol.actualPath = actualBinaryFile;
+        const auto actualBinaryFile = QFINDTESTDATA(symbol.binary());
+        symbol = Data::Symbol(symbol.symbol(), symbol.relAddr(), symbol.size(), symbol.binary(), symbol.path(),
+                              actualBinaryFile, symbol.isKernel());
 
         const auto tree = generateTree1();
 
@@ -382,8 +383,9 @@ private slots:
     {
         QFETCH(Data::Symbol, symbol);
 
-        const auto actualBinaryFile = QFINDTESTDATA(symbol.binary);
-        symbol.actualPath = actualBinaryFile;
+        const auto actualBinaryFile = QFINDTESTDATA(symbol.binary());
+        symbol = Data::Symbol(symbol.symbol(), symbol.relAddr(), symbol.size(), symbol.binary(), symbol.path(),
+                              actualBinaryFile, symbol.isKernel());
 
         const auto tree = generateTree1();
 
@@ -775,7 +777,7 @@ private slots:
         QFETCH(QString, prettySymbol);
         QFETCH(QString, symbol);
 
-        QCOMPARE(Data::Symbol(symbol).prettySymbol, prettySymbol);
+        QCOMPARE(Data::Symbol(symbol).prettySymbol(), prettySymbol);
     }
 
     void testCollapseTemplates_data()

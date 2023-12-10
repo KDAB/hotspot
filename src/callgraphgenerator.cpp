@@ -25,10 +25,10 @@ QHash<Data::Symbol, QString> writeGraph(QTextStream& stream, const Data::Symbol&
            << "\"]\n";
 
     stream << "node" << parentId << " [label=\"";
-    if (symbol.prettySymbol.isEmpty()) {
+    if (symbol.prettySymbol().isEmpty()) {
         stream << "??";
     } else {
-        stream << symbol.prettySymbol;
+        stream << symbol.prettySymbol();
     }
     stream << "\", color=\"" << settings->callgraphActiveColor().name() << "\"]\n";
 
@@ -52,7 +52,7 @@ void resultsToDot(int height, Direction direction, const Data::Symbol& symbol, c
         return;
     }
 
-    if (symbol.prettySymbol.isEmpty())
+    if (symbol.prettySymbol().isEmpty())
         return;
 
     if (results.selfCosts.numTypes() == 0) {
@@ -85,7 +85,7 @@ void resultsToDot(int height, Direction direction, const Data::Symbol& symbol, c
         auto idIt = nodeIdLookup.find(key);
         if (idIt == nodeIdLookup.end()) {
             idIt = nodeIdLookup.insert(key, QUuid::createUuid().toString(QUuid::Id128));
-            addNode(idIt.value(), key.prettySymbol.isEmpty() ? QStringLiteral("??") : key.prettySymbol);
+            addNode(idIt.value(), key.prettySymbol().isEmpty() ? QStringLiteral("??") : key.prettySymbol());
         }
         const auto nodeId = idIt.value();
 

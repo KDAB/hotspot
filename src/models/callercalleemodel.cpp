@@ -82,9 +82,9 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
     } else if (role == SortRole) {
         switch (column) {
         case Symbol:
-            return Util::formatSymbol(symbol.prettySymbol);
+            return Util::formatSymbol(symbol.prettySymbol());
         case Binary:
-            return symbol.binary;
+            return symbol.binary();
         }
         column -= NUM_BASE_COLUMNS;
         if (column < m_results.selfCosts.numTypes()) {
@@ -105,7 +105,7 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
         case Symbol:
             return Util::formatSymbol(symbol);
         case Binary:
-            return symbol.binary;
+            return symbol.binary();
         }
         column -= 2;
         if (column < m_results.selfCosts.numTypes()) {

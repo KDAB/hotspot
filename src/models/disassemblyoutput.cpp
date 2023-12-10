@@ -84,8 +84,8 @@ QString findInSubdirRecursive(const QString& path, const QString& filename)
 QString findBinaryForSymbol(const QStringList& debugPaths, const QStringList& extraLibPaths, const Data::Symbol& symbol)
 {
     // file in .debug
-    if (QFileInfo::exists(symbol.actualPath)) {
-        return symbol.actualPath;
+    if (QFileInfo::exists(symbol.actualPath())) {
+        return symbol.actualPath();
     }
 
     auto findBinary = [](const QStringList& paths, const QString& binary) -> QString {
@@ -98,17 +98,17 @@ QString findBinaryForSymbol(const QStringList& debugPaths, const QStringList& ex
         return {};
     };
 
-    auto result = findBinary(debugPaths, symbol.binary);
+    auto result = findBinary(debugPaths, symbol.binary());
     if (!result.isEmpty())
         return result;
 
-    result = findBinary(extraLibPaths, symbol.binary);
+    result = findBinary(extraLibPaths, symbol.binary());
     if (!result.isEmpty())
         return result;
 
     // disassemble the binary if no debug file was found
-    if (QFileInfo::exists(symbol.path)) {
-        return symbol.path;
+    if (QFileInfo::exists(symbol.path())) {
+        return symbol.path();
     }
 
     return {};
@@ -276,7 +276,7 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
 {
     DisassemblyOutput disassemblyOutput;
     disassemblyOutput.symbol = symbol;
-    if (symbol.symbol.isEmpty()) {
+    if (symbol.symbol().isEmpty()) {
         disassemblyOutput.errorMessage =
             QApplication::translate("DisassemblyOutput",
                                     "<qt>Empty symbol <tt>"
@@ -284,10 +284,10 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
                                     "</tt> is selected.");
         return disassemblyOutput;
     }
-    if (symbol.relAddr == 0 || symbol.size == 0) {
+    if (symbol.relAddr() == 0 || symbol.size() == 0) {
         disassemblyOutput.errorMessage =
             QApplication::translate("DisassemblyOutput", "<qt>Symbol <tt>%1</tt> with unknown details is selected.")
-                .arg(symbol.symbol);
+                .arg(symbol.symbol());
         return disassemblyOutput;
     }
 
@@ -317,9 +317,9 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
                                   QStringLiteral("-l"), // include source code lines
                                   QStringLiteral("-C"), // demangle names
                                   QStringLiteral("--start-address"),
-                                  toHex(symbol.relAddr),
+                                  toHex(symbol.relAddr()),
                                   QStringLiteral("--stop-address"),
-                                  toHex(symbol.relAddr + symbol.size)};
+                                  toHex(symbol.relAddr() + symbol.size())};
 
     // only available for objdump 2.34+
     if (canVisualizeJumps(processPath))
@@ -330,7 +330,7 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
     auto binary = findBinaryForSymbol(debugPaths, extraLibPaths, symbol);
     if (binary.isEmpty()) {
         disassemblyOutput.errorMessage +=
-            QApplication::translate("DisassemblyOutput", "<qt>Could not find binary <tt>%1</tt>.").arg(symbol.binary);
+            QApplication::translate("DisassemblyOutput", "<qt>Could not find binary <tt>%1</tt>.").arg(symbol.binary());
         return disassemblyOutput;
     }
     arguments.append(binary);

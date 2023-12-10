@@ -69,7 +69,7 @@ QVariant BottomUpModel::rowData(const Data::BottomUp* row, int column, int role)
         case Symbol:
             return Util::formatSymbol(row->symbol);
         case Binary:
-            return row->symbol.binary;
+            return row->symbol.binary();
         }
         if (role == SortRole) {
             return m_results.costs.cost(column - NUM_BASE_COLUMNS, row->id);
@@ -161,7 +161,7 @@ QVariant TopDownModel::rowData(const Data::TopDown* row, int column, int role) c
         case Symbol:
             return Util::formatSymbol(row->symbol);
         case Binary:
-            return row->symbol.binary;
+            return row->symbol.binary();
         }
 
         column -= NUM_BASE_COLUMNS;
@@ -229,7 +229,7 @@ QVariant PerLibraryModel::rowData(const Data::PerLibrary* row, int column, int r
     if (role == Qt::DisplayRole || role == SortRole) {
         switch (column) {
         case Binary:
-            return Util::formatString(row->symbol.binary);
+            return Util::formatString(row->symbol.binary());
         }
 
         column -= NUM_BASE_COLUMNS;

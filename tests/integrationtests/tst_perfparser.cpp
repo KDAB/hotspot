@@ -34,9 +34,9 @@ namespace {
 template<typename T>
 bool searchForChildSymbol(const T& root, const QString& searchString, bool exact = true)
 {
-    if (exact && root.symbol.symbol == searchString) {
+    if (exact && root.symbol.symbol() == searchString) {
         return true;
-    } else if (!exact && root.symbol.symbol.contains(searchString)) {
+    } else if (!exact && root.symbol.symbol().contains(searchString)) {
         return true;
     } else {
         for (const auto& entry : root.children) {
@@ -107,7 +107,7 @@ struct ComparableSymbol
         VERIFY_OR_THROW(isPattern != rhs.isPattern);
         auto cmp = [](const Data::Symbol& symbol, const QVector<QPair<QString, QString>>& pattern) {
             return std::any_of(pattern.begin(), pattern.end(), [&symbol](const QPair<QString, QString>& pattern) {
-                return symbol.symbol.contains(pattern.first) && symbol.binary.contains(pattern.second);
+                return symbol.symbol().contains(pattern.first) && symbol.binary().contains(pattern.second);
             });
         };
         return isPattern ? cmp(rhs.symbol, pattern) : cmp(symbol, rhs.pattern);
@@ -127,8 +127,8 @@ char* toString(const ComparableSymbol& symbol)
         return QTest::toString(
             QString(QLatin1String("ComparableSymbol{[") + patterns.join(QLatin1String(", ")) + QLatin1String("]}")));
     } else {
-        return QTest::toString(QString(QLatin1String("ComparableSymbol{") + symbol.symbol.symbol + QLatin1String(", ")
-                                       + symbol.symbol.binary + QLatin1Char('}')));
+        return QTest::toString(QString(QLatin1String("ComparableSymbol{") + symbol.symbol.symbol() + QLatin1String(", ")
+                                       + symbol.symbol.binary() + QLatin1Char('}')));
     }
 }
 
@@ -148,7 +148,7 @@ ComparableSymbol cppRecursionTopSymbol(const QString& binary = QStringLiteral("c
 
 void dump(const Data::BottomUp& bottomUp, QTextStream& stream, const QByteArray& prefix)
 {
-    stream << prefix << bottomUp.symbol.symbol << '\n';
+    stream << prefix << bottomUp.symbol.symbol() << '\n';
 
     for (const auto& child : bottomUp.children) {
         dump(child, stream, prefix + '\t');

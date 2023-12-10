@@ -25,7 +25,7 @@ bool match(const QSortFilterProxyModel* proxy, const Data::Symbol& symbol)
 {
     const auto pattern = proxy->filterRegularExpression();
 
-    return matchImpl(pattern, symbol.symbol) || matchImpl(pattern, symbol.binary);
+    return matchImpl(pattern, symbol.symbol()) || matchImpl(pattern, symbol.binary());
 }
 
 bool match(const QSortFilterProxyModel* proxy, const Data::FileLine& fileLine)

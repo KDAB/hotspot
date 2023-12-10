@@ -67,7 +67,7 @@ void addFilterActions(QMenu* menu, const Data::Symbol& symbol, FilterAndZoomStac
         auto filterActions = filterStack->actions();
 
         // don't include symbol-related entries for binary-only symbols (like in Top Hotspots Per File)
-        if (!symbol.symbol.isEmpty()) {
+        if (!symbol.symbol().isEmpty()) {
             auto symbolFilter = QVariant::fromValue(symbol);
 
             filterActions.filterInBySymbol->setData(symbolFilter);
@@ -79,8 +79,8 @@ void addFilterActions(QMenu* menu, const Data::Symbol& symbol, FilterAndZoomStac
         }
 
         // don't include binary-related entries when we don't have this information
-        if (!symbol.binary.isEmpty()) {
-            auto binaryFilter = QVariant::fromValue(symbol.binary);
+        if (!symbol.binary().isEmpty()) {
+            auto binaryFilter = QVariant::fromValue(symbol.binary());
 
             filterActions.filterInByBinary->setData(binaryFilter);
             filterActions.filterOutByBinary->setData(binaryFilter);

@@ -25,72 +25,132 @@ QString prettifySymbol(const QString& symbol);
 
 struct Symbol
 {
+public:
     Symbol(const QString& symbol = {}, quint64 relAddr = 0, quint64 size = 0, const QString& binary = {},
            const QString& path = {}, const QString& actualPath = {}, bool isKernel = false)
-        : symbol(symbol)
-        , prettySymbol(Data::prettifySymbol(symbol))
-        , relAddr(relAddr)
-        , size(size)
-        , binary(binary)
-        , path(path)
-        , actualPath(actualPath)
-        , isKernel(isKernel)
+        : m_symbol(symbol)
+        , m_prettySymbol(Data::prettifySymbol(symbol))
+        , m_binary(binary)
+        , m_path(path)
+        , m_actualPath(actualPath)
+        , m_relAddr(relAddr)
+        , m_size(size)
+        , m_isKernel(isKernel)
     {
+        m_hashValue = qHash(0);
     }
-
-    // function name
-    QString symbol;
-    // prettified function name
-    QString prettySymbol;
-    // relative address
-    quint64 relAddr = 0;
-    // size of frame
-    quint64 size = 0;
-    // dso / executable name
-    QString binary;
-    // path to dso / executable
-    QString path;
-    // actual file path
-    QString actualPath;
-    bool isKernel = false;
 
     bool operator<(const Symbol& rhs) const
     {
-        return std::tie(symbol, binary, path) < std::tie(rhs.symbol, rhs.binary, rhs.path);
+        return std::tie(m_symbol, m_binary, m_path) < std::tie(rhs.m_symbol, rhs.m_binary, rhs.m_path);
     }
 
     bool isValid() const
     {
-        return !symbol.isEmpty() || !binary.isEmpty() || !path.isEmpty();
+        return !m_symbol.isEmpty() || !m_binary.isEmpty() || !m_path.isEmpty();
     }
 
     bool canDisassemble() const
     {
-        return !symbol.isEmpty() && !path.isEmpty() && relAddr > 0 && size > 0;
+        return !m_symbol.isEmpty() && !m_path.isEmpty() && m_relAddr > 0 && m_size > 0;
     }
+
+    inline uint qHash(uint seed) const
+    {
+        Util::HashCombine hash;
+        seed = hash(seed, m_symbol);
+        seed = hash(seed, m_binary);
+        seed = hash(seed, m_path);
+        seed = hash(seed, m_relAddr);
+        return seed;
+    }
+
+    inline bool operator==(const Symbol& rhs) const
+    {
+        return m_hashValue == rhs.m_hashValue
+            && std::tie(m_symbol, m_binary, m_path, m_relAddr)
+            == std::tie(rhs.m_symbol, rhs.m_binary, rhs.m_path, rhs.m_relAddr);
+    }
+    inline bool operator!=(const Symbol& lhs) const
+    {
+        return !operator==(lhs);
+    }
+    uint hashValue() const
+    {
+        return m_hashValue;
+    }
+    const QString& symbol() const
+    {
+        return m_symbol;
+    }
+    const QString& prettySymbol() const
+    {
+        return m_prettySymbol;
+    }
+    const QString& binary() const
+    {
+        return m_binary;
+    }
+    const QString& path() const
+    {
+        return m_path;
+    }
+    const QString& actualPath() const
+    {
+        return m_actualPath;
+    }
+    quint64 relAddr() const
+    {
+        return m_relAddr;
+    }
+    quint64 size() const
+    {
+        return m_size;
+    }
+    bool isKernel() const
+    {
+        return m_isKernel;
+    }
+
+private:
+    // cached hash value with seed == 0
+    uint m_hashValue;
+    // function name
+    QString m_symbol;
+    // prettified function name
+    QString m_prettySymbol;
+    // dso / executable name
+    QString m_binary;
+    // path to dso / executable
+    QString m_path;
+    // actual file path
+    QString m_actualPath;
+    // relative address
+    quint64 m_relAddr = 0;
+    // size of frame
+    quint64 m_size = 0;
+    bool m_isKernel = false;
 };
 
 QDebug operator<<(QDebug stream, const Symbol& symbol);
 
+#if 0
 inline bool operator==(const Symbol& lhs, const Symbol& rhs)
 {
-    return std::tie(lhs.symbol, lhs.binary, lhs.path, lhs.relAddr)
-        == std::tie(rhs.symbol, rhs.binary, rhs.path, rhs.relAddr);
+    return lhs.m_hashValue == rhs.m_hashValue &&
+        std::tie(lhs.m_symbol, lhs.m_binary, lhs.m_path, lhs.m_relAddr)
+            == std::tie(rhs.m_symbol, rhs.m_binary, rhs.m_path, rhs.m_relAddr);
 }
 
 inline bool operator!=(const Symbol& lhs, const Symbol& rhs)
 {
     return !(lhs == rhs);
 }
+#endif
 
 inline uint qHash(const Symbol& symbol, uint seed = 0)
 {
-    Util::HashCombine hash;
-    seed = hash(seed, symbol.symbol);
-    seed = hash(seed, symbol.binary);
-    seed = hash(seed, symbol.path);
-    seed = hash(seed, symbol.relAddr);
-    return seed;
+    return seed == 0 ? symbol.hashValue() : symbol.qHash(seed);
 }
 
 struct FileLine

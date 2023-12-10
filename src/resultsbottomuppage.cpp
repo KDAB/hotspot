@@ -31,8 +31,8 @@ void stackCollapsedExport(QTextStream& file, int type, const Data::Costs& costs,
 
     auto entry = &node;
     while (entry) {
-        if (entry->symbol.symbol.isEmpty())
-            file << '[' << entry->symbol.binary << ']';
+        if (entry->symbol.symbol().isEmpty())
+            file << '[' << entry->symbol.binary() << ']';
         else
             file << Util::formatSymbol(entry->symbol);
         entry = entry->parent;

@@ -308,13 +308,13 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
 
         const auto functionOffset = index.data(DisassemblyModel::LinkedFunctionOffsetRole).toInt();
 
-        if (m_symbolStack[m_stackIndex].symbol == functionName) {
+        if (m_symbolStack[m_stackIndex].symbol() == functionName) {
             ui->assemblyView->scrollTo(m_disassemblyModel->findIndexWithOffset(functionOffset),
                                        QAbstractItemView::ScrollHint::PositionAtTop);
         } else {
             const auto symbol =
                 std::find_if(m_callerCalleeResults.entries.keyBegin(), m_callerCalleeResults.entries.keyEnd(),
-                             [functionName](const Data::Symbol& symbol) { return symbol.symbol == functionName; });
+                             [functionName](const Data::Symbol& symbol) { return symbol.symbol() == functionName; });
 
             if (symbol != m_callerCalleeResults.entries.keyEnd()) {
                 m_symbolStack.push_back(*symbol);
@@ -347,7 +347,7 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
         ui->stackBackButton->setEnabled(m_stackIndex > 0);
         ui->stackNextButton->setEnabled(m_stackIndex < m_symbolStack.size() - 1);
 
-        ui->stackEntry->setText(m_symbolStack[m_stackIndex].prettySymbol);
+        ui->stackEntry->setText(m_symbolStack[m_stackIndex].prettySymbol());
 
         showDisassembly();
     });
@@ -531,7 +531,7 @@ void ResultsDisassemblyPage::showDisassembly()
     const auto& curSymbol = m_symbolStack[m_stackIndex];
 
     // Show empty tab when selected symbol is not valid
-    if (curSymbol.symbol.isEmpty()) {
+    if (curSymbol.symbol().isEmpty()) {
         clear();
     }
 

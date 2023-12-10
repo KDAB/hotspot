@@ -141,7 +141,7 @@ public:
             case Symbol:
                 return Util::formatSymbol(symbol);
             case Binary:
-                return symbol.binary;
+                return symbol.binary();
             }
             return costs[column - NUM_BASE_COLUMNS];
         } else if (role == TotalCostRole && column >= NUM_BASE_COLUMNS) {
@@ -151,7 +151,7 @@ public:
             case Symbol:
                 return Util::formatSymbol(symbol);
             case Binary:
-                return symbol.binary;
+                return symbol.binary();
             }
             return Util::formatCostRelative(costs[column - NUM_BASE_COLUMNS],
                                             m_costs.totalCost(column - NUM_BASE_COLUMNS), true);

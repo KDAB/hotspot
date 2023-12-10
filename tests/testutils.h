@@ -62,7 +62,7 @@ void printTree(const Tree& tree, const Results& results, QStringList* entries, i
     QString indent;
     indent.fill(QLatin1Char(' '), indentLevel);
     for (const auto& entry : tree.children) {
-        entries->push_back(indent + entry.symbol.symbol + QLatin1Char('=') + printCost(entry, results));
+        entries->push_back(indent + entry.symbol.symbol() + QLatin1Char('=') + printCost(entry, results));
         printTree(entry, results, entries, indentLevel + 1);
     }
 }
@@ -95,16 +95,16 @@ inline QStringList printMap(const Data::CallerCalleeResults& results)
     for (auto it = results.entries.begin(), end = results.entries.end(); it != end; ++it) {
         VERIFY_OR_THROW(!ids.contains(it->id));
         ids.insert(it->id);
-        list.push_back(it.key().symbol + QLatin1Char('=') + printCost(it.value(), results));
+        list.push_back(it.key().symbol() + QLatin1Char('=') + printCost(it.value(), results));
         QStringList subList;
         for (auto callersIt = it->callers.begin(), callersEnd = it->callers.end(); callersIt != callersEnd;
              ++callersIt) {
-            subList.push_back(it.key().symbol + QLatin1Char('<') + callersIt.key().symbol + QLatin1Char('=')
+            subList.push_back(it.key().symbol() + QLatin1Char('<') + callersIt.key().symbol() + QLatin1Char('=')
                               + QString::number(callersIt.value()[0]));
         }
         for (auto calleesIt = it->callees.begin(), calleesEnd = it->callees.end(); calleesIt != calleesEnd;
              ++calleesIt) {
-            subList.push_back(it.key().symbol + QLatin1Char('>') + calleesIt.key().symbol + QLatin1Char('=')
+            subList.push_back(it.key().symbol() + QLatin1Char('>') + calleesIt.key().symbol() + QLatin1Char('=')
                               + QString::number(calleesIt.value()[0]));
         }
         subList.sort();
@@ -130,12 +130,12 @@ inline QStringList printCallerCalleeModel(const CallerCalleeModel& model)
         QStringList subList;
         const auto& callers = symbolIndex.data(CallerCalleeModel::CallersRole).value<Data::CallerMap>();
         for (auto callersIt = callers.begin(), callersEnd = callers.end(); callersIt != callersEnd; ++callersIt) {
-            subList.push_back(symbol + QLatin1Char('<') + callersIt.key().symbol + QLatin1Char('=')
+            subList.push_back(symbol + QLatin1Char('<') + callersIt.key().symbol() + QLatin1Char('=')
                               + QString::number(callersIt.value()[0]));
         }
         const auto& callees = symbolIndex.data(CallerCalleeModel::CalleesRole).value<Data::CalleeMap>();
         for (auto calleesIt = callees.begin(), calleesEnd = callees.end(); calleesIt != calleesEnd; ++calleesIt) {
-            subList.push_back(symbol + QLatin1Char('>') + calleesIt.key().symbol + QLatin1Char('=')
+            subList.push_back(symbol + QLatin1Char('>') + calleesIt.key().symbol() + QLatin1Char('=')
                               + QString::number(calleesIt.value()[0]));
         }
         subList.sort();

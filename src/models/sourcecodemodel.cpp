@@ -119,7 +119,7 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     Q_ASSERT(minLineNumber > 0);
     Q_ASSERT(minLineNumber < maxLineNumber);
 
-    m_prettySymbol = disassemblyOutput.symbol.prettySymbol;
+    m_prettySymbol = disassemblyOutput.symbol.prettySymbol();
     m_startLine = minLineNumber - 1; // convert to index
     m_numLines = maxLineNumber - minLineNumber + 1; // include minLineNumber
 

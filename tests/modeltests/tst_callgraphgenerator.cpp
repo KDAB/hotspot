@@ -25,7 +25,7 @@ private slots:
 
         auto key = Data::Symbol();
         for (auto it = results.entries.cbegin(); it != results.entries.cend(); it++) {
-            if (it.key().symbol == QLatin1String("test")) {
+            if (it.key().symbol() == QLatin1String("test")) {
                 key = it.key();
                 break;
             }
@@ -53,7 +53,7 @@ private slots:
 
         auto key = Data::Symbol();
         for (auto it = results.entries.cbegin(); it != results.entries.cend(); it++) {
-            if (it.key().symbol == QLatin1String("test")) {
+            if (it.key().symbol() == QLatin1String("test")) {
                 key = it.key();
                 break;
             }

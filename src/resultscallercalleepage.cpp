@@ -204,7 +204,7 @@ ResultsCallerCalleePage::toSourceMapLocation(const Data::FileLine& fileLine, con
 
     // also try to resolve paths relative to the module output folder
     // fixes a common issue with qmake builds that use relative paths
-    const QString modulePath = QFileInfo(symbol.path).path() + QLatin1Char('/');
+    const QString modulePath = QFileInfo(symbol.path()).path() + QLatin1Char('/');
 
     resolvePath(m_sysroot) || resolvePath(m_sysroot + modulePath) || resolvePath(m_appPath)
         || resolvePath(m_appPath + modulePath);
@@ -292,6 +292,6 @@ void ResultsCallerCalleePage::openEditor(const Data::Symbol& symbol)
 
     if (it == map.keyEnd()) {
         emit navigateToCodeFailed(
-            tr("Failed to find location for symbol %1 in %2.").arg(symbol.prettySymbol, symbol.binary));
+            tr("Failed to find location for symbol %1 in %2.").arg(symbol.prettySymbol(), symbol.binary()));
     }
 }
