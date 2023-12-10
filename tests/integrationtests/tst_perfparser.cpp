@@ -24,6 +24,12 @@
 #include "../testutils.h"
 #include <hotspot-config.h>
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 3, 0)
+// workaround issues with string literals in QTest that we cannot workaround locally
+// this was fixed upstream, see: https://codereview.qt-project.org/c/qt/qtbase/+/354227
+// clazy:excludeall=qstring-allocations
+#endif
+
 namespace {
 template<typename T>
 bool searchForChildSymbol(const T& root, const QString& searchString, bool exact = true)
