@@ -124,7 +124,7 @@ RUN ldconfig && \
 
 # kddockwidgets
 RUN cd /opt && git clone --recursive https://github.com/KDAB/KDDockWidgets.git -b ${KDDockWidgets_VERSION} && \
-    cd KDDockWidgets && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr .. && \
+    cd KDDockWidgets && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr -DKDDockWidgets_EXAMPLES=0 -DKDDockWidgets_FRONTENDS="qtwidgets" .. && \
     make -j && make install && cd /opt && rm -Rf KDDockWidgets
 
 FROM intermediate
