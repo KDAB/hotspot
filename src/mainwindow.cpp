@@ -187,7 +187,7 @@ MainWindow::MainWindow(QWidget* parent)
     });
     ui->fileMenu->addAction(openNewWindow);
     m_recentFilesAction = KStandardAction::openRecent(this, qOverload<const QUrl&>(&MainWindow::openFile), this);
-    m_recentFilesAction->loadEntries(m_config->group("RecentFiles"));
+    m_recentFilesAction->loadEntries(m_config->group(QStringLiteral("RecentFiles")));
     ui->fileMenu->addAction(m_recentFilesAction);
     ui->fileMenu->addSeparator();
     m_reloadAction = KStandardAction::redisplay(this, &MainWindow::reload, this);
@@ -261,7 +261,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     clear();
 
-    auto config = m_config->group("Window");
+    auto config = m_config->group(QStringLiteral("Window"));
     restoreGeometry(config.readEntry("geometry", QByteArray()));
     restoreState(config.readEntry("state", QByteArray()));
     KDDockWidgets::LayoutSaver serializer(KDDockWidgets::RestoreOption_RelativeToMainWindow);
@@ -280,7 +280,7 @@ MainWindow::~MainWindow() = default;
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    auto config = m_config->group("Window");
+    auto config = m_config->group(QStringLiteral("Window"));
     config.writeEntry("geometry", saveGeometry());
     config.writeEntry("state", saveState());
 
@@ -360,7 +360,7 @@ void MainWindow::openFile(const QString& path, bool isReload)
     m_exportAction->setData(QUrl::fromLocalFile(file.absoluteFilePath() + QLatin1String(".perfparser")));
 
     m_recentFilesAction->addUrl(QUrl::fromLocalFile(file.absoluteFilePath()));
-    m_recentFilesAction->saveEntries(m_config->group("RecentFiles"));
+    m_recentFilesAction->saveEntries(m_config->group(QStringLiteral("RecentFiles")));
     m_config->sync();
 }
 
@@ -465,7 +465,7 @@ void MainWindow::setupCodeNavigationMenu()
     auto group = new QActionGroup(this);
     group->setExclusive(true);
 
-    const auto settings = m_config->group("CodeNavigation");
+    const auto settings = m_config->group(QStringLiteral("CodeNavigation"));
     const auto currentIdx = settings.readEntry("IDE", firstAvailableIde());
 
     for (int i = 0; i < ideSettingsSize; ++i) {
@@ -517,7 +517,7 @@ void MainWindow::setupCodeNavigationMenu()
 
 void MainWindow::setCodeNavigationIDE(QAction* action)
 {
-    auto settings = m_config->group("CodeNavigation");
+    auto settings = m_config->group(QStringLiteral("CodeNavigation"));
 
     if (action->data() == -1) {
         const auto customCmd =
@@ -538,7 +538,7 @@ void MainWindow::setCodeNavigationIDE(QAction* action)
 
 void MainWindow::navigateToCode(const QString& filePath, int lineNumber, int columnNumber)
 {
-    const auto settings = m_config->group("CodeNavigation");
+    const auto settings = m_config->group(QStringLiteral("CodeNavigation"));
     const auto ideIdx = settings.readEntry("IDE", firstAvailableIde());
 
     QString command;
