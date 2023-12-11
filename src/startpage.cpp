@@ -78,7 +78,8 @@ void StartPage::onDebugInfoDownloadProgress(const QString& module, const QString
     ui->downloadDebugInfoProgressLabel->setText(
         tr("Downloading Debug Information for %1 (%2 of %3)")
             .arg(module, format.formatByteSize(numerator, 1, KFormat::MetricBinaryDialect),
-                 format.formatByteSize(denominator, 1, KFormat::MetricBinaryDialect)));
+                 denominator == 0 ? QStringLiteral("?")
+                                  : format.formatByteSize(denominator, 1, KFormat::MetricBinaryDialect)));
     ui->downloadDebugInfoProgressLabel->setToolTip(url);
 
     if (denominator == 0 || denominator > std::numeric_limits<int>::max()) {
