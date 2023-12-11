@@ -32,7 +32,7 @@
 namespace {
 KConfigGroup config()
 {
-    return KSharedConfig::openConfig()->group("PerfPaths");
+    return KSharedConfig::openConfig()->group(QStringLiteral("PerfPaths"));
 }
 
 QPushButton* setupMultiPath(KEditListWidget* listWidget, QLabel* buddy, QWidget* previous)

@@ -103,7 +103,7 @@ void updateStartRecordingButtonState(const RecordHost* host, const std::unique_p
 
 KConfigGroup config()
 {
-    return KSharedConfig::openConfig()->group("RecordPage");
+    return KSharedConfig::openConfig()->group(QStringLiteral("RecordPage"));
 }
 
 KConfigGroup applicationConfig(const QString& application)

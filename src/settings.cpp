@@ -168,30 +168,30 @@ void Settings::loadFromFile()
 {
     auto sharedConfig = KSharedConfig::openConfig();
 
-    auto config = sharedConfig->group("Settings");
+    auto config = sharedConfig->group(QStringLiteral("Settings"));
     setPrettifySymbols(config.readEntry("prettifySymbols", true));
     setCollapseTemplates(config.readEntry("collapseTemplates", true));
     setCollapseDepth(config.readEntry("collapseDepth", 1));
 
     connect(Settings::instance(), &Settings::prettifySymbolsChanged, this, [sharedConfig](bool prettifySymbols) {
-        sharedConfig->group("Settings").writeEntry("prettifySymbols", prettifySymbols);
+        sharedConfig->group(QStringLiteral("Settings")).writeEntry("prettifySymbols", prettifySymbols);
     });
 
     connect(Settings::instance(), &Settings::collapseTemplatesChanged, this, [sharedConfig](bool collapseTemplates) {
-        sharedConfig->group("Settings").writeEntry("collapseTemplates", collapseTemplates);
+        sharedConfig->group(QStringLiteral("Settings")).writeEntry("collapseTemplates", collapseTemplates);
     });
 
     connect(this, &Settings::collapseDepthChanged, this, [sharedConfig](int collapseDepth) {
-        sharedConfig->group("Settings").writeEntry("collapseDepth", collapseDepth);
+        sharedConfig->group(QStringLiteral("Settings")).writeEntry("collapseDepth", collapseDepth);
     });
 
     const QStringList userPaths = {QDir::homePath()};
     const QStringList systemPaths = {QDir::rootPath()};
-    setPaths(sharedConfig->group("PathSettings").readEntry("userPaths", userPaths),
-             sharedConfig->group("PathSettings").readEntry("systemPaths", systemPaths));
+    setPaths(sharedConfig->group(QStringLiteral("PathSettings")).readEntry("userPaths", userPaths),
+             sharedConfig->group(QStringLiteral("PathSettings")).readEntry("systemPaths", systemPaths));
     connect(this, &Settings::pathsChanged, this, [sharedConfig, this] {
-        sharedConfig->group("PathSettings").writeEntry("userPaths", this->userPaths());
-        sharedConfig->group("PathSettings").writeEntry("systemPaths", this->systemPaths());
+        sharedConfig->group(QStringLiteral("PathSettings")).writeEntry("userPaths", this->userPaths());
+        sharedConfig->group(QStringLiteral("PathSettings")).writeEntry("systemPaths", this->systemPaths());
     });
 
     // fix build error in app image build
@@ -199,25 +199,27 @@ void Settings::loadFromFile()
     const auto color = colorScheme.background(KColorScheme::AlternateBackground).color().name();
     const auto currentColor = colorScheme.background(KColorScheme::ActiveBackground).color().name();
 
-    setCallgraphParentDepth(sharedConfig->group("CallgraphSettings").readEntry("parent", 3));
-    setCallgraphChildDepth(sharedConfig->group("CallgraphSettings").readEntry("child", 3));
-    setCallgraphColors(sharedConfig->group("CallgraphSettings").readEntry("activeColor", currentColor),
-                       sharedConfig->group("CallgraphSettings").readEntry("color", color));
+    setCallgraphParentDepth(sharedConfig->group(QStringLiteral("CallgraphSettings")).readEntry("parent", 3));
+    setCallgraphChildDepth(sharedConfig->group(QStringLiteral("CallgraphSettings")).readEntry("child", 3));
+    setCallgraphColors(sharedConfig->group(QStringLiteral("CallgraphSettings")).readEntry("activeColor", currentColor),
+                       sharedConfig->group(QStringLiteral("CallgraphSettings")).readEntry("color", color));
     connect(this, &Settings::callgraphChanged, this, [sharedConfig, this] {
-        sharedConfig->group("CallgraphSettings").writeEntry("parent", this->callgraphParentDepth());
-        sharedConfig->group("CallgraphSettings").writeEntry("child", this->callgraphChildDepth());
-        sharedConfig->group("CallgraphSettings").writeEntry("activeColor", this->callgraphActiveColor());
-        sharedConfig->group("CallgraphSettings").writeEntry("color", this->callgraphColor());
+        sharedConfig->group(QStringLiteral("CallgraphSettings")).writeEntry("parent", this->callgraphParentDepth());
+        sharedConfig->group(QStringLiteral("CallgraphSettings")).writeEntry("child", this->callgraphChildDepth());
+        sharedConfig->group(QStringLiteral("CallgraphSettings"))
+            .writeEntry("activeColor", this->callgraphActiveColor());
+        sharedConfig->group(QStringLiteral("CallgraphSettings")).writeEntry("color", this->callgraphColor());
     });
 
-    setDebuginfodUrls(sharedConfig->group("debuginfod").readEntry("urls", QStringList()));
-    connect(this, &Settings::debuginfodUrlsChanged, this,
-            [sharedConfig, this] { sharedConfig->group("debuginfod").writeEntry("urls", this->debuginfodUrls()); });
+    setDebuginfodUrls(sharedConfig->group(QStringLiteral("debuginfod")).readEntry("urls", QStringList()));
+    connect(this, &Settings::debuginfodUrlsChanged, this, [sharedConfig, this] {
+        sharedConfig->group(QStringLiteral("debuginfod")).writeEntry("urls", this->debuginfodUrls());
+    });
 
-    m_lastUsedEnvironment = sharedConfig->group("PerfPaths").readEntry("lastUsed");
+    m_lastUsedEnvironment = sharedConfig->group(QStringLiteral("PerfPaths")).readEntry("lastUsed");
 
     if (!m_lastUsedEnvironment.isEmpty()) {
-        auto currentConfig = sharedConfig->group("PerfPaths").group(m_lastUsedEnvironment);
+        auto currentConfig = sharedConfig->group(QStringLiteral("PerfPaths")).group(m_lastUsedEnvironment);
         setSysroot(currentConfig.readEntry("sysroot", ""));
         setAppPath(currentConfig.readEntry("appPath", ""));
         setExtraLibPaths(currentConfig.readEntry("extraLibPaths", ""));
@@ -228,27 +230,28 @@ void Settings::loadFromFile()
         setPerfMapPath(currentConfig.readEntry("perfMapPath", ""));
     }
 
-    setPerfPath(sharedConfig->group("Perf").readEntry("path", ""));
-    connect(this, &Settings::perfPathChanged, this,
-            [sharedConfig](const QString& perfPath) { sharedConfig->group("Perf").writeEntry("path", perfPath); });
+    setPerfPath(sharedConfig->group(QStringLiteral("Perf")).readEntry("path", ""));
+    connect(this, &Settings::perfPathChanged, this, [sharedConfig](const QString& perfPath) {
+        sharedConfig->group(QStringLiteral("Perf")).writeEntry("path", perfPath);
+    });
 
     connect(this, &Settings::lastUsedEnvironmentChanged, this, [sharedConfig](const QString& envName) {
-        sharedConfig->group("PerfPaths").writeEntry("lastUsed", envName);
+        sharedConfig->group(QStringLiteral("PerfPaths")).writeEntry("lastUsed", envName);
     });
 
-    setSourceCodePaths(sharedConfig->group("Disassembly").readEntry("sourceCodePaths", QString()));
+    setSourceCodePaths(sharedConfig->group(QStringLiteral("Disassembly")).readEntry("sourceCodePaths", QString()));
     connect(this, &Settings::sourceCodePathsChanged, this, [sharedConfig](const QString& paths) {
-        sharedConfig->group("Disassembly").writeEntry("sourceCodePaths", paths);
+        sharedConfig->group(QStringLiteral("Disassembly")).writeEntry("sourceCodePaths", paths);
     });
 
-    setShowBranches(sharedConfig->group("Disassembly").readEntry("showBranches", true));
+    setShowBranches(sharedConfig->group(QStringLiteral("Disassembly")).readEntry("showBranches", true));
     connect(this, &Settings::showBranchesChanged, [sharedConfig](bool showBranches) {
-        sharedConfig->group("Disassembly").writeEntry("showBranches", showBranches);
+        sharedConfig->group(QStringLiteral("Disassembly")).writeEntry("showBranches", showBranches);
     });
 
-    setShowBranches(sharedConfig->group("Disassembly").readEntry("showHexdump", false));
+    setShowBranches(sharedConfig->group(QStringLiteral("Disassembly")).readEntry("showHexdump", false));
     connect(this, &Settings::showHexdumpChanged, [sharedConfig](bool showHexdump) {
-        sharedConfig->group("Disassembly").writeEntry("showHexdump", showHexdump);
+        sharedConfig->group(QStringLiteral("Disassembly")).writeEntry("showHexdump", showHexdump);
     });
 }
 
