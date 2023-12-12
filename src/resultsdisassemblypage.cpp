@@ -641,4 +641,12 @@ void ResultsDisassemblyPage::changeEvent(QEvent* event)
     }
 }
 
+void ResultsDisassemblyPage::jumpToSourceLine(const Data::FileLine& line)
+{
+    if (line.isValid()) {
+        ui->sourceCodeView->scrollTo(m_sourceCodeModel->indexForFileLine(line));
+        ui->assemblyView->scrollTo(m_disassemblyModel->indexForFileLine(line));
+    }
+}
+
 #include "resultsdisassemblypage.moc"

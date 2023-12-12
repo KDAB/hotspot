@@ -52,6 +52,8 @@ public:
     void setObjdump(const QString& objdump);
     void setArch(const QString& arch);
 
+    void jumpToSourceLine(const Data::FileLine& line);
+
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);
     void navigateToCode(const QString& file, int lineNumber, int columnNumber);

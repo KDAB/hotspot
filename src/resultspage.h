@@ -23,6 +23,7 @@ class ResultsPage;
 
 namespace Data {
 struct Symbol;
+struct FileLine;
 }
 
 class PerfParser;
@@ -61,6 +62,7 @@ public slots:
     void onOpenEditor(const Data::Symbol& symbol);
     void showError(const QString& message);
     void onJumpToDisassembly(const Data::Symbol& symbol);
+    void onJumpToSourceCode(const Data::Symbol& symbol, const Data::FileLine& line);
 
 signals:
     void navigateToCode(const QString& url, int lineNumber, int columnNumber);
