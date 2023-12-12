@@ -165,6 +165,8 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
 
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::jumpToDisassembly, this,
             &ResultsPage::onJumpToDisassembly);
+    connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::jumpToSourceCode, this,
+            &ResultsPage::onJumpToSourceCode);
     connect(m_resultsSummaryPage, &ResultsSummaryPage::jumpToCallerCallee, this, &ResultsPage::onJumpToCallerCallee);
     connect(m_resultsSummaryPage, &ResultsSummaryPage::openEditor, this, &ResultsPage::onOpenEditor);
     connect(m_resultsSummaryPage, &ResultsSummaryPage::selectSymbol, m_timeLineWidget, &TimeLineWidget::selectSymbol);
@@ -255,6 +257,13 @@ void ResultsPage::onJumpToDisassembly(const Data::Symbol& symbol)
     m_disassemblyDock->toggleAction()->setEnabled(true);
     m_resultsDisassemblyPage->setSymbol(symbol);
     showDock(m_disassemblyDock);
+}
+void ResultsPage::onJumpToSourceCode(const Data::Symbol& symbol, const Data::FileLine& line)
+{
+    onJumpToDisassembly(symbol);
+    if (line.isValid()) {
+        m_resultsDisassemblyPage->jumpToSourceLine(line);
+    }
 }
 
 void ResultsPage::setObjdump(const QString& objdump)

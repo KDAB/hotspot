@@ -92,11 +92,6 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
                                    ResultsUtil::CallbackAction::ViewDisassembly});
     ResultsUtil::setupHeaderView(ui->callerCalleeTableView, contextMenu);
     ResultsUtil::setupCostDelegate(m_callerCalleeCostModel, ui->callerCalleeTableView);
-    connect(ui->callerCalleeTableView, &QTreeView::activated, this, [this](const QModelIndex& index) {
-        auto symbol = index.data(CallerCalleeModel::SymbolRole).value<Data::Symbol>();
-        if (symbol.isValid())
-            emit jumpToDisassembly(symbol);
-    });
 
     connect(parser, &PerfParser::callerCalleeDataAvailable, this, [this](const Data::CallerCalleeResults& data) {
         m_callerCalleeCostModel->setResults(data);
@@ -170,7 +165,6 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
     ui->sourceMapView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->sourceMapView, &QTreeView::customContextMenuRequested, this,
             &ResultsCallerCalleePage::onSourceMapContextMenu);
-    connect(ui->sourceMapView, &QTreeView::activated, this, &ResultsCallerCalleePage::onSourceMapActivated);
 
     connect(ui->callerCalleeTableView->selectionModel(), &QItemSelectionModel::currentRowChanged, this,
             [selectCallerCaleeeIndex](const QModelIndex& current, const QModelIndex&) {
@@ -234,21 +228,23 @@ void ResultsCallerCalleePage::onSourceMapContextMenu(QPoint point)
 
     QMenu contextMenu;
     auto* viewCallerCallee = contextMenu.addAction(tr("Open in Editor"));
-    auto* action = contextMenu.exec(QCursor::pos());
-    if (action == viewCallerCallee) {
-        emit navigateToCode(location.path, location.lineNumber, 0);
-    }
-}
+    connect(viewCallerCallee, &QAction::triggered, this, [this, location, index] {
+        if (location) {
+            emit navigateToCode(location.path, location.lineNumber, 0);
+        } else {
+            const auto fileLine = index.data(SourceMapModel::FileLineRole).value<Data::FileLine>();
+            emit navigateToCodeFailed(tr("Failed to find file for location '%1'.").arg(fileLine.toString()));
+        }
+    });
 
-void ResultsCallerCalleePage::onSourceMapActivated(const QModelIndex& index)
-{
-    const auto location = toSourceMapLocation(index);
-    if (location) {
-        emit navigateToCode(location.path, location.lineNumber, 0);
-    } else {
-        const auto fileLine = index.data(SourceMapModel::FileLineRole).value<Data::FileLine>();
-        emit navigateToCodeFailed(tr("Failed to find file for location '%1'.").arg(fileLine.toString()));
-    }
+    auto line = index.data(SourceMapModel::FileLineRole).value<Data::FileLine>();
+    auto disassemblyAction = contextMenu.addAction(tr("Disassembly"));
+    const auto symbol = index.data(CallerCalleeModel::SymbolRole).value<Data::Symbol>();
+    disassemblyAction->setEnabled(symbol.canDisassemble());
+    connect(disassemblyAction, &QAction::triggered, this,
+            [this, symbol, line] { emit jumpToSourceCode(symbol, line); });
+
+    contextMenu.exec(QCursor::pos());
 }
 
 void ResultsCallerCalleePage::setSysroot(const QString& path)

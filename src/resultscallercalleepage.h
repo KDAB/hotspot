@@ -47,12 +47,12 @@ public:
 
 private slots:
     void onSourceMapContextMenu(QPoint pos);
-    void onSourceMapActivated(const QModelIndex& index);
 
 signals:
     void navigateToCode(const QString& url, int lineNumber, int columnNumber);
     void navigateToCodeFailed(const QString& message);
     void selectSymbol(const Data::Symbol& symbol);
+    void jumpToSourceCode(const Data::Symbol& symbol, const Data::FileLine& line);
     void jumpToDisassembly(const Data::Symbol& symbol);
 
 private:
