@@ -74,8 +74,8 @@ QDebug operator<<(QDebug stream, const Symbol& symbol);
 
 inline bool operator==(const Symbol& lhs, const Symbol& rhs)
 {
-    return std::tie(lhs.symbol, lhs.binary, lhs.path, lhs.relAddr)
-        == std::tie(rhs.symbol, rhs.binary, rhs.path, rhs.relAddr);
+    return std::tie(lhs.relAddr, lhs.symbol, lhs.binary, lhs.path)
+        == std::tie(rhs.relAddr, rhs.symbol, rhs.binary, rhs.path);
 }
 
 inline bool operator!=(const Symbol& lhs, const Symbol& rhs)
