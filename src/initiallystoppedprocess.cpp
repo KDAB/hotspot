@@ -123,7 +123,7 @@ void InitiallyStoppedProcess::terminate() const
 void InitiallyStoppedProcess::kill()
 {
     if (m_pid > 0) {
-        sendSignal(m_pid, SIGILL);
+        sendSignal(m_pid, SIGKILL);
         if (waitpid(m_pid, nullptr, 0) == -1) {
             qCWarning(initiallystoppedprocess()) << "failed to wait on pid:" << m_pid << Util::PrintableErrno {errno};
         }
