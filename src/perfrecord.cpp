@@ -66,6 +66,7 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
 {
     // Reset perf record process to avoid getting signals from old processes
     if (m_perfRecordProcess) {
+        disconnect(m_perfRecordProcess, nullptr, this, nullptr);
         m_perfControlFifo.requestStop();
         m_perfRecordProcess->kill();
         delete m_perfRecordProcess;
