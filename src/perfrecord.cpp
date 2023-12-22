@@ -67,9 +67,9 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
     // Reset perf record process to avoid getting signals from old processes
     if (m_perfRecordProcess) {
         m_perfControlFifo.requestStop();
-        m_perfControlFifo.close();
         m_perfRecordProcess->kill();
-        m_perfRecordProcess->deleteLater();
+        delete m_perfRecordProcess;
+        m_perfControlFifo.close();
     }
     m_perfRecordProcess = new QProcess(this);
     m_perfRecordProcess->setProcessChannelMode(QProcess::MergedChannels);
@@ -105,8 +105,7 @@ bool PerfRecord::runPerf(bool elevatePrivileges, const QStringList& perfOptions,
                     emit recordingFailed(tr("Failed to record perf data, error code %1.").arg(exitCode));
                 }
                 m_userTerminated = false;
-                m_perfRecordProcess->deleteLater();
-                m_perfRecordProcess.clear();
+                delete m_perfRecordProcess;
                 m_perfControlFifo.close();
             });
 
