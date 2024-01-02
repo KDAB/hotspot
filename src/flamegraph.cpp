@@ -170,8 +170,29 @@ void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
         auto noMatchColor = brush().color();
         noMatchColor.setAlpha(50);
         painter->fillRect(rect(), noMatchColor);
-    } else { // default, when no search is running, or a sub-item is matched
-        painter->fillRect(rect(), brush());
+    } else {
+        // default, when no search is running, or a sub-item is matched
+        auto background = brush();
+
+        // give inline frames a slightly different background color
+        if (m_symbol.isInline) {
+            auto color = background.color();
+            if (qGray(pen().color().rgb()) < 128) {
+                color = color.lighter();
+            } else {
+                color = color.darker();
+            }
+            background.setColor(color);
+        }
+        painter->fillRect(rect(), background);
+
+        // give inline frames a border with the normal background color
+        if (m_symbol.isInline) {
+            const auto oldPen = painter->pen();
+            painter->setPen(QPen(brush().color(), 0.));
+            painter->drawRect(rect().adjusted(-1, -1, -1, -1));
+            painter->setPen(oldPen);
+        }
     }
 
     const QPen oldPen = painter->pen();
