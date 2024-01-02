@@ -91,7 +91,7 @@ std::pair<QString, QString> elideArguments(const QString& symbolText)
 QString formatForTooltip(const Data::Symbol& symbol)
 {
     return QCoreApplication::translate("Util", "symbol: <tt>%1</tt><br/>binary: <tt>%2</tt>")
-        .arg(Util::formatSymbol(symbol).toHtmlEscaped(), Util::formatString(symbol.binary));
+        .arg(Util::formatSymbolExtended(symbol).toHtmlEscaped(), Util::formatString(symbol.binary));
 }
 
 QString formatTooltipImpl(int id, const QString& text, const Data::Costs* selfCosts, const Data::Costs* inclusiveCosts)
@@ -264,6 +264,15 @@ QString Util::formatSymbol(const Data::Symbol& symbol, bool replaceEmptyString)
     }
 
     return formatString(symbolString, replaceEmptyString);
+}
+
+QString Util::formatSymbolExtended(const Data::Symbol& symbol)
+{
+    auto ret = formatSymbol(symbol);
+    if (symbol.isInline) {
+        ret = QCoreApplication::translate("Util", "%1 (inlined)").arg(ret);
+    }
+    return ret;
 }
 
 QString Util::formatCost(quint64 cost)

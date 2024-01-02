@@ -261,7 +261,7 @@ QString FrameGraphicsItem::description() const
         root = static_cast<const FrameGraphicsRootItem*>(item);
     }
 
-    auto symbol = Util::formatSymbol(m_symbol);
+    auto symbol = Util::formatSymbolExtended(m_symbol);
     if (root == this) {
         return symbol;
     }
