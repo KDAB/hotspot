@@ -73,34 +73,6 @@ RecordType selectedRecordType(const std::unique_ptr<Ui::RecordPage>& ui)
     return ui->recordTypeComboBox->currentData().value<RecordType>();
 }
 
-void updateStartRecordingButtonState(const RecordHost* host, const std::unique_ptr<Ui::RecordPage>& ui)
-{
-    if (!host->isPerfInstalled()) {
-        ui->startRecordingButton->setEnabled(false);
-        ui->applicationRecordErrorMessage->setText(QObject::tr("Please install perf before trying to record."));
-        ui->applicationRecordErrorMessage->setVisible(true);
-        return;
-    }
-
-    bool enabled = false;
-    switch (selectedRecordType(ui)) {
-    case RecordType::LaunchApplication:
-        enabled = ui->applicationName->url().isValid();
-        break;
-    case RecordType::AttachToProcess:
-        enabled = ui->processesTableView->selectionModel()->hasSelection();
-        break;
-    case RecordType::ProfileSystem:
-        enabled = true;
-        break;
-    case RecordType::NUM_RECORD_TYPES:
-        Q_UNREACHABLE();
-    }
-    enabled &= ui->applicationRecordErrorMessage->text().isEmpty();
-
-    ui->startRecordingButton->setEnabled(enabled);
-}
-
 KConfigGroup config()
 {
     return KSharedConfig::openConfig()->group(QStringLiteral("RecordPage"));
@@ -728,17 +700,12 @@ void RecordPage::updateProcesses()
 
 void RecordPage::updateProcessesFinished()
 {
-    if (ui->startRecordingButton->isChecked()) {
+    if (ui->startRecordingButton->isChecked() || selectedRecordType(ui) != RecordType::AttachToProcess) {
         return;
     }
 
     m_processModel->mergeProcesses(m_watcher->result());
-
-    if (selectedRecordType(ui) == RecordType::AttachToProcess) {
-        // only update the state when we show the attach app page
-        updateStartRecordingButtonState(m_recordHost, ui);
-        QTimer::singleShot(1000, this, &RecordPage::updateProcesses);
-    }
+    QTimer::singleShot(1000, this, &RecordPage::updateProcesses);
 }
 
 void RecordPage::appendOutput(const QString& text)
