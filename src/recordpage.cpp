@@ -274,14 +274,15 @@ RecordPage::RecordPage(QWidget* parent)
     columnResizer->addWidgetsFromLayout(ui->formLayout_3);
 
     connect(ui->homeButton, &QPushButton::clicked, this, &RecordPage::homeButtonClicked);
-    connect(ui->applicationName, &KUrlRequester::textChanged, this, &RecordPage::onApplicationNameChanged);
+    connect(ui->applicationName, &KUrlRequester::textChanged, m_recordHost, &RecordHost::setClientApplication);
     connect(ui->startRecordingButton, &QPushButton::toggled, this, &RecordPage::onStartRecordingButtonClicked);
     connect(ui->workingDirectory, &KUrlRequester::textChanged, m_recordHost, &RecordHost::setCurrentWorkingDirectory);
     connect(ui->viewPerfRecordResultsButton, &QPushButton::clicked, this, [this] { emit openFile(m_resultsFile); });
-    connect(ui->outputFile, &KUrlRequester::textChanged, this, &RecordPage::onOutputFileNameChanged);
-    connect(ui->outputFile, static_cast<void (KUrlRequester::*)(const QString&)>(&KUrlRequester::returnPressed), this,
-            &RecordPage::onOutputFileNameSelected);
-    connect(ui->outputFile, &KUrlRequester::urlSelected, this, &RecordPage::onOutputFileUrlChanged);
+    connect(ui->outputFile, &KUrlRequester::textChanged, m_recordHost, &RecordHost::setOutputFileName);
+    connect(ui->outputFile, static_cast<void (KUrlRequester::*)(const QString&)>(&KUrlRequester::returnPressed),
+            m_recordHost, &RecordHost::setOutputFileName);
+    connect(ui->outputFile, &KUrlRequester::urlSelected, m_recordHost,
+            [this](const QUrl& url) { m_recordHost->setOutputFileName(url.toLocalFile()); });
 
     ui->recordTypeComboBox->addItem(QIcon::fromTheme(QStringLiteral("run-build")), tr("Launch Application"),
                                     QVariant::fromValue(RecordType::LaunchApplication));
@@ -668,26 +669,6 @@ void RecordPage::recordingStopped()
 void RecordPage::stopRecording()
 {
     m_perfRecord->stopRecording();
-}
-
-void RecordPage::onApplicationNameChanged(const QString& filePath)
-{
-    m_recordHost->setClientApplication(filePath);
-}
-
-void RecordPage::onOutputFileNameChanged(const QString& filePath)
-{
-    m_recordHost->setOutputFileName(filePath);
-}
-
-void RecordPage::onOutputFileNameSelected(const QString& filePath)
-{
-    m_recordHost->setOutputFileName(filePath);
-}
-
-void RecordPage::onOutputFileUrlChanged(const QUrl& fileUrl)
-{
-    onOutputFileNameSelected(fileUrl.toLocalFile());
 }
 
 void RecordPage::updateProcesses()

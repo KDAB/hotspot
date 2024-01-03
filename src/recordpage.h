@@ -48,17 +48,11 @@ signals:
     void homeButtonClicked();
     void openFile(QString filePath);
 
-private slots:
-    void onApplicationNameChanged(const QString& filePath);
+private:
     void onStartRecordingButtonClicked(bool checked);
-    void onOutputFileNameChanged(const QString& filePath);
-    void onOutputFileUrlChanged(const QUrl& fileUrl);
-    void onOutputFileNameSelected(const QString& filePath);
-
     void updateProcesses();
     void updateProcessesFinished();
 
-private:
     void recordingStopped();
     void updateRecordType();
     void appendOutput(const QString& text);
