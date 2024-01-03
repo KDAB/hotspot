@@ -276,8 +276,7 @@ RecordPage::RecordPage(QWidget* parent)
     connect(ui->homeButton, &QPushButton::clicked, this, &RecordPage::homeButtonClicked);
     connect(ui->applicationName, &KUrlRequester::textChanged, this, &RecordPage::onApplicationNameChanged);
     connect(ui->startRecordingButton, &QPushButton::toggled, this, &RecordPage::onStartRecordingButtonClicked);
-    connect(ui->workingDirectory, &KUrlRequester::textChanged, m_recordHost,
-            &RecordHost::currentWorkingDirectoryChanged);
+    connect(ui->workingDirectory, &KUrlRequester::textChanged, m_recordHost, &RecordHost::setCurrentWorkingDirectory);
     connect(ui->viewPerfRecordResultsButton, &QPushButton::clicked, this, [this] { emit openFile(m_resultsFile); });
     connect(ui->outputFile, &KUrlRequester::textChanged, this, &RecordPage::onOutputFileNameChanged);
     connect(ui->outputFile, static_cast<void (KUrlRequester::*)(const QString&)>(&KUrlRequester::returnPressed), this,
