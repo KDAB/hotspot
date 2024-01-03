@@ -185,7 +185,7 @@ bool RecordHost::isReady() const
         Q_ASSERT(false);
     }
 
-    // it is save to run, when all queries where resolved and there are now errors
+    // it is save to run, when all queries where resolved and there are no errors
     const std::initializer_list<const JobTracker*> jobs = {&m_checkPerfCapabilitiesJob, &m_checkPerfInstalledJob};
 
     return m_isPerfInstalled && m_error.isEmpty()
