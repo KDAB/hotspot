@@ -171,8 +171,8 @@ bool RecordHost::isReady() const
 {
     switch (m_recordType) {
     case RecordType::LaunchApplication:
-        // client application is already validated in  the setter
-        if (m_clientApplication.isEmpty() && m_cwd.isEmpty())
+        // client application is already validated in the setter
+        if (m_clientApplication.isEmpty() || m_cwd.isEmpty())
             return false;
         break;
     case RecordType::AttachToProcess:
