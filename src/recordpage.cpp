@@ -403,14 +403,12 @@ RecordPage::RecordPage(QWidget* parent)
     ui->processesTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->processesTableView->setSelectionMode(QAbstractItemView::MultiSelection);
     connect(ui->processesTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this,
-            [this](const QItemSelection& selectedIndexes, const QItemSelection&) {
+            [this](const QItemSelection&, const QItemSelection&) {
+                const auto selection = ui->processesTableView->selectionModel()->selectedRows();
                 QStringList pids;
-
-                const auto selection = selectedIndexes.indexes();
+                pids.reserve(selection.size());
                 for (const auto& item : selection) {
-                    if (item.column() == 0) {
-                        pids.append(item.data(ProcessModel::PIDRole).toString());
-                    }
+                    pids.append(item.data(ProcessModel::PIDRole).toString());
                 }
                 m_recordHost->setPids(pids);
             });
