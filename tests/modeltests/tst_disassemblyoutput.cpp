@@ -357,6 +357,32 @@ private slots:
         }
     }
 
+    void testCanDisassemble_data()
+    {
+        QTest::addColumn<Data::Symbol>("symbol");
+        QTest::addColumn<bool>("canDisassemble");
+
+        QTest::newRow("normal symbol") << Data::Symbol(QStringLiteral("main"), 0x1159, 0x32805, {},
+                                                       QStringLiteral("/some/path"), {}, false, false)
+                                       << true;
+        QTest::newRow("relocated symbol")
+            << Data::Symbol(QStringLiteral("printf"), 0, 0, {}, QStringLiteral("/some/path"), {}, false, false)
+            << false;
+        QTest::newRow("inlined symbol") << Data::Symbol(QStringLiteral("main::memcpy"), 0x1159, 0x32805, {},
+                                                        QStringLiteral("/some/path"), {}, false, true)
+                                        << false;
+        QTest::newRow("unkown binary") << Data::Symbol(QStringLiteral("main"), 0x1159, 0x32805, {}, {}, {}, false,
+                                                       false)
+                                       << false;
+    }
+
+    void testCanDisassemble()
+    {
+        QFETCH(Data::Symbol, symbol);
+        QFETCH(bool, canDisassemble);
+        QCOMPARE(symbol.canDisassemble(), canDisassemble);
+    }
+
 private:
     struct FunctionData
     {
