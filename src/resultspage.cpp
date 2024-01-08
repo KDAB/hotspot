@@ -298,12 +298,15 @@ QMenu* ResultsPage::exportMenu() const
 
 QList<QAction*> ResultsPage::windowActions() const
 {
-    auto ret = QList<QAction*> {m_summaryPageDock->toggleAction(),  m_bottomUpDock->toggleAction(),
-                                m_topDownDock->toggleAction(),      m_flameGraphDock->toggleAction(),
-                                m_callerCalleeDock->toggleAction(), m_disassemblyDock->toggleAction(),
-                                m_timeLineDock->toggleAction()};
-    if (m_frequencyDock)
-        ret.append(m_frequencyDock->toggleAction());
+    auto ret = QList<QAction*>
+    {
+        m_summaryPageDock->toggleAction(), m_bottomUpDock->toggleAction(), m_topDownDock->toggleAction(),
+            m_flameGraphDock->toggleAction(), m_callerCalleeDock->toggleAction(), m_disassemblyDock->toggleAction(),
+            m_timeLineDock->toggleAction(),
+#if QCustomPlot_FOUND
+            m_frequencyDock->toggleAction()
+#endif
+    };
     return ret;
 }
 
@@ -334,8 +337,17 @@ void ResultsPage::initDockWidgets(const QVector<CoreDockWidget*>& restored)
 
     Q_ASSERT(restored.contains(summaryPageDock));
 
-    const auto docks = {m_bottomUpDock, m_topDownDock,     m_flameGraphDock, m_callerCalleeDock,
-                        m_timeLineDock, m_disassemblyDock, m_frequencyDock};
+    const auto docks = {
+        m_bottomUpDock,
+        m_topDownDock,
+        m_flameGraphDock,
+        m_callerCalleeDock,
+        m_timeLineDock,
+        m_disassemblyDock,
+#if QCustomPlot_FOUND
+        m_frequencyDock
+#endif
+    };
     for (auto dock : docks) {
         auto dockWidget = toDockWidget(dock);
 
