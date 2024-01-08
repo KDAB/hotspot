@@ -1149,6 +1149,8 @@ void FlameGraph::setData(FrameGraphicsItem* rootItem)
     if (isVisible()) {
         selectItem(m_rootItem);
     }
+
+    emit canConvertToImageChanged();
 }
 
 void FlameGraph::selectItem(int item)
@@ -1237,4 +1239,9 @@ void FlameGraph::updateNavigationActions()
     m_backAction->setEnabled(hasItems);
     m_forwardAction->setEnabled(isNotLastItem);
     m_resetAction->setEnabled(hasItems);
+}
+
+bool FlameGraph::canConvertToImage() const
+{
+    return m_rootItem != nullptr;
 }

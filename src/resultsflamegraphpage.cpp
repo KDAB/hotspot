@@ -44,6 +44,11 @@ ResultsFlameGraphPage::ResultsFlameGraphPage(FilterAndZoomStack* filterStack, Pe
     connect(parser, &PerfParser::bottomUpDataAvailable, this, [this, exportMenu](const Data::BottomUpResults& data) {
         ui->flameGraph->setBottomUpData(data);
         m_exportAction = exportMenu->addAction(QIcon::fromTheme(QStringLiteral("image-x-generic")), tr("Flamegraph"));
+        m_exportAction->setEnabled(ui->flameGraph->canConvertToImage());
+
+        connect(ui->flameGraph, &FlameGraph::canConvertToImageChanged, m_exportAction,
+                [this] { m_exportAction->setEnabled(ui->flameGraph->canConvertToImage()); });
+
         connect(m_exportAction, &QAction::triggered, this, [this]() {
             const auto filter = tr("Images (%1);;SVG (*.svg)").arg(imageFormatFilter());
             QString selectedFilter;
