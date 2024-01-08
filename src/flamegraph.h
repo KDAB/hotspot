@@ -38,6 +38,7 @@ public:
 
     QImage toImage() const;
     void saveSvg(const QString& fileName) const;
+    bool canConvertToImage() const;
 
 protected:
     bool eventFilter(QObject* object, QEvent* event) override;
@@ -55,6 +56,7 @@ signals:
     void selectStack(const QVector<Data::Symbol>& stack, bool bottomUp);
     void jumpToDisassembly(const Data::Symbol& symbol);
     void uiResetRequested();
+    void canConvertToImageChanged();
 
 private:
     void setTooltipItem(const FrameGraphicsItem* item);
