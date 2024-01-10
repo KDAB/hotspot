@@ -1058,9 +1058,10 @@ public:
         for (const auto& cost : sample.costs) {
             if (core.costs.size() <= cost.attributeId) {
                 const auto oldSize = core.costs.size();
-                core.costs.resize(cost.attributeId + 1);
+                const auto newSize = cost.attributeId + 1;
+                core.costs.resize(newSize);
 
-                for (int i = oldSize; i < core.costs.size(); i++) {
+                for (int i = oldSize; i < newSize; i++) {
                     core.costs[i].costName = strings.at(attributes[i].name.id);
                 }
             }
