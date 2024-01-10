@@ -164,6 +164,7 @@ public:
 private slots:
     void initTestCase()
     {
+        qputenv("DEBUGINFOD_URLS", {});
         RecordHost host;
         QSignalSpy capabilitiesSpy(&host, &RecordHost::perfCapabilitiesChanged);
         QSignalSpy installedSpy(&host, &RecordHost::isPerfInstalledChanged);
@@ -230,22 +231,19 @@ private slots:
     {
         QTest::addColumn<QString>("perfFile");
         QTest::addColumn<QString>("errorMessagePart");
-        QTest::addColumn<int>("waitTime");
 
         const auto perfData = QFINDTESTDATA("file_content/true.perfparser");
-        QTest::addRow("pre-exported perfparser") << perfData << QString() << 2000;
+        QTest::addRow("pre-exported perfparser") << perfData << QString();
         const auto perfDataSomeName = QStringLiteral("fruitper");
         QFile::copy(perfData, perfDataSomeName); // we can ignore errors (file exist) here
-        QTest::addRow("pre-exported perfparser \"bad extension\"") << perfDataSomeName << QString() << 2000;
+        QTest::addRow("pre-exported perfparser \"bad extension\"") << perfDataSomeName << QString();
         QTest::addRow("no expected magic header")
-            << QFINDTESTDATA("tst_perfparser.cpp") << QStringLiteral("File format unknown") << 1000;
-        QTest::addRow("PERF v1") << QFINDTESTDATA("file_content/perf.data.true.v1") << QStringLiteral("V1 perf data")
-                                 << 1000;
+            << QFINDTESTDATA("tst_perfparser.cpp") << QStringLiteral("File format unknown");
+        QTest::addRow("PERF v1") << QFINDTESTDATA("file_content/perf.data.true.v1") << QStringLiteral("V1 perf data");
 
-        // TODO: check why we need this long waittime
-        QTest::addRow("PERF v2") << QFINDTESTDATA("file_content/perf.data.true.v2") << QString() << 9000;
+        QTest::addRow("PERF v2") << QFINDTESTDATA("file_content/perf.data.true.v2") << QString();
 #if KFArchive_FOUND
-        QTest::addRow("PERF v2, gzipped") << QFINDTESTDATA("file_content/perf.data.true.v2.gz") << QString() << 10000;
+        QTest::addRow("PERF v2, gzipped") << QFINDTESTDATA("file_content/perf.data.true.v2.gz") << QString();
 #endif
     }
 
@@ -265,7 +263,6 @@ private slots:
 
         QFETCH(QString, perfFile);
         QFETCH(QString, errorMessagePart);
-        QFETCH(int, waitTime);
 
         QVERIFY(!perfFile.isEmpty() && QFile::exists(perfFile));
         parser.startParseFile(perfFile);
@@ -273,12 +270,12 @@ private slots:
         if (errorMessagePart.isEmpty()) {
             // if we don't expect an error message (Null String created by `QString()`)
             // then expect a finish within the given time frame
-            QTRY_COMPARE_WITH_TIMEOUT(parsingFinishedSpy.count(), 1, waitTime);
+            QTRY_COMPARE_WITH_TIMEOUT(parsingFinishedSpy.count(), 1, 2000);
             QCOMPARE(parsingFailedSpy.count(), 0);
         } else {
             // otherwise wait for failed parsing, the check for if the required part is
             // found in the error message (we only check a part to allow adjustments later)
-            QTRY_COMPARE_WITH_TIMEOUT(parsingFailedSpy.count(), 1, waitTime);
+            QTRY_COMPARE_WITH_TIMEOUT(parsingFailedSpy.count(), 1, 2000);
             QCOMPARE(parsingFinishedSpy.count(), 0);
             const auto message = parsingFailedSpy.takeFirst().at(0).toString();
             QVERIFY(message.contains(errorMessagePart));
