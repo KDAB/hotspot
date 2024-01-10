@@ -283,6 +283,19 @@ private slots:
         }
     }
 
+    /* tests a perf file that has data with PERF_FORMAT_LOST attribute, see KDAB/hotspot#578 */
+    void testPerfFormatLost()
+    {
+        PerfParser parser(this);
+        QSignalSpy parsingFailedSpy(&parser, &PerfParser::parsingFailed);
+        QSignalSpy parsingFinishedSpy(&parser, &PerfParser::parsingFinished);
+
+        parser.startParseFile(QFINDTESTDATA("perf.data.PerfFormatLost"));
+
+        QTRY_COMPARE_WITH_TIMEOUT(parsingFinishedSpy.count(), 1, 58000);
+        QCOMPARE(parsingFailedSpy.count(), 0);
+    }
+
     void testCppInliningNoOptions()
     {
         const QStringList perfOptions;
