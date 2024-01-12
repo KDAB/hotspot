@@ -363,17 +363,31 @@ bool isInPathList(const QStringList& paths, const QString& subPath)
     return std::any_of(paths.cbegin(), paths.cend(), containsSubPath);
 }
 
-bool isSystemPath(const QString& path)
+struct BrushConfig
 {
-    return isInPathList(Settings::instance()->systemPaths(), path);
+    bool isSystemPath(const QString& path) const
+    {
+        return isInPathList(systemPaths, path);
+    }
+
+    bool isUserPath(const QString& path) const
+    {
+        return isInPathList(userPaths, path);
+    }
+
+    Settings::ColorScheme scheme;
+    QStringList systemPaths;
+    QStringList userPaths;
+};
+
+// construct brush config in main thread and query settings that then can be used in the background
+// without introducing data races
+BrushConfig brushConfig(Settings::ColorScheme scheme)
+{
+    return {scheme, Settings::instance()->systemPaths(), Settings::instance()->userPaths()};
 }
 
-bool isUserPath(const QString& path)
-{
-    return isInPathList(Settings::instance()->userPaths(), path);
-}
-
-QBrush brushSystem(const Data::Symbol& symbol)
+QBrush brushSystem(const Data::Symbol& symbol, const BrushConfig& brushConfig)
 {
     static const auto system = QBrush(QColor(0, 125, 0, 125));
     static const auto user = QBrush(QColor(200, 200, 0, 125));
@@ -382,7 +396,7 @@ QBrush brushSystem(const Data::Symbol& symbol)
     // remark lievenhey: I have seen [ only on kernel calls
     if (symbol.path.isEmpty() || symbol.path.startsWith(QLatin1Char('['))) {
         return unknown;
-    } else if (!isUserPath(symbol.path) && isSystemPath(symbol.path)) {
+    } else if (!brushConfig.isUserPath(symbol.path) && brushConfig.isSystemPath(symbol.path)) {
         return system;
     }
     return user;
@@ -397,15 +411,15 @@ QBrush costRatioBrush(quint32 cost, quint32 totalCost)
     return QColor::fromHsv(hue, 230, 200, 125);
 }
 
-QBrush brush(const Data::Symbol& entry, Settings::ColorScheme scheme, quint32 cost = 0, quint32 totalCost = 1)
+QBrush brush(const Data::Symbol& entry, const BrushConfig& brushConfig, quint32 cost = 0, quint32 totalCost = 1)
 {
-    switch (scheme) {
+    switch (brushConfig.scheme) {
     case Settings::ColorScheme::Binary:
         return brushBinary(entry);
     case Settings::ColorScheme::Kernel:
         return brushKernel(entry);
     case Settings::ColorScheme::System:
-        return brushSystem(entry);
+        return brushSystem(entry, brushConfig);
     case Settings::ColorScheme::Default:
         return brushImpl(qHash(entry), BrushType::Hot);
     case Settings::ColorScheme::CostRatio:
@@ -464,12 +478,12 @@ FrameGraphicsItem* findItemBySymbol(const QList<QGraphicsItem*>& items, const Da
  */
 template<typename Tree>
 void toGraphicsItems(const Data::Costs& costs, int type, const QVector<Tree>& data, FrameGraphicsItem* parent,
-                     const double costThreshold, Settings::ColorScheme colorScheme, bool collapseRecursion)
+                     const double costThreshold, const BrushConfig& brushConfig, bool collapseRecursion)
 {
     foreach (const auto& row, data) {
         if (collapseRecursion && !row.symbol.symbol.isEmpty() && row.symbol == parent->symbol()) {
             if (costs.cost(type, row.id) > costThreshold) {
-                toGraphicsItems(costs, type, row.children, parent, costThreshold, colorScheme, collapseRecursion);
+                toGraphicsItems(costs, type, row.children, parent, costThreshold, brushConfig, collapseRecursion);
             }
             continue;
         }
@@ -477,19 +491,19 @@ void toGraphicsItems(const Data::Costs& costs, int type, const QVector<Tree>& da
         if (!item) {
             item = new FrameGraphicsItem(costs.cost(type, row.id), row.symbol, parent);
             item->setPen(parent->pen());
-            item->setBrush(brush(row.symbol, colorScheme, item->cost(), costs.totalCost(type)));
+            item->setBrush(brush(row.symbol, brushConfig, item->cost(), costs.totalCost(type)));
         } else {
             item->setCost(item->cost() + costs.cost(type, row.id));
         }
         if (item->cost() > costThreshold) {
-            toGraphicsItems(costs, type, row.children, item, costThreshold, colorScheme, collapseRecursion);
+            toGraphicsItems(costs, type, row.children, item, costThreshold, brushConfig, collapseRecursion);
         }
     }
 }
 
 template<typename Tree>
 FrameGraphicsItem* parseData(const Data::Costs& costs, int type, const QVector<Tree>& topDownData, double costThreshold,
-                             Settings::ColorScheme colorScheme, bool collapseRecursion)
+                             const BrushConfig& brushConfig, bool collapseRecursion)
 {
     const auto totalCost = costs.totalCost(type);
 
@@ -501,7 +515,7 @@ FrameGraphicsItem* parseData(const Data::Costs& costs, int type, const QVector<T
     rootItem->setBrush(scheme.background());
     rootItem->setPen(pen);
     toGraphicsItems(costs, type, topDownData, rootItem, static_cast<double>(totalCost) * costThreshold / 100.,
-                    colorScheme, collapseRecursion);
+                    brushConfig, collapseRecursion);
     return rootItem;
 }
 
@@ -605,12 +619,12 @@ void hoverStacks(FrameGraphicsItem* rootItem, const QVector<QVector<Data::Symbol
 }
 }
 
-void updateFlameGraphColorScheme(FrameGraphicsItem* item, Settings::ColorScheme scheme, quint32 totalCost)
+void updateFlameGraphColorScheme(FrameGraphicsItem* item, const BrushConfig& brushConfig, quint32 totalCost)
 {
-    item->setBrush(brush(item->symbol(), scheme, item->cost(), totalCost));
+    item->setBrush(brush(item->symbol(), brushConfig, item->cost(), totalCost));
     const auto children = item->childItems();
     for (const auto& child : children) {
-        updateFlameGraphColorScheme(static_cast<FrameGraphicsItem*>(child), scheme, totalCost);
+        updateFlameGraphColorScheme(static_cast<FrameGraphicsItem*>(child), brushConfig, totalCost);
     }
 }
 
@@ -743,7 +757,8 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
                     const auto children = m_rootItem->childItems();
                     // don't recolor the root item
                     for (const auto& child : children) {
-                        updateFlameGraphColorScheme(static_cast<FrameGraphicsItem*>(child), scheme, m_rootItem->cost());
+                        updateFlameGraphColorScheme(static_cast<FrameGraphicsItem*>(child), brushConfig(scheme),
+                                                    m_rootItem->cost());
                     }
                 }
             };
@@ -1031,16 +1046,17 @@ void FlameGraph::showData()
     const auto collapseRecursion = m_collapseRecursion;
     auto type = m_costSource->currentData().value<int>();
     auto threshold = m_costThreshold;
-    const auto colorScheme = Settings::instance()->colorScheme();
+    auto brushConfig = ::brushConfig(Settings::instance()->colorScheme());
+
     stream() << make_job(
-        [showBottomUpData, bottomUpData, topDownData, type, threshold, colorScheme, collapseRecursion, this]() {
+        [showBottomUpData, bottomUpData, topDownData, type, threshold, brushConfig, collapseRecursion, this]() {
             FrameGraphicsItem* parsedData = nullptr;
             if (showBottomUpData) {
-                parsedData = parseData(bottomUpData.costs, type, bottomUpData.root.children, threshold, colorScheme,
+                parsedData = parseData(bottomUpData.costs, type, bottomUpData.root.children, threshold, brushConfig,
                                        collapseRecursion);
             } else {
                 parsedData = parseData(topDownData.inclusiveCosts, type, topDownData.root.children, threshold,
-                                       colorScheme, collapseRecursion);
+                                       brushConfig, collapseRecursion);
             }
             QMetaObject::invokeMethod(this, "setData", Qt::QueuedConnection, Q_ARG(FrameGraphicsItem*, parsedData));
         });
