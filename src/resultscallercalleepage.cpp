@@ -216,30 +216,33 @@ ResultsCallerCalleePage::SourceMapLocation ResultsCallerCalleePage::toSourceMapL
 
 void ResultsCallerCalleePage::onSourceMapContextMenu(QPoint point)
 {
-    const auto index = ui->sourceMapView->indexAt(point);
-    if (!index.isValid()) {
+    const auto sourceMapIndex = ui->sourceMapView->indexAt(point);
+    if (!sourceMapIndex.isValid()) {
         return;
     }
 
-    const auto location = toSourceMapLocation(index);
+    const auto location = toSourceMapLocation(sourceMapIndex);
     if (!location) {
         return;
     }
 
     QMenu contextMenu;
     auto* viewCallerCallee = contextMenu.addAction(tr("Open in Editor"));
-    connect(viewCallerCallee, &QAction::triggered, this, [this, location, index] {
+    connect(viewCallerCallee, &QAction::triggered, this, [this, location, sourceMapIndex] {
         if (location) {
             emit navigateToCode(location.path, location.lineNumber, 0);
         } else {
-            const auto fileLine = index.data(SourceMapModel::FileLineRole).value<Data::FileLine>();
+            const auto fileLine = sourceMapIndex.data(SourceMapModel::FileLineRole).value<Data::FileLine>();
             emit navigateToCodeFailed(tr("Failed to find file for location '%1'.").arg(fileLine.toString()));
         }
     });
 
-    auto line = index.data(SourceMapModel::FileLineRole).value<Data::FileLine>();
+    auto line = sourceMapIndex.data(SourceMapModel::FileLineRole).value<Data::FileLine>();
     auto disassemblyAction = contextMenu.addAction(tr("Disassembly"));
-    const auto symbol = index.data(CallerCalleeModel::SymbolRole).value<Data::Symbol>();
+
+    // fetch current symbol from callerCalleeView to check if we can disassemble it
+    const auto symbol =
+        ui->callerCalleeTableView->currentIndex().data(CallerCalleeModel::SymbolRole).value<Data::Symbol>();
     disassemblyAction->setEnabled(symbol.canDisassemble());
     connect(disassemblyAction, &QAction::triggered, this,
             [this, symbol, line] { emit jumpToSourceCode(symbol, line); });
