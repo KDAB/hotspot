@@ -315,7 +315,7 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
                           const auto fileLine = index.data(SourceCodeModel::FileLineRole).value<Data::FileLine>();
                           if (fileLine.isValid()) {
                               auto* openEditorAction = menu->addAction(tr("Open in Editor"));
-                              QObject::connect(openEditorAction, &QAction::triggered, menu, [this, fileLine]() {
+                              QObject::connect(openEditorAction, &QAction::triggered, this, [this, fileLine]() {
                                   emit navigateToCode(fileLine.file, fileLine.line, -1);
                               });
                               menu->addAction(openEditorAction);
