@@ -74,6 +74,7 @@ public slots:
     void setSysroot(const QString& sysroot);
 
     void find(const QString& search, Direction direction, int current);
+    void scrollToLine(const QString& lineNumber);
 
 private:
     QString m_sysroot;

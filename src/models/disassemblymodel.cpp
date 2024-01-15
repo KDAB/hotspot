@@ -252,3 +252,22 @@ void DisassemblyModel::find(const QString& search, Direction direction, int curr
         emit resultFound({});
     }
 }
+
+void DisassemblyModel::scrollToLine(const QString& lineNumber)
+{
+    bool ok = false;
+
+    auto addr = lineNumber.toULongLong(&ok, 16);
+
+    if (!ok) {
+        emit resultFound({});
+        return;
+    }
+
+    auto lineFound = std::find_if(m_data.disassemblyLines.cbegin(), m_data.disassemblyLines.cend(),
+                                  [addr](const DisassemblyOutput::DisassemblyLine& line) { return line.addr == addr; });
+
+    if (lineFound != m_data.disassemblyLines.cend()) {
+        emit resultFound(index(std::distance(m_data.disassemblyLines.cbegin(), lineFound), 0));
+    }
+}
