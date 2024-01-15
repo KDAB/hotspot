@@ -278,7 +278,7 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
         auto gotoMenuWidget = new QWidget(view);
         auto layout = new QHBoxLayout(gotoMenuWidget);
         layout->setContentsMargins(0, 0, 0, 0);
-        auto label = new QLabel(tr("Util", "Goto: "), gotoMenuWidget);
+        auto label = new QLabel(tr("Goto: "), gotoMenuWidget);
         layout->addWidget(label);
         auto edit = new QLineEdit(gotoMenuWidget);
         layout->addWidget(edit);
@@ -314,7 +314,7 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
                       [this](QMenu* menu, const QModelIndex& index) {
                           const auto fileLine = index.data(SourceCodeModel::FileLineRole).value<Data::FileLine>();
                           if (fileLine.isValid()) {
-                              auto* openEditorAction = menu->addAction(tr("Util", "Open in Editor"));
+                              auto* openEditorAction = menu->addAction(tr("Open in Editor"));
                               QObject::connect(openEditorAction, &QAction::triggered, menu, [this, fileLine]() {
                                   emit navigateToCode(fileLine.file, fileLine.line, -1);
                               });
