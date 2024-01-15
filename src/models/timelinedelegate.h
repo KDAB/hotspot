@@ -59,7 +59,6 @@ public:
     bool helpEvent(QHelpEvent* event, QAbstractItemView* view, const QStyleOptionViewItem& option,
                    const QModelIndex& index) override;
 
-    void setEventType(int type);
     void setSelectedStacks(const QSet<qint32>& selectedStacks);
 
 signals:
@@ -71,6 +70,7 @@ protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
+    void setEventType(int type);
     void updateView();
     void updateZoomState();
 

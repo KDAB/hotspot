@@ -21,6 +21,18 @@ EventModelProxy::EventModelProxy(QObject* parent)
 
 EventModelProxy::~EventModelProxy() = default;
 
+void EventModelProxy::showCostId(qint32 costId)
+{
+    m_hiddenCostIds.remove(costId);
+    invalidate();
+}
+
+void EventModelProxy::hideCostId(qint32 costId)
+{
+    m_hiddenCostIds.insert(costId);
+    invalidate();
+}
+
 bool EventModelProxy::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
 {
     // index is invalid -> we are at the root node
@@ -36,7 +48,7 @@ bool EventModelProxy::filterAcceptsRow(int source_row, const QModelIndex& source
                     .data(EventModel::EventsRole)
                     .value<Data::Events>();
 
-    if (data.empty()) {
+    if (data.empty() || m_hiddenCostIds.contains(data[0].type)) {
         return false;
     }
 

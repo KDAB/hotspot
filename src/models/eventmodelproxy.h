@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <QSet>
 #include <QSortFilterProxyModel>
 
 class EventModelProxy : public QSortFilterProxyModel
@@ -16,7 +17,13 @@ public:
     explicit EventModelProxy(QObject* parent = nullptr);
     ~EventModelProxy() override;
 
+    void showCostId(qint32 costId);
+    void hideCostId(qint32 costId);
+
 protected:
     bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
     bool lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const override;
+
+private:
+    QSet<qint32> m_hiddenCostIds;
 };
