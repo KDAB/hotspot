@@ -263,3 +263,14 @@ void SourceCodeModel::find(const QString& search, Direction direction, int curre
         emit resultFound({});
     }
 }
+
+void SourceCodeModel::scrollToLine(const QString& lineNumber)
+{
+    const auto line = lineNumber.toInt();
+
+    const auto offset = index(0, SourceCodeModel::SourceCodeLineNumber).data().value<int>();
+
+    auto scrollToIndex = std::clamp(line - offset, 0, rowCount() - 1);
+
+    emit resultFound(index(scrollToIndex, 0));
+}

@@ -78,6 +78,7 @@ signals:
 public slots:
     void updateHighlighting(int line);
     void find(const QString& search, Direction direction, int offset);
+    void scrollToLine(const QString& lineNumber);
 
 private:
     HighlightedText m_highlightedText;

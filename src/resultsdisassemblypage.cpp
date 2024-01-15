@@ -274,7 +274,7 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
     connect(ui->assemblyView, &QTreeView::entered, this, updateFromDisassembly);
     connect(ui->sourceCodeView, &QTreeView::entered, this, updateFromSource);
 
-    auto createContextMenu = [](QTreeView* view, auto* model, int role, auto&& addEntries) {
+    auto createContextMenu = [](QTreeView* view, auto* model, auto&& addEntries) {
         auto gotoMenuWidget = new QWidget(view);
         auto layout = new QHBoxLayout(gotoMenuWidget);
         layout->setContentsMargins(0, 0, 0, 0);
@@ -285,18 +285,8 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
         auto gotoAction = new QWidgetAction(view);
         gotoAction->setDefaultWidget(gotoMenuWidget);
 
-        auto gotoLine = [view, model, role, edit] {
-            const auto lineNumber = edit->text().toInt();
-
-            const auto offset = model->index(0, role).data().template value<int>();
-
-            auto scrollToIndex = std::clamp(lineNumber - offset, 0, model->rowCount() - 1);
-            view->scrollTo(model->index(scrollToIndex, 0));
-        };
-
         connect(edit, &QLineEdit::returnPressed, gotoAction, &QWidgetAction::trigger);
-        connect(edit, &QLineEdit::returnPressed, view, gotoLine);
-        connect(gotoAction, &QWidgetAction::triggered, view, gotoLine);
+        connect(gotoAction, &QWidgetAction::triggered, view, [model, edit] { model->scrollToLine(edit->text()); });
 
         view->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(view, &QTreeView::customContextMenuRequested, view, [view, addEntries, gotoAction](QPoint point) {
@@ -310,19 +300,17 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
         });
     };
 
-    createContextMenu(ui->sourceCodeView, m_sourceCodeModel, SourceCodeModel::SourceCodeLineNumber,
-                      [this](QMenu* menu, const QModelIndex& index) {
-                          const auto fileLine = index.data(SourceCodeModel::FileLineRole).value<Data::FileLine>();
-                          if (fileLine.isValid()) {
-                              auto* openEditorAction = menu->addAction(tr("Open in Editor"));
-                              QObject::connect(openEditorAction, &QAction::triggered, this, [this, fileLine]() {
-                                  emit navigateToCode(fileLine.file, fileLine.line, -1);
-                              });
-                              menu->addAction(openEditorAction);
-                          }
-                      });
+    createContextMenu(ui->sourceCodeView, m_sourceCodeModel, [this](QMenu* menu, const QModelIndex& index) {
+        const auto fileLine = index.data(SourceCodeModel::FileLineRole).value<Data::FileLine>();
+        if (fileLine.isValid()) {
+            auto* openEditorAction = menu->addAction(tr("Open in Editor"));
+            QObject::connect(openEditorAction, &QAction::triggered, this,
+                             [this, fileLine]() { emit navigateToCode(fileLine.file, fileLine.line, -1); });
+            menu->addAction(openEditorAction);
+        }
+    });
 
-    createContextMenu(ui->assemblyView, m_disassemblyModel, DisassemblyModel::AddrRole, [](auto&&, auto&&) {});
+    createContextMenu(ui->assemblyView, m_disassemblyModel, [](auto&&, auto&&) {});
 
     auto addScrollTo = [](QTreeView* sourceView, QTreeView* destView, auto sourceModel, auto destModel) {
         connect(sourceView, &QTreeView::clicked, sourceView, [=](const QModelIndex& index) {
