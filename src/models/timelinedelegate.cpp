@@ -161,7 +161,6 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     const auto results = index.data(EventModel::EventResultsRole).value<Data::EventResults>();
     const auto offCpuCostId = results.offCpuTimeCostId;
     const auto lostEventCostId = results.lostEventCostId;
-    const auto tracepointEventCostId = results.tracepointEventCostId;
     const bool is_alternate = option.features & QStyleOptionViewItem::Alternate;
     const auto& palette = option.palette;
 
@@ -231,10 +230,6 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         // see also: https://www.spinics.net/lists/linux-perf-users/msg03486.html
         for (const auto& event : data.events) {
             const auto isLostEvent = event.type == lostEventCostId;
-            const auto isTracepointEvent = event.type == tracepointEventCostId;
-            if (event.type != m_eventType && !isLostEvent && !isTracepointEvent) {
-                continue;
-            }
 
             const auto x = data.mapTimeToX(event.time);
             if (x < TimeLineData::padding || x >= data.w) {
@@ -334,14 +329,22 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, con
                                         Util::formatTimeString(found.totalCost),
                                         Util::formatTimeString(found.maxCost)));
         } else if (found.numSamples > 0) {
-            QToolTip::showText(event->globalPos(),
-                               tr("time: %1\n%5 samples: %2\ntotal sample cost: %3\nmax sample cost: %4")
-                                   .arg(formattedTime, QString::number(found.numSamples),
-                                        Util::formatCost(found.totalCost), Util::formatCost(found.maxCost),
-                                        totalCosts.value(found.type).label));
+            if (m_eventType == results.tracepointEventCostId) {
+                // currently tracepoint cost is saying nothig, so don't show it
+                QToolTip::showText(
+                    event->globalPos(),
+                    tr("time: %1\n%3 samples: %2")
+                        .arg(formattedTime, QString::number(found.numSamples), results.tracepoints[index.row()].name));
+
+            } else {
+                QToolTip::showText(event->globalPos(),
+                                   tr("time: %1\n%5 samples: %2\ntotal sample cost: %3\nmax sample cost: %4")
+                                       .arg(formattedTime, QString::number(found.numSamples),
+                                            Util::formatCost(found.totalCost), Util::formatCost(found.maxCost),
+                                            totalCosts.value(found.type).label));
+            }
         } else {
-            QToolTip::showText(event->globalPos(),
-                               tr("time: %1 (no %2 samples)").arg(formattedTime, totalCosts.value(m_eventType).label));
+            QToolTip::showText(event->globalPos(), tr("time: %1 (no samples)").arg(formattedTime));
         }
         return true;
     }
@@ -390,6 +393,12 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
 
             const auto time = data.mapXToTime(pos.x() - visualRect.left() - TimeLineData::padding);
             const auto start = findEvent(data.events.constBegin(), data.events.constEnd(), time);
+
+            // we can show multiple events in one row so we need to dynamically figure out which costId is needed
+            auto hoveringEntry = std::find_if(start, data.events.cend(),
+                                              [time](const Data::Event& event) { return event.time >= time; });
+            setEventType(hoveringEntry != data.events.cend() ? hoveringEntry->type : 0);
+
             auto findSamples = [&](int costType, bool contains) {
                 bool foundAny = false;
                 data.findSamples(hoverX, costType, results.lostEventCostId, contains, start,
