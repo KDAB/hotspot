@@ -137,6 +137,29 @@ jobs:
         name: clang-tidy-fixits
         path: scripts/fixits/fixits.yaml
 
+  archlinux-without-optional:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+
+    runs-on: ubuntu-latest
+    container: ghcr.io/kdab/hotspot-archlinuxwithoutoptional-dependencies
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Configure
+      run: cmake --preset dev-asan
+           -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
+
+    - name: Build
+      run: cmake --build --preset dev-asan
+
+    - name: Test
+      run: ctest --preset dev-asan
+
   fedora34:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
