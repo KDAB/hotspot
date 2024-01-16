@@ -255,7 +255,7 @@ void SourceCodeModel::find(const QString& search, Direction direction, int curre
 
     auto endReached = [this] { emit searchEndReached(); };
 
-    const int resultIndex = ::search(m_lines, current, direction, searchFunc, endReached);
+    const int resultIndex = ::search(m_lines.mid(m_startLine, m_numLines), current, direction, searchFunc, endReached);
 
     if (resultIndex >= 0) {
         emit resultFound(createIndex(resultIndex + 1, SourceCodeColumn));
