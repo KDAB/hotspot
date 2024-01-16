@@ -27,6 +27,8 @@
 
 #include "formattingutils.h"
 
+using LineFormat = QVector<QTextLayout::FormatRange>;
+
 #if KFSyntaxHighlighting_FOUND
 // highlighter using KSyntaxHighlighting
 class HighlightingImplementation : public KSyntaxHighlighting::AbstractHighlighter
@@ -38,13 +40,23 @@ public:
     }
     ~HighlightingImplementation() override = default;
 
-    virtual QVector<QTextLayout::FormatRange> format(const QString& text)
+    void formatText(const QStringList& text)
     {
+        if (m_lines != text) {
+            m_lines = text;
+        }
+
         m_formats.clear();
+        m_state = {};
 
-        highlightLine(text, {});
+        for (const auto& line : text) {
+            m_formats.push_back(formatLine(line));
+        }
+    }
 
-        return m_formats;
+    virtual LineFormat format(int lineIndex) const
+    {
+        return m_formats.at(lineIndex);
     }
 
     virtual void themeChanged()
@@ -66,11 +78,19 @@ public:
     virtual void setHighlightingDefinition(const KSyntaxHighlighting::Definition& definition)
     {
         setDefinition(definition);
+        formatText(m_lines);
     }
 
     virtual QString definitionName() const
     {
         return definition().name();
+    }
+
+    virtual LineFormat formatLine(const QString& line)
+    {
+        m_lineFormat.clear();
+        m_state = highlightLine(line, m_state);
+        return m_lineFormat;
     }
 
 protected:
@@ -79,24 +99,36 @@ protected:
         QTextCharFormat textCharFormat;
         textCharFormat.setForeground(format.textColor(theme()));
         textCharFormat.setFontWeight(format.isBold(theme()) ? QFont::Bold : QFont::Normal);
-        m_formats.push_back({offset, length, textCharFormat});
+        m_lineFormat.push_back({offset, length, textCharFormat});
     }
 
 private:
     KSyntaxHighlighting::Repository* m_repository;
-    QVector<QTextLayout::FormatRange> m_formats;
+    KSyntaxHighlighting::State m_state;
+    QStringList m_lines; // for reformatting if definition changes
+    LineFormat m_lineFormat;
+    QVector<LineFormat> m_formats;
 };
 #else
-// stub incase KSyntaxHighlighting is not available
+// stub in case KSyntaxHighlighting is not available
 class HighlightingImplementation
 {
 public:
     HighlightingImplementation(KSyntaxHighlighting::Repository* /*repository*/) { }
     virtual ~HighlightingImplementation() = default;
 
-    virtual QVector<QTextLayout::FormatRange> format(const QString& text)
+    void formatText(const QStringList& text)
     {
-        return {{QTextLayout::FormatRange {0, text.length(), {}}}};
+        m_formats.clear();
+
+        for (const auto& line : text) {
+            m_formats.push_back(formatLine(line));
+        }
+    }
+
+    LineFormat format(int lineIndex) const
+    {
+        return m_formats.at(lineIndex);
     }
 
     virtual void themeChanged() { }
@@ -105,7 +137,17 @@ public:
     virtual QString definitionName() const
     {
         return {};
+    };
+
+private:
+    // stub implementation necessary for testing
+    virtual LineFormat formatLine(const QString& line)
+    {
+        return {{QTextLayout::FormatRange {0, line.length(), {}}}};
     }
+
+    Q_DISABLE_COPY(HighlightingImplementation)
+    QVector<LineFormat> m_formats;
 };
 #endif
 
@@ -118,7 +160,19 @@ public:
     }
     ~AnsiHighlightingImplementation() override = default;
 
-    QVector<QTextLayout::FormatRange> format(const QString& text) final
+    void themeChanged() override
+    {
+        m_colorScheme = KColorScheme(QPalette::Normal, KColorScheme::Complementary);
+    }
+
+    void setHighlightingDefinition(const KSyntaxHighlighting::Definition& /*definition*/) override { }
+    QString definitionName() const override
+    {
+        return {};
+    }
+
+private:
+    LineFormat formatLine(const QString& text) override
     {
         QVector<QTextLayout::FormatRange> formats;
 
@@ -167,18 +221,6 @@ public:
         return formats;
     }
 
-    void themeChanged() override
-    {
-        m_colorScheme = KColorScheme(QPalette::Normal, KColorScheme::Complementary);
-    }
-
-    void setHighlightingDefinition(const KSyntaxHighlighting::Definition& /*definition*/) override { }
-    QString definitionName() const override
-    {
-        return {};
-    }
-
-private:
     KColorScheme m_colorScheme;
 };
 
@@ -187,9 +229,11 @@ class HighlightedLine
 {
 public:
     HighlightedLine() = default;
-    HighlightedLine(HighlightingImplementation* highlighter, QString text)
+    HighlightedLine(HighlightingImplementation* highlighter, const QString& text, int index)
         : m_highlighter(highlighter)
-        , m_text(std::move(text))
+        , m_text(Util::removeAnsi(text))
+        , m_index(index)
+        , m_layout(nullptr)
     {
     }
 
@@ -209,11 +253,12 @@ public:
 private:
     std::unique_ptr<QTextLayout> buildLayout() const
     {
+        Q_ASSERT(m_index != -1);
         auto layout = std::make_unique<QTextLayout>();
 
         layout->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-        layout->setText(Util::removeAnsi(m_text));
-        layout->setFormats(m_highlighter->format(m_text));
+        layout->setText(m_text);
+        layout->setFormats(m_highlighter->format(m_index));
 
         layout->beginLayout();
 
@@ -230,6 +275,7 @@ private:
 
     HighlightingImplementation* m_highlighter = nullptr;
     QString m_text;
+    int m_index = -1;
     mutable std::unique_ptr<QTextLayout> m_layout;
 };
 static_assert(std::is_nothrow_move_constructible_v<HighlightedLine>);
@@ -239,6 +285,7 @@ HighlightedText::HighlightedText(KSyntaxHighlighting::Repository* repository, QO
     : QObject(parent)
     , m_repository(repository)
 {
+    Q_UNUSED(repository);
 }
 
 HighlightedText::~HighlightedText() = default;
@@ -260,8 +307,10 @@ void HighlightedText::setText(const QStringList& text)
     }
 
     m_highlightedLines.resize(text.size());
-    std::transform(text.cbegin(), text.cend(), m_highlightedLines.begin(), [this](const QString& text) {
-        return HighlightedLine {m_highlighter.get(), text};
+    m_highlighter->formatText(text);
+    int index = 0;
+    std::transform(text.cbegin(), text.cend(), m_highlightedLines.begin(), [this, &index](const QString& text) {
+        return HighlightedLine {m_highlighter.get(), text, index++};
     });
 
     m_cleanedLines = text;
