@@ -55,9 +55,7 @@ public slots:
     void updateHighlighting();
 
 private:
-#if KFSyntaxHighlighting_FOUND
     KSyntaxHighlighting::Repository* m_repository;
-#endif
     std::unique_ptr<HighlightingImplementation> m_highlighter;
     mutable std::vector<HighlightedLine> m_highlightedLines;
     QStringList m_lines;

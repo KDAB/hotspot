@@ -91,21 +91,22 @@ private:
 class HighlightingImplementation
 {
 public:
-    virtual HighlightingImplementation(KSyntaxHighlighting::Repository*) = default;
-    ~HighlightingImplementation() override = default;
+    HighlightingImplementation(KSyntaxHighlighting::Repository* /*repository*/) { }
+    virtual ~HighlightingImplementation() = default;
 
-    virtual QVector<QTextLayout::FormatRange> format(const QStringList& text) override
+    virtual QVector<QTextLayout::FormatRange> format(const QString& /*text*/)
     {
         return {};
     }
 
-    virtual void themeChanged() override { }
+    virtual void themeChanged() { }
 
-    virtual void setHighlightingDefinition(const KSyntaxHighlighting::Definition& /*definition*/) override { }
-    virtual QString definitionName() const override
+    virtual void setHighlightingDefinition(const KSyntaxHighlighting::Definition& /*definition*/) { }
+    virtual QString definitionName() const
     {
         return {};
-    };
+    }
+};
 #endif
 
 class AnsiHighlightingImplementation : public HighlightingImplementation
@@ -238,9 +239,7 @@ private:
 
 HighlightedText::HighlightedText(KSyntaxHighlighting::Repository* repository, QObject* parent)
     : QObject(parent)
-#if KFSyntaxHighlighting_FOUND
     , m_repository(repository)
-#endif
 {
 }
 
@@ -277,7 +276,9 @@ void HighlightedText::setDefinition(const KSyntaxHighlighting::Definition& defin
 {
     Q_ASSERT(m_highlighter);
     m_highlighter->setHighlightingDefinition(definition);
+#if KFSyntaxHighlighting_FOUND
     emit definitionChanged(definition.name());
+#endif
 }
 
 QString HighlightedText::textAt(int index) const
