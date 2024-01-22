@@ -254,8 +254,8 @@ void SourceCodeModel::find(const QString& search, Direction direction, int curre
     auto searchFunc = [&search](const QString& line) { return line.indexOf(search, 0, Qt::CaseInsensitive) != -1; };
 
     auto endReached = [this] { emit searchEndReached(); };
-
-    const int resultIndex = ::search(m_lines.mid(m_startLine, m_numLines), current, direction, searchFunc, endReached);
+    const int resultIndex = ::search(m_lines.cbegin() + m_startLine, m_lines.cbegin() + m_startLine + m_numLines,
+                                     current, direction, searchFunc, endReached);
 
     if (resultIndex >= 0) {
         emit resultFound(createIndex(resultIndex + 1, SourceCodeColumn));
