@@ -23,10 +23,10 @@ private slots:
     {
         const std::array<int, 0> testArray = {};
 
-        QCOMPARE(search_impl(
+        QCOMPARE(search(
                      testArray.begin(), testArray.end(), testArray.begin(), [](int) { return false; }, [] {}),
                  -1);
-        QCOMPARE(search_impl(
+        QCOMPARE(search(
                      testArray.rbegin(), testArray.rend(), testArray.rbegin(), [](int) { return false; }, [] {}),
                  -1);
     }
@@ -36,11 +36,11 @@ private slots:
 
         int maxOffset = testArray.size() - 1;
         for (int offset = 0; offset < maxOffset; offset++) {
-            QCOMPARE(search_impl(
+            QCOMPARE(search(
                          testArray.begin(), testArray.end(), testArray.begin() + offset,
                          [](int num) { return num == 2; }, [] {}),
                      1);
-            QCOMPARE(search_impl(
+            QCOMPARE(search(
                          testArray.rbegin(), testArray.rend(), testArray.rbegin() + offset,
                          [](int num) { return num == 2; }, [] {}),
                      3);
@@ -52,7 +52,7 @@ private slots:
         const std::array<int, 5> testArray = {1, 2, 3, 4, 5};
         {
             bool endReached = false;
-            QCOMPARE(search_impl(
+            QCOMPARE(search(
                          testArray.begin(), testArray.end(), testArray.begin() + 1, [](int i) { return i == 1; },
                          [&endReached] { endReached = true; }),
                      0);
@@ -61,26 +61,11 @@ private slots:
 
         {
             bool endReached = false;
-            QCOMPARE(search_impl(
+            QCOMPARE(search(
                          testArray.rbegin(), testArray.rend(), std::make_reverse_iterator(testArray.begin() + 4 - 1),
                          [](int i) { return i == 4; }, [&endReached] { endReached = true; }),
                      1);
             QCOMPARE(endReached, true);
-        }
-    }
-
-    void testWrapper()
-    {
-        const std::array<int, 5> testArray = {1, 2, 3, 4, 5};
-
-        int maxOffset = testArray.size() - 1;
-        for (int i = 0; i < maxOffset; i++) {
-            QCOMPARE(search(
-                         testArray, i, Direction::Forward, [](int i) { return i == 4; }, [] {}),
-                     3);
-            QCOMPARE(search(
-                         testArray, i, Direction::Backward, [](int i) { return i == 4; }, [] {}),
-                     3);
         }
     }
 
@@ -90,7 +75,7 @@ private slots:
 
         for (int i = 0; i < 2; i++) {
             QCOMPARE(search(
-                         testArray, i, Direction::Forward, [](int) { return true; }, [] {}),
+                         testArray.cbegin(), testArray.cend(), testArray.cend(), [](int) { return true; }, [] {}),
                      -1);
         }
     }
@@ -100,8 +85,20 @@ private slots:
         const std::array<int, 1> testArray = {0};
 
         QCOMPARE(search(
-                     testArray, 1, Direction::Forward, [](int i) { return i == 0; }, [] {}),
+                     testArray.cbegin(), testArray.cend(), testArray.cbegin() + 1, [](int i) { return i == 0; }, [] {}),
                  0);
+    }
+
+    void testSearchOnIterators()
+    {
+        const std::array<int, 5> testArray = {0, 1, 2, 3, 0};
+
+        for (int i = 1; i < 3; i++) {
+            QCOMPARE(search(
+                         testArray.cbegin() + 1, testArray.cbegin() + 3, testArray.cbegin() + i,
+                         [](int i) { return i == 0; }, [] {}),
+                     -1);
+        }
     }
 };
 

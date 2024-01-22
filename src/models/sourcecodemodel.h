@@ -20,8 +20,6 @@ class Repository;
 class Definition;
 }
 
-enum class Direction;
-
 Q_DECLARE_METATYPE(QTextLine)
 
 class SourceCodeModel : public QAbstractTableModel
@@ -65,6 +63,11 @@ public:
         FileLineRole,
     };
 
+    enum Direction
+    {
+        Forward,
+        Backward
+    };
 signals:
     void resultFound(QModelIndex index);
     void searchEndReached();
@@ -73,7 +76,7 @@ public slots:
     void updateHighlighting(int line);
     void setSysroot(const QString& sysroot);
 
-    void find(const QString& search, Direction direction, int current);
+    void find(const QString& search, SourceCodeModel::Direction direction, int current);
     void scrollToLine(const QString& lineNumber);
 
 private:
@@ -89,3 +92,5 @@ private:
     QStringList m_lines;
     int m_highlightLine = 0;
 };
+
+Q_DECLARE_METATYPE(SourceCodeModel::Direction)

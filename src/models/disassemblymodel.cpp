@@ -244,7 +244,17 @@ void DisassemblyModel::find(const QString& search, Direction direction, int curr
 
     auto endReached = [this] { emit searchEndReached(); };
 
-    const int resultIndex = ::search(m_data.disassemblyLines, current, direction, searchFunc, endReached);
+    int resultIndex = 0;
+
+    if (direction == Direction::Forward) {
+        resultIndex = ::search(m_data.disassemblyLines.cbegin(), m_data.disassemblyLines.cend(),
+                               m_data.disassemblyLines.cbegin() + current, searchFunc, endReached);
+    } else {
+        resultIndex = m_data.disassemblyLines.size() - 1
+            - ::search(m_data.disassemblyLines.crbegin(), m_data.disassemblyLines.crend(),
+                       std::make_reverse_iterator(m_data.disassemblyLines.cbegin() + current + 1), searchFunc,
+                       endReached);
+    }
 
     if (resultIndex >= 0) {
         emit resultFound(createIndex(resultIndex, DisassemblyColumn));

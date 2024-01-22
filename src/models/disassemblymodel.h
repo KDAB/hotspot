@@ -21,8 +21,6 @@ class Definition;
 class Repository;
 }
 
-enum class Direction;
-
 class DisassemblyModel : public QAbstractTableModel
 {
     Q_OBJECT
@@ -71,13 +69,19 @@ public:
         SyntaxHighlightRole,
     };
 
+    enum class Direction
+    {
+        Forward,
+        Backward
+    };
 signals:
     void resultFound(QModelIndex index);
     void searchEndReached();
 
 public slots:
     void updateHighlighting(int line);
-    void find(const QString& search, Direction direction, int offset);
+
+    void find(const QString& search, DisassemblyModel::Direction direction, int offset);
     void scrollToLine(const QString& lineNumber);
 
 private:
@@ -87,3 +91,5 @@ private:
     int m_numTypes = 0;
     int m_highlightLine = 0;
 };
+
+Q_DECLARE_METATYPE(DisassemblyModel::Direction)
