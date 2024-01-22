@@ -244,7 +244,8 @@ void DisassemblyModel::find(const QString& search, Direction direction, int curr
 
     auto endReached = [this] { emit searchEndReached(); };
 
-    const int resultIndex = ::search(m_data.disassemblyLines, current, direction, searchFunc, endReached);
+    const int resultIndex = ::search(m_data.disassemblyLines.cbegin(), m_data.disassemblyLines.cend(), current,
+                                     direction, searchFunc, endReached);
 
     if (resultIndex >= 0) {
         emit resultFound(createIndex(resultIndex, DisassemblyColumn));

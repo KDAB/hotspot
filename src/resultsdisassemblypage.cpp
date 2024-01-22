@@ -402,7 +402,6 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
 
         auto searchPrev = [model, edit, additionalRows, searchResultIndex] {
             const auto offset = searchResultIndex->isValid() ? searchResultIndex->row() - additionalRows : 0;
-
             model->find(edit->text(), Direction::Backward, offset);
         };
 
