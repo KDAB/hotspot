@@ -94,9 +94,9 @@ public:
     HighlightingImplementation(KSyntaxHighlighting::Repository* /*repository*/) { }
     virtual ~HighlightingImplementation() = default;
 
-    virtual QVector<QTextLayout::FormatRange> format(const QString& /*text*/)
+    virtual QVector<QTextLayout::FormatRange> format(const QString& text)
     {
-        return {};
+        return {{QTextLayout::FormatRange {0, text.length(), {}}}};
     }
 
     virtual void themeChanged() { }
