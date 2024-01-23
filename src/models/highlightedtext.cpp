@@ -189,18 +189,13 @@ public:
     HighlightedLine(HighlightingImplementation* highlighter, QString text)
         : m_highlighter(highlighter)
         , m_text(std::move(text))
-        , m_layout(nullptr)
     {
     }
 
-    ~HighlightedLine() = default;
-
-    HighlightedLine(HighlightedLine&&) = default;
-
-    QTextLayout* layout()
+    QTextLayout* layout() const
     {
         if (!m_layout) {
-            doLayout();
+            m_layout = buildLayout();
         }
         return m_layout.get();
     }
@@ -211,31 +206,33 @@ public:
     }
 
 private:
-    void doLayout()
+    std::unique_ptr<QTextLayout> buildLayout() const
     {
-        if (!m_layout) {
-            m_layout = std::make_unique<QTextLayout>();
-            m_layout->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-            const auto& ansiFreeLine = Util::removeAnsi(m_text);
-            m_layout->setText(ansiFreeLine);
-        }
+        auto layout = std::make_unique<QTextLayout>();
 
-        m_layout->setFormats(m_highlighter->format(m_text));
+        layout->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+        layout->setText(Util::removeAnsi(m_text));
+        layout->setFormats(m_highlighter->format(m_text));
 
-        m_layout->beginLayout();
+        layout->beginLayout();
 
         // there is at most one line, so we don't need to check this multiple times
-        QTextLine line = m_layout->createLine();
+        auto line = layout->createLine();
         if (line.isValid()) {
             line.setPosition(QPointF(0, 0));
         }
-        m_layout->endLayout();
+
+        layout->endLayout();
+
+        return layout;
     }
 
     HighlightingImplementation* m_highlighter;
     QString m_text;
-    std::unique_ptr<QTextLayout> m_layout;
+    mutable std::unique_ptr<QTextLayout> m_layout;
 };
+static_assert(std::is_nothrow_move_constructible_v<HighlightedLine>);
+static_assert(std::is_nothrow_destructible_v<HighlightedLine>);
 
 HighlightedText::HighlightedText(KSyntaxHighlighting::Repository* repository, QObject* parent)
     : QObject(parent)
