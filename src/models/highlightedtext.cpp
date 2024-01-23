@@ -263,8 +263,6 @@ void HighlightedText::setText(const QStringList& text)
         return HighlightedLine {m_highlighter.get(), text};
     });
 
-    connect(this, &HighlightedText::definitionChanged, this, &HighlightedText::updateHighlighting);
-
     m_cleanedLines.reserve(text.size());
     std::transform(text.cbegin(), text.cend(), std::back_inserter(m_cleanedLines), Util::removeAnsi);
 }
@@ -275,6 +273,7 @@ void HighlightedText::setDefinition(const KSyntaxHighlighting::Definition& defin
     m_highlighter->setHighlightingDefinition(definition);
 #if KFSyntaxHighlighting_FOUND
     emit definitionChanged(definition.name());
+    updateHighlighting();
 #endif
 }
 
