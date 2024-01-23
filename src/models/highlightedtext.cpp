@@ -186,6 +186,7 @@ private:
 class HighlightedLine
 {
 public:
+    HighlightedLine() = default;
     HighlightedLine(HighlightingImplementation* highlighter, QString text)
         : m_highlighter(highlighter)
         , m_text(std::move(text))
@@ -227,7 +228,7 @@ private:
         return layout;
     }
 
-    HighlightingImplementation* m_highlighter;
+    HighlightingImplementation* m_highlighter = nullptr;
     QString m_text;
     mutable std::unique_ptr<QTextLayout> m_layout;
 };
@@ -258,13 +259,13 @@ void HighlightedText::setText(const QStringList& text)
         emit usesAnsiChanged(usesAnsi);
     }
 
-    m_highlightedLines.reserve(text.size());
-    std::transform(text.cbegin(), text.cend(), std::back_inserter(m_highlightedLines), [this](const QString& text) {
+    m_highlightedLines.resize(text.size());
+    std::transform(text.cbegin(), text.cend(), m_highlightedLines.begin(), [this](const QString& text) {
         return HighlightedLine {m_highlighter.get(), text};
     });
 
-    m_cleanedLines.reserve(text.size());
-    std::transform(text.cbegin(), text.cend(), std::back_inserter(m_cleanedLines), Util::removeAnsi);
+    m_cleanedLines = text;
+    std::for_each(m_cleanedLines.begin(), m_cleanedLines.end(), Util::removeAnsi);
 }
 
 void HighlightedText::setDefinition(const KSyntaxHighlighting::Definition& definition)
