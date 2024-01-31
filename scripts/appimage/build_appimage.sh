@@ -27,7 +27,7 @@ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_DISABLE_FIND_PACKAGE_KGraphViewerPart=ON \
     -DAPPIMAGE_BUILD=ON "-DCMAKE_INSTALL_PREFIX=/usr" "$srcdir"
 
-make -j
+make -j$(nproc)
 DESTDIR=appdir make install
 
 tar -cjvf "/output/hotspot-debuginfo-$gitversion-x86_64.tar.bz2" \

@@ -62,7 +62,7 @@ RUN wget https://download.qt.io/official_releases/qt/5.15/${QT_VERSION}/single/q
     -skip qtpurchasing -skip qtserialbus -skip qtserialport -skip qtwebchannel -skip qtwebglplugin \
     -skip qtwebview -skip qtlocation -skip qtspeech -skip qtwinextras \
     -release -ssl -no-compile-examples -cups -I /usr/include/openssl11 -prefix /usr && \
-    make -j && make install && cd .. && rm -Rf build qt-everywhere-*
+    make -j$(nproc) && make install && cd .. && rm -Rf build qt-everywhere-*
 
 # appimage build tools
 RUN wget https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20230713-1/linuxdeploy-x86_64.AppImage &&     chmod +x linuxdeploy-x86_64.AppImage && \
@@ -74,7 +74,7 @@ RUN cd /opt && mkdir qcustomplot && cd qcustomplot && \
     cd qcustomplot && cp qcustomplot.h /usr/include && \
     wget https://www.qcustomplot.com/release/${QCustomPlot_VERSION}/QCustomPlot-sharedlib.tar.gz && \
     tar -xf QCustomPlot-sharedlib.tar.gz && ls && cd qcustomplot-sharedlib/sharedlib-compilation \
-    && qmake . && make -j && mv libqcustomplot.so* /usr/lib && cd /opt && rm -Rf qcustomplot && ldconfig
+    && qmake . && make -j$(nproc) && mv libqcustomplot.so* /usr/lib && cd /opt && rm -Rf qcustomplot && ldconfig
 
 # rust demangle
 RUN cd /opt/ && mkdir rust && cd rust && wget https://sh.rustup.rs -O rustup.sh && \
@@ -125,7 +125,7 @@ RUN ldconfig && \
 # kddockwidgets
 RUN cd /opt && git clone --recursive https://github.com/KDAB/KDDockWidgets.git -b ${KDDockWidgets_VERSION} && \
     cd KDDockWidgets && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr -DKDDockWidgets_EXAMPLES=0 -DKDDockWidgets_FRONTENDS="qtwidgets" .. && \
-    make -j && make install && cd /opt && rm -Rf KDDockWidgets
+    make -j$(nproc) && make install && cd /opt && rm -Rf KDDockWidgets
 
 FROM intermediate
 
