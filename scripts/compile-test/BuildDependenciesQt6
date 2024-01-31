@@ -15,7 +15,7 @@ RUN wget https://www.qcustomplot.com/release/2.1.1/QCustomPlot-source.tar.gz && 
     cp -va qcustomplot.h /usr/include/ && \
     wget https://www.qcustomplot.com/release/2.1.1/QCustomPlot-sharedlib.tar.gz && \
     tar -xf QCustomPlot-sharedlib.tar.gz && cd qcustomplot-sharedlib/sharedlib-compilation && \
-    qmake6 CONFIG+=release CONFIG+=force_debug_info && make -j && \
+    qmake6 CONFIG+=release CONFIG+=force_debug_info && make -j$(nproc) && \
     cp -va libqcustomplot* /usr/lib/x86_64-linux-gnu/ && cd /opt && rm -Rf qcustomplot-source
 
 RUN git clone -b $KDDOCKWIDGETS_VERSION https://github.com/KDAB/KDDockWidgets && \
