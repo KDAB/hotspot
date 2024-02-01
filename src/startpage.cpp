@@ -57,6 +57,8 @@ void StartPage::onOpenFileError(const QString& errorMessage)
 
 void StartPage::onParseFileProgress(float percent)
 {
+    ui->loadStack->setCurrentWidget(ui->parseProgressPage);
+
     const int scale = 1000;
     if (ui->openFileProgressBar->maximum() == 0) {
         ui->openFileProgressBar->setMaximum(scale);
