@@ -7,7 +7,7 @@
 FROM centos/devtoolset-7-toolchain-centos7 as intermediate
 
 ARG QT_VERSION=5.15.11
-ARG KF5_VERSION v5.110.0
+ARG KF5_VERSION=v5.110.0
 ARG KDDockWidgets_VERSION=2.0
 ARG QCustomPlot_VERSION=2.1.1
 ARG rust_demangler_VERSION=0.1.23
@@ -46,23 +46,27 @@ RUN sed -i 's#enabled=1#enabled=0#' /etc/yum/pluginconf.d/fastestmirror.conf && 
         fuse fuse-libs bzip2 desktop-file-utils && \
     ln -s /usr/bin/cmake3 /usr/bin/cmake && \
     rm -Rf /var/cache/yum && \
-    . /opt/rh/devtoolset-11/enable
+    . /opt/rh/devtoolset-11/enable && \
+	debuginfo-install -y devtoolset-11-elfutils-libs
 
 ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/devtoolset-11/root/usr/lib64/dyninst:/opt/rh/devtoolset-11/root/usr/lib/dyninst:/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/httpd24/root/usr/lib64:/opt/rh/rh-perl530/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}} \
     PATH=/opt/rh/devtoolset-11/root/usr/bin:/opt/rh/rh-git227/root/usr/bin:/opt/rh/rh-perl530/root/usr/local/bin:/opt/rh/rh-perl530/root/usr/bin${PATH:+:${PATH}}
 
+RUN rm /opt/rh/devtoolset-11/root/usr/bin/ld && ln -s /opt/rh/devtoolset-11/root/usr/bin/ld.gold /opt/rh/devtoolset-11/root/usr/bin/ld
+
 # qt5
 RUN wget https://download.qt.io/official_releases/qt/5.15/${QT_VERSION}/single/qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
-    tar -xvf qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
-    mkdir build && cd build && \
-    ../qt-everywhere-src-${QT_VERSION}/configure -opensource -confirm-license \
+    tar -xvf qt-everywhere-opensource-src-${QT_VERSION}.tar.xz
+
+RUN  mkdir build && cd build && \
+    ../qt-everywhere-src-${QT_VERSION}/configure -opensource -confirm-license -force-debug-info -separate-debug-info \
     -xcb -xcb-xlib -bundled-xcb-xinput -skip qtwebengine -skip qtdatavis3d -skip qtmultimedia -skip qtquick3d \
     -skip qtquickcontrols -skip qtquickcontrols2 -skip qtquicktimeline -skip qt3d -skip qtdeclarative \
     -skip qtscript -skip qtcharts -skip qtdoc -skip qtwebsockets -skip qtgamepad -skip qtgraphicaleffects \
     -skip qtpurchasing -skip qtserialbus -skip qtserialport -skip qtwebchannel -skip qtwebglplugin \
     -skip qtwebview -skip qtlocation -skip qtspeech -skip qtwinextras \
     -release -ssl -no-compile-examples -cups -I /usr/include/openssl11 -prefix /usr && \
-    make -j && make install && cd .. && rm -Rf build qt-everywhere-*
+    make -j $(nproc) && make install && cd .. && rm -Rf build qt-everywhere-*
 
 # appimage build tools
 RUN wget https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20230713-1/linuxdeploy-x86_64.AppImage &&     chmod +x linuxdeploy-x86_64.AppImage && \
@@ -79,7 +83,7 @@ RUN cd /opt && mkdir qcustomplot && cd qcustomplot && \
     cd qcustomplot && cp qcustomplot.h /usr/include && \
     wget https://www.qcustomplot.com/release/${QCustomPlot_VERSION}/QCustomPlot-sharedlib.tar.gz && \
     tar -xf QCustomPlot-sharedlib.tar.gz && ls && cd qcustomplot-sharedlib/sharedlib-compilation \
-    && qmake . && make -j && mv libqcustomplot.so* /usr/lib && cd /opt && rm -Rf qcustomplot && ldconfig
+    && qmake . && make -j $(nproc) && mv libqcustomplot.so* /usr/lib && cd /opt && rm -Rf qcustomplot && ldconfig
 
 # rust demangle
 RUN cd /opt/ && mkdir rust && cd rust && wget https://sh.rustup.rs -O rustup.sh && \
@@ -129,8 +133,10 @@ RUN ldconfig && \
 
 # kddockwidgets
 RUN cd /opt && git clone --recursive https://github.com/KDAB/KDDockWidgets.git -b ${KDDockWidgets_VERSION} && \
-    cd KDDockWidgets && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr -DKDDockWidgets_EXAMPLES=0 -DKDDockWidgets_FRONTENDS="qtwidgets" .. && \
-    make -j && make install && cd /opt && rm -Rf KDDockWidgets
+    cd KDDockWidgets && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr -DKDDockWidgets_EXAMPLES=0 -DKDDockWidgets_FRONTENDS="qtwidgets" -DCMAKE_BUILD_TYPE=RelWithDebugInfo .. && \
+    make -j $(nproc) && make install && cd /opt && rm -Rf KDDockWidgets
+
+RUN
 
 FROM intermediate
 

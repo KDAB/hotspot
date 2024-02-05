@@ -30,10 +30,6 @@ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
 make -j
 DESTDIR=appdir make install
 
-tar -cjvf "/output/hotspot-debuginfo-$gitversion-x86_64.tar.bz2" \
-    --transform="s#appdir/#hotspot-debuginfo-$gitversion/#" \
-    appdir/usr/bin/hotspot appdir/usr/lib64/libexec/hotspot-perfparser
-
 # FIXME: Do in CMakeLists.txt
 mkdir -p "appdir/usr/share/applications/"
 cp "$srcdir/com.kdab.hotspot.desktop" "appdir/usr/share/applications/"
@@ -74,7 +70,39 @@ linuxdeploy-x86_64.AppImage --appdir appdir --plugin qt \
     -d "./appdir/usr/share/applications/com.kdab.hotspot.desktop" \
     --output appimage
 
+# copy qt libs and modify debug link since linuxdeploy modifies the lib
+for lib in $(cd appdir/usr/lib && ls libQt*); do
+    if [ -f /usr/lib/${lib}*.debug ]; then
+        cp /usr/lib/${lib}*.debug appdir/usr/lib/${lib}.debug
+		objcopy --add-gnu-debuglink="appdir/usr/lib/${lib}" appdir/usr/lib/${lib}.debug
+    fi
+done
+
+# kde libs got stripped by linuxdeploy so we need to extrace the debug info from the source files
+for lib in $(cd appdir/usr/lib && ls libKF*); do
+	strip --only-keep-debug /usr/lib64/${lib}.* -o appdir/usr/lib/${lib}.debug
+done
+
+# copy debug infos for kddockwidgets, hotspot and perfparser
+strip --only-keep-debug bin/hotspot -o appdir/usr/bin/hotspot.debug
+strip --only-keep-debug bin/perfparser -o appdir/usr/lib64/libexec/hotspot-perfparser.debug
+strip --only-keep-debug /usr/lib64/libkddockwidgets.so.2.0 -o appdir/usr/lib/libkddockwidgets.so.2.0.debug
+
+# copy elfutils debuginfo
+cp /usr/lib/debug/opt/rh/devtoolset-11/root/usr/lib64/lib{elf,dw}-*.debug appdir/usr/lib
+
+# add debug files from libs
+tar -cjvf "/output/hotspot-debuginfo-$gitversion-x86_64.tar.bz2" \
+    --transform="s#appdir/#hotspot-debuginfo-$gitversion/#" \
+    appdir/usr/bin/hotspot.debug appdir/usr/lib64/libexec/hotspot-perfparser.debug \
+	appdir/usr/lib/lib*.debug
+
+# delete debug info from final appimage
+find appdir -type f -name "*.debug" -exec rm {} \;
+
+find appdir/usr/lib -type f -name "*.so*" -exec strip -s {} \;
+
 # package appdir with type 2 runtime so we don't depend on glibc and fuse2
 appimagetool-x86_64.AppImage --runtime-file /opt/runtime-x86_64 appdir
 
-mv Hotspot-x86_64.AppImage "/output/hotspot-$gitversion-x86_64.AppImage"
+mv Hotspot*x86_64.AppImage "/output/hotspot-$gitversion-x86_64.AppImage"
