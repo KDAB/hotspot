@@ -61,6 +61,12 @@ cp -v "/usr/share/icons/breeze/breeze-icons.rcc" "appdir/usr/share/icons/breeze/
 # TODO: further down also add:
 # -e "./appdir/usr/plugins/kgraphviewerpart.so" \
 
+# tell the linuxdeploy qt plugin to include these platform plugins
+export EXTRA_PLATFORM_PLUGINS="libqoffscreen.so;libqwayland-generic.so"
+
+mkdir -p appdir/usr/plugins/wayland-shell-integration/
+cp /usr/plugins/wayland-shell-integration/libxdg-shell.so appdir/usr/plugins/wayland-shell-integration/
+
 linuxdeploy --appdir appdir --plugin qt \
     -e "./appdir/usr/lib64/libexec/hotspot-perfparser" \
     -e "./appdir/usr/bin/hotspot" \
@@ -70,6 +76,7 @@ linuxdeploy --appdir appdir --plugin qt \
     -l /usr/lib64/libfontconfig.so.1 \
     -l /usr/lib/librustc_demangle.so \
     -l /usr/lib/libd_demangle.so \
+    -l /usr/lib64/libwayland-egl.so \
     -i "$srcdir/src/images/icons/512-hotspot_app_icon.png" --icon-filename=hotspot \
     -d "./appdir/usr/share/applications/com.kdab.hotspot.desktop" \
     --output appimage
