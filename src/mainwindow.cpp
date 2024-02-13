@@ -67,7 +67,8 @@ const IdeSettings ideSettings[] = {
     {"kwrite", "%f --line %l --column %c", QT_TRANSLATE_NOOP("MainWindow", "KWrite"), "org.kde.kwrite"},
     {"gedit", "%f +%l:%c", QT_TRANSLATE_NOOP("MainWindow", "gedit"), "org.gnome.gedit"},
     {"gvim", "%f +%l", QT_TRANSLATE_NOOP("MainWindow", "gvim"), "gvim"},
-    {"qtcreator", "-client %f:%l", QT_TRANSLATE_NOOP("MainWindow", "Qt Creator"), "org.qt-project.qtcreator"}
+    {"qtcreator", "-client %f:%l", QT_TRANSLATE_NOOP("MainWindow", "Qt Creator"), "org.qt-project.qtcreator"},
+    {"code", "-g %f:%l:%c", QT_TRANSLATE_NOOP("MainWindow", "Visual Studio Code"), "code"},
 #endif
 };
 #if defined(Q_OS_WIN)                                                                                                  \
