@@ -59,24 +59,17 @@ struct IdeSettings
 };
 
 const IdeSettings ideSettings[] = {
-#if defined(Q_OS_WIN) || defined(Q_OS_OSX)
-    {"", "", "", "", ""} // Dummy content, because we can't have empty arrays.
-#else
+#if !defined(Q_OS_WIN) && !defined(Q_OS_OSX)
     {"kdevelop", "%f:%l:%c", QT_TRANSLATE_NOOP("MainWindow", "KDevelop"), "org.kde.kdevelop"},
     {"kate", "%f --line %l --column %c", QT_TRANSLATE_NOOP("MainWindow", "Kate"), "org.kde.kate"},
     {"kwrite", "%f --line %l --column %c", QT_TRANSLATE_NOOP("MainWindow", "KWrite"), "org.kde.kwrite"},
     {"gedit", "%f +%l:%c", QT_TRANSLATE_NOOP("MainWindow", "gedit"), "org.gnome.gedit"},
     {"gvim", "%f +%l", QT_TRANSLATE_NOOP("MainWindow", "gvim"), "gvim"},
     {"qtcreator", "-client %f:%l", QT_TRANSLATE_NOOP("MainWindow", "Qt Creator"), "org.qt-project.qtcreator"},
+#endif
     {"code", "-g %f:%l:%c", QT_TRANSLATE_NOOP("MainWindow", "Visual Studio Code"), "code"},
-#endif
-};
-#if defined(Q_OS_WIN)                                                                                                  \
-    || defined(Q_OS_OSX) // Remove this #if branch when adding real data to ideSettings for Windows/OSX.
-static const int ideSettingsSize = 0;
-#else
+    {"codium", "-g %f:%l:%c", QT_TRANSLATE_NOOP("MainWindow", "VSCodium"), "codium"}};
 const int ideSettingsSize = sizeof(ideSettings) / sizeof(IdeSettings);
-#endif
 
 bool isAppAvailable(const char* app)
 {
