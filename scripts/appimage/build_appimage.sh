@@ -34,10 +34,6 @@ tar -cjvf "/output/hotspot-debuginfo-$gitversion-x86_64.tar.bz2" \
     --transform="s#appdir/#hotspot-debuginfo-$gitversion/#" \
     appdir/usr/bin/hotspot appdir/usr/lib64/libexec/hotspot-perfparser
 
-# FIXME: Do in CMakeLists.txt
-mkdir -p "appdir/usr/share/applications/"
-cp "$srcdir/com.kdab.hotspot.desktop" "appdir/usr/share/applications/"
-
 # Ensure we prefer the bundled libs also when calling dlopen, cf.: https:/github.com/KDAB/hotspot/issues/89
 cat << WRAPPER_SCRIPT > ./appdir/AppRun
 #!/bin/bash
