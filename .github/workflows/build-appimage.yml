@@ -45,3 +45,24 @@ jobs:
       with:
         name: debuginfo
         path: /output/hotspot-debuginfo-*
+
+  nightly:
+    if: ${{github.repository_owner == 'lievenhey' && github.ref_name == 'master'}}
+    name: upload latest build
+    needs: appimage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: "hotspot-*.Appimage"
+          merge-multiple: true
+      - uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          omitName: true
+          omitBody: true
+          omitBodyDuringUpdate: true
+          prerelease: true
+          tag: "latest"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: "*.AppImage"
