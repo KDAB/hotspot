@@ -29,7 +29,7 @@ global
     # thumbrule is one core for every 2 GiB of total memory.
     num-cores-low-mem HALF_NPROC
 
-    cmake-options -DBUILD_TESTING=OFF -DBUILD_DESIGNERPLUGIN=OFF
+    cmake-options -DBUILD_TESTING=OFF -DBUILD_DESIGNERPLUGIN=OFF -DBUILD_TYPE=RelWithDebInfo
 end global
 
 # Instead of specifying modules here, the current best practice is to refer to
