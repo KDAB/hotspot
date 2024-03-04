@@ -54,7 +54,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: "appimage"
+          pattern: "appimage*"
       - name: Display structure of downloaded files
         run: ls -R
       - uses: ncipollo/release-action@v1
