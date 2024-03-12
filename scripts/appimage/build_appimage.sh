@@ -74,4 +74,7 @@ linuxdeploy-x86_64.AppImage --appdir appdir --plugin qt \
     -d "./appdir/usr/share/applications/com.kdab.hotspot.desktop" \
     --output appimage
 
-mv Hotspot*x86_64.AppImage "/output/hotspot-$gitversion-x86_64.AppImage"
+# package appdir with type 2 runtime so we don't depend on glibc and fuse2
+appimagetool-x86_64.AppImage --runtime-file /opt/runtime-x86_64 appdir
+
+mv Hotspot-x86_64.AppImage "/output/hotspot-$gitversion-x86_64.AppImage"
