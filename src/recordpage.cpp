@@ -447,7 +447,7 @@ RecordPage::RecordPage(QWidget* parent)
     restoreCombobox(config(), QStringLiteral("customOptions"), ui->perfParams);
 
     // set application in RecordHost if it was restored
-    m_recordHost->setClientApplication(ui->applicationName->url().toLocalFile());
+    m_recordHost->setClientApplication(ui->applicationName->text());
 
     ui->elevatePrivilegesCheckBox->setChecked(config().readEntry(QStringLiteral("elevatePrivileges"), false));
     ui->offCpuCheckBox->setChecked(config().readEntry(QStringLiteral("offCpuProfiling"), false));
