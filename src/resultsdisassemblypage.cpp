@@ -397,13 +397,24 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
 
         auto searchNext = [model, edit, additionalRows, searchResultIndex] {
             const auto offset = searchResultIndex->isValid() ? searchResultIndex->row() - additionalRows : 0;
-            model->find(edit->text(), Direction::Forward, offset);
+            // TODO: c++20
+            // use templated lambda to get type
+
+            if constexpr (std::is_same_v<decltype(model), DisassemblyModel*>) {
+                model->find(edit->text(), DisassemblyModel::Direction::Forward, offset);
+            } else {
+                model->find(edit->text(), SourceCodeModel::Direction::Forward, offset);
+            }
         };
 
         auto searchPrev = [model, edit, additionalRows, searchResultIndex] {
             const auto offset = searchResultIndex->isValid() ? searchResultIndex->row() - additionalRows : 0;
 
-            model->find(edit->text(), Direction::Backward, offset);
+            if constexpr (std::is_same<decltype(model), DisassemblyModel*>::value) {
+                model->find(edit->text(), DisassemblyModel::Direction::Backward, offset);
+            } else {
+                model->find(edit->text(), SourceCodeModel::Direction::Backward, offset);
+            }
         };
 
         auto findNextAction = KStandardAction::findNext(this, searchNext, actions);

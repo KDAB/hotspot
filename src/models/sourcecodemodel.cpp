@@ -254,8 +254,18 @@ void SourceCodeModel::find(const QString& search, Direction direction, int curre
     auto searchFunc = [&search](const QString& line) { return line.indexOf(search, 0, Qt::CaseInsensitive) != -1; };
 
     auto endReached = [this] { emit searchEndReached(); };
+    int resultIndex = 0;
 
-    const int resultIndex = ::search(m_lines, current, direction, searchFunc, endReached);
+    if (direction == Direction::Forward) {
+        resultIndex = ::search(m_lines.cbegin() + m_startLine, m_lines.cbegin() + m_startLine + m_numLines,
+                               m_lines.cbegin() + m_startLine + current, searchFunc, endReached);
+    } else {
+        auto searchResultIndex =
+            ::search(std::make_reverse_iterator(m_lines.cbegin() + m_startLine + m_numLines),
+                     std::make_reverse_iterator(m_lines.cbegin() + m_startLine),
+                     std::make_reverse_iterator(m_lines.cbegin() + m_startLine + current + 1), searchFunc, endReached);
+        resultIndex = searchResultIndex == -1 ? -1 : m_numLines - 1 - searchResultIndex;
+    }
 
     if (resultIndex >= 0) {
         emit resultFound(createIndex(resultIndex + 1, SourceCodeColumn));
