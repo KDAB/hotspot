@@ -304,7 +304,8 @@ QTextLayout* HighlightedText::layoutForLine(int index)
 
 void HighlightedText::updateHighlighting()
 {
-    m_highlighter->themeChanged();
+    if (m_highlighter)
+        m_highlighter->themeChanged();
     std::for_each(m_highlightedLines.begin(), m_highlightedLines.end(),
                   [](HighlightedLine& line) { line.updateHighlighting(); });
 }
