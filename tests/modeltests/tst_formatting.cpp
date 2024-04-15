@@ -13,6 +13,11 @@
 
 #include "../testutils.h"
 
+#if KFSyntaxHighlighting_FOUND
+#include <KSyntaxHighlighting/Definition>
+#include <KSyntaxHighlighting/Repository>
+#endif
+
 Q_DECLARE_METATYPE(QVector<QTextLayout::FormatRange>)
 
 class TestFormatting : public QObject
@@ -82,6 +87,47 @@ private slots:
                 QCOMPARE(format[i].length, formattingLine[i].length);
             }
         }
+    }
+
+    void testMultilineHighlighting()
+    {
+#if KFSyntaxHighlighting_FOUND
+        const auto testfunc =
+            QStringList({QStringLiteral("int test() {"), QStringLiteral("/* A"), QStringLiteral(" * very"),
+                         QStringLiteral(" * long"), QStringLiteral(" * comment */"), QStringLiteral("return 0;"),
+                         QStringLiteral("}")});
+
+        auto repository = std::make_unique<KSyntaxHighlighting::Repository>();
+
+        HighlightedText text(repository.get());
+        text.setText(testfunc);
+        text.setDefinition(repository->definitionForFileName(QStringLiteral("test.cpp")));
+
+        // get formatting for line 2 (first commented line)
+        const auto formats = text.layoutForLine(1)->formats();
+        Q_ASSERT(!formats.empty());
+        const auto commentFormat = formats[0].format;
+
+        // ensure all other lines have the same format
+        for (int line = 2; line < 5; line++) {
+            const auto formats = text.layoutForLine(line)->formats();
+
+            for (const auto& format : formats) {
+                QCOMPARE(format.format, commentFormat);
+            }
+        }
+
+        {
+            // ensure that the last line (return 0;) is not formatted in the comment style
+            const auto formats = text.layoutForLine(5)->formats();
+
+            for (const auto& format : formats) {
+                QVERIFY(format.format != commentFormat);
+            }
+        }
+#else
+        QSKIP("Test requires KSyntaxHighlighting");
+#endif // KFSyntaxHighlighting_FOUND
     }
 };
 
