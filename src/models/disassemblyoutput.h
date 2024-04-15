@@ -35,7 +35,7 @@ struct DisassemblyOutput
     // due to inlining there can be multiple source files encountered in the disassembly lines above
     // this is the file referenced in the debug infos
     QString mainSourceFileName;
-    // if the source file is moved this contains the path the the existing file
+    // if the source file is moved this contains the path to the existing file
     QString realSourceFileName;
 
     Data::Symbol symbol;
