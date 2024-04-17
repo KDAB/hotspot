@@ -11,10 +11,13 @@
 #include <QObject>
 #include <QProcess>
 #include <QRegularExpression>
+#include <QSignalSpy>
+#include <QTemporaryFile>
 #include <QTest>
 #include <QTextStream>
 
 #include "../testutils.h"
+#include "search.h"
 
 #include <models/disassemblymodel.h>
 #include <models/eventmodel.h>
@@ -471,6 +474,87 @@ private slots:
         QCOMPARE(
             model.index(10, SourceCodeModel::SourceCodeColumn).data(SourceCodeModel::RainbowLineNumberRole).toInt(),
             28);
+    }
+
+    void testSourceCodeModelSearch()
+    {
+        QTemporaryFile file;
+        if (!file.open()) {
+            QSKIP("Failed to create test file");
+        }
+
+        for (int i = 0; i < 10; i++) {
+            file.write(QStringLiteral("Line %1\n").arg(i).toUtf8());
+        }
+
+        file.flush();
+
+        DisassemblyOutput output;
+        output.mainSourceFileName = file.fileName();
+        output.realSourceFileName = file.fileName();
+
+        DisassemblyOutput::DisassemblyLine line1;
+        line1.fileLine = Data::FileLine {file.fileName(), 4};
+
+        DisassemblyOutput::DisassemblyLine line2;
+        line2.fileLine = Data::FileLine {file.fileName(), 8};
+
+        output.disassemblyLines = {line1, line2};
+
+        SourceCodeModel model(nullptr);
+        model.setDisassembly(output, {});
+
+        QCOMPARE(model.rowCount(), 6); // 5 lines + function name
+        QCOMPARE(model.data(model.index(1, SourceCodeModel::SourceCodeColumn), Qt::DisplayRole).value<QString>(),
+                 QStringLiteral("Line 3"));
+
+        QCOMPARE(model.data(model.index(5, SourceCodeModel::SourceCodeColumn), Qt::DisplayRole).value<QString>(),
+                 QStringLiteral("Line 7"));
+
+        // check if search works in general
+        QSignalSpy searchSpy(&model, &SourceCodeModel::resultFound);
+        for (int i = 0; i < 5; i++) {
+            model.find(QStringLiteral("Line 5"), Direction::Forward, i);
+            auto result = searchSpy.takeFirst();
+            QCOMPARE(result.at(0).value<QModelIndex>(), model.index(3, SourceCodeModel::SourceCodeColumn));
+        }
+
+        // Check wrap around
+        for (int i = 1; i < 4; i++) {
+            QSignalSpy endReached(&model, &SourceCodeModel::searchEndReached);
+            model.find(QStringLiteral("Line 3"), Direction::Forward, i);
+            QCOMPARE(endReached.size(), 1);
+        }
+
+        // check if no result found works
+        searchSpy.clear();
+        for (int i = 0; i < 5; i++) {
+            model.find(QStringLiteral("Line 8"), Direction::Forward, i);
+            auto result = searchSpy.takeFirst();
+            QCOMPARE(result.at(0).value<QModelIndex>().isValid(), false);
+        }
+
+        // test backward search
+        for (int i = 4; i > 0; i--) {
+            model.find(QStringLiteral("Line 7"), Direction::Backward, i);
+            auto result = searchSpy.takeFirst();
+            QCOMPARE(result.at(0).value<QModelIndex>(), model.index(5, SourceCodeModel::SourceCodeColumn));
+        }
+
+        // Check wrap around
+        for (int i = 4; i > 0; i--) {
+            QSignalSpy endReached(&model, &SourceCodeModel::searchEndReached);
+            model.find(QStringLiteral("Line 7"), Direction::Backward, i);
+            QCOMPARE(endReached.size(), 1);
+        }
+
+        // check if no result found works
+        searchSpy.clear();
+        for (int i = 0; i < 5; i++) {
+            model.find(QStringLiteral("Line 8"), Direction::Backward, i);
+            auto result = searchSpy.takeFirst();
+            QCOMPARE(result.at(0).value<QModelIndex>().isValid(), false);
+        }
     }
 
     void testEventModel()
