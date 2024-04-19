@@ -30,31 +30,18 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-find_library(QCustomPlot_LIBRARY
-    NAMES qcustomplot qcustomplot-qt5
-)
+find_library(QCustomPlot_LIBRARY NAMES qcustomplot qcustomplot-qt5)
 set(QCustomPlot_LIBRARIES "${QCustomPlot_LIBRARY}")
 
-find_path(QCustomPlot_INCLUDE_DIR
-    NAMES qcustomplot.h
-)
+find_path(QCustomPlot_INCLUDE_DIR NAMES qcustomplot.h)
 set(QCustomPlot_INCLUDE_DIRS "${QCustomPlot_INCLUDE_DIR}")
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(
-    QCustomPlot
-    DEFAULT_MSG
-    QCustomPlot_LIBRARIES
-    QCustomPlot_INCLUDE_DIRS
-)
+find_package_handle_standard_args(QCustomPlot DEFAULT_MSG QCustomPlot_LIBRARIES QCustomPlot_INCLUDE_DIRS)
 
-mark_as_advanced(
-  QCustomPlot_INCLUDE_DIRS
-  QCustomPlot_LIBRARIES
-)
+mark_as_advanced(QCustomPlot_INCLUDE_DIRS QCustomPlot_LIBRARIES)
 
-if (QCUSTOMPLOT_FOUND)
+if(QCUSTOMPLOT_FOUND)
     add_library(QCustomPlot UNKNOWN IMPORTED GLOBAL)
     set_target_properties(QCustomPlot PROPERTIES IMPORTED_LOCATION ${QCustomPlot_LIBRARY})
     target_include_directories(QCustomPlot INTERFACE ${QCustomPlot_INCLUDE_DIRS})
