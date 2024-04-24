@@ -38,13 +38,15 @@ end global
 # suit, and when you update kdesrc-build you will automatically pick up the
 # needed changes.
 
-# NOTE: You MUST change the path below to include the actual path to your
-# kdesrc-build installation.
-include /opt/kdesrc-build/kf5-qt5-build-include
+include ${module-definitions-dir}/kf5-qt5.ksb
 
 # If you wish to maintain the module list yourself that is possible, simply
 # look at the files pointed to above and use the "module-set" declarations that
 # they use, with your own changes.
+
+options frameworks
+    tag %VERSION%
+end options
 
 # It is possible to change the options for modules loaded from the file
 # included above (since it's not possible to add a module that's already been

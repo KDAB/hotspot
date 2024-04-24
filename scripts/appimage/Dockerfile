@@ -12,6 +12,7 @@ ARG KDDockWidgets_VERSION=2.0
 ARG QCustomPlot_VERSION=2.1.1
 ARG rust_demangler_VERSION=0.1.23
 ARG d_demangler_VERSION=0.0.2
+ARG KGraphViewer_VERSION=v2.4.3a
 
 USER root
 
@@ -98,26 +99,24 @@ RUN cd /opt && mkdir dlang && cd dlang && \
     deactivate && cd /opt && rm -Rf dlang && mv /usr/bin/gpg{~,} && mv /usr/bin/gpg2{~,}
 
 # kdesrc-build dependencies
-RUN yum install -y libcanberra-devel && \
+RUN yum install -y libcanberra-devel gpgme-devel && \
     cpan YAML::Syck JSON::XS YAML::XS
 
 # kde frameworks
 RUN cd /opt && git clone https://invent.kde.org/sdk/kdesrc-build.git
 COPY kdesrc-buildrc /opt/kdesrc-build/
-COPY kf5-frameworks-build-include /opt/kdesrc-build/
 RUN ldconfig && \
     cd /opt/kdesrc-build && \
-    sed -i -e "s/FULL_NPROC/$(nproc)/g" -e "s/HALF_NPROC/$(($(nproc)/2))/g" kdesrc-buildrc && \
-    sed -i -e "s/%VERSION%/${KF5_VERSION}/g" kdesrc-buildrc && \
-    sed -i -e "s/%VERSION%/${KF5_VERSION}/g" kf5-frameworks-build-include && \
+    sed -i -e "s/FULL_NPROC/$(nproc)/g" \
+        -e "s/HALF_NPROC/$(($(nproc)/2))/g" -e "s/%VERSION%/${KF5_VERSION}/g" kdesrc-buildrc && \
     ./kdesrc-build --metadata-only && \
     # fix compile error in kwallet
     ./kdesrc-build --include-dependencies qca && \
-    ./kdesrc-build --include-dependencies threadweaver kconfigwidgets kcoreaddons \
+    ./kdesrc-build --ignore-modules=gpgme --include-dependencies threadweaver kconfigwidgets kcoreaddons \
         kitemviews kitemmodels solid breeze-icons \
         kwindowsystem knotifications kiconthemes karchive syntax-highlighting kio kparts && \
     # without extra dependencies
-    ./kdesrc-build kgraphviewer && \
+    ./kdesrc-build --revision ${KGraphViewer_VERSION} --no-include-dependencies kgraphviewer && \
     cd /opt && rm -Rf kdesrc-build kde && ldconfig
 
 # kddockwidgets
