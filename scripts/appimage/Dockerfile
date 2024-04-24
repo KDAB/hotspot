@@ -43,7 +43,7 @@ RUN sed -i 's#enabled=1#enabled=0#' /etc/yum/pluginconf.d/fastestmirror.conf && 
         # kgraphviewer
         boost boost-devel graphviz-devel \
         # appimages
-        fuse fuse-libs bzip2 && \
+        fuse fuse-libs bzip2 desktop-file-utils && \
     ln -s /usr/bin/cmake3 /usr/bin/cmake && \
     rm -Rf /var/cache/yum && \
     . /opt/rh/devtoolset-11/enable
@@ -66,7 +66,12 @@ RUN wget https://download.qt.io/official_releases/qt/5.15/${QT_VERSION}/single/q
 
 # appimage build tools
 RUN wget https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20230713-1/linuxdeploy-x86_64.AppImage &&     chmod +x linuxdeploy-x86_64.AppImage && \
-    wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage && chmod +x linuxdeploy-plugin-qt-x86_64.AppImage && mv linuxdeploy* /usr/bin/
+    wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage && chmod +x linuxdeploy-plugin-qt-x86_64.AppImage && mv linuxdeploy* /usr/bin/ && \
+    wget https://github.com/AppImage/type2-runtime/releases/download/continuous/runtime-x86_64 && \
+    wget https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage && \
+    chmod +x appimagetool-x86_64.AppImage && mv appimagetool-x86_64.AppImage /usr/bin/ && \
+    mv runtime-x86_64 /opt/
+
 
 # qcustomplot
 RUN cd /opt && mkdir qcustomplot && cd qcustomplot && \
