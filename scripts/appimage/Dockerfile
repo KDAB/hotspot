@@ -99,12 +99,10 @@ RUN cd /opt && mkdir dlang && cd dlang && \
 
 # kdesrc-build dependencies
 RUN yum install -y libcanberra-devel && \
-    cpan YAML::Syck
+    cpan YAML::Syck JSON::XS YAML::XS
 
 # kde frameworks
-RUN cd /opt && git clone https://invent.kde.org/sdk/kdesrc-build.git && \
-    # everything after this commit requires a dbus session
-    cd kdesrc-build && git checkout 6c2c8a83ee25d53bdae91dce4ab3efaaac838a11
+RUN cd /opt && git clone https://invent.kde.org/sdk/kdesrc-build.git
 COPY kdesrc-buildrc /opt/kdesrc-build/
 COPY kf5-frameworks-build-include /opt/kdesrc-build/
 RUN ldconfig && \

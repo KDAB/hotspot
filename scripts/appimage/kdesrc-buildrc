@@ -12,9 +12,9 @@
 #
 global
     branch-group kf5-qt5
-    kdedir /usr # Where to install KF5-based software
+    install-dir /usr # Where to install KF5-based software
     # Uncomment this and edit value to choose a different Qt5
-    qtdir /usr   # Where to find Qt5
+    qt-install-dir /usr   # Where to find Qt5
 
     # Where to download source code. By default the build directory and
     # logs will be kept under this directory as well.
