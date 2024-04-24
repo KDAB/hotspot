@@ -434,10 +434,11 @@ QProcessEnvironment Util::appImageEnvironment()
 KParts::ReadOnlyPart* Util::createPart(const QString& pluginName)
 {
 #if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 86, 0)
-    QString prefix;
 
 #if KCOREADDONS_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    prefix = QStringLiteral("kf6/parts/");
+    const auto prefix = QStringLiteral("kf6/parts/");
+#else
+    const auto prefix = QLatin1String();
 #endif
 
     const auto metadata = KPluginMetaData(prefix + pluginName);
