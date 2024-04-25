@@ -30,7 +30,7 @@ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
 make -j$(nproc)
 DESTDIR=appdir make install
 
-tar -cjvf "/output/hotspot-debuginfo-$gitversion-x86_64.tar.bz2" \
+tar -cjvf "/github/workspace/hotspot-debuginfo-$gitversion-x86_64.tar.bz2" \
     --transform="s#appdir/#hotspot-debuginfo-$gitversion/#" \
     appdir/usr/bin/hotspot appdir/usr/lib64/libexec/hotspot-perfparser
 
@@ -74,4 +74,4 @@ linuxdeploy --appdir appdir --plugin qt \
     -d "./appdir/usr/share/applications/com.kdab.hotspot.desktop" \
     --output appimage
 
-mv Hotspot*x86_64.AppImage "/output/hotspot-$gitversion-x86_64.AppImage"
+mv Hotspot*x86_64.AppImage "/github/workspace/hotspot-$gitversion-x86_64.AppImage"
