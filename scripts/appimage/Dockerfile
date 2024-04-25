@@ -65,10 +65,6 @@ RUN wget https://download.qt.io/official_releases/qt/5.15/${QT_VERSION}/single/q
     -release -ssl -no-compile-examples -cups -I /usr/include/openssl11 -prefix /usr && \
     make -j$(nproc) && make install && cd .. && rm -Rf build qt-everywhere-*
 
-# appimage build tools
-RUN wget https://github.com/linuxdeploy/linuxdeploy/releases/download/1-alpha-20230713-1/linuxdeploy-x86_64.AppImage &&     chmod +x linuxdeploy-x86_64.AppImage && \
-    wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage && chmod +x linuxdeploy-plugin-qt-x86_64.AppImage && mv linuxdeploy* /usr/bin/
-
 # qcustomplot
 RUN cd /opt && mkdir qcustomplot && cd qcustomplot && \
     wget https://www.qcustomplot.com/release/${QCustomPlot_VERSION}/QCustomPlot.tar.gz && tar -xf QCustomPlot.tar.gz && \
@@ -124,7 +120,12 @@ RUN cd /opt && git clone --recursive https://github.com/KDAB/KDDockWidgets.git -
     cd KDDockWidgets && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr -DKDDockWidgets_EXAMPLES=0 -DKDDockWidgets_FRONTENDS="qtwidgets" .. && \
     make -j$(nproc) && make install && cd /opt && rm -Rf KDDockWidgets
 
+RUN cd /opt && wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage && chmod +x linuxdeploy-x86_64.AppImage && ./linuxdeploy-x86_64.AppImage --appimage-extract && \
+    wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage && chmod +x linuxdeploy-plugin-qt-x86_64.AppImage && ./linuxdeploy-plugin-qt-x86_64.AppImage --appimage-extract && \
+    wget https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage && chmod +x linuxdeploy-plugin-appimage-x86_64.AppImage && ./linuxdeploy-plugin-appimage-x86_64.AppImage --appimage-extract && \
+    cd squashfs-root && rsync -a usr/ /usr && rsync -a plugins/linuxdeploy-plugin-appimage/ /
+
 FROM intermediate
 
 WORKDIR /
-RUN mkdir /output
+CMD ["/github/workspace/scripts/appimage/build_appimage.sh", "/github/workspace", "/github/workspace/build"]
