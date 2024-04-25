@@ -20,27 +20,25 @@ jobs:
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/kdab/kdesrc-build
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
         submodules: recursive
 
     - name: Build
-      run: scripts/appimage/build_appimage.sh "$PWD" "$PWD/build"
+      uses: docker://ghcr.io/kdab/kdesrc-build:latest
 
     - name: Upload AppImage
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: appimage
-        path: /output/hotspot*.AppImage
+        path: ${{ github.workspace }}/*.AppImage
 
     - name: Upload Debug Info
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: debuginfo
-        path: /output/hotspot-debuginfo-*
+        path: ${{ github.workspace }}/hotspot-debuginfo-*

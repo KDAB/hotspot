@@ -128,4 +128,5 @@ RUN cd /opt && git clone --recursive https://github.com/KDAB/KDDockWidgets.git -
 FROM intermediate
 
 WORKDIR /
-RUN mkdir /output
+# set the entrypoint to the build script so that the build script will be run by github actions
+CMD ["/github/workspace/scripts/appimage/build_appimage.sh", "/github/workspace", "/github/workspace/build"]
