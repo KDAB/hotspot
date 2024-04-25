@@ -17,4 +17,4 @@ logout() {
 }
 trap logout EXIT
 
-docker push ghcr.io/kdab/kdesrc-build:latest
+docker push ghcr.io/lievenhey/kdesrc-build:latest
