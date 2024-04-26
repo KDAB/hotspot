@@ -1,0 +1,36 @@
+name: create latest appimage
+
+on:
+  push:
+    branches:
+    - 'master'
+
+jobs:
+  appimage:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: recursive
+
+    - name: Build
+      uses: docker://ghcr.io/kdab/kdesrc-build:latest
+
+    - name: Delete latest release
+      run: gh release delete latest --cleanup-tag
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload latest build
+      uses: ncipollo/release-action@v1
+      with:
+        name: "latest"
+        tag: "latest"
+        prerelease: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: |
+          ${{ github.workspace }}/hotspot-debuginfo-*
+          ${{ github.workspace }}/*.AppImage
