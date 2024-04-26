@@ -161,7 +161,9 @@ add_subdirectory(3rdparty)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_subdirectory(src)
 
-add_subdirectory(tests)
+if(NOT APPIMAGE_BUILD)
+    add_subdirectory(tests)
+endif()
 
 install(
     FILES com.kdab.hotspot.desktop
