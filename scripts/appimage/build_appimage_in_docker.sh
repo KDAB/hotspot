@@ -12,7 +12,7 @@ cd "$(dirname $0)"
 
 mkdir -p ../output/build-appimage
 
-docker run -it --privileged --device /dev/fuse --cap-add SYS_ADMIN \
+docker run -it \
     -v $PWD/../output:/output \
     -v $PWD/../../:/hotspot \
     ghcr.io/kdab/kdesrc-build:latest \

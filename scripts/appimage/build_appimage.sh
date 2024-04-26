@@ -61,7 +61,7 @@ cp -v "/usr/share/icons/breeze/breeze-icons.rcc" "appdir/usr/share/icons/breeze/
 # TODO: further down also add:
 # -e "./appdir/usr/plugins/kgraphviewerpart.so" \
 
-linuxdeploy-x86_64.AppImage --appdir appdir --plugin qt \
+linuxdeploy --appdir appdir --plugin qt \
     -e "./appdir/usr/lib64/libexec/hotspot-perfparser" \
     -e "./appdir/usr/bin/hotspot" \
     -l "/usr/lib64/libz.so.1" \

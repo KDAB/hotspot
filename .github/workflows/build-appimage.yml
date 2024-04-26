@@ -22,7 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/kdab/kdesrc-build
-      options: --privileged --device /dev/fuse --cap-add SYS_ADMIN
 
     steps:
     - name: Checkout
