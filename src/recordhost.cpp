@@ -333,6 +333,7 @@ void RecordHost::setRecordType(RecordType type)
 {
     if (m_recordType != type) {
         m_recordType = type;
+        emit errorOccurred({});
         emit recordTypeChanged(m_recordType);
 
         m_pids.clear();
