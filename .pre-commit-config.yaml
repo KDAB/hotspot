@@ -43,6 +43,7 @@ repos:
     entry: mdl
     language: ruby
     files: \.(md|mdown|markdown)$
+    exclude: CHANGELOG.md
 - repo: https://github.com/compilerla/conventional-pre-commit
   rev: v3.2.0
   hooks:
