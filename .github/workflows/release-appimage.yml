@@ -36,3 +36,9 @@ jobs:
         artifacts: |
           ${{ github.workspace }}/hotspot-debuginfo-*
           ${{ github.workspace }}/*.AppImage
+
+    - name: Create release PR
+      uses: google-github-actions/release-please-action@v4
+      with:
+        token: ${{ github.token }}
+        release-type: simple
