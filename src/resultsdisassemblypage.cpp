@@ -274,6 +274,14 @@ ResultsDisassemblyPage::ResultsDisassemblyPage(CostContextMenu* costContextMenu,
     connect(ui->assemblyView, &QTreeView::entered, this, updateFromDisassembly);
     connect(ui->sourceCodeView, &QTreeView::entered, this, updateFromSource);
 
+    connect(settings, &Settings::tabWidthChanged, m_sourceCodeModel->highlightedText(),
+            &HighlightedText::updateTabWidth);
+    connect(settings, &Settings::tabWidthChanged, m_disassemblyModel->highlightedText(),
+            &HighlightedText::updateTabWidth);
+
+    m_sourceCodeModel->highlightedText()->updateTabWidth(settings->tabWidth());
+    m_disassemblyModel->highlightedText()->updateTabWidth(settings->tabWidth());
+
     auto createContextMenu = [](QTreeView* view, auto* model, auto&& addEntries) {
         auto gotoMenuWidget = new QWidget(view);
         auto layout = new QHBoxLayout(gotoMenuWidget);

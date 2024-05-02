@@ -163,6 +163,13 @@ public:
         return m_showHexdump;
     }
 
+    int tabWidth() const
+    {
+        return m_tabWidth;
+    }
+
+    static constexpr int DefaultTabWidth = 4;
+
     void loadFromFile();
 
 signals:
@@ -187,6 +194,7 @@ signals:
     void perfPathChanged(const QString& perfPath);
     void showBranchesChanged(bool showBranches);
     void showHexdumpChanged(bool showHexdump);
+    void tabWidthChanged(int distance);
 
 public slots:
     void setPrettifySymbols(bool prettifySymbols);
@@ -212,6 +220,7 @@ public slots:
     void setPerfPath(const QString& path);
     void setShowBranches(bool showBranches);
     void setShowHexdump(bool showHexdump);
+    void setTabWidth(int distance);
 
 private:
     using QObject::QObject;
@@ -237,6 +246,7 @@ private:
     QString m_perfMapPath;
     bool m_showBranches = true;
     bool m_showHexdump = false;
+    int m_tabWidth = DefaultTabWidth;
 
     QString m_lastUsedEnvironment;
 
