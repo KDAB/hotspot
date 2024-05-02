@@ -20,7 +20,7 @@ repos:
   - id: clang-format
     files: (\.cpp|\.h|\.c)
 - repo: https://github.com/PyCQA/pylint
-  rev: v2.15.3
+  rev: v3.1.0
   hooks:
   - id: pylint
     args: ["--disable=C0103,C0301,C0114,R0801,E0401"]
