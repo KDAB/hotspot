@@ -13,6 +13,8 @@
 
 #include "../testutils.h"
 
+#include <hotspot-config.h>
+
 #if KFSyntaxHighlighting_FOUND
 #include <KSyntaxHighlighting/Definition>
 #include <KSyntaxHighlighting/Repository>

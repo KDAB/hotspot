@@ -337,10 +337,12 @@ void SettingsDialog::addSourcePathPage()
 
     disassemblyPage->showBranches->setChecked(settings->showBranches());
     disassemblyPage->showHexdump->setChecked(settings->showHexdump());
+    disassemblyPage->tabWidth->setValue(settings->tabWidth());
 
     connect(buttonBox(), &QDialogButtonBox::accepted, this, [this, colon, settings] {
         settings->setSourceCodePaths(disassemblyPage->sourcePaths->items().join(colon));
         settings->setShowBranches(disassemblyPage->showBranches->isChecked());
         settings->setShowHexdump(disassemblyPage->showHexdump->isChecked());
+        settings->setTabWidth(disassemblyPage->tabWidth->value());
     });
 }

@@ -253,6 +253,11 @@ void Settings::loadFromFile()
     connect(this, &Settings::showHexdumpChanged, [sharedConfig](bool showHexdump) {
         sharedConfig->group(QStringLiteral("Disassembly")).writeEntry("showHexdump", showHexdump);
     });
+
+    setTabWidth(sharedConfig->group(QStringLiteral("Disassembly")).readEntry("tabWidth", DefaultTabWidth));
+    connect(this, &Settings::tabWidthChanged, [sharedConfig](int distance) {
+        sharedConfig->group(QStringLiteral("Disassembly")).writeEntry("tabWidth", distance);
+    });
 }
 
 void Settings::setSourceCodePaths(const QString& paths)
@@ -284,5 +289,13 @@ void Settings::setShowHexdump(bool showHexdump)
     if (m_showHexdump != showHexdump) {
         m_showHexdump = showHexdump;
         emit showHexdumpChanged(m_showHexdump);
+    }
+}
+
+void Settings::setTabWidth(int distance)
+{
+    if (m_tabWidth != distance) {
+        m_tabWidth = distance;
+        emit tabWidthChanged(m_tabWidth);
     }
 }

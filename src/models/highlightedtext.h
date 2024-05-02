@@ -14,8 +14,6 @@
 class QTextLayout;
 class QTextLine;
 
-#include "hotspot-config.h"
-
 namespace KSyntaxHighlighting {
 class SyntaxHighlighter;
 class Definition;
@@ -53,6 +51,7 @@ signals:
 
 public slots:
     void updateHighlighting();
+    void updateTabWidth(int tabWidth);
 
 private:
     KSyntaxHighlighting::Repository* m_repository;
@@ -61,4 +60,5 @@ private:
     QStringList m_lines;
     QStringList m_cleanedLines;
     bool m_isUsingAnsi = false;
+    int m_tabWidth = -1;
 };

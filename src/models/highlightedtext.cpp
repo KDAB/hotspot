@@ -7,6 +7,7 @@
 
 #include "highlightedtext.h"
 
+#include <QFontMetrics>
 #include <QGuiApplication>
 #include <QPalette>
 #include <QTextLayout>
@@ -14,6 +15,8 @@
 #include <memory>
 
 #include <KColorScheme>
+
+#include <hotspot-config.h>
 
 #if KFSyntaxHighlighting_FOUND
 #include <KSyntaxHighlighting/AbstractHighlighter>
@@ -250,13 +253,24 @@ public:
         m_layout = nullptr;
     }
 
+    void setTabWidthInPixels(int tabWidthInPixels)
+    {
+        m_tabWidthInPixels = tabWidthInPixels;
+        m_layout = nullptr;
+    }
+
 private:
     std::unique_ptr<QTextLayout> buildLayout() const
     {
         Q_ASSERT(m_index != -1);
         auto layout = std::make_unique<QTextLayout>();
 
-        layout->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+        auto option = layout->textOption();
+        option.setTabStopDistance(m_tabWidthInPixels);
+        layout->setTextOption(option);
+
+        auto font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+        layout->setFont(font);
         layout->setText(m_text);
         layout->setFormats(m_highlighter->format(m_index));
 
@@ -276,6 +290,7 @@ private:
     HighlightingImplementation* m_highlighter = nullptr;
     QString m_text;
     int m_index = -1;
+    int m_tabWidthInPixels = -1; // qts default value
     mutable std::unique_ptr<QTextLayout> m_layout;
 };
 static_assert(std::is_nothrow_move_constructible_v<HighlightedLine>);
@@ -285,7 +300,6 @@ HighlightedText::HighlightedText(KSyntaxHighlighting::Repository* repository, QO
     : QObject(parent)
     , m_repository(repository)
 {
-    Q_UNUSED(repository);
 }
 
 HighlightedText::~HighlightedText() = default;
@@ -312,6 +326,9 @@ void HighlightedText::setText(const QStringList& text)
     std::transform(text.cbegin(), text.cend(), m_highlightedLines.begin(), [this, &index](const QString& text) {
         return HighlightedLine {m_highlighter.get(), text, index++};
     });
+
+    // this is free since we currently have no text rendered
+    updateTabWidth(m_tabWidth);
 
     m_cleanedLines = text;
     std::for_each(m_cleanedLines.begin(), m_cleanedLines.end(), Util::removeAnsi);
@@ -357,4 +374,14 @@ void HighlightedText::updateHighlighting()
         m_highlighter->themeChanged();
     std::for_each(m_highlightedLines.begin(), m_highlightedLines.end(),
                   [](HighlightedLine& line) { line.updateHighlighting(); });
+}
+
+void HighlightedText::updateTabWidth(int tabWidth)
+{
+    m_tabWidth = tabWidth;
+    auto font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    const auto tabWidthInPixels = tabWidth * QFontMetrics(font).horizontalAdvance(QLatin1Char(' '));
+
+    std::for_each(m_highlightedLines.begin(), m_highlightedLines.end(),
+                  [tabWidthInPixels](HighlightedLine& line) { line.setTabWidthInPixels(tabWidthInPixels); });
 }
