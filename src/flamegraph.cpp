@@ -1188,6 +1188,12 @@ void FlameGraph::selectItem(FrameGraphicsItem* item)
     // then layout all items below the selected on
     layoutItems(item);
 
+#if QT_VERSION <= QT_VERSION_CHECK(5, 15, 12) && QT_VERSION > QT_VERSION_CHECK(5, 15, 10)
+    // the scene background doesn't get cleared correctly when using qt 5.15.12
+    // this doesn't happen in 5.15.10 and 5.15.13
+    m_scene->setBackgroundBrush(QBrush());
+#endif
+
     // Triggers a refresh of the scene's bounding rect without going via the
     // event loop. This makes the centerOn call below work as expected in all cases.
     m_scene->sceneRect();
