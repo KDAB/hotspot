@@ -31,12 +31,17 @@ jobs:
         name: "continuous"
         tag: "continuous"
         prerelease: true
-        draft: false
         body: "The newest version directly from the master branch. THIS IS BLEEDING ENDGE AND WILL MOST LIKELY CONTAIN UNKOWN BUGS."
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: |
           ${{ github.workspace }}/hotspot-debuginfo-*
           ${{ github.workspace }}/*.AppImage
+
+    - name: Release latest release
+      run: |
+        gh release edit continuous --draft=false || true
+      env:
+        GH_TOKEN: ${{ github.token }}
 
     - name: Create release PR
       uses: google-github-actions/release-please-action@v4
