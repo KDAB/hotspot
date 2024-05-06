@@ -31,6 +31,7 @@ jobs:
         name: "continuous"
         tag: "continuous"
         prerelease: true
+        draft: false
         body: "The newest version directly from the master branch. THIS IS BLEEDING ENDGE AND WILL MOST LIKELY CONTAIN UNKOWN BUGS."
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: |
