@@ -25,6 +25,11 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
 
+    - name: Rename artifacts
+      run: |
+        cd ${{ github.workspace }} && mv hotspot-*.AppImage hotspot-continuous.AppImage
+        cd ${{ github.workspace }} && mv hotspot-debuginfo-*.tar.bz2 hotspot-debuginfo-continuous.tar.bz2
+
     - name: Create latest release
       uses: ncipollo/release-action@v1
       with:
