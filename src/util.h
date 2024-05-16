@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <valarray>
 #include <QHashFunctions>
 #include <QtGlobal>
 
@@ -20,7 +19,7 @@ struct Symbol;
 struct FileLine;
 struct LocationCost;
 class Costs;
-using ItemCost = std::valarray<qint64>;
+class ItemCost;
 }
 
 namespace KParts {
