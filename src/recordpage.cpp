@@ -40,6 +40,8 @@
 #include <Solid/Device>
 #include <Solid/Processor>
 
+#include <cmath>
+
 #include "multiconfigwidget.h"
 #include "perfoutputwidgetkonsole.h"
 #include "perfoutputwidgettext.h"

@@ -203,7 +203,87 @@ struct FrameLocation
     Data::Location location;
 };
 
-using ItemCost = std::valarray<qint64>;
+class ItemCost
+{
+public:
+    ItemCost(std::size_t size = 0)
+        : m_cost(size)
+    {
+    }
+
+    ItemCost(qint64 value, std::size_t count)
+        : m_cost(value, count)
+    {
+    }
+
+    ItemCost(std::valarray<qint64> cost)
+        : m_cost(std::move(cost))
+    {
+    }
+
+    void resize(std::size_t newSize, qint64 value = 0)
+    {
+        m_cost.resize(newSize, value);
+    }
+    std::size_t size() const
+    {
+        return m_cost.size();
+    }
+
+    ItemCost operator+(const ItemCost& rhs) const
+    {
+        return {m_cost + rhs.m_cost};
+    }
+
+    ItemCost operator-(const ItemCost& rhs) const
+    {
+        return {m_cost - rhs.m_cost};
+    }
+
+    ItemCost& operator+=(const ItemCost& rhs)
+    {
+        m_cost += rhs.m_cost;
+        return *this;
+    }
+
+    ItemCost& operator-=(const ItemCost& rhs)
+    {
+        m_cost -= rhs.m_cost;
+        return *this;
+    }
+
+    qint64& operator[](int index)
+    {
+        if (static_cast<std::size_t>(index) >= m_cost.size()) {
+            resize(index + 1);
+        }
+        return m_cost[index];
+    }
+    qint64 operator[](int index) const
+    {
+        if (static_cast<std::size_t>(index) < m_cost.size()) {
+            return m_cost[index];
+        }
+        return 0;
+    }
+
+    qint64 sum() const
+    {
+        return m_cost.sum();
+    }
+
+    auto begin() const
+    {
+        return std::begin(m_cost);
+    }
+    auto end() const
+    {
+        return std::end(m_cost);
+    }
+
+private:
+    std::valarray<qint64> m_cost;
+};
 
 QDebug operator<<(QDebug stream, const ItemCost& cost);
 
