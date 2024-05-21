@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>556</width>
+    <width>564</width>
     <height>656</height>
    </rect>
   </property>
@@ -21,6 +21,9 @@
     <widget class="KUrlRequester" name="lineEditSysroot">
      <property name="toolTip">
       <string>Path to the sysroot. Leave empty to use the local machine.</string>
+     </property>
+     <property name="mode">
+      <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
      </property>
      <property name="placeholderText">
       <string>local machine</string>
