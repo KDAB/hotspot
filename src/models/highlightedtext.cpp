@@ -331,7 +331,7 @@ void HighlightedText::setText(const QStringList& text)
     updateTabWidth(m_tabWidth);
 
     m_cleanedLines = text;
-    std::for_each(m_cleanedLines.begin(), m_cleanedLines.end(), Util::removeAnsi);
+    std::transform(m_cleanedLines.begin(), m_cleanedLines.end(), m_cleanedLines.begin(), Util::removeAnsi);
 }
 
 void HighlightedText::setDefinition(const KSyntaxHighlighting::Definition& definition)
