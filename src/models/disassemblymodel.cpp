@@ -132,8 +132,17 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
         auto it = entry.offsetMap.find(data.addr);
         if (it != entry.offsetMap.end()) {
             const auto event = index.column() - COLUMN_COUNT;
-
             const auto& locationCost = it.value();
+
+            if (role == Qt::ToolTipRole) {
+                auto tooltip = tr("addr: <tt>%1</tt><br/>assembly: <tt>%2</tt><br/>disassembly: <tt>%3</tt>")
+                                   .arg(QString::number(data.addr, 16), line);
+                return Util::formatTooltip(tooltip, locationCost, m_results.selfCosts);
+            }
+
+            if (event < 0)
+                return {};
+
             const auto& costLine = locationCost.selfCost[event];
             const auto totalCost = m_results.selfCosts.totalCost(event);
 
@@ -141,19 +150,13 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
                 return costLine;
             } else if (role == TotalCostRole) {
                 return totalCost;
-            } else if (role == Qt::ToolTipRole) {
-                auto tooltip = tr("addr: <tt>%1</tt><br/>assembly: <tt>%2</tt><br/>disassembly: <tt>%3</tt>")
-                                   .arg(QString::number(data.addr, 16), line);
-                return Util::formatTooltip(tooltip, locationCost, m_results.selfCosts);
-            }
-
-            if (!costLine)
+            } else if (!costLine)
                 return {};
             return Util::formatCostRelative(costLine, totalCost, true);
         } else {
-            if (role == Qt::ToolTipRole)
+            if (role == Qt::ToolTipRole) {
                 return tr("<qt><tt>%1</tt><hr/>No samples at this location.</qt>").arg(line.toHtmlEscaped());
-            else
+            } else
                 return QString();
         }
     } else if (role == DisassemblyModel::HighlightRole) {
