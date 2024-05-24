@@ -153,22 +153,20 @@ To do that, you will need to download the debuginfo artifact that matches the Ap
 
 ### AppImage-Debugging using manual symbol loading
 
-For using this approach you need to first unpack the debug information:
+For using this approach you need to first unpack the debug information
+downloaded from the release:
 
 ```bash
-$ unzip debuginfo.zip
-Archive:  debuginfo.zip
-  inflating: hotspot-debuginfo-v1.4.0-43-g02fd82c-x86_64.tar.bz2
 $ tar -xvf hotspot-debuginfo-*.tar.bz2
-hotspot-debuginfo-v1.4.0-43-g02fd82c/usr/bin/hotspot
-hotspot-debuginfo-v1.4.0-43-g02fd82c/usr/lib64/libexec/hotspot-perfparser
+hotspot-debuginfo-v1.2.3-45-g02fd82c/usr/bin/hotspot
+hotspot-debuginfo-v1.2.3-45-g02fd82c/usr/lib64/libexec/hotspot-perfparser
 ```
 
 Starting the debugger is possible directly with executing the AppImage as follows:
 
 ```bash
-$ ./hotspot-v1.4.0-43-g02fd82c-x86_64.AppImage &
-$ gdb -q -p $(pidof hotspot) -ex "add-symbol-file hotspot-debuginfo-v1.4.0-43-g02fd82c/usr/bin/hotspot"
+$ ./hotspot-v1.2.3-45-g02fd82c-x86_64.AppImage &
+$ gdb -q -p $(pidof hotspot) -ex "add-symbol-file hotspot-debuginfo-v1.2.3-45-g02fd82c/usr/bin/hotspot"
 Attaching to process 123456
 ```
 
@@ -182,9 +180,9 @@ Reading symbols from /tmp/.mount_hotspoBCRbef/squashfs-root/usr/bin/../lib/libKF
 (No debugging symbols found in /tmp/.mount_hotspoBCRbef/squashfs-root/usr/bin/../lib/libKF5ThreadWeaver.so.5)
 ...
 0x00007fea98ae0a38 in poll () from /usr/lib64/libc.so.6
-add symbol table from file "hotspot-debuginfo-v1.4.0-43-g02fd82c/usr/bin/hotspot"
+add symbol table from file "hotspot-debuginfo-v1.2.3-45-g02fd82c/usr/bin/hotspot"
 (y or n) y
-Reading symbols from hotspot-debuginfo-v1.4.0-43-g02fd82c/usr/bin/hotspot...
+Reading symbols from hotspot-debuginfo-v1.2.3-45-g02fd82c/usr/bin/hotspot...
 (gdb) bt
 #0  0x00007ff72544ca38 in poll () from /usr/lib64/libc.so.6
 #1  0x00007ff7246777d7 in _xcb_in_read_block () from /usr/lib64/libxcb.so.1
@@ -211,9 +209,9 @@ Reading symbols from hotspot-debuginfo-v1.4.0-43-g02fd82c/usr/bin/hotspot...
 or with an extracted image:
 
 ```bash
-$ ./hotspot-v1.4.0-43-g02fd82c-x86_64.AppImage --appimage-extract
-$ PATH=./squashfs-root/usr/bin:$PATH LD_LIBRARY_PATH=./squashfs-root/usr/lib64:/usr/local/lib64:/usr/lib64:./squashfs-root/usr/lib:$LD_LIBRARY_PATH gdb -q --exec=hotspot --symbols hotspot-debuginfo-v1.4.0-43-g02fd82c/usr/bin/hotspot -ex run
-Reading symbols from hotspot-debuginfo-v1.4.0-43-g02fd82c/usr/bin/hotspot...
+$ ./hotspot-v1.2.3-45-g02fd82c-x86_64.AppImage --appimage-extract
+$ PATH=./squashfs-root/usr/bin:$PATH LD_LIBRARY_PATH=./squashfs-root/usr/lib64:/usr/local/lib64:/usr/lib64:./squashfs-root/usr/lib:$LD_LIBRARY_PATH gdb -q --exec=hotspot --symbols hotspot-debuginfo-v1.2.3-45-g02fd82c/usr/bin/hotspot -ex run
+Reading symbols from hotspot-debuginfo-v1.2.3-45-g02fd82c/usr/bin/hotspot...
 Starting program: /tmp/squashfs-root/usr/bin/hotspot
 
 ```
@@ -251,9 +249,9 @@ to use it on your host system, set:
 
     export DEBUGINFOD_URLS="127.0.0.1:12345 https://debuginfod.centos.org/ https://debuginfod.archlinux.org"
 
-[Fri Dec  2 19:58:56 2022] (16/16): opened database /opt/app-root/src/.debuginfod.sqlite
-[Fri Dec  2 19:58:56 2022] (16/16): sqlite version 3.7.17
-[Fri Dec  2 19:58:56 2022] (16/16): started http server on IPv4 IPv6 port=12345
+[Fri May 24 19:58:56 2024] (16/16): opened database /opt/app-root/src/.debuginfod.sqlite
+[Fri May 24 19:58:56 2024] (16/16): sqlite version 3.7.17
+[Fri May 24 19:58:56 2024] (16/16): started http server on IPv4 IPv6 port=12345
 ...
 ```
 
@@ -262,7 +260,7 @@ the official Centos instance to get debug information for all the dependencies a
 Here is one example for that using GDB:
 
 ```bash
-$ ./hotspot-v1.3.0-391-g590f810-x86_64.AppImage &
+$ ./hotspot-v1.2.3-45-g02fd82c-x86_64.AppImage &
 $ export DEBUGINFOD_URLS="127.0.0.1:12345 https://debuginfod.centos.org/ https://debuginfod.archlinux.org"
 $ gdb -q -p $(pidof hotspot)
 Attaching to process 123456
