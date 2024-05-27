@@ -46,29 +46,24 @@ RUN sed -i 's#enabled=1#enabled=0#' /etc/yum/pluginconf.d/fastestmirror.conf && 
         # appimages
         fuse fuse-libs bzip2 && \
     ln -s /usr/bin/cmake3 /usr/bin/cmake && \
-    rm -Rf /var/cache/yum && \
-    . /opt/rh/devtoolset-11/enable
+    rm -Rf /var/cache/yum
 
-ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/devtoolset-11/root/usr/lib64/dyninst:/opt/rh/devtoolset-11/root/usr/lib/dyninst:/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/httpd24/root/usr/lib64:/opt/rh/rh-perl530/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}} \
-    PATH=/opt/rh/devtoolset-11/root/usr/bin:/opt/rh/rh-git227/root/usr/bin:/opt/rh/rh-perl530/root/usr/local/bin:/opt/rh/rh-perl530/root/usr/bin${PATH:+:${PATH}}
+FROM intermediate AS builder
 
-# qt5
-RUN wget https://download.qt.io/official_releases/qt/5.15/${QT_VERSION}/single/qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
+ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/devtoolset-11/root/usr/lib64/dyninst:/opt/rh/devtoolset-11/root/usr/lib/dyninst:/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/httpd24/root/usr/lib64:/opt/rh/rh-perl530/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+ENV PATH=/opt/rh/devtoolset-11/root/usr/bin:/opt/rh/rh-git227/root/usr/bin:/opt/rh/rh-perl530/root/usr/local/bin:/opt/rh/rh-perl530/root/usr/bin${PATH:+:${PATH}}
+
+RUN . /opt/rh/devtoolset-11/enable && wget https://download.qt.io/official_releases/qt/5.15/${QT_VERSION}/single/qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
     tar -xvf qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
     mkdir build && cd build && \
-    ../qt-everywhere-src-${QT_VERSION}/configure -opensource -confirm-license \
+    ../qt-everywhere-src-${QT_VERSION}/configure -opensource -confirm-license -force-debug-info -separate-debug-info \
     -xcb -xcb-xlib -bundled-xcb-xinput -skip qtwebengine -skip qtdatavis3d -skip qtmultimedia -skip qtquick3d \
     -skip qtquickcontrols -skip qtquickcontrols2 -skip qtquicktimeline -skip qt3d -skip qtdeclarative \
     -skip qtscript -skip qtcharts -skip qtdoc -skip qtwebsockets -skip qtgamepad -skip qtgraphicaleffects \
     -skip qtpurchasing -skip qtserialbus -skip qtserialport -skip qtwebchannel -skip qtwebglplugin \
     -skip qtwebview -skip qtlocation -skip qtspeech -skip qtwinextras \
-    -release -ssl -no-compile-examples -cups -I /usr/include/openssl11 -prefix /usr && \
-    make -j$(nproc) && make install && cd .. && rm -Rf build qt-everywhere-*
-
-RUN cd /opt && wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage && chmod +x linuxdeploy-x86_64.AppImage && ./linuxdeploy-x86_64.AppImage --appimage-extract && \
-    wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage && chmod +x linuxdeploy-plugin-qt-x86_64.AppImage && ./linuxdeploy-plugin-qt-x86_64.AppImage --appimage-extract && \
-    wget https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage && chmod +x linuxdeploy-plugin-appimage-x86_64.AppImage && ./linuxdeploy-plugin-appimage-x86_64.AppImage --appimage-extract && \
-    cd squashfs-root && rsync -a usr/ /usr && rsync -a plugins/linuxdeploy-plugin-appimage/ / && cd /opt && rm -rf squashfs-root && rm -rf *.AppImage
+    -release -ssl -no-compile-examples -cups -I /usr/include/openssl11 -prefix /usr -linker gold && \
+    make -j$(nproc) && make install
 
 # qcustomplot
 RUN cd /opt && mkdir qcustomplot && cd qcustomplot && \
@@ -76,15 +71,14 @@ RUN cd /opt && mkdir qcustomplot && cd qcustomplot && \
     cd qcustomplot && cp qcustomplot.h /usr/include && \
     wget https://www.qcustomplot.com/release/${QCustomPlot_VERSION}/QCustomPlot-sharedlib.tar.gz && \
     tar -xf QCustomPlot-sharedlib.tar.gz && ls && cd qcustomplot-sharedlib/sharedlib-compilation \
-    && qmake . && make -j$(nproc) && mv libqcustomplot.so* /usr/lib && cd /opt && rm -Rf qcustomplot && ldconfig
+    && qmake . && make -j$(nproc) && mv libqcustomplot.so* /usr/lib
 
 # rust demangle
 RUN cd /opt/ && mkdir rust && cd rust && wget https://sh.rustup.rs -O rustup.sh && \
     chmod +x rustup.sh && ./rustup.sh -y && \
     git clone -b ${rust_demangler_VERSION} https://github.com/rust-lang/rustc-demangle && \
     cd rustc-demangle && $HOME/.cargo/bin/cargo build -p rustc-demangle-capi --release && \
-    cp target/release/librustc_demangle.so /usr/lib/ && \
-    cd /opt && rm -Rf /opt/rust $HOME/.cargo $HOME/.rustup
+    cp target/release/librustc_demangle.so /usr/lib/
 
 # dlang demangle
 RUN cd /opt && mkdir dlang && cd dlang && \
@@ -97,7 +91,7 @@ RUN cd /opt && mkdir dlang && cd dlang && \
     # link libphobos2 statically
     sed -i 's/defaultlib=libphobos2.so/defaultlib=:libphobos2.a/' Makefile && \
     make && mv libd_demangle.so /usr/lib/ && \
-    deactivate && cd /opt && rm -Rf dlang && mv /usr/bin/gpg{~,} && mv /usr/bin/gpg2{~,}
+    deactivate && mv /usr/bin/gpg{~,} && mv /usr/bin/gpg2{~,}
 
 # kdesrc-build dependencies
 RUN yum install -y libcanberra-devel gpgme-devel && \
@@ -117,16 +111,58 @@ RUN ldconfig && \
         kitemviews kitemmodels solid breeze-icons \
         kwindowsystem knotifications kiconthemes karchive syntax-highlighting kio kparts && \
     # without extra dependencies
-    ./kdesrc-build --revision ${KGraphViewer_VERSION} --no-include-dependencies kgraphviewer && \
-    cd /opt && rm -Rf kdesrc-build kde && ldconfig
+    ./kdesrc-build --revision ${KGraphViewer_VERSION} --no-include-dependencies kgraphviewer
 
 # kddockwidgets
 RUN cd /opt && git clone --recursive https://github.com/KDAB/KDDockWidgets.git -b ${KDDockWidgets_VERSION} && \
     cd KDDockWidgets && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr -DKDDockWidgets_EXAMPLES=0 -DKDDockWidgets_FRONTENDS="qtwidgets" .. && \
-    make -j$(nproc) && make install && cd /opt && rm -Rf KDDockWidgets
+    make -j$(nproc) && make install
 
-FROM intermediate
+FROM builder AS stripped
 
 WORKDIR /
+
+RUN find /usr -type f -name "*.debug" -exec rm {} \;
+RUN find /usr -type f -name "libKF*" -exec strip --strip-all {} \;
+RUN find /usr -type f -name "libQt*" -exec strip --strip-all {} \;
+RUN find /usr -type f -name "libkd*" -exec strip --strip-all {} \;
+RUN find /usr/local/lib -type f -name "lib*" -exec strip --strip-all {} \;
+
+RUN cd /opt && wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage && chmod +x linuxdeploy-x86_64.AppImage && ./linuxdeploy-x86_64.AppImage --appimage-extract && \
+    wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage && chmod +x linuxdeploy-plugin-qt-x86_64.AppImage && ./linuxdeploy-plugin-qt-x86_64.AppImage --appimage-extract && \
+    wget https://github.com/linuxdeploy/linuxdeploy-plugin-appimage/releases/download/continuous/linuxdeploy-plugin-appimage-x86_64.AppImage && chmod +x linuxdeploy-plugin-appimage-x86_64.AppImage && ./linuxdeploy-plugin-appimage-x86_64.AppImage --appimage-extract && \
+    cd squashfs-root && rsync -a usr/ /usr && rsync -a plugins/linuxdeploy-plugin-appimage/ / && cd /opt/squashfs-root/appimagetool-prefix && rsync -a usr/ /usr
+
+FROM intermediate AS kdesrc-build
+
+ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/devtoolset-11/root/usr/lib64/dyninst:/opt/rh/devtoolset-11/root/usr/lib/dyninst:/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/httpd24/root/usr/lib64:/opt/rh/rh-perl530/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}:/usr/lib
+ENV PATH=/opt/rh/devtoolset-11/root/usr/bin:/opt/rh/rh-git227/root/usr/bin:/opt/rh/rh-perl530/root/usr/local/bin:/opt/rh/rh-perl530/root/usr/bin${PATH:+:${PATH}}
+
+COPY --from=stripped /usr /usr
+COPY --from=stripped /usr/local/lib64 /opt/rh/devtoolset-11/root/lib64
+
 # set the entrypoint to the build script so that the build script will be run by github actions
 CMD ["/github/workspace/scripts/appimage/build_appimage.sh", "/github/workspace", "/github/workspace/build"]
+
+FROM builder AS debugcollector
+
+RUN mkdir /debug
+RUN find /usr -type f -name "libKF*" -execdir strip --only-keep-debug {} /debug/{}.debug \;
+RUN find /usr -type f -name "libQ*.debug" -execdir cp {} /debug/{} \;
+RUN find /usr -type f -name "libq*.debug" -execdir cp {} /debug/{} \;
+RUN find /usr -type f -name "libkd*" -execdir strip --only-keep-debug {} /debug/{}.debug \;
+RUN find /usr/local -type f -name "*.so*" -execdir strip --only-keep-debug {} /debug/{}.debug \;
+
+RUN tar -cjvf "/qt-debuginfo-x86_64.tar.bz2" /debug
+RUN cd / &&  wget https://github.com/cli/cli/releases/download/v2.49.2/gh_2.49.2_linux_amd64.tar.gz && tar -xzf gh_2.49.2_linux_amd64.tar.gz
+
+FROM intermediate AS debuginfo
+
+ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/devtoolset-11/root/usr/lib64/dyninst:/opt/rh/devtoolset-11/root/usr/lib/dyninst:/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/httpd24/root/usr/lib64:/opt/rh/rh-perl530/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}:/usr/lib
+ENV PATH=/opt/rh/devtoolset-11/root/usr/bin:/opt/rh/rh-git227/root/usr/bin:/opt/rh/rh-perl530/root/usr/local/bin:/opt/rh/rh-perl530/root/usr/bin${PATH:+:${PATH}}
+
+COPY --from=debugcollector /qt-debuginfo-x86_64.tar.bz2 /
+COPY --from=debugcollector /gh_2.49.2_linux_amd64/bin/gh /usr/bin/
+COPY publish-qt-debuginfo.sh /
+
+CMD ["/publish-qt-debuginfo.sh"]

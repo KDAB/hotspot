@@ -12,7 +12,7 @@ cd "$(dirname $0)"
 
 mkdir -p ../output/build-appimage
 
-docker run -it \
+docker run -it --rm \
     -v $PWD/../../:/github/workspace/ \
     ghcr.io/kdab/kdesrc-build:latest \
-    /github/workspace/scripts/appimage/build_appimage.sh /github/workspace /github/workspace/build/build-appimage
+    /github/workspace/scripts/appimage/build_appimage.sh /github/workspace /github/workspace/scripts/output/build-appimage

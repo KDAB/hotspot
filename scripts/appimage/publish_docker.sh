@@ -18,3 +18,7 @@ logout() {
 trap logout EXIT
 
 docker push ghcr.io/kdab/kdesrc-build:latest
+
+echo "upload debug info"
+cd $(dirname $0)
+docker run -it --rm -e GITHUB_TOKEN=$(pass ghcr.io | head -n1) -v $PWD/../../:/workspace ghcr.io/kdab/kdesrc-build-debuginfo:latest
