@@ -44,7 +44,9 @@ RUN sed -i 's#enabled=1#enabled=0#' /etc/yum/pluginconf.d/fastestmirror.conf && 
         # kgraphviewer
         boost boost-devel graphviz-devel \
         # appimages
-        fuse fuse-libs bzip2 && \
+        fuse fuse-libs bzip2 \
+        # elfutils
+        libmicrohttpd-devel libsqlite3x-devel libarchive-devel && \
     ln -s /usr/bin/cmake3 /usr/bin/cmake && \
     rm -Rf /var/cache/yum
 
@@ -118,6 +120,9 @@ RUN cd /opt && git clone --recursive https://github.com/KDAB/KDDockWidgets.git -
     cd KDDockWidgets && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr -DKDDockWidgets_EXAMPLES=0 -DKDDockWidgets_FRONTENDS="qtwidgets" .. && \
     make -j$(nproc) && make install
 
+# build new elfutils version
+RUN cd /opt && wget https://sourceware.org/elfutils/ftp/0.190/elfutils-0.190.tar.bz2 && bzip2 -d elfutils-0.190.tar.bz2 && tar -xf elfutils-0.190.tar && cd elfutils-0.190 && ./configure --libdir=/usr/local/lib64 && make && make install
+
 FROM builder AS stripped
 
 WORKDIR /
@@ -126,7 +131,7 @@ RUN find /usr -type f -name "*.debug" -exec rm {} \;
 RUN find /usr -type f -name "libKF*" -exec strip --strip-all {} \;
 RUN find /usr -type f -name "libQt*" -exec strip --strip-all {} \;
 RUN find /usr -type f -name "libkd*" -exec strip --strip-all {} \;
-RUN find /usr/local/lib -type f -name "lib*" -exec strip --strip-all {} \;
+RUN find /usr/local -type f -name "*.so*" -exec strip --strip-all {} \;
 
 RUN cd /opt && wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage && chmod +x linuxdeploy-x86_64.AppImage && ./linuxdeploy-x86_64.AppImage --appimage-extract && \
     wget https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage && chmod +x linuxdeploy-plugin-qt-x86_64.AppImage && ./linuxdeploy-plugin-qt-x86_64.AppImage --appimage-extract && \
