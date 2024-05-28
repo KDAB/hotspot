@@ -56,7 +56,9 @@ The main feature of Hotspot is the graphical visualization of a `perf.data` file
 
 ![hotspot FlameGraph page](screenshots/flamegraph.png?raw=true "Hotspot FlameGraph page")
 
-![hotspot off-CPU analysis](screenshots/off-cpu.png?raw=true "Hotspot off-CPU analysis")
+Note: Inlined functions have a darker border than non-inlined ones.
+
+![hotspot off-CPU analysis](screenshots/off-cpu.png?raw=true "hotspot off-CPU analysis")
 
 ![hotspot caller-callee page](screenshots/caller-callee.png?raw=true "Hotspot caller-callee page")
 
@@ -188,12 +190,14 @@ Options:
                            libraries.
   --appPath <path>         Path to folder containing the application executable
                            and libraries.
-  --sourcePaths <paths>    Colon separated list of extra paths to the source
+  --sourcePaths <paths>    Colon separated list of search paths for the source
                            code.
   --arch <path>            Architecture to use for unwinding.
   --exportTo <path>        Path to .perfparser output file to which the input
                            data should be exported. A single input file has to
                            be given too.
+  --perf-binary <path>     Path to the perf binary.
+  --objdump-binary <path>  Path to the objdump binary.
 
 Arguments:
   files                    Optional input files to open on startup, i.e.
