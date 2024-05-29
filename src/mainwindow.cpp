@@ -124,7 +124,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     connect(settings, &Settings::sysrootChanged, m_resultsPage, &ResultsPage::setSysroot);
     connect(settings, &Settings::appPathChanged, m_resultsPage, &ResultsPage::setAppPath);
-    connect(settings, &Settings::objdumpChanged, m_resultsPage, &ResultsPage::setObjdump);
     connect(m_startPage, &StartPage::pathSettingsButtonClicked, this, &MainWindow::openSettingsDialog);
 
     connect(m_startPage, &StartPage::openFileButtonClicked, this, &MainWindow::onOpenFileButtonClicked);

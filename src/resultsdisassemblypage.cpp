@@ -567,9 +567,9 @@ void ResultsDisassemblyPage::showDisassembly()
     }
 
     // TODO: add the ability to configure the arch <-> objdump mapping somehow in the settings
-    const auto objdump = [this]() {
-        if (!m_objdump.isEmpty())
-            return m_objdump;
+    const auto objdump = [this](const QString& objdump) {
+        if (!objdump.isEmpty())
+            return objdump;
 
         if (m_arch.startsWith(QLatin1String("armv8")) || m_arch.startsWith(QLatin1String("aarch64"))) {
             return QStringLiteral("aarch64-linux-gnu-objdump");
@@ -583,9 +583,10 @@ void ResultsDisassemblyPage::showDisassembly()
     auto settings = Settings::instance();
     const auto colon = QLatin1Char(':');
 
-    showDisassembly(DisassemblyOutput::disassemble(
-        objdump(), m_arch, settings->debugPaths().split(colon), settings->extraLibPaths().split(colon),
-        settings->sourceCodePaths().split(colon), settings->sysroot(), curSymbol));
+    showDisassembly(
+        DisassemblyOutput::disassemble(objdump(settings->objdump()), m_arch, settings->debugPaths().split(colon),
+                                       settings->extraLibPaths().split(colon), settings->sourceCodePaths().split(colon),
+                                       settings->sysroot(), curSymbol));
 }
 
 void ResultsDisassemblyPage::showDisassembly(const DisassemblyOutput& disassemblyOutput)
@@ -651,11 +652,6 @@ void ResultsDisassemblyPage::setSymbol(const Data::Symbol& symbol)
 void ResultsDisassemblyPage::setCostsMap(const Data::CallerCalleeResults& callerCalleeResults)
 {
     m_callerCalleeResults = callerCalleeResults;
-}
-
-void ResultsDisassemblyPage::setObjdump(const QString& objdump)
-{
-    m_objdump = objdump;
 }
 
 void ResultsDisassemblyPage::setArch(const QString& arch)

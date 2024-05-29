@@ -306,7 +306,13 @@ DisassemblyOutput DisassemblyOutput::disassemble(const QString& objdump, const Q
         return disassemblyOutput;
     }
 
-    const auto processPath = QStandardPaths::findExecutable(objdump);
+    auto findObjdump = [](const QString& objdump) {
+        if (!objdump.isEmpty() && QFile::exists(objdump))
+            return objdump;
+        return QStandardPaths::findExecutable(objdump);
+    };
+
+    const auto processPath = findObjdump(objdump);
     if (processPath.isEmpty()) {
         disassemblyOutput.errorMessage =
             QApplication::translate("DisassemblyOutput",

@@ -156,6 +156,16 @@ int main(int argc, char** argv)
         QStringLiteral("path"));
     parser.addOption(exportTo);
 
+    const auto perfBinary =
+        QCommandLineOption(QStringLiteral("perf-binary"),
+                           QCoreApplication::translate("main", "Path to the perf binary."), QStringLiteral("path"));
+    parser.addOption(perfBinary);
+
+    const auto objdumpBinary =
+        QCommandLineOption(QStringLiteral("objdump-binary"),
+                           QCoreApplication::translate("main", "Path to the objdump binary."), QStringLiteral("path"));
+    parser.addOption(objdumpBinary);
+
     parser.addPositionalArgument(
         QStringLiteral("files"),
         QCoreApplication::translate("main", "Optional input files to open on startup, i.e. perf.data files."),
@@ -183,6 +193,8 @@ int main(int argc, char** argv)
         applyArg(appPath, &Settings::setAppPath);
         applyArg(arch, &Settings::setArch);
         applyArg(sourcePath, &Settings::setSourceCodePaths);
+        applyArg(perfBinary, &Settings::setPerfPath);
+        applyArg(objdumpBinary, &Settings::setObjdump);
     };
 
     auto* settings = Settings::instance();

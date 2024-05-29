@@ -49,7 +49,6 @@ public:
     void clear();
     void setSymbol(const Data::Symbol& data);
     void setCostsMap(const Data::CallerCalleeResults& callerCalleeResults);
-    void setObjdump(const QString& objdump);
     void setArch(const QString& arch);
 
     void jumpToSourceLine(const Data::FileLine& line);
@@ -78,8 +77,6 @@ private:
     QModelIndex m_currentDisasmSearchIndex;
     // Architecture
     QString m_arch;
-    // Objdump binary name
-    QString m_objdump;
     // Map of symbols and its locations with costs
     Data::CallerCalleeResults m_callerCalleeResults;
     // Cost delegate

@@ -266,11 +266,6 @@ void ResultsPage::onJumpToSourceCode(const Data::Symbol& symbol, const Data::Fil
     }
 }
 
-void ResultsPage::setObjdump(const QString& objdump)
-{
-    m_resultsDisassemblyPage->setObjdump(objdump);
-}
-
 void ResultsPage::onOpenEditor(const Data::Symbol& symbol)
 {
     m_resultsCallerCalleePage->openEditor(symbol);
