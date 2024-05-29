@@ -49,7 +49,7 @@ jobs:
         GH_TOKEN: ${{ github.token }}
 
     - name: Create release PR
-      uses: google-github-actions/release-please-action@v4
+      uses: googleapis/release-please@v16.10.2
       with:
         token: ${{ github.token }}
         release-type: simple
