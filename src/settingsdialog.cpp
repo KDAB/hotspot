@@ -89,32 +89,6 @@ void SettingsDialog::initSettings()
     }
 }
 
-void SettingsDialog::initSettings(const QString& sysroot, const QString& appPath, const QString& extraLibPaths,
-                                  const QString& debugPaths, const QString& kallsyms, const QString& arch,
-                                  const QString& objdump)
-{
-    auto fromPathString = [](KEditListWidget* listWidget, const QString& string) {
-        listWidget->setItems(string.split(QLatin1Char(':'), Qt::SkipEmptyParts));
-    };
-    fromPathString(unwindPage->extraLibraryPaths, extraLibPaths);
-    fromPathString(unwindPage->debugPaths, debugPaths);
-
-    unwindPage->lineEditSysroot->setText(sysroot);
-    unwindPage->lineEditApplicationPath->setText(appPath);
-    unwindPage->lineEditKallsyms->setText(kallsyms);
-    unwindPage->lineEditObjdump->setText(objdump);
-
-    int itemIndex = 0;
-    if (!arch.isEmpty()) {
-        itemIndex = unwindPage->comboBoxArchitecture->findText(arch);
-        if (itemIndex == -1) {
-            itemIndex = unwindPage->comboBoxArchitecture->count();
-            unwindPage->comboBoxArchitecture->addItem(arch);
-        }
-    }
-    unwindPage->comboBoxArchitecture->setCurrentIndex(itemIndex);
-}
-
 QString SettingsDialog::sysroot() const
 {
     return unwindPage->lineEditSysroot->text();
@@ -188,6 +162,33 @@ void SettingsDialog::addPathSettingsPage()
     auto* label = new QLabel(this);
     label->setText(tr("Config:"));
 
+    auto loadFromSettings = [this]() {
+        auto settings = Settings::instance();
+        auto fromPathString = [](KEditListWidget* listWidget, const QString& string) {
+            listWidget->setItems(string.split(QLatin1Char(':'), Qt::SkipEmptyParts));
+        };
+        fromPathString(unwindPage->extraLibraryPaths, settings->extraLibPaths());
+        fromPathString(unwindPage->debugPaths, settings->debugPaths());
+
+        unwindPage->lineEditSysroot->setText(settings->sysroot());
+        unwindPage->lineEditApplicationPath->setText(settings->appPath());
+        unwindPage->lineEditKallsyms->setText(settings->kallsyms());
+        unwindPage->lineEditObjdump->setText(settings->objdump());
+
+        const auto arch = settings->arch();
+        int itemIndex = 0;
+        if (!arch.isEmpty()) {
+            itemIndex = unwindPage->comboBoxArchitecture->findText(arch);
+            if (itemIndex == -1) {
+                itemIndex = unwindPage->comboBoxArchitecture->count();
+                unwindPage->comboBoxArchitecture->addItem(arch);
+            }
+        }
+        unwindPage->comboBoxArchitecture->setCurrentIndex(itemIndex);
+    };
+
+    loadFromSettings();
+
     auto saveFunction = [this](KConfigGroup group) {
         group.writeEntry("sysroot", sysroot());
         group.writeEntry("appPath", appPath());
@@ -198,16 +199,26 @@ void SettingsDialog::addPathSettingsPage()
         group.writeEntry("objdump", objdump());
     };
 
-    auto restoreFunction = [this](const KConfigGroup& group) {
-        const auto sysroot = group.readEntry("sysroot");
-        const auto appPath = group.readEntry("appPath");
-        const auto extraLibPaths = group.readEntry("extraLibPaths");
-        const auto debugPaths = group.readEntry("debugPaths");
-        const auto kallsyms = group.readEntry("kallsyms");
-        const auto arch = group.readEntry("arch");
-        const auto objdump = group.readEntry("objdump");
-        initSettings(sysroot, appPath, extraLibPaths, debugPaths, kallsyms, arch, objdump);
+    auto restoreFunction = [this, loadFromSettings](const KConfigGroup& group) {
         ::config().writeEntry("lastUsed", m_configs->currentConfig());
+        auto settings = Settings::instance();
+
+        const auto sysroot = group.readEntry("sysroot");
+        settings->setSysroot(sysroot);
+        const auto appPath = group.readEntry("appPath");
+        settings->setAppPath(appPath);
+        const auto extraLibPaths = group.readEntry("extraLibPaths");
+        settings->setExtraLibPaths(extraLibPaths);
+        const auto debugPaths = group.readEntry("debugPaths");
+        settings->setDebugPaths(debugPaths);
+        const auto kallsyms = group.readEntry("kallsyms");
+        settings->setKallsyms(kallsyms);
+        const auto arch = group.readEntry("arch");
+        settings->setArch(arch);
+        const auto objdump = group.readEntry("objdump");
+        settings->setObjdump(objdump);
+
+        loadFromSettings();
     };
 
     m_configs = new MultiConfigWidget(this);
