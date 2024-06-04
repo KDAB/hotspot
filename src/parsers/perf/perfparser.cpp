@@ -1476,7 +1476,14 @@ PerfParser::PerfParser(QObject* parent)
     connect(this, &PerfParser::parsingFinished, this, parsingStopped);
 }
 
-PerfParser::~PerfParser() = default;
+PerfParser::~PerfParser()
+{
+    using namespace ThreadWeaver;
+    auto queue = Queue::instance();
+    if (!queue->isEmpty()) {
+        queue->shutDown();
+    }
+}
 
 bool PerfParser::initParserArgs(const QString& path)
 {
