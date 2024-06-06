@@ -215,7 +215,7 @@ int main(int argc, char** argv)
     auto* guiApp = qobject_cast<QApplication*>(app.get());
     MainWindow* window = nullptr;
     if (guiApp) {
-        QGuiApplication::setWindowIcon(QIcon(QStringLiteral(":/images/icons/512-hotspot_app_icon.png")));
+        QGuiApplication::setWindowIcon(QIcon(QStringLiteral(":/images/icons/128-apps-hotspot.png")));
         setupDockWidgets();
         window = new MainWindow();
     }

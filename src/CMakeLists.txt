@@ -84,10 +84,7 @@ if(KGraphViewerPart_FOUND)
     set(HOTSPOT_SRCS ${HOTSPOT_SRCS} callgraphwidget.cpp callgraphgenerator.cpp)
 endif()
 
-ecm_add_app_icon(
-    HOTSPOT_SRCS ICONS ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/128-hotspot_app_icon.png
-    ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/512-hotspot_app_icon.png
-)
+ecm_add_app_icon(HOTSPOT_SRCS ICONS ${CMAKE_CURRENT_SOURCE_DIR}/images/icons/128-apps-hotspot.png)
 
 if(QCustomPlot_FOUND)
     set(HOTSPOT_SRCS ${HOTSPOT_SRCS} frequencypage.cpp)

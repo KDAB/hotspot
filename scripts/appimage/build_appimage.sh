@@ -77,7 +77,7 @@ linuxdeploy --appdir appdir --plugin qt \
     -l /usr/lib/librustc_demangle.so \
     -l /usr/lib/libd_demangle.so \
     -l /usr/lib64/libwayland-egl.so \
-    -i "$srcdir/src/images/icons/512-hotspot_app_icon.png" --icon-filename=hotspot \
+    -i "$srcdir/src/images/icons/128-apps-hotspot.png" --icon-filename=hotspot \
     -d "./appdir/usr/share/applications/com.kdab.hotspot.desktop" \
     --output appimage
 
