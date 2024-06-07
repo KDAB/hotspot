@@ -166,6 +166,10 @@ int main(int argc, char** argv)
                            QCoreApplication::translate("main", "Path to the objdump binary."), QStringLiteral("path"));
     parser.addOption(objdumpBinary);
 
+    const auto startRecordPage =
+        QCommandLineOption(QStringLiteral("record"), QCoreApplication::translate("main", "Start with recording page."));
+    parser.addOption(startRecordPage);
+
     parser.addPositionalArgument(
         QStringLiteral("files"),
         QCoreApplication::translate("main", "Optional input files to open on startup, i.e. perf.data files."),
@@ -270,6 +274,8 @@ int main(int argc, char** argv)
         const auto perfDataFile = QStringLiteral("perf.data");
         if (QFile::exists(perfDataFile) && window) {
             window->openFile(perfDataFile);
+        } else if (parser.isSet(startRecordPage)) {
+            window->onRecordButtonClicked();
         }
     }
     if (window)
