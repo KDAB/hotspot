@@ -4,11 +4,11 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
-FROM centos/devtoolset-7-toolchain-centos7 as intermediate
+FROM almalinux:8 AS intermediate
 
-ARG QT_VERSION=5.15.13
+ARG QT_VERSION=5.15.14
 ARG KF5_VERSION=v5.115.0
-ARG KDDockWidgets_VERSION=2.0
+ARG KDDockWidgets_VERSION=2.1
 ARG QCustomPlot_VERSION=2.1.1
 ARG rust_demangler_VERSION=0.1.23
 ARG d_demangler_VERSION=0.0.2
@@ -17,20 +17,18 @@ ARG KGraphViewer_VERSION=v2.4.3a
 USER root
 
 # install dependencies
-RUN sed -i 's#enabled=1#enabled=0#' /etc/yum/pluginconf.d/fastestmirror.conf && \
-    yum install -y deltarpm && \
-    yum update -y && yum install -y epel-release centos-release-scl && \
-    yum install -y \
-        devtoolset-11 devtoolset-11-elfutils-devel devtoolset-11-elfutils-debuginfod flex bison file \
-        rh-perl530-perl rh-perl530-perl-IO-Socket-SSL rh-perl530-perl-YAML \
-        gperf wget cmake3 which rh-git227-git python3 libzstd-devel \
+RUN dnf update -y && dnf install -y 'dnf-command(config-manager)' && dnf config-manager --set-enabled powertools && dnf update -y && \
+    dnf install -y \
+        gcc-toolset-13 elfutils-devel elfutils-libelf-devel elfutils-debuginfod-client-devel flex bison file \
+        perl perl-IO-Socket-SSL perl-YAML \
+        gperf wget cmake3 which git python3 libzstd-devel \
         polkit-devel libxslt-devel docbook-style-xsl \
         # install Qt build dependencies, see: https://wiki.qt.io/Building_Qt_5_from_Git
         # qtbase
         libxcb libxcb-devel xcb-util xcb-util-devel mesa-libGL-devel libxkbcommon-devel libudev-devel \
         xcb-util-keysyms-devel libxkbcommon-x11-devel libinput-devel xcb-util-image-devel \
         mesa-libgbm-devel xcb-util-wm-devel xcb-util-renderutil-devel libSM-devel \
-        postgresql-devel unixODBC-devel pcre2-devel openssl11-devel openssl11 cups-devel \
+        postgresql-devel unixODBC-devel pcre2-devel openssl-devel openssl cups-devel \
         # gtk widget theme support
         gtk3-devel \
         # kshimgen
@@ -44,18 +42,17 @@ RUN sed -i 's#enabled=1#enabled=0#' /etc/yum/pluginconf.d/fastestmirror.conf && 
         # kgraphviewer
         boost boost-devel graphviz-devel \
         # appimages
-        fuse fuse-libs bzip2 \
+        fuse fuse-libs bzip2 rsync \
         # elfutils
-        libmicrohttpd-devel libsqlite3x-devel libarchive-devel && \
-    ln -s /usr/bin/cmake3 /usr/bin/cmake && \
-    rm -Rf /var/cache/yum
+        libmicrohttpd-devel sqlite-devel libarchive-devel && \
+    rm -Rf /var/dnf/yum
 
 FROM intermediate AS builder
 
-ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/devtoolset-11/root/usr/lib64/dyninst:/opt/rh/devtoolset-11/root/usr/lib/dyninst:/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/httpd24/root/usr/lib64:/opt/rh/rh-perl530/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-ENV PATH=/opt/rh/devtoolset-11/root/usr/bin:/opt/rh/rh-git227/root/usr/bin:/opt/rh/rh-perl530/root/usr/local/bin:/opt/rh/rh-perl530/root/usr/bin${PATH:+:${PATH}}
+ENV LD_LIBRARY_PATH=/opt/rh/gcc-toolset-13/root/usr/lib64:/opt/rh/gcc-toolset-13/root/usr/lib:/opt/rh/gcc-toolset-13/root/usr/lib64/dyninst:/opt/rh/gcc-toolset-13/root/usr/lib/dyninst:/opt/rh/gcc-toolset-13/root/usr/lib64:/opt/rh/gcc-toolset-13/root/usr/lib
+ENV PATH=/opt/rh/gcc-toolset-13/root/usr/bin${PATH:+:${PATH}}
 
-RUN . /opt/rh/devtoolset-11/enable && wget https://download.qt.io/official_releases/qt/5.15/${QT_VERSION}/single/qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
+RUN . /opt/rh/gcc-toolset-13/enable && wget https://download.qt.io/official_releases/qt/5.15/${QT_VERSION}/single/qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
     tar -xvf qt-everywhere-opensource-src-${QT_VERSION}.tar.xz && \
     mkdir build && cd build && \
     ../qt-everywhere-src-${QT_VERSION}/configure -opensource -confirm-license -force-debug-info -separate-debug-info \
@@ -106,6 +103,8 @@ RUN ldconfig && \
     cd /opt/kdesrc-build && \
     sed -i -e "s/FULL_NPROC/$(nproc)/g" \
         -e "s/HALF_NPROC/$(($(nproc)/2))/g" -e "s/%VERSION%/${KF5_VERSION}/g" kdesrc-buildrc && \
+    # workaround for https://bugs.kde.org/show_bug.cgi?id=490168
+    sed -i "s/ignore-modules|!=/ignore-modules|=/" modules/ksb/Cmdline.pm && \
     ./kdesrc-build --metadata-only && \
     # fix compile error in kwallet
     ./kdesrc-build --include-dependencies qca && \
@@ -119,9 +118,6 @@ RUN ldconfig && \
 RUN cd /opt && git clone --recursive https://github.com/KDAB/KDDockWidgets.git -b ${KDDockWidgets_VERSION} && \
     cd KDDockWidgets && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=/usr -DKDDockWidgets_EXAMPLES=0 -DKDDockWidgets_FRONTENDS="qtwidgets" .. && \
     make -j$(nproc) && make install
-
-# build new elfutils version
-RUN cd /opt && wget https://sourceware.org/elfutils/ftp/0.190/elfutils-0.190.tar.bz2 && bzip2 -d elfutils-0.190.tar.bz2 && tar -xf elfutils-0.190.tar && cd elfutils-0.190 && ./configure --libdir=/usr/local/lib64 && make && make install
 
 FROM builder AS stripped
 
@@ -140,11 +136,13 @@ RUN cd /opt && wget https://github.com/linuxdeploy/linuxdeploy/releases/download
 
 FROM intermediate AS kdesrc-build
 
-ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/devtoolset-11/root/usr/lib64/dyninst:/opt/rh/devtoolset-11/root/usr/lib/dyninst:/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/httpd24/root/usr/lib64:/opt/rh/rh-perl530/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}:/usr/lib
-ENV PATH=/opt/rh/devtoolset-11/root/usr/bin:/opt/rh/rh-git227/root/usr/bin:/opt/rh/rh-perl530/root/usr/local/bin:/opt/rh/rh-perl530/root/usr/bin${PATH:+:${PATH}}
+ENV LD_LIBRARY_PATH=/opt/rh/gcc-toolset-13/root/usr/lib64:/opt/rh/gcc-toolset-13/root/usr/lib:/opt/rh/gcc-toolset-13/root/usr/lib64/dyninst:/opt/rh/gcc-toolset-13/root/usr/lib/dyninst:/opt/rh/gcc-toolset-13/root/usr/lib64:/opt/rh/gcc-toolset-13/root/usr/lib:/opt/rh/rh-perl530/root/usr/lib64:/usr/lib
+ENV PATH=/opt/rh/gcc-toolset-13/root/usr/bin:/opt/rh/rh-git227/root/usr/bin:/opt/rh/rh-perl530/root/usr/local/bin:/opt/rh/rh-perl530/root/usr/bin${PATH:+:${PATH}}
+
+RUN git config --global --add safe.directory /github/workspace
 
 COPY --from=stripped /usr /usr
-COPY --from=stripped /usr/local/lib64 /opt/rh/devtoolset-11/root/lib64
+COPY --from=stripped /usr/local/lib64 /opt/rh/gcc-toolset-13/root/lib64
 
 # set the entrypoint to the build script so that the build script will be run by github actions
 CMD ["/github/workspace/scripts/appimage/build_appimage.sh", "/github/workspace", "/github/workspace/build"]
@@ -163,8 +161,8 @@ RUN cd / &&  wget https://github.com/cli/cli/releases/download/v2.49.2/gh_2.49.2
 
 FROM intermediate AS debuginfo
 
-ENV LD_LIBRARY_PATH=/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/devtoolset-11/root/usr/lib64/dyninst:/opt/rh/devtoolset-11/root/usr/lib/dyninst:/opt/rh/devtoolset-11/root/usr/lib64:/opt/rh/devtoolset-11/root/usr/lib:/opt/rh/httpd24/root/usr/lib64:/opt/rh/rh-perl530/root/usr/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}:/usr/lib
-ENV PATH=/opt/rh/devtoolset-11/root/usr/bin:/opt/rh/rh-git227/root/usr/bin:/opt/rh/rh-perl530/root/usr/local/bin:/opt/rh/rh-perl530/root/usr/bin${PATH:+:${PATH}}
+ENV LD_LIBRARY_PATH=/opt/rh/gcc-toolset-13/root/usr/lib64:/opt/rh/gcc-toolset-13/root/usr/lib:/opt/rh/gcc-toolset-13/root/usr/lib64/dyninst:/opt/rh/gcc-toolset-13/root/usr/lib/dyninst:/opt/rh/gcc-toolset-13/root/usr/lib64:/opt/rh/gcc-toolset-13/root/usr/lib:/usr/lib
+ENV PATH=/opt/rh/gcc-toolset-13/root/usr/bin${PATH:+:${PATH}}
 
 COPY --from=debugcollector /qt-debuginfo-x86_64.tar.bz2 /
 COPY --from=debugcollector /gh_2.49.2_linux_amd64/bin/gh /usr/bin/
