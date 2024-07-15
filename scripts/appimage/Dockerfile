@@ -13,6 +13,7 @@ ARG QCustomPlot_VERSION=2.1.1
 ARG rust_demangler_VERSION=0.1.23
 ARG d_demangler_VERSION=0.0.2
 ARG KGraphViewer_VERSION=v2.4.3a
+ARG KDiagram_VERSION=2.8
 
 USER root
 
@@ -112,7 +113,8 @@ RUN ldconfig && \
         kitemviews kitemmodels solid breeze-icons \
         kwindowsystem knotifications kiconthemes karchive syntax-highlighting kio kparts && \
     # without extra dependencies
-    ./kdesrc-build --revision ${KGraphViewer_VERSION} --no-include-dependencies kgraphviewer
+    ./kdesrc-build --revision ${KGraphViewer_VERSION} --no-include-dependencies kgraphviewer && \
+    ./kdesrc-build --revision ${KDiagram_VERSION} --no-include-dependencies kdiagram
 
 # kddockwidgets
 RUN cd /opt && git clone --recursive https://github.com/KDAB/KDDockWidgets.git -b ${KDDockWidgets_VERSION} && \
