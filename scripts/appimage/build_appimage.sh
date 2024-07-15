@@ -28,6 +28,7 @@ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DAPPIMAGE_BUILD=ON -DCMAKE_INSTALL_PREFIX=/usr "$srcdir"
 
 make -j$(nproc)
+rm -Rf appdir
 DESTDIR=appdir make install
 
 tar -cjvf "/github/workspace/hotspot-debuginfo-$gitversion-x86_64.tar.bz2" \
