@@ -142,9 +142,11 @@ public:
                 startHorizontalLine(x);
                 verticalLine();
                 break;
+            case '\'':
             case '\\':
                 topRightEdge();
                 break;
+            case ',':
             case '/':
                 bottomLeftEdge();
                 break;

@@ -243,9 +243,10 @@ private slots:
         QVERIFY(result.errorMessage.isEmpty());
 
         auto isValidVisualisationCharacter = [](QChar character) {
-            const static auto validCharacters = std::initializer_list<QChar> {
-                QLatin1Char(' '), QLatin1Char('\t'), QLatin1Char('|'), QLatin1Char('/'), QLatin1Char('\\'),
-                QLatin1Char('-'), QLatin1Char('>'),  QLatin1Char('+'), QLatin1Char('X')};
+            const static auto validCharacters =
+                std::initializer_list<QChar> {QLatin1Char(' '),  QLatin1Char('\t'), QLatin1Char('|'), QLatin1Char('/'),
+                                              QLatin1Char('\\'), QLatin1Char('-'),  QLatin1Char('>'), QLatin1Char('+'),
+                                              QLatin1Char('X'),  QLatin1Char(','),  QLatin1Char('\'')};
 
             return std::any_of(validCharacters.begin(), validCharacters.end(),
                                [character](auto validCharacter) { return character == validCharacter; });
