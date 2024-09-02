@@ -83,6 +83,7 @@ private:
     HighlightedText m_highlightedText;
     DisassemblyOutput m_data;
     Data::CallerCalleeResults m_results;
+    Data::OffsetLocationCostMap m_offsetMap;
     int m_numTypes = 0;
     int m_highlightLine = 0;
 };
