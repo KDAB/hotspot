@@ -683,18 +683,6 @@ struct CallerCalleeEntry
         return *it;
     }
 
-    LocationCost& offset(quint64 addr, int numTypes)
-    {
-        auto it = offsetMap.find(addr);
-        if (it == offsetMap.end()) {
-            it = offsetMap.insert(addr, {numTypes});
-        } else if (it->inclusiveCost.size() < static_cast<size_t>(numTypes)) {
-            it->inclusiveCost.resize(numTypes);
-            it->selfCost.resize(numTypes);
-        }
-        return *it;
-    }
-
     ItemCost& callee(const Symbol& symbol, int numTypes)
     {
         auto it = callees.find(symbol);
@@ -719,14 +707,14 @@ struct CallerCalleeEntry
     CalleeMap callees;
     // source map for this symbol, i.e. locations mapped to associated costs
     SourceLocationCostMap sourceMap;
-    // per-IP map for this symbol for disassembly
-    OffsetLocationCostMap offsetMap;
 };
 
 using CallerCalleeEntryMap = QHash<Symbol, CallerCalleeEntry>;
 struct CallerCalleeResults
 {
     CallerCalleeEntryMap entries;
+    // per-binary map of per-IP (relAddr) map for disassembly
+    QHash<QString, OffsetLocationCostMap> binaryOffsetMap;
     Costs selfCosts;
     Costs inclusiveCosts;
 
@@ -736,6 +724,23 @@ struct CallerCalleeResults
         if (it == entries.end()) {
             it = entries.insert(symbol, {});
             it->id = entries.size() - 1;
+        }
+        return *it;
+    }
+
+    LocationCost& binaryOffset(const QString& binary, quint64 addr, int numTypes)
+    {
+        auto binaryIt = binaryOffsetMap.find(binary);
+        if (binaryIt == binaryOffsetMap.end()) {
+            binaryIt = binaryOffsetMap.insert(binary, {});
+        }
+
+        auto it = binaryIt->find(addr);
+        if (it == binaryIt->end()) {
+            it = binaryIt->insert(addr, {numTypes});
+        } else if (it->inclusiveCost.size() < static_cast<size_t>(numTypes)) {
+            it->inclusiveCost.resize(numTypes);
+            it->selfCost.resize(numTypes);
         }
         return *it;
     }

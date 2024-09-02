@@ -23,6 +23,7 @@ void DisassemblyModel::clear()
 {
     beginResetModel();
     m_data = {};
+    m_offsetMap = {};
     endResetModel();
 }
 
@@ -47,6 +48,7 @@ void DisassemblyModel::setDisassembly(const DisassemblyOutput& disassemblyOutput
 
     m_data = disassemblyOutput;
     m_results = results;
+    m_offsetMap = m_results.binaryOffsetMap[m_data.symbol.binary];
     m_numTypes = results.selfCosts.numTypes();
 
     QStringList assemblyLines;
@@ -128,9 +130,8 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
             return {};
         }
 
-        const auto entry = m_results.entries.value(m_data.symbol);
-        auto it = entry.offsetMap.find(data.addr);
-        if (it != entry.offsetMap.end()) {
+        auto it = m_offsetMap.find(data.addr);
+        if (it != m_offsetMap.end()) {
             const auto event = index.column() - COLUMN_COUNT;
             const auto& locationCost = it.value();
 
@@ -223,8 +224,8 @@ QModelIndex DisassemblyModel::indexForFileLine(const Data::FileLine& fileLine) c
             bestMatch = i;
         }
 
-        auto it = entry.offsetMap.find(line.addr);
-        if (it != entry.offsetMap.end()) {
+        auto it = m_offsetMap.find(line.addr);
+        if (it != m_offsetMap.end()) {
             const auto& locationCost = it.value();
 
             if (!bestCost || bestCost < locationCost.selfCost[0]) {

@@ -348,8 +348,7 @@ private slots:
         Data::CallerCalleeResults results;
         Data::callerCalleesFromBottomUpData(tree, &results);
 
-        auto entry = results.entry(symbol);
-        auto& locationCost = entry.offset(4294563, results.selfCosts.numTypes());
+        auto& locationCost = results.binaryOffset(symbol.binary, 4294563, results.selfCosts.numTypes());
         locationCost.inclusiveCost[0] += 200;
         locationCost.selfCost[0] += 200;
 

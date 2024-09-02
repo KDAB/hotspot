@@ -543,7 +543,8 @@ void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& loca
         auto& entry = callerCalleeResult->entry(symbol);
         auto& sourceCost = entry.source(location.fileLine, numCosts);
         // relAddr can be 0 for symbols in the main executable
-        auto& addrCost = entry.offset(location.relAddr ? location.relAddr : location.address, numCosts);
+        auto& addrCost = callerCalleeResult->binaryOffset(
+            symbol.binary, location.relAddr ? location.relAddr : location.address, numCosts);
 
         sourceCost.inclusiveCost[type] += cost;
         addrCost.inclusiveCost[type] += cost;
