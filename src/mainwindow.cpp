@@ -286,9 +286,9 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 QString MainWindow::queryOpenDataFile()
 {
-    const auto filter = tr("Hotspot data Files (perf*.data perf.data.* *.perfparser);;"
+    const auto filter = tr("Hotspot data Files (perf*.data perf.data.* *.perfparser *.perfparser.*);;"
                            "Linux Perf Files (perf*.data perf.data.*);;"
-                           "Perfparser Files (*.perfparser);;"
+                           "Perfparser Files (*.perfparser *.perfparser.*);;"
                            "All Files (*)");
     return QFileDialog::getOpenFileName(this, tr("Open File"), QDir::currentPath(), filter);
 }
