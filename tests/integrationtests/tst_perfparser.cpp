@@ -825,6 +825,68 @@ private slots:
 
         QCOMPARE(decompressed.readAll(), QByteArrayLiteral("Hello World\n"));
     }
+
+    void testArchive_data()
+    {
+        QTest::addColumn<QByteArray>("content");
+        QTest::addColumn<QString>("filename");
+
+        QTest::addRow("uncompressed tar") << qUncompress(QByteArray::fromBase64(QByteArrayLiteral(
+            "AAAoAHic7c5BCsIwFITht/"
+            "YUOYG8F9PkCt7AdaARCsFKrJ5fpSBuRDelCP+3mcXMYs6lHbd9nrIsRx9iCM+"
+            "01Ol7ziyIhZj8zqfYRVHz3lScLvjp5XqZcnNO6lBu5fR5963/U/tS6+gOY6v9Zu0vAAAAAAAAAAAAAAAAAIDf3QEcCRj1")))
+                                          << QStringLiteral("XXXXXX.tar");
+
+        QTest::addRow("gzip compressed tar") << QByteArray::fromBase64(QByteArrayLiteral(
+            "H4sICLev6WYAA3BlcmYuZGF0YS50YXIA7c5BCsIwFITht/"
+            "YUOYG8F9PkCt7AdaARCsFKrJ5fpSBuRDelCP+3mcXMYs6lHbd9nrIsRx9iCM+"
+            "01Ol7ziyIhZj8zqfYRVHz3lScLvjp5XqZcnNO6lBu5fR5963/U/tS6+gOY6v9Zu0vAAAAAAAAAAAAAAAAAIDf3QEv6F5tACgAAA=="))
+                                             << QStringLiteral("XXXXXX.tar.gz");
+
+        QTest::addRow("zip file") << QByteArray::fromBase64(QByteArrayLiteral(
+            "UEsDBAoAAAAAAFuUMVnj5ZWwDAAAAAwAAAAJABwAcGVyZi5kYXRhVVQJAAOur+"
+            "lm7LDpZnV4CwABBOgDAAAE6AMAAEhlbGxvIFdvcmxkClBLAQIeAwoAAAAAAFuUMVnj5ZWwDAAAAAwAAAAJABgAAAAAAAEAAACkgQAAAABw"
+            "ZXJmLmRhdGFVVAUAA66v6WZ1eAsAAQToAwAABOgDAABQSwUGAAAAAAEAAQBPAAAATwAAAAAA"))
+                                  << QStringLiteral("XXXXXX.zip");
+
+        QTest::addRow("tar file with multiple files") << QByteArray::fromBase64(
+            QByteArrayLiteral("H4sICHCx6WYAA3BlcmYuZGF0YS50YXIA7dRNCsIwEIbhrD1FTiD57xW8getoIwjBShs9vw0ouJGuYim8z2YWMzCz"
+                              "+aakqYjG1Cw4V6vuvPqub05oFzpjrfJ1TmurlZCq9WHVYypxlFLka3qm2++5pf5GxdN5t/"
+                              "YNWM89jZd9H0tsuGMx//qTf9MFH+b8G0P+/+OQch7kcRhzzx8AAAAAAAAAAAAAAADYoBfU+9z6ACgAAA=="))
+                                                      << QStringLiteral("XXXXXX.tar.gz");
+
+        QTest::addRow("tar file with multiple files other name") << QByteArray::fromBase64(QByteArrayLiteral(
+            "H4sICOuy6WYAA3BlcmYuZGF0YS50YXIA7dRBCsIwEIXhrD1FTlAyJm2v4A1cRxtBCLak0fPbgIgb6cZaCv+"
+            "3mYEMzGxechizWpiZNM6VKm1tPuuLU+Kadm+tqcuciBWjtFn6sOI+Zp+0VvEaHuH2fW7ufaP86bxb+wasZwjpUnU++6p0g09jSL/eMZt/"
+            "eedfrGun/Dtbk/+/OIQYe33sU+z4BwAAAAAAAAAAAAAAADboCSYqXQkAKAAA"))
+                                                                 << QStringLiteral("XXXXXX.tar.gz");
+
+        QTest::addRow("random name in archive") << QByteArray::fromBase64(QByteArrayLiteral(
+            "H4sICFmz6WYAA3BlcmYuZGF0YS50YXIA7c4xCoNAEIXhrXOKPcKOu+oNQuo01oJbCBMXjOb8WUmRNEEbEeH/"
+            "mjfwpnj3dujS49prNLtxWRXCklKX7jc/"
+            "JBgJVV14L2W+nRQ+19btN+lrfk7taK3RPr7i8P9vrT+pW1RNtkmjdpejtwAAAAAAAAAAAAAAAAAAtnsDvl6txAAoAAA="))
+                                                << QStringLiteral("XXXXXX.tar.gz");
+    }
+
+    void testArchive()
+    {
+        QFETCH(QByteArray, content);
+        QFETCH(QString, filename);
+
+        QTemporaryFile compressed;
+        compressed.setFileTemplate(filename);
+        compressed.open();
+        compressed.write(content);
+        compressed.close();
+
+        qDebug() << qCompress(content).toBase64();
+
+        PerfParser parser;
+        QFile decompressed(parser.decompressIfNeeded(compressed.fileName()));
+        decompressed.open(QIODevice::ReadOnly);
+
+        QCOMPARE(decompressed.readAll(), QByteArrayLiteral("Hello World\n"));
+    }
 #endif
 
 private:
