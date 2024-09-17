@@ -234,6 +234,9 @@ private slots:
 
         const auto perfData = QFINDTESTDATA("file_content/true.perfparser");
         QTest::addRow("pre-exported perfparser") << perfData << QString();
+#if KFArchive_FOUND
+        QTest::addRow("perfparser, xzipped") << QFINDTESTDATA("file_content/true.perfparser.xz") << QString();
+#endif
         const auto perfDataSomeName = QStringLiteral("fruitper");
         QFile::copy(perfData, perfDataSomeName); // we can ignore errors (file exist) here
         QTest::addRow("pre-exported perfparser \"bad extension\"") << perfDataSomeName << QString();
@@ -244,6 +247,8 @@ private slots:
         QTest::addRow("PERF v2") << QFINDTESTDATA("file_content/perf.data.true.v2") << QString();
 #if KFArchive_FOUND
         QTest::addRow("PERF v2, gzipped") << QFINDTESTDATA("file_content/perf.data.true.v2.gz") << QString();
+        QTest::addRow("no expected magic header, gzipped")
+            << QFINDTESTDATA("file_content/perf.data.broken.gz") << QStringLiteral("File format unknown");
 #endif
     }
 

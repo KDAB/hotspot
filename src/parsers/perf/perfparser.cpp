@@ -1585,8 +1585,8 @@ void PerfParser::startParseFile(const QString& path)
 
     emit parsingStarted();
     using namespace ThreadWeaver;
-    stream() << make_job([path, parserBinary = m_parserBinary, parserArgs = m_parserArgs, debuginfodUrls,
-                          costAggregation, this]() {
+    stream() << make_job([origPath = path, path = m_parserArgs[1], parserBinary = m_parserBinary,
+                          parserArgs = m_parserArgs, debuginfodUrls, costAggregation, this]() {
         PerfParserPrivate d(costAggregation);
         connect(&d, &PerfParserPrivate::progress, this, &PerfParser::progress);
         connect(&d, &PerfParserPrivate::debugInfoDownloadProgress, this, &PerfParser::debugInfoDownloadProgress);
@@ -1622,7 +1622,8 @@ void PerfParser::startParseFile(const QString& path)
             while (!file.atEnd() && !d.stopRequested) {
                 if (!d.tryParse()) {
                     // TODO: provide reason
-                    emit parsingFailed(tr("Failed to parse file %1: %2").arg(path, QStringLiteral("Unknown reason")));
+                    emit parsingFailed(
+                        tr("Failed to parse file %1: %2").arg(origPath, QStringLiteral("Unknown reason")));
                     return;
                 }
             }
