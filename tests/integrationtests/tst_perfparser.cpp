@@ -816,6 +816,30 @@ private slots:
 
         QCOMPARE(decompressed.readAll(), QByteArrayLiteral("Hello World\n"));
     }
+
+    void testArchive_data()
+    {
+        QTest::addColumn<QString>("filename");
+
+        QTest::addRow("uncompressed tar") << QFINDTESTDATA("archives/test.tar");
+
+        QTest::addRow("gzip compressed tar") << QFINDTESTDATA("archives/test.tar.gz");
+
+        QTest::addRow("zip file") << QFINDTESTDATA("archives/test.zip");
+
+        QTest::addRow("tar file with multiple files") << QFINDTESTDATA("archives/test-multi-files.tar");
+    }
+
+    void testArchive()
+    {
+        QFETCH(QString, filename);
+
+        PerfParser parser;
+        QFile decompressed(parser.decompressIfNeeded(filename));
+        decompressed.open(QIODevice::ReadOnly);
+
+        QCOMPARE(decompressed.readAll(), QByteArrayLiteral("Hello World\n"));
+    }
 #endif
 
 private:
