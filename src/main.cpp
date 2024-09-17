@@ -57,6 +57,20 @@ void Q_DECL_UNUSED initRCCIconTheme()
 }
 #endif
 
+namespace {
+QStringList findPerfDataFiles(const QDir& directory = QDir::current())
+{
+    QStringList files;
+
+    for (const auto& filename : {QStringLiteral("perf.data"), QStringLiteral("perf.data.perfparser")}) {
+        if (directory.exists(filename)) {
+            files.push_back(directory.absoluteFilePath(filename));
+        }
+    }
+    return files;
+}
+}
+
 std::unique_ptr<QCoreApplication> createApplication(int& argc, char* argv[])
 {
     const std::initializer_list<std::string_view> nonGUIOptions = {"--version", "-v", "--exportTo",
@@ -236,7 +250,12 @@ int main(int argc, char** argv)
     if (!files.isEmpty()) {
         auto file = files.constFirst();
         if (QFileInfo(file).isDir()) {
-            file.append(QLatin1String("/perf.data"));
+            // search for common perf data files in dir and open the first one found
+            // if none is found, hotspot will complain, that `file` is not a file
+            const auto perfDataFiles = findPerfDataFiles(QDir(file));
+            if (!perfDataFiles.isEmpty()) {
+                file = perfDataFiles.first();
+            }
         }
 
         if (parser.isSet(exportTo)) {
@@ -267,9 +286,12 @@ int main(int argc, char** argv)
     } else {
         // open perf.data in current CWD, if it exists
         // this brings hotspot closer to the behavior of "perf report"
-        const auto perfDataFile = QStringLiteral("perf.data");
-        if (QFile::exists(perfDataFile) && window) {
-            window->openFile(perfDataFile);
+        const auto perfDataFiles = findPerfDataFiles();
+        for (const auto& perfDataFile : perfDataFiles) {
+            if (window) {
+                window->openFile(perfDataFile);
+                break;
+            }
         }
     }
     if (window)
