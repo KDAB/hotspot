@@ -202,6 +202,10 @@ int main(int argc, char** argv)
     applyCliArgs(settings);
 
     auto files = parser.positionalArguments();
+
+    // remove empty arguments that may be added by tools calling HotSpot
+    files.removeAll(QString());
+
     if (files.size() != 1 && parser.isSet(exportTo)) {
         QTextStream err(stderr);
         err << QCoreApplication::translate("main", "Error: expected a single input file to convert, instead of %1.",
