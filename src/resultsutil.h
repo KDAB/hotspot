@@ -19,6 +19,7 @@ class QComboBox;
 class QLineEdit;
 class QSortFilterProxyModel;
 class QAbstractItemModel;
+class QCheckBox;
 
 namespace Data {
 class Costs;
@@ -31,18 +32,19 @@ class CostContextMenu;
 namespace ResultsUtil {
 void setupHeaderView(QTreeView* view, CostContextMenu* contextMenu);
 
-void connectFilter(QLineEdit* filter, QSortFilterProxyModel* proxy);
+void connectFilter(QLineEdit* filter, QSortFilterProxyModel* proxy, QCheckBox* regexCheckBox);
 
-void setupTreeView(QTreeView* view, CostContextMenu* contextMenu, QLineEdit* filter, QSortFilterProxyModel* model,
-                   int initialSortColumn, int sortRole);
+void setupTreeView(QTreeView* view, CostContextMenu* contextMenu, QLineEdit* filter, QCheckBox* regexSearchCheckBox,
+                   QSortFilterProxyModel* model, int initialSortColumn, int sortRole);
 
 template<typename Model>
-void setupTreeView(QTreeView* view, CostContextMenu* costContextMenu, QLineEdit* filter, Model* model)
+void setupTreeView(QTreeView* view, CostContextMenu* costContextMenu, QLineEdit* filter, QCheckBox* regexSearchCheckBox,
+                   Model* model)
 {
     auto* proxy = new CostProxy<Model>(view);
     proxy->setSourceModel(model);
-    setupTreeView(view, costContextMenu, filter, qobject_cast<QSortFilterProxyModel*>(proxy), Model::InitialSortColumn,
-                  Model::SortRole);
+    setupTreeView(view, costContextMenu, filter, regexSearchCheckBox, qobject_cast<QSortFilterProxyModel*>(proxy),
+                  Model::InitialSortColumn, Model::SortRole);
 }
 
 void setupCostDelegate(QAbstractItemModel* model, QTreeView* view, int sortRole, int totalCostRole, int numBaseColumns);

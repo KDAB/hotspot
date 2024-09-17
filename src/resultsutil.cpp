@@ -8,6 +8,7 @@
 
 #include "resultsutil.h"
 
+#include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QHeaderView>
@@ -33,8 +34,9 @@ void setupHeaderView(QTreeView* view, CostContextMenu* contextMenu)
     view->setHeader(new CostHeaderView(contextMenu, view));
 }
 
-void connectFilter(QLineEdit* filter, QSortFilterProxyModel* proxy)
+void connectFilter(QLineEdit* filter, QSortFilterProxyModel* proxy, QCheckBox* regexCheckBox)
 {
+    Q_ASSERT(regexCheckBox);
     auto* timer = new QTimer(filter);
     timer->setSingleShot(true);
 
@@ -44,17 +46,28 @@ void connectFilter(QLineEdit* filter, QSortFilterProxyModel* proxy)
     proxy->setFilterKeyColumn(-1);
     proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
-    QObject::connect(timer, &QTimer::timeout, proxy, [filter, proxy]() {
-        proxy->setFilterRegularExpression(QRegularExpression::escape(filter->text()));
-    });
+    auto setFilterNeedle = [filter, proxy, regexCheckBox]() {
+        auto useRegex = regexCheckBox->isChecked();
+        const auto needle = filter->text();
+        proxy->setFilterRegularExpression(useRegex ? needle : QRegularExpression::escape(needle));
+    };
+
+    QObject::connect(timer, &QTimer::timeout, proxy, setFilterNeedle);
+    if (regexCheckBox) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 7, 0)
+        QObject::connect(regexCheckBox, &QCheckBox::stateChanged, proxy, setFilterNeedle);
+#else
+        QObject::connect(regexCheckBox, &QCheckBox::checkStateChanged, proxy, setFilterNeedle);
+#endif
+    }
     QObject::connect(filter, &QLineEdit::textChanged, timer, [timer]() { timer->start(300); });
 }
 
-void setupTreeView(QTreeView* view, CostContextMenu* contextMenu, QLineEdit* filter, QSortFilterProxyModel* model,
-                   int initialSortColumn, int sortRole)
+void setupTreeView(QTreeView* view, CostContextMenu* contextMenu, QLineEdit* filter, QCheckBox* regexSearchCheckbox,
+                   QSortFilterProxyModel* model, int initialSortColumn, int sortRole)
 {
     model->setSortRole(sortRole);
-    connectFilter(filter, model);
+    connectFilter(filter, model, regexSearchCheckbox);
 
     view->setModel(model);
     setupHeaderView(view, contextMenu);
