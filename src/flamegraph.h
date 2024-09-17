@@ -45,7 +45,7 @@ protected:
 
 private slots:
     void setData(FrameGraphicsItem* rootItem);
-    void setSearchValue(const QString& value);
+    void setSearchValue(const QString& value, bool useRegex);
     void navigateBack();
     void navigateForward();
 
@@ -88,6 +88,7 @@ private:
     bool m_collapseRecursion = false;
     bool m_buildingScene = false;
     QString m_search;
+    bool m_useRegex = false;
     // cost threshold in percent, items below that value will not be shown
     static const constexpr double DEFAULT_COST_THRESHOLD = 0.1;
     double m_costThreshold = DEFAULT_COST_THRESHOLD;
