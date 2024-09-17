@@ -1466,10 +1466,7 @@ PerfParser::PerfParser(QObject* parent)
         m_stopRequested = false;
     });
 
-    auto parsingStopped = [this] {
-        m_isParsing = false;
-        m_decompressed.reset();
-    };
+    auto parsingStopped = [this] { m_isParsing = false; };
 
     connect(Settings::instance(), &Settings::costAggregationChanged, this, [this] { m_costAggregationChanged = true; });
 
@@ -1504,8 +1501,8 @@ bool PerfParser::initParserArgs(const QString& path)
     }
 
     // peek into file header
-    const auto filename = decompressIfNeeded(path);
-    QFile file(filename);
+    m_perfDataFilePath = decompressIfNeeded(path);
+    QFile file(m_perfDataFilePath);
     file.open(QIODevice::ReadOnly);
     if (file.peek(8) != "PERFILE2" && file.peek(11) != "QPERFSTREAM") {
         if (file.peek(8) == "PERFFILE") {
@@ -1560,7 +1557,7 @@ bool PerfParser::initParserArgs(const QString& path)
         return parserArgs;
     };
 
-    m_parserArgs = parserArgs(filename);
+    m_parserArgs = parserArgs(m_perfDataFilePath);
     m_parserBinary = parserBinary;
     return true;
 }
@@ -1585,8 +1582,8 @@ void PerfParser::startParseFile(const QString& path)
 
     emit parsingStarted();
     using namespace ThreadWeaver;
-    stream() << make_job([path, parserBinary = m_parserBinary, parserArgs = m_parserArgs, debuginfodUrls,
-                          costAggregation, this]() {
+    stream() << make_job([path = m_perfDataFilePath, parserBinary = m_parserBinary, parserArgs = m_parserArgs,
+                          debuginfodUrls, costAggregation, this]() {
         PerfParserPrivate d(costAggregation);
         connect(&d, &PerfParserPrivate::progress, this, &PerfParser::progress);
         connect(&d, &PerfParserPrivate::debugInfoDownloadProgress, this, &PerfParser::debugInfoDownloadProgress);
