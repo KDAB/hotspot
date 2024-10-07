@@ -79,6 +79,7 @@ private:
     // only set once after the initial startParseFile finished
     QString m_parserBinary;
     QStringList m_parserArgs;
+    QString m_perfDataFilePath;
     Data::BottomUpResults m_bottomUpResults;
     Data::CallerCalleeResults m_callerCalleeResults;
     Data::TracepointResults m_tracepointResults;

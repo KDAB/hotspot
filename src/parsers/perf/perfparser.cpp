@@ -34,7 +34,12 @@
 #include "settings.h"
 
 #if KFArchive_FOUND
+#include <K7Zip>
 #include <KCompressionDevice>
+#include <KTar>
+#include <KZip>
+
+#include <QMimeDatabase>
 #endif
 
 Q_LOGGING_CATEGORY(LOG_PERFPARSER, "hotspot.perfparser", QtWarningMsg)
@@ -1466,10 +1471,7 @@ PerfParser::PerfParser(QObject* parent)
         m_stopRequested = false;
     });
 
-    auto parsingStopped = [this] {
-        m_isParsing = false;
-        m_decompressed.reset();
-    };
+    auto parsingStopped = [this] { m_isParsing = false; };
 
     connect(Settings::instance(), &Settings::costAggregationChanged, this, [this] { m_costAggregationChanged = true; });
 
@@ -1504,8 +1506,8 @@ bool PerfParser::initParserArgs(const QString& path)
     }
 
     // peek into file header
-    const auto filename = decompressIfNeeded(path);
-    QFile file(filename);
+    m_perfDataFilePath = decompressIfNeeded(path);
+    QFile file(m_perfDataFilePath);
     file.open(QIODevice::ReadOnly);
     if (file.peek(8) != "PERFILE2" && file.peek(11) != "QPERFSTREAM") {
         if (file.peek(8) == "PERFFILE") {
@@ -1560,7 +1562,7 @@ bool PerfParser::initParserArgs(const QString& path)
         return parserArgs;
     };
 
-    m_parserArgs = parserArgs(filename);
+    m_parserArgs = parserArgs(m_perfDataFilePath);
     m_parserBinary = parserBinary;
     return true;
 }
@@ -1585,8 +1587,8 @@ void PerfParser::startParseFile(const QString& path)
 
     emit parsingStarted();
     using namespace ThreadWeaver;
-    stream() << make_job([path, parserBinary = m_parserBinary, parserArgs = m_parserArgs, debuginfodUrls,
-                          costAggregation, this]() {
+    stream() << make_job([path = m_perfDataFilePath, parserBinary = m_parserBinary, parserArgs = m_parserArgs,
+                          debuginfodUrls, costAggregation, this]() {
         PerfParserPrivate d(costAggregation);
         connect(&d, &PerfParserPrivate::progress, this, &PerfParser::progress);
         connect(&d, &PerfParserPrivate::debugInfoDownloadProgress, this, &PerfParser::debugInfoDownloadProgress);
@@ -1994,19 +1996,110 @@ void PerfParser::exportResults(const QUrl& url)
     });
 }
 
+// helper for extracting files from archives
+namespace {
+// create archive reader from mimetype
+auto getArchiveFromMime = [](const QString& filename, const QMimeType& mimeType) -> std::unique_ptr<KArchive> {
+    if (mimeType.name() == QLatin1String("application/x-tar")) {
+        return std::make_unique<KTar>(filename);
+    } else if (mimeType.name() == QLatin1String("application/zip")) {
+        return std::make_unique<KZip>(filename);
+    } else if (mimeType.name() == QLatin1String("application/x-7z-compressed")) {
+        return std::make_unique<K7Zip>(filename);
+    }
+    return {};
+};
+
+auto extractFromArchive = [](const std::unique_ptr<KArchive>& archive) -> std::unique_ptr<QTemporaryFile> {
+    auto extractFile = [](const KArchiveDirectory* directory,
+                          const QString& filename) -> std::unique_ptr<QTemporaryFile> {
+        auto extracted = std::make_unique<QTemporaryFile>();
+        extracted->open();
+
+        auto fileToExtract = directory->file(filename);
+        if (!fileToExtract) {
+            return {};
+        }
+
+        auto fileToExtractHandle = fileToExtract->createDevice();
+
+        const int chunkSize = 1024 * 100;
+
+        QByteArray buffer;
+        buffer.resize(chunkSize);
+
+        while (!fileToExtractHandle->atEnd()) {
+            const auto size = fileToExtractHandle->read(buffer.data(), buffer.size());
+            extracted->write(buffer.data(), size);
+        }
+        extracted->flush();
+
+        return extracted;
+    };
+
+    if (!archive->open(QIODevice::ReadOnly)) {
+        qWarning() << "Failed to open archive:" << archive->errorString();
+        return {};
+    }
+
+    auto dir = archive->directory();
+    auto entries = dir->entries();
+
+    if (entries.size() == 1) {
+        return extractFile(dir, entries[0]);
+    }
+
+    for (const auto& file : {QStringLiteral("perf.data"), QStringLiteral("perf.data.perfparser")}) {
+        if (entries.contains(file)) {
+            return extractFile(dir, file);
+        }
+    }
+
+    return {};
+};
+}
+
 QString PerfParser::decompressIfNeeded(const QString& path)
 {
 #if KFArchive_FOUND
-    m_decompressed = std::make_unique<QTemporaryFile>(this);
-
     KCompressionDevice compressedFile(path);
 
+    QMimeDatabase mimedb;
+
+    // extract perf.data file form archive, on success set m_decompressed to that file
+    // otherwise return the archive path
+    auto extractArchive = [this, &mimedb](const QString& path) {
+        const auto mimetype = mimedb.mimeTypeForFile(path);
+        auto archive = getArchiveFromMime(path, mimetype);
+
+        if (!archive) {
+            // we don't have and archive -> return original file
+            return path;
+        }
+
+        auto extracted = extractFromArchive(archive);
+        if (extracted) {
+            m_decompressed = std::move(extracted);
+        }
+        return m_decompressed->fileName();
+    };
+
+    // uncompressed file -> check if it is an archive (tar for example)
+    // extractArchive returns the original path if it couldn't open the archive
     if (compressedFile.compressionType() == KCompressionDevice::None) {
+        return extractArchive(path);
+    }
+
+    if (!compressedFile.open(QIODevice::ReadOnly)) {
+        // we failed to open the compressed file
+        qWarning() << "Failed to open:" << path;
         return path;
     }
 
-    if (compressedFile.open(QIODevice::ReadOnly)) {
-        m_decompressed->open();
+    // we now have a compressed file that could be an archive -> decompress
+    {
+        auto decompressed = std::make_unique<QTemporaryFile>();
+        decompressed->open();
 
         const int chunkSize = 1024 * 100;
 
@@ -2015,13 +2108,16 @@ QString PerfParser::decompressIfNeeded(const QString& path)
 
         while (!compressedFile.atEnd()) {
             const auto size = compressedFile.read(buffer.data(), buffer.size());
-            m_decompressed->write(buffer.data(), size);
+            decompressed->write(buffer.data(), size);
         }
-        m_decompressed->flush();
+        decompressed->flush();
 
         compressedFile.close();
-        return m_decompressed->fileName();
+        m_decompressed = std::move(decompressed);
     }
+
+    // if m_decompressed is not an archive, this will return m_decompressed
+    return extractArchive(m_decompressed->fileName());
 #endif
     // fallback
     return path;
