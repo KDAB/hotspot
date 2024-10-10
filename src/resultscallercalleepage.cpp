@@ -84,7 +84,7 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
     m_callerCalleeProxy = new CallerCalleeProxy<CallerCalleeModel>(this);
     m_callerCalleeProxy->setSourceModel(m_callerCalleeCostModel);
     m_callerCalleeProxy->setSortRole(CallerCalleeModel::SortRole);
-    ResultsUtil::connectFilter(ui->callerCalleeFilter, m_callerCalleeProxy);
+    ResultsUtil::connectFilter(ui->callerCalleeFilter, m_callerCalleeProxy, ui->regexCheckBox);
     ui->callerCalleeTableView->setSortingEnabled(true);
     ui->callerCalleeTableView->setModel(m_callerCalleeProxy);
     ResultsUtil::setupContextMenu(ui->callerCalleeTableView, contextMenu, m_callerCalleeCostModel, filterStack, this,

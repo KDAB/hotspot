@@ -61,7 +61,8 @@ ResultsBottomUpPage::ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfPa
     ui->setupUi(this);
 
     auto bottomUpCostModel = new BottomUpModel(this);
-    ResultsUtil::setupTreeView(ui->bottomUpTreeView, contextMenu, ui->bottomUpSearch, bottomUpCostModel);
+    ResultsUtil::setupTreeView(ui->bottomUpTreeView, contextMenu, ui->bottomUpSearch, ui->regexCheckBox,
+                               bottomUpCostModel);
     ResultsUtil::setupCostDelegate(bottomUpCostModel, ui->bottomUpTreeView);
     ResultsUtil::setupContextMenu(ui->bottomUpTreeView, contextMenu, bottomUpCostModel, filterStack, this);
 

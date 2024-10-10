@@ -65,6 +65,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QCheckBox" name="regexCheckBox">
+       <property name="text">
+        <string>Regex Search</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Event Source:</string>
