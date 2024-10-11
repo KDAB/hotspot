@@ -798,34 +798,44 @@ private slots:
 #if KFArchive_FOUND
     void testDecompression_data()
     {
-        QTest::addColumn<QByteArray>("content");
         QTest::addColumn<QString>("filename");
 
-        QTest::newRow("plain") << QByteArrayLiteral("Hello World\n") << QStringLiteral("XXXXXX");
-        QTest::newRow("gzip") << QByteArray::fromBase64(
-            QByteArrayLiteral("H4sIAAAAAAAAA/NIzcnJVwjPL8pJ4QIA4+WVsAwAAAA="))
-                              << QStringLiteral("XXXXXX.gz");
-        QTest::newRow("bzip2") << QByteArray::fromBase64(
-            QByteArrayLiteral("QlpoOTFBWSZTWdhyAS8AAAFXgAAQQAAAQACABgSQACAAIgaG1CDJiMdp6Cgfi7kinChIbDkAl4A="))
-                               << QStringLiteral("XXXXXX.bz2");
-        QTest::newRow("xz") << QByteArray::fromBase64(QByteArrayLiteral(
-            "/Td6WFoAAATm1rRGAgAhARYAAAB0L+WjAQALSGVsbG8gV29ybGQKACLgdT/V7Tg+AAEkDKYY2NgftvN9AQAAAAAEWVo="))
-                            << QStringLiteral("XXXXXX.xz");
+        QTest::newRow("plain") << QFINDTESTDATA("archives/test.txt");
+        QTest::newRow("gzip") << QFINDTESTDATA("archives/test.gz");
+        QTest::newRow("bzip2") << QFINDTESTDATA("archives/test.bz2");
+        QTest::newRow("xz") << QFINDTESTDATA("archives/test.xz");
     }
 
     void testDecompression()
     {
-        QFETCH(QByteArray, content);
         QFETCH(QString, filename);
 
-        QTemporaryFile compressed;
-        compressed.setFileTemplate(filename);
-        compressed.open();
-        compressed.write(content);
-        compressed.close();
+        PerfParser parser;
+        QFile decompressed(parser.decompressIfNeeded(filename));
+        decompressed.open(QIODevice::ReadOnly);
+
+        QCOMPARE(decompressed.readAll(), QByteArrayLiteral("Hello World\n"));
+    }
+
+    void testArchive_data()
+    {
+        QTest::addColumn<QString>("filename");
+
+        QTest::addRow("uncompressed tar") << QFINDTESTDATA("archives/test.tar");
+
+        QTest::addRow("gzip compressed tar") << QFINDTESTDATA("archives/test.tar.gz");
+
+        QTest::addRow("zip file") << QFINDTESTDATA("archives/test.zip");
+
+        QTest::addRow("tar file with multiple files") << QFINDTESTDATA("archives/test-multi-files.tar");
+    }
+
+    void testArchive()
+    {
+        QFETCH(QString, filename);
 
         PerfParser parser;
-        QFile decompressed(parser.decompressIfNeeded(compressed.fileName()));
+        QFile decompressed(parser.decompressIfNeeded(filename));
         decompressed.open(QIODevice::ReadOnly);
 
         QCOMPARE(decompressed.readAll(), QByteArrayLiteral("Hello World\n"));
