@@ -22,7 +22,8 @@ ResultsTopDownPage::ResultsTopDownPage(FilterAndZoomStack* filterStack, PerfPars
     ui->setupUi(this);
 
     auto topDownCostModel = new TopDownModel(this);
-    ResultsUtil::setupTreeView(ui->topDownTreeView, contextMenu, ui->topDownSearch, topDownCostModel);
+    ResultsUtil::setupTreeView(ui->topDownTreeView, contextMenu, ui->topDownSearch, ui->regexCheckBox,
+                               topDownCostModel);
     ResultsUtil::setupCostDelegate(topDownCostModel, ui->topDownTreeView);
     ResultsUtil::setupContextMenu(ui->topDownTreeView, contextMenu, topDownCostModel, filterStack, this);
 

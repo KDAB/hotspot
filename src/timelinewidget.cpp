@@ -67,7 +67,7 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
     timeLineProxy->setSortRole(EventModel::SortRole);
     timeLineProxy->setFilterKeyColumn(EventModel::ThreadColumn);
     timeLineProxy->setFilterRole(Qt::DisplayRole);
-    ResultsUtil::connectFilter(ui->timeLineSearch, timeLineProxy);
+    ResultsUtil::connectFilter(ui->timeLineSearch, timeLineProxy, ui->regexCheckBox);
     ui->timeLineView->setModel(timeLineProxy);
     ui->timeLineView->setSortingEnabled(true);
     // ensure the vertical scroll bar is always shown, otherwise the timeline

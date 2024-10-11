@@ -546,14 +546,13 @@ struct SearchResults
     qint64 directCost = 0;
 };
 
-SearchResults applySearch(FrameGraphicsItem* item, const QString& searchValue)
+SearchResults applySearch(FrameGraphicsItem* item, const QRegularExpression& expression)
 {
     SearchResults result;
-    if (searchValue.isEmpty()) {
+    if (expression.pattern().isEmpty()) {
         result.matchType = NoSearch;
-    } else if (item->symbol().symbol.contains(searchValue, Qt::CaseInsensitive)
-               || (searchValue == QLatin1String("??") && item->symbol().symbol.isEmpty())
-               || item->symbol().binary.contains(searchValue, Qt::CaseInsensitive)) {
+    } else if (expression.match(item->symbol().symbol).hasMatch() || expression.match(item->symbol().binary).hasMatch()
+               || (expression.pattern() == QLatin1String("\\?\\?") && item->symbol().symbol.isEmpty())) {
         result.directCost += item->cost();
         result.matchType = DirectMatch;
     }
@@ -562,7 +561,7 @@ SearchResults applySearch(FrameGraphicsItem* item, const QString& searchValue)
     const auto children = item->childItems();
     for (auto* child : children) {
         auto* childFrame = static_cast<FrameGraphicsItem*>(child);
-        auto childMatch = applySearch(childFrame, searchValue);
+        auto childMatch = applySearch(childFrame, expression);
         if (result.matchType != DirectMatch
             && (childMatch.matchType == DirectMatch || childMatch.matchType == ChildMatch)) {
             result.matchType = ChildMatch;
@@ -805,13 +804,26 @@ FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)
             searchInput->setMinimumWidth(200);
             layout->addWidget(searchInput);
 
+            auto regexCheckBox = new QCheckBox(widget);
+            regexCheckBox->setText(tr("Regex Search"));
+            layout->addWidget(regexCheckBox);
+
             searchInput->setPlaceholderText(i18n("Search..."));
             searchInput->setToolTip(i18n("<qt>Search the flame graph for a symbol.</qt>"));
             searchInput->setClearButtonEnabled(true);
-            connect(searchInput, &QLineEdit::textChanged, this, &FlameGraph::setSearchValue);
-            connect(this, &FlameGraph::uiResetRequested, this, [this, searchInput] {
+            connect(searchInput, &QLineEdit::textChanged, this,
+                    [this](const QString& value) { this->setSearchValue(value, m_useRegex); });
+            auto applyRegexCheckBox = [this](bool checked) { this->setSearchValue(m_search, checked); };
+#if QT_VERSION < QT_VERSION_CHECK(6, 7, 0)
+            connect(regexCheckBox, &QCheckBox::stateChanged, this, applyRegexCheckBox);
+#else
+            connect(regexCheckBox, &QCheckBox::checkStateChanged, this, applyRegexCheckBox);
+#endif
+            connect(this, &FlameGraph::uiResetRequested, this, [this, searchInput, regexCheckBox] {
                 m_search.clear();
+                m_useRegex = false;
                 searchInput->clear();
+                regexCheckBox->setChecked(false);
             });
         },
         this);
@@ -1140,7 +1152,7 @@ void FlameGraph::setData(FrameGraphicsItem* rootItem)
     m_scene->addItem(rootItem);
 
     if (!m_search.isEmpty()) {
-        setSearchValue(m_search);
+        setSearchValue(m_search, m_useRegex);
     }
     if (!m_hoveredStacks.isEmpty()) {
         hoverStacks(rootItem, m_hoveredStacks);
@@ -1204,15 +1216,16 @@ void FlameGraph::selectItem(FrameGraphicsItem* item)
     setTooltipItem(item);
 }
 
-void FlameGraph::setSearchValue(const QString& value)
+void FlameGraph::setSearchValue(const QString& value, bool useRegex)
 {
     if (!m_rootItem) {
         return;
     }
 
     m_search = value;
-
-    auto match = applySearch(m_rootItem, value);
+    m_useRegex = useRegex;
+    auto regex = useRegex ? value : QRegularExpression::escape(value);
+    auto match = applySearch(m_rootItem, QRegularExpression(regex));
 
     if (value.isEmpty()) {
         m_searchResultsLabel->hide();
