@@ -63,7 +63,7 @@ QVariant CallerCalleeModel::headerCell(int column, int role) const
                 "The name of the executable the symbol resides in. May be empty when debug information is missing.");
         }
 
-        column -= 2;
+        column -= NUM_BASE_COLUMNS;
         if (column < m_results.selfCosts.numTypes()) {
             return tr("The aggregated sample costs directly attributed to this symbol.");
         }
@@ -107,7 +107,7 @@ QVariant CallerCalleeModel::cell(int column, int role, const Data::Symbol& symbo
         case Binary:
             return symbol.binary;
         }
-        column -= 2;
+        column -= NUM_BASE_COLUMNS;
         if (column < m_results.selfCosts.numTypes()) {
             return Util::formatCostRelative(m_results.selfCosts.cost(column, entry.id),
                                             m_results.selfCosts.totalCost(column), true);
