@@ -126,7 +126,7 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
     auto callersModel = setupModelAndProxyForView<CallerModel>(ui->callersView, contextMenu);
     auto sourceMapModel = setupModelAndProxyForView<SourceMapModel>(ui->sourceMapView, contextMenu);
 
-    auto selectCallerCaleeeIndex = [calleesModel, callersModel, sourceMapModel, this](const QModelIndex& index) {
+    auto selectCallerCalleeIndex = [calleesModel, callersModel, sourceMapModel, this](const QModelIndex& index) {
         const auto costs = index.data(CallerCalleeModel::SelfCostsRole).value<Data::Costs>();
         const auto callees = index.data(CallerCalleeModel::CalleesRole).value<Data::CalleeMap>();
         calleesModel->setResults(callees, costs);
@@ -143,8 +143,8 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
         }
 #endif
     };
-    connectCallerOrCalleeModel<CalleeModel>(ui->calleesView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
-    connectCallerOrCalleeModel<CallerModel>(ui->callersView, m_callerCalleeCostModel, selectCallerCaleeeIndex);
+    connectCallerOrCalleeModel<CalleeModel>(ui->calleesView, m_callerCalleeCostModel, selectCallerCalleeIndex);
+    connectCallerOrCalleeModel<CallerModel>(ui->callersView, m_callerCalleeCostModel, selectCallerCalleeIndex);
     ResultsUtil::setupContextMenu(ui->calleesView, contextMenu, calleesModel, filterStack, this,
                                   {ResultsUtil::CallbackAction::OpenEditor, ResultsUtil::CallbackAction::SelectSymbol,
                                    ResultsUtil::CallbackAction::ViewDisassembly});
@@ -155,9 +155,9 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
 #if KGraphViewerPart_FOUND
     if (m_callgraph) {
         connect(m_callgraph, &CallgraphWidget::clickedOn, this,
-                [this, selectCallerCaleeeIndex](const Data::Symbol& symbol) {
+                [this, selectCallerCalleeIndex](const Data::Symbol& symbol) {
                     const auto index = m_callerCalleeCostModel->indexForKey(symbol);
-                    selectCallerCaleeeIndex(index);
+                    selectCallerCalleeIndex(index);
                 });
     }
 #endif
@@ -167,9 +167,9 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
             &ResultsCallerCalleePage::onSourceMapContextMenu);
 
     connect(ui->callerCalleeTableView->selectionModel(), &QItemSelectionModel::currentRowChanged, this,
-            [selectCallerCaleeeIndex](const QModelIndex& current, const QModelIndex&) {
+            [selectCallerCalleeIndex](const QModelIndex& current, const QModelIndex&) {
                 if (current.isValid()) {
-                    selectCallerCaleeeIndex(current);
+                    selectCallerCalleeIndex(current);
                 }
             });
 
