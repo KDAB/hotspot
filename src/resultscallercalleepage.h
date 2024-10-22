@@ -44,9 +44,7 @@ public:
 
     void jumpToCallerCallee(const Data::Symbol& symbol);
     void openEditor(const Data::Symbol& symbol);
-
-private slots:
-    void onSourceMapContextMenu(QPoint pos);
+    void openFileLineRequested(const Data::FileLine& fileLine);
 
 signals:
     void navigateToCode(const QString& url, int lineNumber, int columnNumber);
@@ -56,6 +54,8 @@ signals:
     void jumpToDisassembly(const Data::Symbol& symbol);
 
 private:
+    void onSourceMapContextMenu(QPoint pos);
+
     struct SourceMapLocation
     {
         inline explicit operator bool() const
@@ -65,9 +65,11 @@ private:
 
         QString path;
         int lineNumber = -1;
+        QString binaryPath;
     };
     SourceMapLocation toSourceMapLocation(const QModelIndex& index) const;
-    SourceMapLocation toSourceMapLocation(const Data::FileLine& fileLine, const Data::Symbol& symbol) const;
+    SourceMapLocation toSourceMapLocation(const Data::FileLine& fileLine, const QString& binaryPath) const;
+    void showSourceMapContextMenu(const SourceMapLocation& location, const Data::Symbol& symbol);
 
     std::unique_ptr<Ui::ResultsCallerCalleePage> ui;
     CallgraphWidget* m_callgraph;

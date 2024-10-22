@@ -179,14 +179,16 @@ ResultsCallerCalleePage::ResultsCallerCalleePage(FilterAndZoomStack* filterStack
 
 ResultsCallerCalleePage::~ResultsCallerCalleePage() = default;
 
-ResultsCallerCalleePage::SourceMapLocation
-ResultsCallerCalleePage::toSourceMapLocation(const Data::FileLine& fileLine, const Data::Symbol& symbol) const
+ResultsCallerCalleePage::SourceMapLocation ResultsCallerCalleePage::toSourceMapLocation(const Data::FileLine& fileLine,
+                                                                                        const QString& binaryPath) const
 {
     if (!fileLine.isValid()) {
         return {};
     }
 
     SourceMapLocation ret;
+    ret.binaryPath = binaryPath;
+
     auto resolvePath = [&ret, &fileLine](const QString& pathName) -> bool {
         const QString path = pathName + fileLine.file;
         if (QFileInfo::exists(path)) {
@@ -199,7 +201,7 @@ ResultsCallerCalleePage::toSourceMapLocation(const Data::FileLine& fileLine, con
 
     // also try to resolve paths relative to the module output folder
     // fixes a common issue with qmake builds that use relative paths
-    const QString modulePath = QFileInfo(symbol.path).path() + QLatin1Char('/');
+    const QString modulePath = QFileInfo(binaryPath).path() + QLatin1Char('/');
 
     resolvePath(m_sysroot) || resolvePath(m_sysroot + modulePath) || resolvePath(m_appPath)
         || resolvePath(m_appPath + modulePath);
@@ -212,7 +214,13 @@ ResultsCallerCalleePage::SourceMapLocation ResultsCallerCalleePage::toSourceMapL
     const auto fileLine = index.data(SourceMapModel::FileLineRole).value<Data::FileLine>();
     const auto symbol =
         ui->callerCalleeTableView->currentIndex().data(CallerCalleeModel::SymbolRole).value<Data::Symbol>();
-    return toSourceMapLocation(fileLine, symbol);
+    return toSourceMapLocation(fileLine, symbol.path);
+}
+
+void ResultsCallerCalleePage::openFileLineRequested(const Data::FileLine& fileLine)
+{
+    // TODO: how should we try to find a symbol here to resolve relative paths?
+    showSourceMapContextMenu(toSourceMapLocation(fileLine, {}), {});
 }
 
 void ResultsCallerCalleePage::onSourceMapContextMenu(QPoint point)
@@ -222,31 +230,26 @@ void ResultsCallerCalleePage::onSourceMapContextMenu(QPoint point)
         return;
     }
 
-    const auto location = toSourceMapLocation(sourceMapIndex);
-    if (!location) {
-        return;
-    }
-
-    QMenu contextMenu;
-    auto* viewCallerCallee = contextMenu.addAction(tr("Open in Editor"));
-    connect(viewCallerCallee, &QAction::triggered, this, [this, location, sourceMapIndex] {
-        if (location) {
-            emit navigateToCode(location.path, location.lineNumber, 0);
-        } else {
-            const auto fileLine = sourceMapIndex.data(SourceMapModel::FileLineRole).value<Data::FileLine>();
-            emit navigateToCodeFailed(tr("Failed to find file for location '%1'.").arg(fileLine.toString()));
-        }
-    });
-
-    auto line = sourceMapIndex.data(SourceMapModel::FileLineRole).value<Data::FileLine>();
-    auto disassemblyAction = contextMenu.addAction(tr("Disassembly"));
-
     // fetch current symbol from callerCalleeView to check if we can disassemble it
     const auto symbol =
         ui->callerCalleeTableView->currentIndex().data(CallerCalleeModel::SymbolRole).value<Data::Symbol>();
+    showSourceMapContextMenu(toSourceMapLocation(sourceMapIndex), symbol);
+}
+
+void ResultsCallerCalleePage::showSourceMapContextMenu(const SourceMapLocation& location, const Data::Symbol& symbol)
+{
+    if (!location)
+        return;
+
+    QMenu contextMenu;
+    auto* viewCallerCallee = contextMenu.addAction(tr("Open in Editor"));
+    connect(viewCallerCallee, &QAction::triggered, this,
+            [this, location] { emit navigateToCode(location.path, location.lineNumber, 0); });
+
+    auto disassemblyAction = contextMenu.addAction(tr("Disassembly"));
     disassemblyAction->setEnabled(symbol.canDisassemble());
     connect(disassemblyAction, &QAction::triggered, this,
-            [this, symbol, line] { emit jumpToSourceCode(symbol, line); });
+            [this, symbol, location] { emit jumpToSourceCode(symbol, {location.path, location.lineNumber}); });
 
     contextMenu.exec(QCursor::pos());
 }
@@ -278,7 +281,7 @@ void ResultsCallerCalleePage::openEditor(const Data::Symbol& symbol)
     const auto map = callerCalleeIndex.data(CallerCalleeModel::SourceMapRole).value<Data::SourceLocationCostMap>();
 
     auto it = std::find_if(map.keyBegin(), map.keyEnd(), [&symbol, this](const Data::FileLine& fileLine) {
-        const auto location = toSourceMapLocation(fileLine, symbol);
+        const auto location = toSourceMapLocation(fileLine, symbol.path);
         if (location) {
             auto settings = Settings::instance();
             const auto colon = QLatin1Char(':');

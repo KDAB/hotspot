@@ -667,20 +667,25 @@ struct LocationCost
 using SourceLocationCostMap = QHash<FileLine, LocationCost>;
 using OffsetLocationCostMap = QHash<quint64, LocationCost>;
 
+inline LocationCost& source(SourceLocationCostMap& sourceMap, const FileLine& fileLine, int numTypes)
+{
+    auto it = sourceMap.find(fileLine);
+    if (it == sourceMap.end()) {
+        it = sourceMap.insert(fileLine, {numTypes});
+    } else if (it->inclusiveCost.size() < static_cast<size_t>(numTypes)) {
+        it->inclusiveCost.resize(numTypes);
+        it->selfCost.resize(numTypes);
+    }
+    return *it;
+}
+
 struct CallerCalleeEntry
 {
     quint32 id = 0;
 
     LocationCost& source(const FileLine& fileLine, int numTypes)
     {
-        auto it = sourceMap.find(fileLine);
-        if (it == sourceMap.end()) {
-            it = sourceMap.insert(fileLine, {numTypes});
-        } else if (it->inclusiveCost.size() < static_cast<size_t>(numTypes)) {
-            it->inclusiveCost.resize(numTypes);
-            it->selfCost.resize(numTypes);
-        }
-        return *it;
+        return Data::source(sourceMap, fileLine, numTypes);
     }
 
     ItemCost& callee(const Symbol& symbol, int numTypes)
@@ -747,6 +752,36 @@ struct CallerCalleeResults
 };
 
 void callerCalleesFromBottomUpData(const BottomUpResults& data, CallerCalleeResults* results);
+
+struct ByFileEntry
+{
+    quint32 id = 0;
+
+    LocationCost& source(const FileLine& fileLine, int numTypes)
+    {
+        return Data::source(sourceMap, fileLine, numTypes);
+    }
+    // source map for this file, i.e. locations mapped to associated costs
+    SourceLocationCostMap sourceMap;
+};
+
+using ByFileEntryMap = QHash<QString, ByFileEntry>;
+struct ByFileResults
+{
+    ByFileEntryMap entries;
+    Costs selfCosts;
+    Costs inclusiveCosts;
+
+    ByFileEntry& entry(const QString& file)
+    {
+        auto fileIt = entries.find(file);
+        if (fileIt == entries.end()) {
+            fileIt = entries.insert(file, {});
+            fileIt->id = entries.size() - 1;
+        }
+        return *fileIt;
+    }
+};
 
 const constexpr auto INVALID_CPU_ID = std::numeric_limits<quint32>::max();
 const constexpr int INVALID_TID = -1;
@@ -1008,6 +1043,9 @@ Q_DECLARE_TYPEINFO(Data::TopDown, Q_MOVABLE_TYPE);
 Q_DECLARE_METATYPE(Data::CallerCalleeEntry)
 Q_DECLARE_TYPEINFO(Data::CallerCalleeEntry, Q_MOVABLE_TYPE);
 
+Q_DECLARE_METATYPE(Data::ByFileEntry)
+Q_DECLARE_TYPEINFO(Data::ByFileEntry, Q_MOVABLE_TYPE);
+
 Q_DECLARE_METATYPE(Data::BottomUpResults)
 Q_DECLARE_TYPEINFO(Data::BottomUpResults, Q_MOVABLE_TYPE);
 
@@ -1019,6 +1057,9 @@ Q_DECLARE_TYPEINFO(Data::PerLibraryResults, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::CallerCalleeResults)
 Q_DECLARE_TYPEINFO(Data::CallerCalleeResults, Q_MOVABLE_TYPE);
+
+Q_DECLARE_METATYPE(Data::ByFileResults)
+Q_DECLARE_TYPEINFO(Data::ByFileResults, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::Event)
 Q_DECLARE_TYPEINFO(Data::Event, Q_MOVABLE_TYPE);

@@ -18,6 +18,7 @@ struct FileLine;
 namespace CallerCalleeProxyDetail {
 bool match(const QSortFilterProxyModel* proxy, const Data::Symbol& symbol);
 bool match(const QSortFilterProxyModel* proxy, const Data::FileLine& fileLine);
+bool match(const QSortFilterProxyModel* proxy, const QString& file);
 }
 
 class SourceMapModel;

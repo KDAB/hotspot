@@ -39,6 +39,7 @@ set(HOTSPOT_SRCS
     resultsbottomuppage.cpp
     resultsflamegraphpage.cpp
     resultscallercalleepage.cpp
+    resultsbyfilepage.cpp
     resultsdisassemblypage.cpp
     resultsutil.cpp
     costheaderview.cpp
@@ -66,6 +67,7 @@ set(HOTSPOT_SRCS
     resultsbottomuppage.ui
     resultsflamegraphpage.ui
     resultscallercalleepage.ui
+    resultsbyfilepage.ui
     resultsdisassemblypage.ui
     timelinewidget.ui
     unwindsettingspage.ui

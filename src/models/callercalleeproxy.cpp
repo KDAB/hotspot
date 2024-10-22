@@ -34,6 +34,13 @@ bool match(const QSortFilterProxyModel* proxy, const Data::FileLine& fileLine)
 
     return matchImpl(pattern, fileLine.file);
 }
+
+bool match(const QSortFilterProxyModel* proxy, const QString& file)
+{
+    const auto pattern = proxy->filterRegularExpression();
+
+    return matchImpl(pattern, file);
+}
 }
 
 SourceMapProxy::SourceMapProxy(QObject* parent)

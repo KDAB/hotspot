@@ -359,6 +359,12 @@ QString Util::formatBinaryTooltip(int id, const Data::Symbol& symbol, const Data
     return formatTooltipImpl(id, Util::formatString(symbol.binary), nullptr, &costs);
 }
 
+QString Util::formatFileTooltip(int id, const QString& file, const Data::Costs& selfCosts,
+                                const Data::Costs& inclusiveCosts)
+{
+    return formatTooltipImpl(id, Util::formatString(file), &selfCosts, &inclusiveCosts);
+}
+
 QString Util::formatTooltip(int id, const Data::Symbol& symbol, const Data::Costs& costs)
 {
     return formatTooltipImpl(id, formatForTooltip(symbol), nullptr, &costs);

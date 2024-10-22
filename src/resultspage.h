@@ -32,6 +32,7 @@ class ResultsBottomUpPage;
 class ResultsTopDownPage;
 class ResultsFlameGraphPage;
 class ResultsCallerCalleePage;
+class ResultsByFilePage;
 class ResultsDisassemblyPage;
 class FilterAndZoomStack;
 class TimeLineWidget;
@@ -86,6 +87,8 @@ private:
     ResultsFlameGraphPage* m_resultsFlameGraphPage;
     DockWidget* m_callerCalleeDock;
     ResultsCallerCalleePage* m_resultsCallerCalleePage;
+    DockWidget* m_byFileDock;
+    ResultsByFilePage* m_resultsByFilePage;
     DockWidget* m_disassemblyDock;
     ResultsDisassemblyPage* m_resultsDisassemblyPage;
     DockWidget* m_timeLineDock;

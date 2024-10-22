@@ -556,6 +556,25 @@ void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& loca
         recursionGuard->insert(symbol);
     }
 }
+void addByFileEvent(const Data::Symbol& symbol, const Data::Location& location, int type, quint64 cost,
+                    QSet<QString>* recursionGuard, Data::ByFileResults* byFileResult, int numCosts)
+{
+    const auto& key = location.fileLine.file.isEmpty() ? symbol.binary : location.fileLine.file;
+    auto recursionIt = recursionGuard->find(key);
+    if (recursionIt == recursionGuard->end()) {
+        auto& entry = byFileResult->entry(key);
+        auto& sourceCost = entry.source(location.fileLine, numCosts);
+
+        byFileResult->inclusiveCosts.add(type, entry.id, cost);
+        sourceCost.inclusiveCost[type] += cost;
+        if (recursionGuard->isEmpty()) {
+            // increment self cost for leaf
+            byFileResult->selfCosts.add(type, entry.id, cost);
+            sourceCost.selfCost[type] += cost;
+        }
+        recursionGuard->insert(key);
+    }
+}
 
 template<typename FrameCallback>
 void addBottomUpResult(Data::BottomUpResults* bottomUpResult, Settings::CostAggregation costAggregation,
@@ -876,6 +895,9 @@ public:
         summaryResult.threadCount = uniqueThreads.size();
         summaryResult.processCount = uniqueProcess.size();
 
+        byFileResult.inclusiveCosts.setTotalCosts(bottomUpResult.costs.totalCosts());
+        byFileResult.selfCosts.setTotalCosts(bottomUpResult.costs.totalCosts());
+
         buildTopDownResult();
         buildPerLibraryResult();
         buildCallerCalleeResult();
@@ -935,6 +957,8 @@ public:
         summaryResult.costs.push_back({label, 0, 0, unit});
         Q_ASSERT(bottomUpResult.costs.numTypes() == costId);
         bottomUpResult.costs.addType(costId, label, unit);
+        byFileResult.inclusiveCosts.addType(costId, label, unit);
+        byFileResult.selfCosts.addType(costId, label, unit);
 
         return costId;
     }
@@ -1141,6 +1165,7 @@ public:
         }
 
         QSet<Data::Symbol> recursionGuard;
+        QSet<QString> fileRecursionGuard;
         const auto type = attributeIdsToCostIds.value(sampleCost.attributeId, -1);
 
         if (type < 0) {
@@ -1149,10 +1174,12 @@ public:
             return;
         }
 
-        auto frameCallback = [this, &recursionGuard, &sampleCost, type](const Data::Symbol& symbol,
-                                                                        const Data::Location& location) {
+        auto frameCallback = [this, &recursionGuard, &fileRecursionGuard, &sampleCost,
+                              type](const Data::Symbol& symbol, const Data::Location& location) {
             addCallerCalleeEvent(symbol, location, type, sampleCost.cost, &recursionGuard, &callerCalleeResult,
                                  bottomUpResult.costs.numTypes());
+            addByFileEvent(symbol, location, type, sampleCost.cost, &fileRecursionGuard, &byFileResult,
+                           bottomUpResult.costs.numTypes());
 
             if (perfScriptOutput) {
                 *perfScriptOutput << '\t' << Qt::hex << qSetFieldWidth(16) << location.address << qSetFieldWidth(0)
@@ -1246,10 +1273,13 @@ public:
             if (stackId != -1) {
                 const auto& frames = eventResult.stacks[stackId];
                 QSet<Data::Symbol> recursionGuard;
-                auto frameCallback = [this, &recursionGuard, switchTime](const Data::Symbol& symbol,
-                                                                         const Data::Location& location) {
+                QSet<QString> fileRecursionGuard;
+                auto frameCallback = [this, &recursionGuard, &fileRecursionGuard,
+                                      switchTime](const Data::Symbol& symbol, const Data::Location& location) {
                     addCallerCalleeEvent(symbol, location, eventResult.offCpuTimeCostId, switchTime, &recursionGuard,
                                          &callerCalleeResult, bottomUpResult.costs.numTypes());
+                    addByFileEvent(symbol, location, eventResult.offCpuTimeCostId, switchTime, &fileRecursionGuard,
+                                   &byFileResult, bottomUpResult.costs.numTypes());
                 };
                 addBottomUpResult(eventResult.offCpuTimeCostId, switchTime, contextSwitch.pid, contextSwitch.tid,
                                   contextSwitch.cpu, frames, frameCallback);
@@ -1383,6 +1413,7 @@ public:
     Data::TopDownResults topDownResult;
     Data::PerLibraryResults perLibraryResult;
     Data::CallerCalleeResults callerCalleeResult;
+    Data::ByFileResults byFileResult;
     Data::EventResults eventResult;
     Data::TracepointResults tracepointResult;
     Data::FrequencyResults frequencyResult;
@@ -1427,6 +1458,7 @@ PerfParser::PerfParser(QObject* parent)
     qRegisterMetaType<Data::BottomUpResults>();
     qRegisterMetaType<Data::TopDownResults>();
     qRegisterMetaType<Data::CallerCalleeResults>();
+    qRegisterMetaType<Data::ByFileResults>();
     qRegisterMetaType<Data::EventResults>();
     qRegisterMetaType<Data::PerLibraryResults>();
     qRegisterMetaType<Data::TracepointResults>();
@@ -1442,6 +1474,11 @@ PerfParser::PerfParser(QObject* parent)
     connect(this, &PerfParser::callerCalleeDataAvailable, this, [this](const Data::CallerCalleeResults& data) {
         if (m_callerCalleeResults.entries.isEmpty()) {
             m_callerCalleeResults = data;
+        }
+    });
+    connect(this, &PerfParser::byFileDataAvailable, this, [this](const Data::ByFileResults& data) {
+        if (m_byFileResults.entries.isEmpty()) {
+            m_byFileResults = data;
         }
     });
     connect(this, &PerfParser::frequencyDataAvailable, this, [this](const Data::FrequencyResults& data) {
@@ -1576,6 +1613,7 @@ void PerfParser::startParseFile(const QString& path)
 
     m_bottomUpResults = {};
     m_callerCalleeResults = {};
+    m_byFileResults = {};
     m_tracepointResults = {};
     m_events = {};
     m_frequencyResults = {};
@@ -1599,6 +1637,7 @@ void PerfParser::startParseFile(const QString& path)
             emit perLibraryDataAvailable(d.perLibraryResult);
             emit summaryDataAvailable(d.summaryResult);
             emit callerCalleeDataAvailable(d.callerCalleeResult);
+            emit byFileDataAvailable(d.byFileResult);
             emit tracepointDataAvailable(d.tracepointResult);
             emit eventsAvailable(d.eventResult);
             emit frequencyDataAvailable(d.frequencyResult);
@@ -1727,6 +1766,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         Data::BottomUpResults bottomUp;
         Data::EventResults events = m_events;
         Data::CallerCalleeResults callerCallee;
+        Data::ByFileResults byFile;
         Data::TracepointResults tracepointResults = m_tracepointResults;
         auto frequencyResults = m_frequencyResults;
         const bool filterByTime = filter.time.isValid();
@@ -1741,7 +1781,11 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         if (!filter.isValid() && !m_costAggregationChanged) {
             bottomUp = m_bottomUpResults;
             callerCallee = m_callerCalleeResults;
+            byFile = m_byFileResults;
         } else {
+            byFile.inclusiveCosts.initializeCostsFrom(m_bottomUpResults.costs);
+            byFile.selfCosts.initializeCostsFrom(m_bottomUpResults.costs);
+
             bottomUp.symbols = m_bottomUpResults.symbols;
             bottomUp.locations = m_bottomUpResults.locations;
             bottomUp.costs.initializeCostsFrom(m_bottomUpResults.costs);
@@ -1869,10 +1913,13 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                     }
 
                     QSet<Data::Symbol> recursionGuard;
-                    auto frameCallback = [&callerCallee, &recursionGuard, &event,
+                    QSet<QString> fileRecursionGuard;
+                    auto frameCallback = [&callerCallee, &recursionGuard, &byFile, &fileRecursionGuard, &event,
                                           numCosts](const Data::Symbol& symbol, const Data::Location& location) {
                         addCallerCalleeEvent(symbol, location, event.type, event.cost, &recursionGuard, &callerCallee,
                                              numCosts);
+                        addByFileEvent(symbol, location, event.type, event.cost, &fileRecursionGuard, &byFile,
+                                       numCosts);
                     };
 
                     if (event.stackId != -1) {
@@ -1918,6 +1965,7 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         emit topDownDataAvailable(topDown);
         emit perLibraryDataAvailable(perLibrary);
         emit callerCalleeDataAvailable(callerCallee);
+        emit byFileDataAvailable(byFile);
         emit frequencyDataAvailable(frequencyResults);
         emit tracepointDataAvailable(tracepointResults);
         emit eventsAvailable(events);

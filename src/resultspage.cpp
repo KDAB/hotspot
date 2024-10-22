@@ -15,6 +15,7 @@
 #include "costcontextmenu.h"
 #include "dockwidgetsetup.h"
 #include "resultsbottomuppage.h"
+#include "resultsbyfilepage.h"
 #include "resultscallercalleepage.h"
 #include "resultsdisassemblypage.h"
 #include "resultsflamegraphpage.h"
@@ -80,6 +81,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     , m_resultsTopDownPage(new ResultsTopDownPage(m_filterAndZoomStack, parser, m_costContextMenu, this))
     , m_resultsFlameGraphPage(new ResultsFlameGraphPage(m_filterAndZoomStack, parser, m_exportMenu, this))
     , m_resultsCallerCalleePage(new ResultsCallerCalleePage(m_filterAndZoomStack, parser, m_costContextMenu, this))
+    , m_resultsByFilePage(new ResultsByFilePage(m_filterAndZoomStack, parser, m_costContextMenu, this))
     , m_resultsDisassemblyPage(new ResultsDisassemblyPage(m_costContextMenu, this))
     , m_timeLineWidget(new TimeLineWidget(parser, m_filterMenu, m_filterAndZoomStack, this))
 #if QCustomPlot_FOUND
@@ -124,6 +126,8 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     m_callerCalleeDock =
         dockify(m_resultsCallerCalleePage, QStringLiteral("callerCallee"), tr("Ca&ller / Callee"), tr("Ctrl+L"));
     m_summaryPageDock->addDockWidgetAsTab(m_callerCalleeDock);
+    m_byFileDock = dockify(m_resultsByFilePage, QStringLiteral("byFile"), tr("&By File"), tr("Ctrl+B"));
+    m_summaryPageDock->addDockWidgetAsTab(m_byFileDock);
     m_disassemblyDock =
         dockify(m_resultsDisassemblyPage, QStringLiteral("disassembly"), tr("D&isassembly"), tr("Ctrl+I"));
     m_summaryPageDock->addDockWidgetAsTab(m_disassemblyDock, KDDockWidgets::InitialVisibilityOption::StartHidden);
@@ -158,6 +162,8 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
     connect(parser, &PerfParser::parserWarning, this, &ResultsPage::showError);
     connect(parser, &PerfParser::exportFailed, this, &ResultsPage::showError);
 
+    connect(m_resultsByFilePage, &ResultsByFilePage::openFileLineRequested, m_resultsCallerCalleePage,
+            &ResultsCallerCalleePage::openFileLineRequested);
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCode, this, &ResultsPage::navigateToCode);
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::navigateToCodeFailed, this, &ResultsPage::showError);
     connect(m_resultsCallerCalleePage, &ResultsCallerCalleePage::selectSymbol, m_timeLineWidget,
@@ -283,6 +289,7 @@ void ResultsPage::clear()
     m_resultsBottomUpPage->clear();
     m_resultsTopDownPage->clear();
     m_resultsCallerCalleePage->clear();
+    m_resultsByFilePage->clear();
     m_resultsFlameGraphPage->clear();
     m_exportMenu->clear();
     m_disassemblyDock->forceClose();
@@ -302,13 +309,12 @@ QMenu* ResultsPage::exportMenu() const
 
 QList<QAction*> ResultsPage::windowActions() const
 {
-    auto ret = QList<QAction*>
-    {
-        m_summaryPageDock->toggleAction(), m_bottomUpDock->toggleAction(), m_topDownDock->toggleAction(),
-            m_flameGraphDock->toggleAction(), m_callerCalleeDock->toggleAction(), m_disassemblyDock->toggleAction(),
-            m_timeLineDock->toggleAction(),
+    auto ret = QList<QAction*> {m_summaryPageDock->toggleAction(),  m_bottomUpDock->toggleAction(),
+                                m_topDownDock->toggleAction(),      m_flameGraphDock->toggleAction(),
+                                m_callerCalleeDock->toggleAction(), m_byFileDock->toggleAction(),
+                                m_disassemblyDock->toggleAction(),  m_timeLineDock->toggleAction(),
 #if QCustomPlot_FOUND
-            m_frequencyDock->toggleAction()
+                                m_frequencyDock->toggleAction()
 #endif
     };
     return ret;
@@ -341,15 +347,10 @@ void ResultsPage::initDockWidgets(const QVector<CoreDockWidget*>& restored)
 
     Q_ASSERT(restored.contains(summaryPageDock));
 
-    const auto docks = {
-        m_bottomUpDock,
-        m_topDownDock,
-        m_flameGraphDock,
-        m_callerCalleeDock,
-        m_timeLineDock,
-        m_disassemblyDock,
+    const auto docks = {m_bottomUpDock, m_topDownDock,  m_flameGraphDock,  m_callerCalleeDock,
+                        m_byFileDock,   m_timeLineDock, m_disassemblyDock,
 #if QCustomPlot_FOUND
-        m_frequencyDock
+                        m_frequencyDock
 #endif
     };
     for (auto dock : docks) {

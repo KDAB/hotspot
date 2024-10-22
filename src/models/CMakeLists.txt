@@ -4,6 +4,7 @@ add_library(
     ../util.cpp
     callercalleemodel.cpp
     callercalleeproxy.cpp
+    byfilemodel.cpp
     codedelegate.cpp
     costdelegate.cpp
     data.cpp
