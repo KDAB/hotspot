@@ -415,7 +415,7 @@ RecordPage::RecordPage(QWidget* parent)
                 m_recordHost->setPids(pids);
             });
 
-    ResultsUtil::connectFilter(ui->processesFilterBox, m_processProxyModel);
+    ResultsUtil::connectFilter(ui->processesFilterBox, m_processProxyModel, ui->regexCheckBox);
 
     connect(m_watcher, &QFutureWatcher<ProcDataList>::finished, this, &RecordPage::updateProcessesFinished);
 
