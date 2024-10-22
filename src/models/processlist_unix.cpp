@@ -104,7 +104,8 @@ ProcDataList processList()
         return unixProcessListPS();
 
     ProcDataList rc;
-    foreach (const QString& procId, procDir.entryList()) {
+    const auto entries = procDir.entryList();
+    for (const QString& procId : entries) {
         if (!isUnixProcessId(procId))
             continue;
 

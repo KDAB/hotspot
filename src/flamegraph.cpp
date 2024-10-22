@@ -471,7 +471,7 @@ void layoutItems(FrameGraphicsItem* parent)
             < static_cast<const FrameGraphicsItem*>(rhs)->symbol();
     });
 
-    foreach (auto child, children) {
+    for (auto child : children) {
         auto frameChild = static_cast<FrameGraphicsItem*>(child);
         const qreal w = maxWidth * double(frameChild->cost()) / parent->cost();
         frameChild->setVisible(w > 1);
@@ -485,7 +485,7 @@ void layoutItems(FrameGraphicsItem* parent)
 
 FrameGraphicsItem* findItemBySymbol(const QList<QGraphicsItem*>& items, const Data::Symbol& symbol)
 {
-    foreach (auto item_, items) {
+    for (auto item_ : items) {
         auto item = static_cast<FrameGraphicsItem*>(item_);
         if (item->symbol() == symbol) {
             return item;
@@ -501,7 +501,7 @@ template<typename Tree>
 void toGraphicsItems(const Data::Costs& costs, int type, const QVector<Tree>& data, FrameGraphicsItem* parent,
                      const double costThreshold, const BrushConfig& brushConfig, bool collapseRecursion)
 {
-    foreach (const auto& row, data) {
+    for (const auto& row : data) {
         if (collapseRecursion && !row.symbol.symbol.isEmpty() && row.symbol == parent->symbol()) {
             if (costs.cost(type, row.id) > costThreshold) {
                 toGraphicsItems(costs, type, row.children, parent, costThreshold, brushConfig, collapseRecursion);
@@ -1178,7 +1178,8 @@ void FlameGraph::selectItem(FrameGraphicsItem* item)
         rect.setWidth(rootWidth);
         parent->setRect(rect);
         if (parent->parentItem()) {
-            foreach (auto sibling, parent->parentItem()->childItems()) {
+            const auto children = parent->parentItem()->childItems();
+            for (auto sibling : children) {
                 sibling->setVisible(sibling == parent);
             }
         }

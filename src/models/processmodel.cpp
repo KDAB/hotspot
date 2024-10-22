@@ -37,7 +37,7 @@ void ProcessModel::mergeProcesses(const ProcDataList& processes)
     // iterator over m_data
     int i = 0;
 
-    foreach (const ProcData& newProc, sortedProcesses) {
+    for (const ProcData& newProc : sortedProcesses) {
         bool shouldInsert = true;
         while (i < m_data.count()) {
             const ProcData& oldProc = m_data.at(i);

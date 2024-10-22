@@ -150,7 +150,7 @@ file(RELATIVE_PATH LIBEXEC_REL_PATH "${KDE_INSTALL_FULL_BINDIR}" "${KDE_INSTALL_
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/hotspot-config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/hotspot-config.h @ONLY)
 
-add_definitions(-DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_USE_QSTRINGBUILDER)
+add_definitions(-DQT_NO_CAST_FROM_ASCII -DQT_NO_CAST_TO_ASCII -DQT_USE_QSTRINGBUILDER -DQT_NO_FOREACH)
 add_compile_options(-Wall -pedantic -Wextra)
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Wno-gnu-zero-variadic-macro-arguments)

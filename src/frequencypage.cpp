@@ -6,11 +6,16 @@
     SPDX-License-Identifier: GPL-2.0-or-later
 */
 
+// NOTE: QCustomPlot still uses foreach
+#undef QT_NO_FOREACH
+#include <qcustomplot.h>
+#undef foreach
+#define QT_NO_FOREACH
+
 #include "frequencypage.h"
 
 #include <KColorScheme>
 #include <QDebug>
-#include <qcustomplot.h>
 
 #include "parsers/perf/perfparser.h"
 #include "ui_frequencypage.h"
