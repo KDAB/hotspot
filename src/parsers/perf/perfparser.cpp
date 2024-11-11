@@ -555,7 +555,7 @@ QDataStream& operator>>(QDataStream& stream, TracePointFormat& format)
     return stream;
 }
 
-QDebug operator<<(QDebug stream, TracePointFormat format)
+QDebug operator<<(QDebug stream, const TracePointFormat& format)
 {
     stream.noquote().nospace() << "TracePointFormat{"
                                << "systemId=" << format.systemId << ", "
