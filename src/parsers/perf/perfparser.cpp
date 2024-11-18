@@ -564,13 +564,24 @@ QDebug operator<<(QDebug stream, const TracePointFormat& format)
     return stream;
 }
 
-using TracePointData = QHash<qint32, QVariant>;
+struct TracePointData
+{
+    quint32 formatId;
+    QHash<quint32, QVariant> data;
+};
+
+QDataStream& operator>>(QDataStream& stream, TracePointData& traceData)
+{
+    stream >> traceData.formatId >> traceData.data;
+    return stream;
+}
 
 QDebug operator<<(QDebug stream, const TracePointData& traceData)
 {
     auto s = stream.noquote().nospace();
     s << "TracePointData{";
-    for (auto it = traceData.cbegin(), end = traceData.cend(); it != end; it++) {
+    s << "eventId=" << traceData.formatId << ", ";
+    for (auto it = traceData.data.cbegin(), end = traceData.data.cend(); it != end; it++) {
         s << it.key() << "=" << it.value() << ", ";
     }
     s << "}";
@@ -799,12 +810,11 @@ public:
             }
 
             if (static_cast<EventType>(eventType) == EventType::TracePointSample) {
-                quint32 eventFormatId;
                 TracePointData traceData;
-                stream >> eventFormatId >> traceData;
-                tracepointData[eventFormatId].push_back(traceData);
+                stream >> traceData;
+                tracepointData.push_back(traceData);
                 qCDebug(LOG_PERFPARSER) << "parsed:" << traceData;
-                sample.tracePointFormat = eventFormatId;
+                sample.tracePointFormat = traceData.formatId;
                 sample.tracePointData = tracepointData.size() - 1;
             }
 
@@ -925,7 +935,7 @@ public:
         case EventType::TracePointFormat: {
             qint32 id;
             TracePointFormat format;
-            stream >> id >> format;
+            stream >> id >> format; // id is the tracepoint id, see /sys/kernel/tracing/system/tracepoint
             qCDebug(LOG_PERFPARSER) << "parsed:" << format;
             tracepointFormat[id] = format;
             break;
@@ -1196,6 +1206,8 @@ public:
             event.type = attributeIdsToCostIds.value(sampleCost.attributeId, -1);
             event.stackId = internStack(sample.frames);
             event.cpuId = sample.cpu;
+            event.tracepointFormat = sample.tracePointFormat;
+            event.tracepointData = sample.tracePointData;
             thread->events.push_back(event);
             cpu.events.push_back(event);
 
@@ -1208,7 +1220,8 @@ public:
 
                 if (attribute.name.id != m_schedSwitchId) {
                     auto& tracepointList = tracepoints[attribute.name.id];
-                    tracepointList.push_back({event.time, 0, eventResult.tracepointEventCostId});
+                    event.type = eventResult.tracepointEventCostId;
+                    tracepointList.push_back(event);
                 }
             }
         }
@@ -1516,7 +1529,7 @@ public:
     Settings::CostAggregation costAggregation;
     bool perfMapFileExists = false;
     QHash<quint32, TracePointFormat> tracepointFormat;
-    QHash<quint32, QVector<TracePointData>> tracepointData;
+    QVector<TracePointData> tracepointData;
 
     // samples recorded without --call-graph have only one frame
     int m_numSamplesWithMoreThanOneFrame = 0;
@@ -1548,7 +1561,6 @@ PerfParser::PerfParser(QObject* parent)
     qRegisterMetaType<Data::ByFileResults>();
     qRegisterMetaType<Data::EventResults>();
     qRegisterMetaType<Data::PerLibraryResults>();
-    qRegisterMetaType<Data::TracepointEvents>();
     qRegisterMetaType<Data::FrequencyResults>();
     qRegisterMetaType<Data::ThreadNames>();
 

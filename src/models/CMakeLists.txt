@@ -23,6 +23,7 @@ add_library(
     timeaxisheaderview.cpp
     timelinedelegate.cpp
     topproxy.cpp
+    tracepointformat.cpp
     treemodel.cpp
 )
 

@@ -19,6 +19,7 @@
 #include "../util.h"
 #include "eventmodel.h"
 #include "filterandzoomstack.h"
+#include "tracepointformat.h"
 
 #include <KColorScheme>
 
@@ -314,9 +315,7 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, con
             // check whether we are hovering an off-CPU area
             found = findSamples(results.offCpuTimeCostId, true);
         }
-
-        const auto appStartTime = index.data(EventModel::ApplicationStartTimeRole).value<quint64>();
-        const auto formattedTime = Util::formatTimeString(time - appStartTime);
+        const auto formattedTime = Util::formatTimeString(time - data.time.start);
         const auto totalCosts = index.data(EventModel::TotalCostsRole).value<QVector<Data::CostSummary>>();
         if (found.numLost > 0) {
             QToolTip::showText(
@@ -332,11 +331,31 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, con
                                view);
         } else if (found.numSamples > 0) {
             if (m_eventType == results.tracepointEventCostId) {
-                // currently tracepoint cost is saying nothig, so don't show it
-                QToolTip::showText(
-                    event->globalPos(),
-                    tr("time: %1\n%3 samples: %2")
-                        .arg(formattedTime, QString::number(found.numSamples), results.tracepoints[index.row()].name));
+                if (found.numSamples != 1) {
+                    QToolTip::showText(event->globalPos(),
+                                       tr("time: %1\n%3 samples: %2")
+                                           .arg(formattedTime, QString::number(found.numSamples),
+                                                results.tracepoints[index.row()].name));
+                } else {
+                    // we only hover over one tracepoint, find it
+                    Data::Event tracepoint;
+                    data.findSamples(mappedX, m_eventType, results.lostEventCostId, false, start,
+                                     [&tracepoint](const Data::Event& event, bool isLost) {
+                                         Q_UNUSED(isLost);
+                                         tracepoint = event;
+                                     });
+
+                    const auto format = results.tracePointFormats[tracepoint.tracepointFormat];
+                    qDebug() << format.systemId << format.nameId << format.format;
+                    qDebug() << results.tracePointData[tracepoint.tracepointData];
+
+                    TracePointFormatter formatter(format.format);
+
+                    QToolTip::showText(event->globalPos(),
+                                       tr("time: %1\n%2:\n%3")
+                                           .arg(formattedTime, results.tracepoints[index.row()].name,
+                                                formatter.format(results.tracePointData[tracepoint.tracepointData])));
+                }
 
             } else {
                 QToolTip::showText(event->globalPos(),
