@@ -23,12 +23,10 @@ private slots:
     {
         const std::array<int, 0> testArray = {};
 
-        QCOMPARE(search(
-                     testArray.cbegin(), testArray.cend(), 0, Direction::Forward, [](int) { return false; }, [] {}),
-                 -1);
-        QCOMPARE(search(
-                     testArray.cbegin(), testArray.cend(), 0, Direction::Backward, [](int) { return false; }, [] {}),
-                 -1);
+        QCOMPARE(
+            search(testArray.cbegin(), testArray.cend(), 0, Direction::Forward, [](int) { return false; }, [] {}), -1);
+        QCOMPARE(
+            search(testArray.cbegin(), testArray.cend(), 0, Direction::Backward, [](int) { return false; }, [] {}), -1);
     }
     void testSearch()
     {
