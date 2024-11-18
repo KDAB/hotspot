@@ -2,9 +2,9 @@ add_library(
     models STATIC
     ../settings.cpp
     ../util.cpp
+    byfilemodel.cpp
     callercalleemodel.cpp
     callercalleeproxy.cpp
-    byfilemodel.cpp
     codedelegate.cpp
     costdelegate.cpp
     data.cpp
