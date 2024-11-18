@@ -68,7 +68,7 @@ ResultsByFilePage::ResultsByFilePage(FilterAndZoomStack* filterStack, PerfParser
     m_byFileProxy = new CallerCalleeProxy<ByFileModel>(this);
     m_byFileProxy->setSourceModel(m_byFileCostModel);
     m_byFileProxy->setSortRole(ByFileModel::SortRole);
-    ResultsUtil::connectFilter(ui->byFileFilter, m_byFileProxy);
+    ResultsUtil::connectFilter(ui->byFileFilter, m_byFileProxy, ui->regexCheckBox);
     ui->byFileTableView->setSortingEnabled(true);
     ui->byFileTableView->setModel(m_byFileProxy);
     ResultsUtil::setupHeaderView(ui->byFileTableView, contextMenu);
