@@ -115,6 +115,26 @@
                         "mainWindowUniqueName": "results"
                     }
                 ],
+                "tabIndex": -1,
+                "wasFloating": false
+            },
+            "uniqueName": "byFile"
+        },
+        {
+            "lastPosition": {
+                "lastFloatingGeometry": {
+                    "height": 0,
+                    "width": 0,
+                    "x": 0,
+                    "y": 0
+                },
+                "placeholders": [
+                    {
+                        "isFloatingWindow": false,
+                        "itemIndex": 0,
+                        "mainWindowUniqueName": "results"
+                    }
+                ],
                 "tabIndex": 5,
                 "wasFloating": false
             },
@@ -187,6 +207,7 @@
                             "topDown",
                             "flameGraph",
                             "callerCallee",
+                            "byFile",
                             "frequency"
                         ],
                         "geometry": {
