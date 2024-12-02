@@ -14,7 +14,6 @@
 
 #include <KColorScheme>
 
-#include "../util.h"
 #include "eventmodel.h"
 #include "filterandzoomstack.h"
 
@@ -61,42 +60,6 @@ void TimeAxisHeaderView::emitHeaderDataChanged()
     headerDataChanged(this->orientation(), EventModel::EventsColumn, EventModel::EventsColumn);
 }
 
-bool TimeAxisHeaderView::event(QEvent* event)
-{
-    if (event->type() == QEvent::ToolTip) {
-        auto helpEvent = static_cast<QHelpEvent*>(event);
-
-        auto zoomTime = m_filterAndZoomStack->zoom().time;
-        if (!zoomTime.isValid())
-            zoomTime = m_timeRange; // full
-
-        const auto xForTime = xForTimeFactory(m_timeRange, zoomTime, sectionSize(EventModel::EventsColumn),
-                                              sectionPosition(EventModel::EventsColumn));
-
-        const auto oneNanoSecond = 1e-9;
-        for (const auto& tracepoint : std::as_const(m_tracepoints.tracepoints)) {
-            if (zoomTime.contains(tracepoint.time)) {
-                if (helpEvent->pos().x() == xForTime((tracepoint.time - m_timeRange.start) * oneNanoSecond)) {
-                    QToolTip::showText(helpEvent->globalPos(), tracepoint.name);
-                    return true;
-                }
-            }
-        }
-
-        QToolTip::hideText();
-        event->ignore();
-
-        return true;
-    }
-    return QHeaderView::event(event);
-}
-
-void TimeAxisHeaderView::setTracepoints(const Data::TracepointResults& tracepoints)
-{
-    m_tracepoints = tracepoints;
-    update();
-}
-
 void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const
 {
     if (painter == nullptr)
@@ -133,19 +96,6 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
 
     const QColor tickColor = palette().windowText().color();
     const QColor prefixedColor = palette().highlight().color();
-
-    if (!m_tracepoints.tracepoints.isEmpty()) {
-        const auto scheme = KColorScheme(palette().currentColorGroup());
-        const auto tracepointPen = QPen(scheme.foreground(KColorScheme::LinkText), 1);
-        painter->setPen(tracepointPen);
-
-        for (const auto& tracepoint : m_tracepoints.tracepoints) {
-            if (!zoomTime.contains(tracepoint.time))
-                continue;
-            const auto x = xForTime((tracepoint.time - m_timeRange.start) * oneNanoSecond);
-            painter->drawLine(x, rect.height() / 2, x, rect.height());
-        }
-    }
 
     // Draw the long prefix tick and its label
 

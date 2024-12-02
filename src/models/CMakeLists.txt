@@ -11,6 +11,7 @@ add_library(
     disassemblymodel.cpp
     disassemblyoutput.cpp
     eventmodel.cpp
+    eventmodelproxy.cpp
     filterandzoomstack.cpp
     formattingutils.cpp
     frequencymodel.cpp

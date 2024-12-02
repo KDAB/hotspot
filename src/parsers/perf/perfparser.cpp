@@ -907,6 +907,10 @@ public:
         buildPerLibraryResult();
         buildCallerCalleeResult();
 
+        for (auto it = tracepoints.begin(), end = tracepoints.end(); it != end; it++) {
+            eventResult.tracepoints.push_back({strings[it.key()], {it.value()}});
+        }
+
         for (auto& thread : eventResult.threads) {
             thread.time.start = std::max(thread.time.start, applicationTime.start);
             thread.time.end = std::min(thread.time.end, applicationTime.end);
@@ -1128,12 +1132,14 @@ public:
 
             const auto attribute = attributes.value(event.type);
             if (attribute.type == static_cast<quint32>(AttributesDefinition::Type::Tracepoint)) {
-                Data::Tracepoint tracepoint;
-                tracepoint.time = event.time;
-                tracepoint.name = strings.value(attribute.name.id);
-                if (tracepoint.name != QLatin1String("sched:sched_switch")) {
-                    // sched_switch events are handled separately already
-                    tracepointResult.tracepoints.push_back(tracepoint);
+                if (eventResult.tracepointEventCostId == -1) {
+                    eventResult.tracepointEventCostId =
+                        addCostType(QStringLiteral("Tracepoint"), Data::Costs::Unit::Tracepoint);
+                }
+
+                if (attribute.name.id != m_schedSwitchId) {
+                    auto& tracepointList = tracepoints[attribute.name.id];
+                    tracepointList.push_back({event.time, 0, eventResult.tracepointEventCostId});
                 }
             }
         }
@@ -1150,6 +1156,10 @@ public:
     {
         Q_ASSERT(string.id == strings.size());
         strings.push_back(QString::fromUtf8(string.string));
+
+        if (string.string == QByteArray("sched:sched_switch")) {
+            m_schedSwitchId = string.id;
+        }
     }
 
     void addSampleToBottomUp(const Sample& sample)
@@ -1420,7 +1430,7 @@ public:
     Data::CallerCalleeResults callerCalleeResult;
     Data::ByFileResults byFileResult;
     Data::EventResults eventResult;
-    Data::TracepointResults tracepointResult;
+    QHash<uint64_t, Data::Events> tracepoints;
     Data::FrequencyResults frequencyResult;
     Data::ThreadNames commands;
     std::unique_ptr<QTextStream> perfScriptOutput;
@@ -1432,6 +1442,7 @@ public:
     QHash<int, qint32> attributeNameToCostIds;
     qint32 m_nextCostId = 0;
     qint32 m_schedSwitchCostId = -1;
+    qint32 m_schedSwitchId = -1;
     QHash<quint32, quint64> m_lastSampleTimePerCore;
     Settings::CostAggregation costAggregation;
     bool perfMapFileExists = false;
@@ -1466,7 +1477,7 @@ PerfParser::PerfParser(QObject* parent)
     qRegisterMetaType<Data::ByFileResults>();
     qRegisterMetaType<Data::EventResults>();
     qRegisterMetaType<Data::PerLibraryResults>();
-    qRegisterMetaType<Data::TracepointResults>();
+    qRegisterMetaType<Data::TracepointEvents>();
     qRegisterMetaType<Data::FrequencyResults>();
     qRegisterMetaType<Data::ThreadNames>();
 
@@ -1494,11 +1505,6 @@ PerfParser::PerfParser(QObject* parent)
     connect(this, &PerfParser::eventsAvailable, this, [this](const Data::EventResults& data) {
         if (m_events.threads.isEmpty()) {
             m_events = data;
-        }
-    });
-    connect(this, &PerfParser::tracepointDataAvailable, this, [this](const Data::TracepointResults& data) {
-        if (m_tracepointResults.tracepoints.isEmpty()) {
-            m_tracepointResults = data;
         }
     });
     connect(this, &PerfParser::threadNamesAvailable, this,
@@ -1619,7 +1625,6 @@ void PerfParser::startParseFile(const QString& path)
     m_bottomUpResults = {};
     m_callerCalleeResults = {};
     m_byFileResults = {};
-    m_tracepointResults = {};
     m_events = {};
     m_frequencyResults = {};
 
@@ -1643,7 +1648,6 @@ void PerfParser::startParseFile(const QString& path)
             emit summaryDataAvailable(d.summaryResult);
             emit callerCalleeDataAvailable(d.callerCalleeResult);
             emit byFileDataAvailable(d.byFileResult);
-            emit tracepointDataAvailable(d.tracepointResult);
             emit eventsAvailable(d.eventResult);
             emit frequencyDataAvailable(d.frequencyResult);
             emit threadNamesAvailable(d.commands);
@@ -1772,7 +1776,6 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         Data::EventResults events = m_events;
         Data::CallerCalleeResults callerCallee;
         Data::ByFileResults byFile;
-        Data::TracepointResults tracepointResults = m_tracepointResults;
         auto frequencyResults = m_frequencyResults;
         const bool filterByTime = filter.time.isValid();
         const bool filterByCpu = filter.cpuId != std::numeric_limits<quint32>::max();
@@ -1854,10 +1857,13 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
             }
 
             if (filterByTime) {
-                auto it = std::remove_if(
-                    tracepointResults.tracepoints.begin(), tracepointResults.tracepoints.end(),
-                    [filter](const Data::Tracepoint& tracepoint) { return !filter.time.contains(tracepoint.time); });
-                tracepointResults.tracepoints.erase(it, tracepointResults.tracepoints.end());
+                // TODO: parallelize
+                for (auto& tracepoints : events.tracepoints) {
+                    auto it = std::remove_if(
+                        tracepoints.events.begin(), tracepoints.events.end(),
+                        [filter](const Data::Event& event) { return !filter.time.contains(event.time); });
+                    tracepoints.events.erase(it, tracepoints.events.end());
+                }
 
                 for (auto& core : frequencyResults.cores) {
                     for (auto& costType : core.costs) {
@@ -1972,7 +1978,6 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         emit callerCalleeDataAvailable(callerCallee);
         emit byFileDataAvailable(byFile);
         emit frequencyDataAvailable(frequencyResults);
-        emit tracepointDataAvailable(tracepointResults);
         emit eventsAvailable(events);
         emit parsingFinished();
     });
