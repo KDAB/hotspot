@@ -8,7 +8,6 @@
 #include "timelinedelegate.h"
 
 #include <QAbstractItemView>
-#include <QDebug>
 #include <QEvent>
 #include <QHelpEvent>
 #include <QMenu>
@@ -345,15 +344,12 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, con
                                      });
 
                     const auto format = results.tracePointFormats[tracepoint.tracepointFormat];
-                    qDebug() << format.systemId << format.nameId << format.format;
-                    qDebug() << results.tracePointData[tracepoint.tracepointData];
 
-                    TracePointFormatter formatter(format.format);
+                    auto tracepointFormatted = format.nameId.isEmpty()
+                        ? QStringLiteral("PerfParser does not support tracepoints")
+                        : formatTracepoint(format, results.tracePointData[tracepoint.tracepointData]);
 
-                    QToolTip::showText(event->globalPos(),
-                                       tr("time: %1\n%2:\n%3")
-                                           .arg(formattedTime, results.tracepoints[index.row()].name,
-                                                formatter.format(results.tracePointData[tracepoint.tracepointData])));
+                    QToolTip::showText(event->globalPos(), tr("time: %1\n%2").arg(formattedTime, tracepointFormatted));
                 }
 
             } else {
