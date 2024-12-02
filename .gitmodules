@@ -5,3 +5,6 @@
 [submodule "3rdparty/PrefixTickLabels"]
 	path = 3rdparty/PrefixTickLabels
 	url = https://github.com/koenpoppe/PrefixTickLabels
+[submodule "3rdparty/fmtparser"]
+	path = 3rdparty/fmtparser
+	url = https://github.com/fmtparser/fmtparser

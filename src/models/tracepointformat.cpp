@@ -17,7 +17,7 @@ extern "C" {
 namespace {
 Q_LOGGING_CATEGORY(FormatParser, "hotspot.formatparser");
 
-auto formatUnsignedNumber(const FormatConversion& format, int base, const QVariant& value)
+auto formatUnsignedNumber(FormatConversion format, int base, const QVariant& value)
 {
     switch (format.len) {
     case FormatConversion::Length::Char:
@@ -36,15 +36,16 @@ auto formatUnsignedNumber(const FormatConversion& format, int base, const QVaria
     Q_UNREACHABLE();
 }
 
-auto formatSignedNumber(const FormatConversion& format, int base, const QVariant& value)
+auto formatSignedNumber(FormatConversion format, int base, const QVariant& value)
 {
     switch (format.len) {
     case FormatConversion::Length::Char:
-        return QStringLiteral("%1").arg(value.toLongLong() & 0xff, format.width, base, QLatin1Char('0'));
+        return QStringLiteral("%1").arg(static_cast<int>(value.toLongLong() & 0xff), format.width, base,
+                                        QLatin1Char('0'));
     case FormatConversion::Length::Short:
-        return QStringLiteral("%1").arg(value.toLongLong() & 0xffff, format.width, base, QLatin1Char('0'));
+        return QStringLiteral("%1").arg(static_cast<short>(value.toLongLong()), format.width, base, QLatin1Char('0'));
     case FormatConversion::Length::Long:
-        return QStringLiteral("%1").arg(value.toLongLong() & 0xffffffff, format.width, base, QLatin1Char('0'));
+        return QStringLiteral("%1").arg(static_cast<int>(value.toLongLong()), format.width, base, QLatin1Char('0'));
     case FormatConversion::Length::Size:
     case FormatConversion::Length::LongLong:
         return QStringLiteral("%1").arg(value.toLongLong(), format.width, base, QLatin1Char('0'));
@@ -154,7 +155,7 @@ FormatData parseFormatString(const QString& format)
     return {formats, QString::fromLatin1(qtFormatString.join())};
 }
 
-QString format(const FormatConversion& format, const QVariant& value)
+QString format(FormatConversion format, const QVariant& value)
 {
     switch (format.format) {
     case FormatConversion::Format::Signed:
@@ -231,7 +232,6 @@ QString TracePointFormatter::format(const Data::TracePointData& data) const
     for (const auto& arg : m_args) {
         result = result.arg(::format(arg.format, data.value(arg.name)));
     }
-
     return result;
 }
 

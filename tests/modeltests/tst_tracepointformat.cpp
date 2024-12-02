@@ -13,6 +13,17 @@
 
 #include <tracepointformat.h>
 
+bool operator==(const FormatConversion& lhs, const FormatConversion& rhs)
+{
+    return std::tie(lhs.format, lhs.len, lhs.padZeros, lhs.width)
+        == std::tie(rhs.format, rhs.len, rhs.padZeros, rhs.width);
+}
+
+bool operator==(const TracePointFormatter::Arg& lhs, const TracePointFormatter::Arg& rhs)
+{
+    return std::tie(lhs.format, lhs.name) == std::tie(rhs.format, rhs.name);
+}
+
 class TestTracepointFormat : public QObject
 {
     Q_OBJECT
@@ -26,6 +37,106 @@ private slots:
 #endif // QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
     }
 
+    void testFormatStringParser()
+    {
+        auto check = [](const QString& format, const FormatConversion& exspected) {
+            // parseFormatString exspects the raw format string from the tracepoint format
+            auto conversion = parseFormatString(format).format;
+            QVERIFY(!conversion.isEmpty());
+            QCOMPARE(conversion[0], exspected);
+        };
+        {
+            FormatConversion format;
+            format.format = FormatConversion::Format::Hex;
+            check(QStringLiteral("%x"), format);
+        }
+        {
+            FormatConversion format;
+            format.format = FormatConversion::Format::UpperHex;
+            check(QStringLiteral("%X"), format);
+        }
+        {
+            FormatConversion format;
+            format.format = FormatConversion::Format::Octal;
+            check(QStringLiteral("%o"), format);
+        }
+        {
+            FormatConversion format;
+            format.format = FormatConversion::Format::Signed;
+            check(QStringLiteral("%d"), format);
+            check(QStringLiteral("%i"), format);
+        }
+        {
+            FormatConversion format;
+            format.format = FormatConversion::Format::Char;
+            check(QStringLiteral("%c"), format);
+        }
+        {
+            FormatConversion format;
+            format.format = FormatConversion::Format::Pointer;
+            check(QStringLiteral("%p"), format);
+        }
+        {
+            FormatConversion format;
+            format.format = FormatConversion::Format::String;
+            check(QStringLiteral("%s"), format);
+        }
+
+        {
+            FormatConversion format;
+            format.format = FormatConversion::Format::UpperHex;
+            format.len = FormatConversion::Length::LongLong;
+            check(QStringLiteral("%llX"), format);
+        }
+
+        {
+            FormatConversion format;
+            format.format = FormatConversion::Format::Signed;
+            format.len = FormatConversion::Length::Long;
+            check(QStringLiteral("%ld"), format);
+        }
+
+        {
+            FormatConversion format;
+            format.format = FormatConversion::Format::Unsigned;
+            format.len = FormatConversion::Length::Short;
+            check(QStringLiteral("%hu"), format);
+        }
+    }
+
+    void testFormatting()
+    {
+        auto test = [](const QString& formatString, auto value) {
+            auto formats = parseFormatString(formatString).format;
+            QVERIFY(!formats.isEmpty());
+            QCOMPARE(format(formats[0], QVariant::fromValue(value)),
+                     QString::asprintf(formatString.toLatin1().data(), value));
+        };
+
+        test(QStringLiteral("%x"), 16);
+        test(QStringLiteral("%X"), 255);
+        test(QStringLiteral("%hhX"), 255);
+        test(QStringLiteral("%o"), 255);
+        test(QStringLiteral("%c"), 'a');
+        test(QStringLiteral("%i"), -10);
+        test(QStringLiteral("%i"), LONG_LONG_MAX);
+        test(QStringLiteral("%u"), LONG_LONG_MAX);
+
+        int x = 0;
+        // we get pointers as a quint64
+        test(QStringLiteral("%p"), reinterpret_cast<unsigned long long>(&x));
+
+        test(QStringLiteral("%04u"), 5);
+        test(QStringLiteral("%04i"), -5);
+    }
+
+    void testNotParsable()
+    {
+        // some tracepoint format strings cant be parsed trivial
+        QVERIFY(parseFormatString(QStringLiteral("%0*llx")).format.isEmpty());
+        QVERIFY(parseFormatString(QStringLiteral("%+05")).format.isEmpty());
+    }
+
     void testFormatString()
     {
         // taken from /sys/kernel/tracing/events/syscalls/sys_enter_openat/format
@@ -35,13 +146,16 @@ private slots:
 
         TracePointFormatter formatter(format);
 
-        QCOMPARE(formatter.formatString(),
-                 QStringLiteral("dfd: 0x%08lx, filename: 0x%08lx, flags: 0x%08lx, mode: 0x%08lx"));
+        QCOMPARE(formatter.formatString(), QStringLiteral("dfd: 0x%1, filename: 0x%2, flags: 0x%3, mode: 0x%4"));
+
+        const auto formatDefinition =
+            FormatConversion {FormatConversion::Length::Long, FormatConversion::Format::Hex, true, 8};
+
         QCOMPARE(formatter.args(),
-                 (QStringList {{QStringLiteral("dfd")},
-                               {QStringLiteral("filename")},
-                               {QStringLiteral("flags")},
-                               {QStringLiteral("mode")}}));
+                 (TracePointFormatter::Arglist {{formatDefinition, QStringLiteral("dfd")},
+                                                {formatDefinition, QStringLiteral("filename")},
+                                                {formatDefinition, QStringLiteral("flags")},
+                                                {formatDefinition, QStringLiteral("mode")}}));
     }
 
     void testSyscallEnterOpenat()
@@ -72,7 +186,7 @@ private slots:
             "{IOPRIO_CLASS_INVALID, \"invalid\"}), (((REC->ioprio) >> 3) & ((1 << 10) - 1)), ((REC->ioprio) & ((1 << "
             "3) - 1)), REC->error ");
 
-        QTest::addRow("Invalid format string") << QStringLiteral("abc123%s");
+        QTest::addRow("Invalid format string") << QStringLiteral("abc%123k");
         QTest::addRow("Emptry format string") << QString {};
     }
     void testInvalidFormatString()

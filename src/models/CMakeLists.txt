@@ -29,6 +29,7 @@ add_library(
 
 target_link_libraries(
     models
+    fmt_parser
     Qt::Core
     Qt::Widgets
     KF${QT_MAJOR_VERSION}::ItemModels
