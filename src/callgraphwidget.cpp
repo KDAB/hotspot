@@ -42,7 +42,8 @@ CallgraphWidget::CallgraphWidget(Data::CallerCalleeResults results, KParts::Read
         generateCallgraph(m_currentSymbol);
     });
 
-    layout()->replaceWidget(ui->graphPlaceholder, view->widget());
+    auto oldWidget = layout()->replaceWidget(ui->graphPlaceholder, view->widget());
+    delete oldWidget;
 
     updateColors();
     m_interface->setLayoutMethod(KGraphViewer::KGraphViewerInterface::LayoutMethod::InternalLibrary);
