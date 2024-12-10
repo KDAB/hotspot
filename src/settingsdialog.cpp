@@ -68,6 +68,7 @@ SettingsDialog::SettingsDialog(QWidget* parent)
 #if KGraphViewerPart_FOUND
     , callgraphPage(new Ui::CallgraphSettingsPage)
 #endif
+    , m_configs(std::make_unique<MultiConfigWidget>(this))
 {
     addPerfSettingsPage();
     addPathSettingsPage();
@@ -77,6 +78,8 @@ SettingsDialog::SettingsDialog(QWidget* parent)
     addCallgraphPage();
 #endif
     addSourcePathPage();
+
+    setAttribute(Qt::WA_DeleteOnClose);
 }
 
 SettingsDialog::~SettingsDialog() = default;
@@ -221,28 +224,28 @@ void SettingsDialog::addPathSettingsPage()
         loadFromSettings();
     };
 
-    m_configs = new MultiConfigWidget(this);
     m_configs->setConfig(config());
     m_configs->restoreCurrent();
 
-    connect(m_configs, &MultiConfigWidget::saveConfig, this, saveFunction);
-    connect(m_configs, &MultiConfigWidget::restoreConfig, this, restoreFunction);
+    connect(m_configs.get(), &MultiConfigWidget::saveConfig, this, saveFunction);
+    connect(m_configs.get(), &MultiConfigWidget::restoreConfig, this, restoreFunction);
 
-    unwindPage->formLayout->insertRow(0, label, m_configs);
+    unwindPage->formLayout->insertRow(0, label, m_configs.get());
 
     connect(this, &KPageDialog::accepted, this, [this] { m_configs->updateCurrentConfig(); });
 
     for (auto field : {unwindPage->lineEditSysroot, unwindPage->lineEditApplicationPath, unwindPage->lineEditKallsyms,
                        unwindPage->lineEditObjdump}) {
-        connect(field, &KUrlRequester::textEdited, m_configs, &MultiConfigWidget::updateCurrentConfig);
-        connect(field, &KUrlRequester::urlSelected, m_configs, &MultiConfigWidget::updateCurrentConfig);
+        connect(field, &KUrlRequester::textEdited, m_configs.get(), &MultiConfigWidget::updateCurrentConfig);
+        connect(field, &KUrlRequester::urlSelected, m_configs.get(), &MultiConfigWidget::updateCurrentConfig);
     }
 
-    connect(unwindPage->comboBoxArchitecture, QOverload<int>::of(&QComboBox::currentIndexChanged), m_configs,
+    connect(unwindPage->comboBoxArchitecture, QOverload<int>::of(&QComboBox::currentIndexChanged), m_configs.get(),
             &MultiConfigWidget::updateCurrentConfig);
 
-    connect(unwindPage->debugPaths, &KEditListWidget::changed, m_configs, &MultiConfigWidget::updateCurrentConfig);
-    connect(unwindPage->extraLibraryPaths, &KEditListWidget::changed, m_configs,
+    connect(unwindPage->debugPaths, &KEditListWidget::changed, m_configs.get(),
+            &MultiConfigWidget::updateCurrentConfig);
+    connect(unwindPage->extraLibraryPaths, &KEditListWidget::changed, m_configs.get(),
             &MultiConfigWidget::updateCurrentConfig);
 }
 

@@ -56,5 +56,5 @@ private:
     std::unique_ptr<Ui::DebuginfodPage> debuginfodPage;
     std::unique_ptr<Ui::DisassemblySettingsPage> disassemblyPage;
     std::unique_ptr<Ui::CallgraphSettingsPage> callgraphPage;
-    MultiConfigWidget* m_configs;
+    std::unique_ptr<MultiConfigWidget> m_configs;
 };

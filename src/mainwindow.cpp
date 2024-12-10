@@ -96,7 +96,6 @@ MainWindow::MainWindow(QWidget* parent)
     , m_startPage(new StartPage(this))
     , m_recordPage(new RecordPage(this))
     , m_resultsPage(new ResultsPage(m_parser, this))
-    , m_settingsDialog(new SettingsDialog(this))
 {
     ui->setupUi(this);
 
@@ -110,17 +109,6 @@ MainWindow::MainWindow(QWidget* parent)
     centralWidget()->setLayout(layout);
 
     auto settings = Settings::instance();
-
-    connect(m_settingsDialog, &QDialog::accepted, this, [this, settings]() {
-        settings->setSysroot(m_settingsDialog->sysroot());
-        settings->setAppPath(m_settingsDialog->appPath());
-        settings->setExtraLibPaths(m_settingsDialog->extraLibPaths());
-        settings->setDebugPaths(m_settingsDialog->debugPaths());
-        settings->setKallsyms(m_settingsDialog->kallsyms());
-        settings->setArch(m_settingsDialog->arch());
-        settings->setObjdump(m_settingsDialog->objdump());
-        settings->setPerfMapPath(m_settingsDialog->perfMapPath());
-    });
 
     connect(settings, &Settings::sysrootChanged, m_resultsPage, &ResultsPage::setSysroot);
     connect(settings, &Settings::appPathChanged, m_resultsPage, &ResultsPage::setAppPath);
@@ -419,11 +407,26 @@ void MainWindow::aboutKDAB()
 
 void MainWindow::openSettingsDialog()
 {
-    m_settingsDialog->setWindowTitle(tr("Hotspot configuration"));
-    m_settingsDialog->setWindowIcon(windowIcon());
-    m_settingsDialog->adjustSize();
-    m_settingsDialog->initSettings();
-    m_settingsDialog->open();
+    auto settings = Settings::instance();
+
+    auto settingsDialog = new SettingsDialog(this);
+
+    connect(settingsDialog, &QDialog::accepted, this, [settingsDialog, settings]() {
+        settings->setSysroot(settingsDialog->sysroot());
+        settings->setAppPath(settingsDialog->appPath());
+        settings->setExtraLibPaths(settingsDialog->extraLibPaths());
+        settings->setDebugPaths(settingsDialog->debugPaths());
+        settings->setKallsyms(settingsDialog->kallsyms());
+        settings->setArch(settingsDialog->arch());
+        settings->setObjdump(settingsDialog->objdump());
+        settings->setPerfMapPath(settingsDialog->perfMapPath());
+    });
+
+    settingsDialog->setWindowTitle(tr("Hotspot configuration"));
+    settingsDialog->setWindowIcon(windowIcon());
+    settingsDialog->adjustSize();
+    settingsDialog->initSettings();
+    settingsDialog->open();
 }
 
 void MainWindow::aboutHotspot()
