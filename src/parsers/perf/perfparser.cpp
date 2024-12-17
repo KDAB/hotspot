@@ -299,6 +299,8 @@ struct Sample : Record
     QVector<qint32> frames;
     quint8 guessedFrames = 0;
     QVector<SampleCost> costs;
+    quint32 tracePointFormat = std::numeric_limits<quint32>::max();
+    quint32 tracePointData = std::numeric_limits<quint32>::max();
 };
 
 QDataStream& operator>>(QDataStream& stream, Sample& sample)
@@ -539,6 +541,43 @@ QDebug operator<<(QDebug stream, const Error& error)
     return stream;
 }
 
+struct TracePointFormat
+{
+    StringId systemId;
+    StringId nameId;
+    quint32 flags;
+    StringId format;
+};
+
+QDataStream& operator>>(QDataStream& stream, TracePointFormat& format)
+{
+    stream >> format.systemId >> format.nameId >> format.flags >> format.format;
+    return stream;
+}
+
+QDebug operator<<(QDebug stream, TracePointFormat format)
+{
+    stream.noquote().nospace() << "TracePointFormat{"
+                               << "systemId=" << format.systemId << ", "
+                               << "nameId=" << format.nameId << ", "
+                               << "flags=" << format.flags << ", "
+                               << "format=" << format.format << "}";
+    return stream;
+}
+
+using TracePointData = QHash<qint32, QVariant>;
+
+QDebug operator<<(QDebug stream, const TracePointData& traceData)
+{
+    auto s = stream.noquote().nospace();
+    s << "TracePointData{";
+    for (auto it = traceData.cbegin(), end = traceData.cend(); it != end; it++) {
+        s << it.key() << "=" << it.value() << ", ";
+    }
+    s << "}";
+    return stream;
+}
+
 void addCallerCalleeEvent(const Data::Symbol& symbol, const Data::Location& location, int type, quint64 cost,
                           QSet<Data::Symbol>* recursionGuard, Data::CallerCalleeResults* callerCalleeResult,
                           int numCosts)
@@ -760,11 +799,19 @@ public:
                 }
             }
 
+            if (static_cast<EventType>(eventType) == EventType::TracePointSample) {
+                quint32 eventFormatId;
+                TracePointData traceData;
+                stream >> eventFormatId >> traceData;
+                tracepointData[eventFormatId].push_back(traceData);
+                qCDebug(LOG_PERFPARSER) << "parsed:" << traceData;
+                sample.tracePointFormat = eventFormatId;
+                sample.tracePointData = tracepointData.size() - 1;
+            }
+
             addRecord(sample);
             addSample(sample);
 
-            if (static_cast<EventType>(eventType) == EventType::TracePointSample)
-                return true; // TODO: read full data
             break;
         }
         case EventType::ThreadStart: {
@@ -876,9 +923,14 @@ public:
             emit debugInfoDownloadProgress(strings.value(module.id), strings.value(url.id), numerator, denominator);
             break;
         }
-        case EventType::TracePointFormat:
-            // TODO: implement me
-            return true;
+        case EventType::TracePointFormat: {
+            qint32 id;
+            TracePointFormat format;
+            stream >> id >> format;
+            qCDebug(LOG_PERFPARSER) << "parsed:" << format;
+            tracepointFormat[id] = format;
+            break;
+        }
         case EventType::InvalidType:
             break;
         }
@@ -1435,6 +1487,8 @@ public:
     QHash<quint32, quint64> m_lastSampleTimePerCore;
     Settings::CostAggregation costAggregation;
     bool perfMapFileExists = false;
+    QHash<quint32, TracePointFormat> tracepointFormat;
+    QHash<quint32, QVector<TracePointData>> tracepointData;
 
     // samples recorded without --call-graph have only one frame
     int m_numSamplesWithMoreThanOneFrame = 0;
