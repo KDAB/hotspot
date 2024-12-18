@@ -649,6 +649,9 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
             break;
         }
     } else {
+        m_updateRuntimeTimer->stop();
+        ui->startRecordingButton->setText(tr("Stopping recording..."));
+        ui->startRecordingButton->setEnabled(false);
         stopRecording();
     }
 }
