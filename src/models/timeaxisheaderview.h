@@ -24,15 +24,12 @@ public:
 
 public:
     void setTimeRange(Data::TimeRange timeRange);
-    void setTracepoints(const Data::TracepointResults& tracepoints);
 
 protected slots:
     void emitHeaderDataChanged();
-    bool event(QEvent* event) override;
 
 private:
     Data::TimeRange m_timeRange;
-    Data::TracepointResults m_tracepoints;
     const FilterAndZoomStack* m_filterAndZoomStack = nullptr;
 
 protected:
