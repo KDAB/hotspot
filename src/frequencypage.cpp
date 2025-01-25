@@ -51,7 +51,8 @@ FrequencyPage::FrequencyPage(PerfParser* parser, QWidget* parent)
 
     m_page->setupUi(this);
 
-    m_page->layout->replaceWidget(m_page->plotWidget, m_plot);
+    auto oldWidget = m_page->layout->replaceWidget(m_page->plotWidget, m_plot);
+    delete oldWidget;
 
     auto plotData = QSharedPointer<PlotData>::create();
 
