@@ -194,7 +194,7 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         painter->drawRect(threadTimeRect.adjusted(-1, -1, 0, 0));
 
         // visualize all events
-        painter->setBrush({});
+        painter->setBrush(QBrush());
 
         if (offCpuCostId != -1) {
             const auto offCpuColor = scheme.background(KColorScheme::NegativeBackground).color();
