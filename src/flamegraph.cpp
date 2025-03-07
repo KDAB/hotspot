@@ -1222,7 +1222,7 @@ void FlameGraph::setSearchValue(const QString& value, bool useRegex)
     m_search = value;
     m_useRegex = useRegex;
     auto regex = useRegex ? value : QRegularExpression::escape(value);
-    auto match = applySearch(m_rootItem, QRegularExpression(regex));
+    auto match = applySearch(m_rootItem, QRegularExpression(regex, QRegularExpression::CaseInsensitiveOption));
 
     if (value.isEmpty()) {
         m_searchResultsLabel->hide();
