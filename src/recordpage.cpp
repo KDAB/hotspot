@@ -687,7 +687,8 @@ void RecordPage::updateProcessesFinished()
         return;
     }
 
-    m_processModel->mergeProcesses(m_watcher->result());
+    if (!m_watcher->isCanceled())
+        m_processModel->mergeProcesses(m_watcher->result());
     QTimer::singleShot(1000, this, &RecordPage::updateProcesses);
 }
 
