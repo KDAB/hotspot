@@ -28,7 +28,7 @@ QHash<Data::Symbol, QString> writeGraph(QTextStream& stream, const Data::Symbol&
     if (symbol.prettySymbol.isEmpty()) {
         stream << "??";
     } else {
-        stream << symbol.prettySymbol;
+        stream << symbol.prettySymbol.toHtmlEscaped();
     }
     stream << "\", color=\"" << settings->callgraphActiveColor().name() << "\"]\n";
 
