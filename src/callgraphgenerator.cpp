@@ -62,7 +62,7 @@ void resultsToDot(int height, Direction direction, const Data::Symbol& symbol, c
     const auto entry = results.entries[symbol];
 
     auto addNode = [&stream](const QString& id, const QString& label) {
-        stream << "node" << id << " [label=\"" << label << "\"]\n";
+        stream << "node" << id << " [label=\"" << label.toHtmlEscaped() << "\"]\n";
     };
     auto connectNodes = [&stream, direction](const QString& parent, const QString& child) {
         if (direction == Direction::Callee) {
