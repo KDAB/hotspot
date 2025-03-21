@@ -24,7 +24,7 @@
 #include "ui_callgraphwidget.h"
 #include "util.h"
 
-#include <kgraphviewer/kgraphviewer_interface.h>
+#include <kgraphviewer_interface.h>
 
 CallgraphWidget::CallgraphWidget(Data::CallerCalleeResults results, KParts::ReadOnlyPart* view,
                                  KGraphViewer::KGraphViewerInterface* interface, QWidget* parent)

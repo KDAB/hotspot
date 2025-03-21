@@ -128,6 +128,10 @@ if(QCustomPlot_FOUND)
     target_link_libraries(hotspot QCustomPlot::QCustomPlot)
 endif()
 
+if(KGraphViewerPart_FOUND)
+    target_link_libraries(hotspot KGraphViewerPart)
+endif()
+
 set_target_properties(hotspot PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}")
 
 install(
