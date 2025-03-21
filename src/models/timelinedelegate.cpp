@@ -489,11 +489,13 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         if (isRightButtonEvent && index.isValid() && numThreads > 1 && threadId != Data::INVALID_TID) {
             if ((!isFiltered && !isMainThread)
                 || (isFiltered && filter.time.end != threadStartTime && filter.time.end != threadEndTime)) {
-                contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
-                                       tr("Filter In On Thread #%1 By Time").arg(threadId), this,
-                                       [this, threadStartTime, threadEndTime]() {
-                                           m_filterAndZoomStack->filterInByTime({threadStartTime, threadEndTime});
-                                       });
+                auto action = contextMenu->addAction(
+                    QIcon::fromTheme(QStringLiteral("kt-add-filters")),
+                    tr("Filter By Time Of Thread #%1").arg(threadId), this, [this, threadStartTime, threadEndTime]() {
+                        m_filterAndZoomStack->filterInByTime({threadStartTime, threadEndTime});
+                    });
+                action->setToolTip(tr("Filter by time, from the start to the end of this thread. All other threads "
+                                      "will still be visible."));
             }
             if ((!isFiltered || filter.threadId == Data::INVALID_TID)) {
                 contextMenu->addAction(QIcon::fromTheme(QStringLiteral("kt-add-filters")),
