@@ -49,7 +49,7 @@
 
 namespace {
 template<typename ModelType, typename ResultFound, typename EndReached>
-void connectModel(ModelType* model, ResultFound resultFound, EndReached endReached)
+void connectModel(ModelType* model, const ResultFound& resultFound, EndReached endReached)
 {
     QObject::connect(model, &ModelType::resultFound, model, resultFound);
     QObject::connect(model, &ModelType::searchEndReached, model, endReached);
