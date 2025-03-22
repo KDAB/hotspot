@@ -41,8 +41,8 @@ TimeLineData::TimeLineData(Data::Events events, quint64 maxCost, Data::TimeRange
     , maxCost(maxCost)
     , time(time)
     , threadTime(threadTime)
-    , h(rect.height() - 2 * padding)
-    , w(rect.width() - 2 * padding)
+    , h(rect.height() - (2 * padding))
+    , w(rect.width() - (2 * padding))
     , xMultiplicator(double(w) / time.delta())
     , yMultiplicator(double(h) / maxCost)
 {

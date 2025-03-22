@@ -208,7 +208,7 @@ void FrameGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem*
     }
 
     const int margin = 4;
-    const int width = rect().width() - 2 * margin;
+    const int width = rect().width() - (2 * margin);
     if (width < option->fontMetrics.averageCharWidth() * 6) {
         // text is too wide for the current LOD, don't paint it
         return;
@@ -427,7 +427,7 @@ QBrush costRatioBrush(quint32 cost, quint32 totalCost)
 {
     // interpolate between red and yellow
     // where yellow = 0% and red = 100%
-    const float ratio = (1 - static_cast<float>(cost) / totalCost);
+    const float ratio = (1 - (static_cast<float>(cost) / totalCost));
     const int hue = ratio * ratio * 60;
     return QColor::fromHsv(hue, 230, 200, 125);
 }
@@ -1183,7 +1183,7 @@ void FlameGraph::selectItem(FrameGraphicsItem* item)
     // scale item and its parents to the maximum available width
     // also hide all siblings of the parent items
     const auto padding = 8;
-    const auto rootWidth = m_view->viewport()->width() - padding * 2
+    const auto rootWidth = m_view->viewport()->width() - (padding * 2)
         - (m_view->verticalScrollBar()->isVisible() ? 0 : m_view->verticalScrollBar()->sizeHint().width());
     auto parent = item;
     while (parent) {

@@ -43,7 +43,7 @@ TimeAxisHeaderView::TimeAxisHeaderView(const FilterAndZoomStack* filterAndZoomSt
     : QHeaderView(Qt::Horizontal, parent)
     , m_filterAndZoomStack(filterAndZoomStack)
 {
-    setMinimumHeight(3 * fontMetrics().height() + s_tickHeight);
+    setMinimumHeight((3 * fontMetrics().height()) + s_tickHeight);
     setStretchLastSection(true);
 
     connect(filterAndZoomStack, &FilterAndZoomStack::filterChanged, this, &TimeAxisHeaderView::emitHeaderDataChanged);
@@ -124,7 +124,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
                                           sectionPosition(EventModel::EventsColumn));
 
     const int fontSize = painter->fontMetrics().height();
-    const int startY = rect.height() - s_tickHeight - 2 * fontSize;
+    const int startY = rect.height() - s_tickHeight - (2 * fontSize);
     // Width of a tick label that is prefixed, this is at most 4 digits plus an SI prefix.
     // This includes a minus sign for ticks to the left of the prefix value
     const int maxPrefixedLabelWidth = painter->fontMetrics().horizontalAdvance(QStringLiteral("-xXXXms"));
@@ -154,7 +154,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
         const int prefixWidth = painter->fontMetrics().horizontalAdvance(pfl.prefixLabel(placeholder));
         const int prefixCenter = xForTime(pfl.prefixValue());
 
-        QRect placeHolderRect(prefixCenter - prefixWidth / 2, startY, prefixWidth, fontSize);
+        QRect placeHolderRect(prefixCenter - (prefixWidth / 2), startY, prefixWidth, fontSize);
         if (placeHolderRect.x() < rect.x())
             placeHolderRect.translate(rect.x() - placeHolderRect.x(), 0);
 
@@ -188,7 +188,7 @@ void TimeAxisHeaderView::paintSection(QPainter* painter, const QRect& rect, int 
         } else {
             // Keep text within the header
             Qt::Alignment hAlignment = Qt::AlignCenter;
-            QRect labelRect(x - maxPrefixedLabelWidth / 2, startY + fontSize, maxPrefixedLabelWidth, fontSize);
+            QRect labelRect(x - (maxPrefixedLabelWidth / 2), startY + fontSize, maxPrefixedLabelWidth, fontSize);
             if (labelRect.x() < rect.x()) {
                 labelRect.translate(rect.x() - labelRect.x(), 0);
                 hAlignment = Qt::AlignLeft;

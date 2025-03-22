@@ -48,7 +48,7 @@ void CostDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
         painter->drawRect(option.rect);
     }
 
-    auto color = QColor::fromHsv(120 - fraction * 120, 255, 255, (-((fraction - 1) * (fraction - 1))) * 120 + 120);
+    auto color = QColor::fromHsv(120 - (fraction * 120), 255, 255, ((-((fraction - 1) * (fraction - 1))) * 120) + 120);
     painter->setBrush(color);
     painter->drawRect(rect);
 

@@ -95,7 +95,7 @@ public:
         const auto left = option.rect.left();
         const auto horizontalAdvance = 3;
         const auto horizontalMidAdvance = 1;
-        const auto ymid = top + option.rect.height() / 2;
+        const auto ymid = (top + option.rect.height()) / 2;
 
         // we merge horizontal lines into one long line
         int horizontalLineStart = -1;
