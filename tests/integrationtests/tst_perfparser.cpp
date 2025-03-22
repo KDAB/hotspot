@@ -532,8 +532,6 @@ private slots:
 
     void testSendStdIn()
     {
-        const QStringList perfOptions = {QStringLiteral("--call-graph"), QStringLiteral("dwarf"),
-                                         QStringLiteral("--event"), QStringLiteral("cycles,instructions")};
         const QStringList exeOptions = {QStringLiteral("40")};
 
         const QString exePath = findExe(QStringLiteral("cpp-stdin"));
