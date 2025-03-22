@@ -81,12 +81,8 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
             continue;
         }
 
-        if (line.fileLine.line > maxLineNumber) {
-            maxLineNumber = line.fileLine.line;
-        }
-        if (line.fileLine.line < minLineNumber) {
-            minLineNumber = line.fileLine.line;
-        }
+        maxLineNumber = std::max(line.fileLine.line, maxLineNumber);
+        minLineNumber = std::min(line.fileLine.line, minLineNumber);
 
         if (m_validLineNumbers.contains(line.fileLine.line))
             continue;
