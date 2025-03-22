@@ -471,7 +471,7 @@ void layoutItems(FrameGraphicsItem* parent)
             < static_cast<const FrameGraphicsItem*>(rhs)->symbol();
     });
 
-    for (auto child : children) {
+    for (auto child : std::as_const(children)) {
         auto frameChild = static_cast<FrameGraphicsItem*>(child);
         const qreal w = maxWidth * double(frameChild->cost()) / parent->cost();
         frameChild->setVisible(w > 1);
