@@ -35,7 +35,16 @@ SourceCodeModel::~SourceCodeModel() = default;
 void SourceCodeModel::clear()
 {
     beginResetModel();
+    m_validLineNumbers.clear();
     m_highlightedText.setText({});
+    m_selfCosts = {};
+    m_inclusiveCosts = {};
+    m_mainSourceFileName.clear();
+    m_prettySymbol.clear();
+    m_startLine = 0;
+    m_numLines = 0;
+    m_lines.clear();
+    m_highlightLine = 0;
     endResetModel();
 }
 
