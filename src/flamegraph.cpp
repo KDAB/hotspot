@@ -637,7 +637,6 @@ void hoverStacks(FrameGraphicsItem* rootItem, const QVector<QVector<Data::Symbol
         }
     }
 }
-}
 
 void updateFlameGraphColorScheme(FrameGraphicsItem* item, const BrushConfig& brushConfig, quint32 totalCost)
 {
@@ -646,6 +645,7 @@ void updateFlameGraphColorScheme(FrameGraphicsItem* item, const BrushConfig& bru
     for (const auto& child : children) {
         updateFlameGraphColorScheme(static_cast<FrameGraphicsItem*>(child), brushConfig, totalCost);
     }
+}
 }
 
 FlameGraph::FlameGraph(QWidget* parent, Qt::WindowFlags flags)

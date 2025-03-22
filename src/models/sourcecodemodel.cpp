@@ -21,7 +21,9 @@
 #include "search.h"
 #include <climits>
 
+namespace {
 Q_LOGGING_CATEGORY(sourcecodemodel, "hotspot.sourcecodemodel", QtWarningMsg)
+}
 
 SourceCodeModel::SourceCodeModel(KSyntaxHighlighting::Repository* repository, QObject* parent)
     : QAbstractTableModel(parent)

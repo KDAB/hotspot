@@ -69,7 +69,6 @@ QStringList findPerfDataFiles(const QDir& directory = QDir::current())
     }
     return files;
 }
-}
 
 std::unique_ptr<QCoreApplication> createApplication(int& argc, char* argv[])
 {
@@ -88,6 +87,7 @@ std::unique_ptr<QCoreApplication> createApplication(int& argc, char* argv[])
     QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
 #endif
     return std::make_unique<QApplication>(argc, argv);
+}
 }
 
 int main(int argc, char** argv)

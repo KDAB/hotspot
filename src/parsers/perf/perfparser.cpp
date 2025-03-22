@@ -42,9 +42,8 @@
 #include <QMimeDatabase>
 #endif
 
-Q_LOGGING_CATEGORY(LOG_PERFPARSER, "hotspot.perfparser", QtWarningMsg)
-
 namespace {
+Q_LOGGING_CATEGORY(LOG_PERFPARSER, "hotspot.perfparser", QtWarningMsg)
 
 struct Record
 {
