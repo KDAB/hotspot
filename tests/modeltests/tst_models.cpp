@@ -412,7 +412,8 @@ private slots:
 
         // use readelf to get address and size of main
         // different compilers create different locations and sizes
-        QRegularExpression regex(QStringLiteral("[ ]+[0-9]+: ([0-9a-f]+)[ ]+([0-9]+)[0-9 a-zA-Z]+main\\n"));
+        static const QRegularExpression regex(
+            QStringLiteral("[ ]+[0-9]+: ([0-9a-f]+)[ ]+([0-9]+)[0-9 a-zA-Z]+main\\n"));
 
         QProcess readelf;
         readelf.setProgram(QStringLiteral("readelf"));
