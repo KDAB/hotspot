@@ -236,17 +236,13 @@ DisassemblyOutput::ObjectdumpOutput DisassemblyOutput::objdumpParse(const QByteA
             continue;
         }
 
-        const auto addr = [addrString = parts.value(0).trimmed(), &asmLine]() -> uint64_t {
+        const auto addr = [addrString = QStringView(parts.value(0)).trimmed(), &asmLine]() -> uint64_t {
             const auto suffix = QLatin1Char(':');
             if (!addrString.endsWith(suffix))
                 return 0;
 
             bool ok = false;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-            auto ret = addrString.leftRef(addrString.length() - 1).toULongLong(&ok, 16);
-#else
             auto ret = addrString.left(addrString.length() - 1).toULongLong(&ok, 16);
-#endif
 
             if (!ok) {
                 qCWarning(disassemblyoutput) << "unhandled asm line format:" << asmLine;
