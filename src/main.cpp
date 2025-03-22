@@ -281,7 +281,7 @@ int main(int argc, char** argv)
             QObject::connect(&perfParser, &PerfParser::parsingFinished, app.get(),
                              [&perfParser, destination] { perfParser.exportResults(destination); });
             perfParser.startParseFile(file);
-            return app->exec();
+            return QCoreApplication::exec();
         }
 
         if (window) {
