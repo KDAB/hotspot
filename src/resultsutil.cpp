@@ -19,6 +19,8 @@
 #include <QTimer>
 #include <QTreeView>
 
+#include <QStandardItemModel>
+
 #include "models/costdelegate.h"
 #include "models/data.h"
 #include "models/filterandzoomstack.h"
@@ -212,6 +214,36 @@ void fillEventSourceComboBox(QComboBox* combo, const Data::Costs& costs, const Q
         combo->addItem(typeName, QVariant::fromValue(i));
         combo->setItemData(i, tooltipTemplate.arg(typeName), Qt::ToolTipRole);
     }
+
+    const auto index = combo->findData(oldData);
+    if (index != -1) {
+        combo->setCurrentIndex(index);
+    }
+}
+
+void fillEventSourceComboBoxMultiSelect(QComboBox* combo, const Data::Costs& costs, const QString& /*tooltipTemplate*/)
+{
+    // restore selection if possible
+    const auto oldData = combo->currentData();
+
+    combo->clear();
+
+    auto model = new QStandardItemModel(costs.numTypes(), 1, combo);
+    int itemCounter = 0;
+    for (int costId = 0, c = costs.numTypes(); costId < c; costId++) {
+        if (!costs.totalCost(costId)) {
+            continue;
+        }
+
+        auto item = new QStandardItem(costs.typeName(costId));
+        item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+        item->setData(Qt::Checked, Qt::CheckStateRole);
+        item->setData(costId, Qt::UserRole + 1);
+        model->setItem(itemCounter, item);
+        itemCounter++;
+    }
+    model->setRowCount(itemCounter);
+    combo->setModel(model);
 
     const auto index = combo->findData(oldData);
     if (index != -1) {
