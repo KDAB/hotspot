@@ -18,16 +18,17 @@ fi
 
 gitversion=$(git -C "$srcdir" describe)
 
-. /opt/rh/devtoolset-11/enable
+. /opt/rh/gcc-toolset-13/enable
 
 mkdir -p "$buildir" && cd "$buildir"
 # KGraphViewer triggers strange crashes in the AppImage, disable it
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DCMAKE_PREFIX_PATH=/opt/rh/devtoolset-11/root/ \
+    -DCMAKE_PREFIX_PATH=/opt/rh/gcc-toolset-13/root/ \
     -DCMAKE_DISABLE_FIND_PACKAGE_KGraphViewerPart=ON \
-    -DAPPIMAGE_BUILD=ON "-DCMAKE_INSTALL_PREFIX=/usr" "$srcdir"
+    -DAPPIMAGE_BUILD=ON -DCMAKE_INSTALL_PREFIX=/usr "$srcdir"
 
 make -j$(nproc)
+rm -Rf appdir
 DESTDIR=appdir make install
 
 tar -cjvf "/github/workspace/hotspot-debuginfo-$gitversion-x86_64.tar.bz2" \
