@@ -323,22 +323,25 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, con
             QToolTip::showText(
                 event->globalPos(),
                 tr("time: %1\nlost chunks: %2\nlost events: %3")
-                    .arg(formattedTime, QString::number(found.numLost), QString::number(found.totalLost)));
+                    .arg(formattedTime, QString::number(found.numLost), QString::number(found.totalLost)),
+                view);
         } else if (found.numSamples > 0 && found.type == results.offCpuTimeCostId) {
             QToolTip::showText(event->globalPos(),
                                tr("time: %1\nsched switches: %2\ntotal off-CPU time: %3\nlongest sched switch: %4")
                                    .arg(formattedTime, QString::number(found.numSamples),
-                                        Util::formatTimeString(found.totalCost),
-                                        Util::formatTimeString(found.maxCost)));
+                                        Util::formatTimeString(found.totalCost), Util::formatTimeString(found.maxCost)),
+                               view);
         } else if (found.numSamples > 0) {
             QToolTip::showText(event->globalPos(),
                                tr("time: %1\n%5 samples: %2\ntotal sample cost: %3\nmax sample cost: %4")
                                    .arg(formattedTime, QString::number(found.numSamples),
                                         Util::formatCost(found.totalCost), Util::formatCost(found.maxCost),
-                                        totalCosts.value(found.type).label));
+                                        totalCosts.value(found.type).label),
+                               view);
         } else {
             QToolTip::showText(event->globalPos(),
-                               tr("time: %1 (no %2 samples)").arg(formattedTime, totalCosts.value(m_eventType).label));
+                               tr("time: %1 (no %2 samples)").arg(formattedTime, totalCosts.value(m_eventType).label),
+                               view);
         }
         return true;
     }
