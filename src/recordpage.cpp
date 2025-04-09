@@ -664,6 +664,7 @@ void RecordPage::recordingStopped()
     ui->startRecordingButton->setIcon(QIcon::fromTheme(QStringLiteral("media-playback-start")));
     ui->startRecordingButton->setText(tr("Start Recording"));
 
+    ui->startRecordingButton->setEnabled(true);
     ui->recordTypeComboBox->setEnabled(true);
     ui->launchAppBox->setEnabled(true);
     ui->attachAppBox->setEnabled(true);
