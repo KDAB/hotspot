@@ -69,7 +69,7 @@ QByteArray perfBuildOptions(const QString& perfPath)
 
 bool canTrace(const QString& path)
 {
-    const QFileInfo info(QLatin1String("/sys/kernel/debug/tracing/") + path);
+    const QFileInfo info(QLatin1String("/sys/kernel/tracing/") + path);
     if (!info.isDir() || !info.isReadable()) {
         return false;
     }
@@ -116,7 +116,7 @@ bool privsAlreadyElevated()
         struct stat buf;
         return stat(path, &buf) == 0 && ((buf.st_mode & 07777) & required) == required;
     };
-    static const auto paths = {"/sys/kernel/debug", "/sys/kernel/debug/tracing"};
+    static const auto paths = {"/sys/kernel/", "/sys/kernel/tracing"};
     isElevated = std::all_of(paths.begin(), paths.end(), checkPerms);
 
     return isElevated;
