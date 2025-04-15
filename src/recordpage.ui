@@ -265,7 +265,8 @@
       <item row="2" column="0">
        <widget class="QLabel" name="offCpuLabel">
         <property name="toolTip">
-         <string>Record scheduler switch events. This enables off-CPU profiling to measure sleep times etc. This requires elevated privileges.</string>
+         <string>Record scheduler switch events. This enables off-CPU profiling to measure sleep times etc.
+This requires elevated privileges or both /sys/kernel/tracing to be readable and /proc/sys/kernel/perf_event_paranoid == -1.</string>
         </property>
         <property name="text">
          <string>Off-CPU Profilin&amp;g:</string>
@@ -278,7 +279,8 @@
       <item row="2" column="1">
        <widget class="QCheckBox" name="offCpuCheckBox">
         <property name="toolTip">
-         <string>Record scheduler switch events. This enables off-CPU profiling to measure sleep times etc. This requires elevated privileges.</string>
+         <string>Record scheduler switch events. This enables off-CPU profiling to measure sleep times etc.
+This requires elevated privileges or both /sys/kernel/tracing to be readable and /proc/sys/kernel/perf_event_paranoid == -1.</string>
         </property>
         <property name="text">
          <string/>
