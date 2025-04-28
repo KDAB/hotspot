@@ -166,6 +166,22 @@ if(NOT APPIMAGE_BUILD)
 endif()
 
 install(
+    FILES com.kdab.hotspot.xml
+    DESTINATION ${KDE_INSTALL_MIMEDIR}
+)
+
+find_package(SharedMimeInfo 1.8)
+set_package_properties(
+    SharedMimeInfo PROPERTIES
+    TYPE OPTIONAL
+    PURPOSE "Associate hotspot "
+)
+
+if(SharedMimeInfo_FOUND)
+    update_xdg_mimetypes(${KDE_INSTALL_MIMEDIR})
+endif()
+
+install(
     FILES com.kdab.hotspot.desktop
     DESTINATION ${KDE_INSTALL_APPDIR}
 )
