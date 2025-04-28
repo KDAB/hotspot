@@ -9,4 +9,4 @@ Exec=hotspot %f
 Icon=hotspot
 Categories=Development;
 Keywords=performance;perf;
-MimeType=application/x-perf-data;
+MimeType=application/x-perf-data;application/x-hotspot;
