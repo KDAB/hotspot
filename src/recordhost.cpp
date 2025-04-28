@@ -260,7 +260,6 @@ void RecordHost::setCurrentWorkingDirectory(const QString& cwd)
         } else if (!folder.isWritable()) {
             emit errorOccurred(tr("Working directory folder is not writable: %1").arg(cwd));
         } else {
-            emit errorOccurred({});
             m_cwd = cwd;
             emit currentWorkingDirectoryChanged(cwd);
         }
@@ -287,7 +286,6 @@ void RecordHost::setClientApplication(const QString& clientApplication)
         } else if (!application.isExecutable()) {
             emit errorOccurred(tr("Application file is not executable: %1").arg(clientApplication));
         } else {
-            emit errorOccurred({});
             m_clientApplication = clientApplication;
             emit clientApplicationChanged(m_clientApplication);
         }
@@ -318,7 +316,6 @@ void RecordHost::setOutputFileName(const QString& filePath)
         } else if (!file.absoluteFilePath().endsWith(perfDataExtension)) {
             emit errorOccurred(tr("Output file must end with %1").arg(perfDataExtension));
         } else {
-            emit errorOccurred({});
             m_outputFileName = filePath;
             emit outputFileNameChanged(m_outputFileName);
         }
@@ -333,7 +330,6 @@ void RecordHost::setRecordType(RecordType type)
 {
     if (m_recordType != type) {
         m_recordType = type;
-        emit errorOccurred({});
         emit recordTypeChanged(m_recordType);
 
         m_pids.clear();
