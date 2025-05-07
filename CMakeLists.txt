@@ -63,6 +63,16 @@ find_package(ElfUtils REQUIRED)
 find_package(ECM 1.0.0 NO_MODULE REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Zstd)
+
+find_package(perf)
+set_package_properties(
+    perf PROPERTIES
+    DESCRIPTION "Performance analysis tools for Linux"
+    PURPOSE "Underlying system tool to record performance data"
+    URL "https://perfwiki.github.io/main/"
+    TYPE RUNTIME
+)
+
 find_package(objdump)
 set_package_properties(
     objdump PROPERTIES
