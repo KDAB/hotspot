@@ -46,7 +46,7 @@ public:
 
 signals:
     void homeButtonClicked();
-    void openFile(QString filePath);
+    void openFile(const QString& filePath);
 
 private:
     void onStartRecordingButtonClicked(bool checked);

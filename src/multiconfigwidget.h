@@ -24,7 +24,7 @@ public:
     QString currentConfig() const;
 
 signals:
-    void saveConfig(KConfigGroup group);
+    void saveConfig(const KConfigGroup& group);
     void restoreConfig(const KConfigGroup& group);
 
 public slots:

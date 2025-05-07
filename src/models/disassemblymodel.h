@@ -71,7 +71,7 @@ public:
     };
 
 signals:
-    void resultFound(QModelIndex index);
+    void resultFound(const QModelIndex& index);
     void searchEndReached();
 
 public slots:
