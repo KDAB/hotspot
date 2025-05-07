@@ -15,7 +15,6 @@
 #include "resultsutil.h"
 #include "util.h"
 
-#include <QDebug>
 #include <QKeyEvent>
 #include <QListView>
 #include <QRegularExpression>
@@ -158,18 +157,22 @@ RecordPage::RecordPage(QWidget* parent)
     connect(m_recordHost, &RecordHost::isReadyChanged, this,
             [this](bool isReady) { ui->startRecordingButton->setEnabled(isReady); });
 
-    connect(m_recordHost, &RecordHost::isPerfInstalledChanged, this, [this](bool isInstalled) {
+    auto isPerfInstalledWarning = [this](bool isInstalled) {
         if (!isInstalled) {
             ui->startRecordingButton->setEnabled(false);
-            ui->applicationRecordErrorMessage->setText(QObject::tr("Please install perf before trying to record."));
-            ui->applicationRecordErrorMessage->setVisible(true);
+            setError(tr("Please install perf before trying to record."));
         }
-    });
+    };
+
+    connect(m_recordHost, &RecordHost::isPerfInstalledChanged, this, isPerfInstalledWarning);
+    isPerfInstalledWarning(m_recordHost->isPerfInstalled());
 
     connect(m_recordHost, &RecordHost::clientApplicationChanged, this, [this](const QString& filePath) {
         const auto config = applicationConfig(filePath);
-        ui->workingDirectory->setText(config.readEntry("workingDir", QString()));
-        ui->applicationParametersBox->setText(config.readEntry("params", QString()));
+        if (config.isValid()) {
+            ui->workingDirectory->setText(config.readEntry("workingDir", QString()));
+            ui->applicationParametersBox->setText(config.readEntry("params", QString()));
+        }
 
         m_multiConfig->setConfig(applicationConfig(ui->applicationName->text()));
     });
@@ -187,40 +190,39 @@ RecordPage::RecordPage(QWidget* parent)
     if (index != -1)
         ui->compressionComboBox->setCurrentIndex(index);
 
-    connect(m_recordHost, &RecordHost::perfCapabilitiesChanged, this,
-            [this](RecordHost::PerfCapabilities capabilities) {
-                ui->sampleCpuCheckBox->setVisible(capabilities.canSampleCpu);
-                ui->sampleCpuLabel->setVisible(capabilities.canSampleCpu);
+    auto perfCapabilities = [this](RecordHost::PerfCapabilities capabilities) {
+        ui->sampleCpuCheckBox->setVisible(capabilities.canSampleCpu);
+        ui->sampleCpuLabel->setVisible(capabilities.canSampleCpu);
 
-                ui->offCpuCheckBox->setVisible(capabilities.canSwitchEvents);
-                ui->offCpuLabel->setVisible(capabilities.canSwitchEvents);
+        ui->offCpuCheckBox->setVisible(capabilities.canSwitchEvents);
+        ui->offCpuLabel->setVisible(capabilities.canSwitchEvents);
 
-                ui->useAioCheckBox->setVisible(capabilities.canUseAio);
-                ui->useAioLabel->setVisible(capabilities.canUseAio);
+        ui->useAioCheckBox->setVisible(capabilities.canUseAio);
+        ui->useAioLabel->setVisible(capabilities.canUseAio);
 
-                ui->compressionComboBox->setVisible(capabilities.canCompress);
-                ui->compressionLabel->setVisible(capabilities.canCompress);
+        ui->compressionComboBox->setVisible(capabilities.canCompress);
+        ui->compressionLabel->setVisible(capabilities.canCompress);
 
-                ui->offCpuCheckBox->setCheckable(capabilities.libtraceeventSupport);
+        ui->offCpuCheckBox->setCheckable(capabilities.libtraceeventSupport);
 
-                if (!capabilities.libtraceeventSupport) {
-                    ui->offCpuCheckBox->setChecked(false);
-                    ui->offCpuCheckBox->setText(
-                        tr("perf doesn't support libtraceevent, you may need to build perf manually to support this"));
-                }
+        if (!capabilities.libtraceeventSupport) {
+            ui->offCpuCheckBox->setChecked(false);
+            ui->offCpuCheckBox->setText(
+                tr("perf doesn't support libtraceevent, you may need to build perf manually to support this"));
+        }
 
-                if (!capabilities.canElevatePrivileges) {
-                    ui->elevatePrivilegesCheckBox->setChecked(false);
-                    ui->elevatePrivilegesCheckBox->setEnabled(false);
-                    ui->elevatePrivilegesCheckBox->setText(
-                        tr("(Note: Install pkexec, kdesudo, kdesu or KAuth to temporarily elevate perf privileges.)"));
-                } else {
-                    ui->elevatePrivilegesCheckBox->setEnabled(true);
-                    ui->elevatePrivilegesCheckBox->setText({});
-                }
-            });
-
-    m_recordHost->setHost(QStringLiteral("localhost"));
+        if (!capabilities.canElevatePrivileges) {
+            ui->elevatePrivilegesCheckBox->setChecked(false);
+            ui->elevatePrivilegesCheckBox->setEnabled(false);
+            ui->elevatePrivilegesCheckBox->setText(
+                tr("(Note: Install pkexec, kdesudo, kdesu or KAuth to temporarily elevate perf privileges.)"));
+        } else {
+            ui->elevatePrivilegesCheckBox->setEnabled(true);
+            ui->elevatePrivilegesCheckBox->setText({});
+        }
+    };
+    connect(m_recordHost, &RecordHost::perfCapabilitiesChanged, this, perfCapabilities);
+    perfCapabilities(m_recordHost->perfCapabilities());
 
     ui->applicationName->comboBox()->setEditable(true);
     ui->applicationName->setMode(KFile::File | KFile::ExistingOnly | KFile::LocalOnly);
@@ -499,7 +501,6 @@ RecordPage::~RecordPage() = default;
 void RecordPage::showRecordPage()
 {
     m_resultsFile.clear();
-    setError({});
     updateRecordType();
     ui->viewPerfRecordResultsButton->setEnabled(false);
 }
@@ -706,8 +707,6 @@ void RecordPage::setError(const QString& message)
 
 void RecordPage::updateRecordType()
 {
-    setError({});
-
     const auto recordType = selectedRecordType(ui);
     ui->launchAppBox->setVisible(recordType == RecordType::LaunchApplication);
     ui->attachAppBox->setVisible(recordType == RecordType::AttachToProcess);
