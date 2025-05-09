@@ -117,11 +117,7 @@ bool privsAlreadyElevated()
         return stat(path, &buf) == 0 && ((buf.st_mode & 07777) & required) == required;
     };
 
-    if (checkPerms("/sys/kernel/tracing")) {
-        return true;
-    }
-    // tracing used to be mounted on /sys/kernel/debug/ on older systems
-    return checkPerms("/sys/kernel/debug/tracing");
+    return checkPerms("/sys/kernel/tracing");
 }
 
 RecordHost::PerfCapabilities fetchLocalPerfCapabilities(const QString& perfPath)
