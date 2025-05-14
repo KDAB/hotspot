@@ -18,14 +18,14 @@ fi
 
 gitversion=$(git -C "$srcdir" describe)
 
-. /opt/rh/gcc-toolset-13/enable
+. /opt/rh/gcc-toolset-14/enable
 
 mkdir -p "$buildir" && cd "$buildir"
 # KGraphViewer triggers strange crashes in the AppImage, disable it
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DCMAKE_PREFIX_PATH=/opt/rh/gcc-toolset-13/root/ \
+    -DCMAKE_PREFIX_PATH=/opt/rh/gcc-toolset-14/root/ \
     -DCMAKE_DISABLE_FIND_PACKAGE_KGraphViewerPart=ON \
-    -DAPPIMAGE_BUILD=ON -DCMAKE_INSTALL_PREFIX=/usr "$srcdir"
+    -DAPPIMAGE_BUILD=ON -DCMAKE_INSTALL_PREFIX=/usr -DQT6_BUILD=ON "$srcdir"
 
 make -j$(nproc)
 rm -Rf appdir
@@ -33,7 +33,7 @@ DESTDIR=appdir make install
 
 tar -cjvf "/github/workspace/hotspot-debuginfo-$gitversion-x86_64.tar.bz2" \
     --transform="s#appdir/#hotspot-debuginfo-$gitversion/#" \
-    appdir/usr/bin/hotspot appdir/usr/lib64/libexec/hotspot-perfparser
+    appdir/usr/bin/hotspot appdir/usr/libexec/hotspot-perfparser
 
 # FIXME: Do in CMakeLists.txt
 mkdir -p "appdir/usr/share/applications/"
@@ -69,7 +69,7 @@ mkdir -p appdir/usr/plugins/wayland-shell-integration/
 cp /usr/plugins/wayland-shell-integration/libxdg-shell.so appdir/usr/plugins/wayland-shell-integration/
 
 linuxdeploy --appdir appdir --plugin qt \
-    -e "./appdir/usr/lib64/libexec/hotspot-perfparser" \
+    -e "./appdir/usr/libexec/hotspot-perfparser" \
     -e "./appdir/usr/bin/hotspot" \
     -l "/usr/lib64/libz.so.1" \
     -l /usr/lib64/libharfbuzz.so.0 \

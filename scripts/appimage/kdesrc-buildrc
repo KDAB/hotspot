@@ -1,17 +1,17 @@
 # This is a sample kdesrc-build configuration file appropriate for KDE
-# Frameworks 5-based build environments.
+# Frameworks 6-based build environments.
 #
 # See the kdesrc-buildrc-sample for explanations of what the options do, or
 # view the manpage or kdesrc-build documentation at
 # https://docs.kde.org/?application=kdesrc-build
 #
 # SPDX-FileCopyrightText: Milian Wolff <milian.wolff@kdab.com>
-# SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
+# SPDX-FileCopyrightText: 2025 Klarälvdalens Datakonsult AB, a KDAB Group company, info@kdab.com
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 #
 global
-    branch-group kf5-qt5
+    branch-group kf6-qt6
     install-dir /usr # Where to install KF5-based software
     # Uncomment this and edit value to choose a different Qt5
     qt-install-dir /usr   # Where to find Qt5
@@ -33,12 +33,12 @@ global
 end global
 
 # Instead of specifying modules here, the current best practice is to refer to
-# KF5 module lists maintained with kdesrc-build by the KF5 developers. As new
-# modules are added or modified, the kdesrc-build KF5 module list is altered to
+# KF module lists maintained with kdesrc-build by the KF developers. As new
+# modules are added or modified, the kdesrc-build KF module list is altered to
 # suit, and when you update kdesrc-build you will automatically pick up the
 # needed changes.
 
-include ${module-definitions-dir}/kf5-qt5.ksb
+include ${module-definitions-dir}/kf6-qt6.ksb
 
 # If you wish to maintain the module list yourself that is possible, simply
 # look at the files pointed to above and use the "module-set" declarations that
@@ -51,6 +51,39 @@ end options
 # It is possible to change the options for modules loaded from the file
 # included above (since it's not possible to add a module that's already been
 # included), e.g.
+
+options kcoreaddons
+    cmake-options -DKCOREADDONS_USE_QML=OFF -DBUILD_PYTHON_BINDINGS=OFF
+end options
+
+options kwidgetsaddons
+    cmake-options -DBUILD_PYTHON_BINDINGS=OFF
+end options
+
+options kguiaddons
+    cmake-options -DBUILD_PYTHON_BINDINGS=OFF
+end options
+
+options knotifications
+    cmake-options -DBUILD_PYTHON_BINDINGS=OFF
+end options
+
+options kjobwidgets
+    cmake-options -DBUILD_PYTHON_BINDINGS=OFF
+end options
+
+options kxmlgui
+    cmake-options -DBUILD_PYTHON_BINDINGS=OFF
+end options
+
+options kiconthemes
+    cmake-options -DKICONTHEMES_USE_QTQUICK=OFF
+end options
+
+options kwindowsystem
+    cmake-options -DKWINDOWSYSTEM_QML=OFF
+end options
+
 options kconfig
     cmake-options -DKCONFIG_USE_QML=OFF
 end options
@@ -63,6 +96,14 @@ options sonnet
     cmake-options -DSONNET_USE_QML=OFF
 end options
 
+options ktextwidgets
+    cmake-options -DWITH_TEXT_TO_SPEECH=OFF
+end options
+
 options extra-cmake-modules
     tag %VERSION%
+end options
+
+options breeze-icons
+    cmake-options -DBINARY_ICONS_RESOURCE=ON
 end options
