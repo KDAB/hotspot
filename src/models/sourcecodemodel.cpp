@@ -111,8 +111,6 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     Q_ASSERT(minLineNumber < maxLineNumber);
 
     m_prettySymbol = disassemblyOutput.symbol.prettySymbol;
-    m_startLine = minLineNumber - 1; // convert to index
-    m_numLines = maxLineNumber - minLineNumber + 1; // include minLineNumber
 
     QFile file(disassemblyOutput.realSourceFileName);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -124,6 +122,9 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     m_lines = sourceCode.split(QLatin1Char('\n'));
 
     m_highlightedText.setText(m_lines);
+
+    m_startLine = std::min<int>(m_lines.size(), minLineNumber - 1); // convert to index
+    m_numLines = std::min<int>(m_lines.size() - m_startLine, maxLineNumber - minLineNumber + 1); // include minLineNumber
 }
 
 QVariant SourceCodeModel::headerData(int section, Qt::Orientation orientation, int role) const
