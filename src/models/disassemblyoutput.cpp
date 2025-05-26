@@ -226,9 +226,16 @@ DisassemblyOutput::ObjectdumpOutput DisassemblyOutput::objdumpParse(const QByteA
         // [spaces]addr:\t [branch visualization] [hexdump]\tdiassembly
         // we can simplify parsing by splitting it into three parts
 
-        const auto parts = asmLine.split(QLatin1Char('\t'));
+        auto firstTab = asmLine.indexOf(QLatin1Char('\t'));
+        if (firstTab == -1) {
+            firstTab = asmLine.length();
+        }
+        auto secondTab = asmLine.indexOf(QLatin1Char('\t'), firstTab + 1);
+        if (secondTab == -1) {
+            secondTab = asmLine.length();
+        }
 
-        if (parts.size() == 1 && asmLine.endsWith(QLatin1Char(':'))) {
+        if (firstTab == -1 && asmLine.endsWith(QLatin1Char(':'))) {
             // we got a line like:
             // std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_local_data():
             // pass them to the disassembler since this can be used for inlining
@@ -236,7 +243,7 @@ DisassemblyOutput::ObjectdumpOutput DisassemblyOutput::objdumpParse(const QByteA
             continue;
         }
 
-        const auto addr = [addrString = QStringView(parts.value(0)).trimmed(), &asmLine]() -> uint64_t {
+        const auto addr = [addrString = QStringView(asmLine).mid(0, firstTab).trimmed(), &asmLine]() -> uint64_t {
             const auto suffix = QLatin1Char(':');
             if (!addrString.endsWith(suffix))
                 return 0;
@@ -262,7 +269,8 @@ DisassemblyOutput::ObjectdumpOutput DisassemblyOutput::objdumpParse(const QByteA
             QString branchVisualisation;
             QString hexdump;
         };
-        const auto [branchVisualisation, hexdump] = [branchesAndHex = parts.value(1)]() -> BranchesAndHexdump {
+        const auto [branchVisualisation, hexdump] =
+            [branchesAndHex = asmLine.mid(firstTab + 1, secondTab - firstTab - 1)]() -> BranchesAndHexdump {
             auto firstHexIt = std::find_if(branchesAndHex.cbegin(), branchesAndHex.cend(), isHexCharacter);
             auto size = std::distance(branchesAndHex.cbegin(), firstHexIt);
             auto branchVisualisation = branchesAndHex.mid(0, size);
@@ -271,7 +279,7 @@ DisassemblyOutput::ObjectdumpOutput DisassemblyOutput::objdumpParse(const QByteA
         }();
 
         disassemblyLines.push_back({addr,
-                                    parts.value(2).trimmed(),
+                                    asmLine.mid(secondTab + 1).trimmed(),
                                     branchVisualisation,
                                     hexdump,
                                     extractLinkedFunction(asmLine),
