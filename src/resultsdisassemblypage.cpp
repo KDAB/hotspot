@@ -573,11 +573,17 @@ void ResultsDisassemblyPage::showDisassembly()
         if (!objdump.isEmpty())
             return objdump;
 
+#ifndef __aarch64__
         if (m_arch.startsWith(QLatin1String("armv8")) || m_arch.startsWith(QLatin1String("aarch64"))) {
             return QStringLiteral("aarch64-linux-gnu-objdump");
         }
-        const auto isArm = m_arch.startsWith(QLatin1String("arm"));
-        return isArm ? QStringLiteral("arm-linux-gnueabi-objdump") : QStringLiteral("objdump");
+#endif
+#ifndef __arm__
+        if (m_arch.startsWith(QLatin1String("arm"))) {
+            return QStringLiteral("arm-linux-gnueabi-objdump");
+        }
+#endif
+        return QStringLiteral("objdump");
     };
 
     ui->symbolNotFound->hide();
