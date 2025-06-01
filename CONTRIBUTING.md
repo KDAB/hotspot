@@ -3,7 +3,9 @@ Please send patches targeting the latest master branch via
 Mind that all contributed changes are under Hotspot's license,
  the GPL v2+. See [LICENSE.GPL.txt](LICENSE.GPL.txt) for more information
 
-Make sure all tests pass before and after you are changing the code.  
+Make sure all tests pass before and after you are changing the code.
+To run the tests, run `ctest`.
+
 Please format your git commits per
 [Conventional Commits specification](https://www.conventionalcommits.org).  
 Install and run `pre-commit` checks before
