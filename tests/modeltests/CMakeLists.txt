@@ -5,6 +5,10 @@ add_library(
     disassembly/fib.cpp
 )
 
+set_target_properties(
+    fib PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_EXECROOTDIR}/tests/modeltests"
+)
+
 ecm_add_test(
     tst_models.cpp
     LINK_LIBRARIES
