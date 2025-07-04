@@ -124,7 +124,8 @@ void SourceCodeModel::setDisassembly(const DisassemblyOutput& disassemblyOutput,
     m_highlightedText.setText(m_lines);
 
     m_startLine = std::min<int>(m_lines.size(), minLineNumber - 1); // convert to index
-    m_numLines = std::min<int>(m_lines.size() - m_startLine, maxLineNumber - minLineNumber + 1); // include minLineNumber
+    m_numLines =
+        std::min<int>(m_lines.size() - m_startLine, maxLineNumber - minLineNumber + 1); // include minLineNumber
 }
 
 QVariant SourceCodeModel::headerData(int section, Qt::Orientation orientation, int role) const
