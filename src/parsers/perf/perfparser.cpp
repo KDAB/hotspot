@@ -2127,7 +2127,7 @@ auto extractFromArchive = [](const std::unique_ptr<KArchive>& archive) -> std::u
             return {};
         }
 
-        auto fileToExtractHandle = fileToExtract->createDevice();
+        auto fileToExtractHandle = std::unique_ptr<QIODevice>(fileToExtract->createDevice());
 
         const int chunkSize = 1024 * 100;
 
