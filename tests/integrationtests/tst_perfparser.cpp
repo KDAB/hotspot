@@ -865,14 +865,13 @@ private:
             perfOptions
                 + QStringList {QStringLiteral("-c"), QStringLiteral("1000000"), QStringLiteral("--no-buildid-cache")},
             fileName, false, exePath, exeOptions);
+        m_perfCommand = perf.perfCommand();
 
         QVERIFY(recordingFinishedSpy.wait(10000));
 
         QCOMPARE(recordingFailedSpy.count(), 0);
         QCOMPARE(recordingFinishedSpy.count(), 1);
         QCOMPARE(QFileInfo::exists(fileName), true);
-
-        m_perfCommand = perf.perfCommand();
     }
 
     static void validateCosts(const Data::Costs& costs, const Data::BottomUp& row)
