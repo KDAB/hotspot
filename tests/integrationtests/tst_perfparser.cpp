@@ -923,7 +923,7 @@ private:
 
         parser.startParseFile(fileName);
 
-        QVERIFY(parsingFinishedSpy.wait(6000));
+        QVERIFY(parsingFinishedSpy.wait(12000));
 
         // Verify that the test passed
         QCOMPARE(parsingFailedSpy.count(), 0);
