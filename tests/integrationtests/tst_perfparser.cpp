@@ -770,7 +770,7 @@ private slots:
 
         Settings::instance()->setCostAggregation(aggregation);
         m_perfCommand = QStringLiteral("perf record --call-graph dwarf --sample-cpu --switch-events --event "
-                                       "sched:sched_switch -c 1000000 --no-buildid-cache /tmp/cpp-threadnames");
+                                       "sched:sched_switch -c 1000000 /tmp/cpp-threadnames");
         m_cpuArchitecture = QStringLiteral("x86_64");
         m_linuxKernelVersion = QStringLiteral("5.17.5-arch1-1");
         m_machineHostName = QStringLiteral("Sparrow");
