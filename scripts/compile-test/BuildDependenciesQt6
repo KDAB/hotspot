@@ -6,9 +6,7 @@ WORKDIR /opt
 
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
     locale-gen
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
 
 RUN wget https://www.qcustomplot.com/release/2.1.1/QCustomPlot-source.tar.gz && \
     tar -xf QCustomPlot-source.tar.gz && rm QCustomPlot-source.tar.gz && cd qcustomplot-source && \
