@@ -143,8 +143,10 @@ ComparableSymbol cppInliningTopSymbol(const QString& binary = QStringLiteral("cp
 {
     // depending on libstdc++ version, we either get the slow libm
     // or it's fully inlined
-    return ComparableSymbol(QVector<ComparableSymbol::Pattern> {{QStringLiteral("hypot"), QStringLiteral("libm")},
-                                                                {QStringLiteral("std::generate_canonical"), binary}});
+    return ComparableSymbol(
+        QVector<ComparableSymbol::Pattern> {{QStringLiteral("hypot"), QStringLiteral("libm")},
+                                            {QStringLiteral("std::__detail::_Mod<unsigned long,"), binary},
+                                            {QStringLiteral("std::generate_canonical"), binary}});
 }
 
 ComparableSymbol cppRecursionTopSymbol(const QString& binary = QStringLiteral("cpp-recursion"))
