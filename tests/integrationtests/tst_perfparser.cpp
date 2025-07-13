@@ -88,7 +88,13 @@ struct ComparableSymbol
     {
     }
 
-    ComparableSymbol(QVector<QPair<QString, QString>> pattern)
+    struct Pattern
+    {
+        QString symbol;
+        QString binary;
+    };
+
+    ComparableSymbol(QVector<Pattern> pattern)
         : pattern(std::move(pattern))
         , isPattern(true)
     {
@@ -105,15 +111,15 @@ struct ComparableSymbol
     bool operator==(const ComparableSymbol& rhs) const
     {
         VERIFY_OR_THROW(isPattern != rhs.isPattern);
-        auto cmp = [](const Data::Symbol& symbol, const QVector<QPair<QString, QString>>& pattern) {
-            return std::any_of(pattern.begin(), pattern.end(), [&symbol](const QPair<QString, QString>& pattern) {
-                return symbol.symbol.contains(pattern.first) && symbol.binary.contains(pattern.second);
+        auto cmp = [](const Data::Symbol& symbol, const QVector<Pattern>& pattern) {
+            return std::any_of(pattern.begin(), pattern.end(), [&symbol](const Pattern& pattern) {
+                return symbol.symbol.contains(pattern.symbol) && symbol.binary.contains(pattern.binary);
             });
         };
         return isPattern ? cmp(rhs.symbol, pattern) : cmp(symbol, rhs.pattern);
     }
 
-    QVector<QPair<QString, QString>> pattern;
+    QVector<Pattern> pattern;
     Data::Symbol symbol;
     bool isPattern = false;
 };
@@ -123,7 +129,8 @@ char* toString(const ComparableSymbol& symbol)
     if (symbol.isPattern) {
         QStringList patterns;
         for (const auto& pattern : symbol.pattern)
-            patterns.append(QLatin1Char('{') + pattern.first + QLatin1String(", ") + pattern.second + QLatin1Char('}'));
+            patterns.append(QLatin1Char('{') + pattern.symbol + QLatin1String(", ") + pattern.binary
+                            + QLatin1Char('}'));
         return QTest::toString(
             QString(QLatin1String("ComparableSymbol{[") + patterns.join(QLatin1String(", ")) + QLatin1String("]}")));
     } else {
@@ -136,14 +143,14 @@ ComparableSymbol cppInliningTopSymbol(const QString& binary = QStringLiteral("cp
 {
     // depending on libstdc++ version, we either get the slow libm
     // or it's fully inlined
-    return ComparableSymbol(QVector<QPair<QString, QString>> {{QStringLiteral("hypot"), QStringLiteral("libm")},
-                                                              {QStringLiteral("std::generate_canonical"), binary}});
+    return ComparableSymbol(QVector<ComparableSymbol::Pattern> {{QStringLiteral("hypot"), QStringLiteral("libm")},
+                                                                {QStringLiteral("std::generate_canonical"), binary}});
 }
 
 ComparableSymbol cppRecursionTopSymbol(const QString& binary = QStringLiteral("cpp-recursion"))
 {
     // recursion is notoriously hard to handle, we currently often fail
-    return ComparableSymbol(QVector<QPair<QString, QString>> {{QStringLiteral("fibonacci"), binary}, {{}, binary}});
+    return ComparableSymbol(QVector<ComparableSymbol::Pattern> {{QStringLiteral("fibonacci"), binary}, {{}, binary}});
 }
 
 void dump(const Data::BottomUp& bottomUp, QTextStream& stream, const QByteArray& prefix)
