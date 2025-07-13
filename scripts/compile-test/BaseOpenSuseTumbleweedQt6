@@ -1,0 +1,14 @@
+FROM opensuse/tumbleweed:latest
+
+# install dependencies
+
+RUN zypper --non-interactive update && \
+    zypper --non-interactive install \
+    cmake gcc-c++ glibc-devel-static git ninja binutils gettext wget \
+    libzstd-devel libelf-devel libdw-devel libdebuginfod-devel \
+    qt6-widgets-devel qt6-base-devel qt6-svg-devel \
+    qt6-widgets-private-devel \
+    kf6-extra-cmake-modules kf6-threadweaver-devel kf6-kio-devel kf6-syntax-highlighting-devel \
+    kf6-solid-devel kf6-kcoreaddons-devel kf6-threadweaver-devel kf6-kconfigwidgets-devel \
+    kf6-kitemmodels-devel kf6-kitemviews-devel kf6-kwindowsystem-devel kf6-kparts-devel \
+    kf6-knotifications-devel kf6-kiconthemes-devel kf6-karchive-devel

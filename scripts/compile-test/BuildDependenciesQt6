@@ -5,8 +5,7 @@ ARG KDDOCKWIDGETS_VERSION
 ARG LIBDIR
 WORKDIR /opt
 
-RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
-    locale-gen
+RUN ([ -f /etc/local.gen ] && sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen) || echo "skipped"
 ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
 
 RUN wget https://www.qcustomplot.com/release/2.1.1/QCustomPlot-source.tar.gz && \

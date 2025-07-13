@@ -79,6 +79,6 @@ buildHotspotWithoutPresets Ubuntu20.04 1.6
 buildHotspotWithPresets Ubuntu22.04 2.0
 buildHotspotWithPresets ArchlinuxQt6 2.2
 buildHotspotWithPresets ArchlinuxWithoutOptionalQt6 2.2
-buildHotspotWithPresets OpenSuseTumbleweed 2.0
+buildHotspotWithPresets OpenSuseTumbleweedQt6 2.2
 buildHotspotWithoutPresets Fedora34 2.0
 buildHotspotWithPresets NeonQt6 2.0
