@@ -2,6 +2,7 @@ ARG BASEIMAGE
 FROM $BASEIMAGE
 
 ARG KDDOCKWIDGETS_VERSION
+ARG LIBDIR
 WORKDIR /opt
 
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
@@ -14,7 +15,7 @@ RUN wget https://www.qcustomplot.com/release/2.1.1/QCustomPlot-source.tar.gz && 
     wget https://www.qcustomplot.com/release/2.1.1/QCustomPlot-sharedlib.tar.gz && \
     tar -xf QCustomPlot-sharedlib.tar.gz && cd qcustomplot-sharedlib/sharedlib-compilation && \
     qmake6 CONFIG+=release CONFIG+=force_debug_info && make -j$(nproc) && \
-    cp -va libqcustomplot* /usr/lib/x86_64-linux-gnu/ && cd /opt && rm -Rf qcustomplot-source
+    cp -va libqcustomplot* $LIBDIR && cd /opt && rm -Rf qcustomplot-source
 
 RUN git clone -b $KDDOCKWIDGETS_VERSION https://github.com/KDAB/KDDockWidgets && \
     cd KDDockWidgets && mkdir build && cd build && \

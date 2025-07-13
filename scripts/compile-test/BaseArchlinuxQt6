@@ -1,0 +1,10 @@
+FROM archlinux:latest
+
+# install dependencies
+
+RUN pacman -Sy --noconfirm && \
+    pacman -S archlinux-keyring --noconfirm && pacman-key --init && pacman-key --populate && \
+    pacman -Syu --noconfirm git make cmake gcc extra-cmake-modules \
+    libelf gettext qt6-base ninja wget \
+    threadweaver kconfigwidgets knotifications karchive syntax-highlighting \
+    kiconthemes kitemviews kitemmodels kwindowsystem kio kparts solid clazy python python-yaml

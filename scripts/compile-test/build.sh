@@ -34,8 +34,14 @@ buildDependencies()
         suffix=Qt6
     fi
 
+    libdir="/usr/lib"
+    if [[ $distro == Neon* || $distro == Ubuntu* ]]; then
+        libdir="/usr/lib/x86_64-linux-gnu/"
+    fi
+
     docker build --ulimit nofile=1024:262144 -t hotspot-$tag-dependencies \
         --build-arg BASEIMAGE=hotspot-$tag-base --build-arg KDDOCKWIDGETS_VERSION="$kddw_version" \
+        --build-arg LIBDIR="$libdir" \
         -f scripts/compile-test/BuildDependencies$suffix $extraArgs .
 }
 
@@ -71,8 +77,8 @@ buildHotspotWithoutPresets()
 export DOCKER_BUILDKIT=1
 buildHotspotWithoutPresets Ubuntu20.04 1.6
 buildHotspotWithPresets Ubuntu22.04 2.0
-buildHotspotWithPresets Archlinux 2.0
-buildHotspotWithPresets ArchlinuxWithoutOptional 2.0
+buildHotspotWithPresets ArchlinuxQt6 2.2
+buildHotspotWithPresets ArchlinuxWithoutOptionalQt6 2.2
 buildHotspotWithPresets OpenSuseTumbleweed 2.0
 buildHotspotWithoutPresets Fedora34 2.0
 buildHotspotWithPresets NeonQt6 2.0
