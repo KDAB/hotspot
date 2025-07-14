@@ -29,6 +29,8 @@ public:
         EventsRole = Qt::UserRole,
         MaxTimeRole,
         MinTimeRole,
+        ApplicationStartTimeRole,
+        ApplicationEndTimeRole,
         ThreadStartRole,
         ThreadEndRole,
         ThreadNameRole,
@@ -55,6 +57,7 @@ public:
 
     using QAbstractItemModel::setData;
     void setData(const Data::EventResults& data);
+    void setApplicationTime(Data::TimeRange timeRange);
 
     Data::TimeRange timeRange() const;
 
@@ -75,6 +78,7 @@ private:
     Data::EventResults m_data;
     QVector<Process> m_processes;
     Data::TimeRange m_time;
+    Data::TimeRange m_applicationTime;
     quint64 m_totalOnCpuTime = 0;
     quint64 m_totalOffCpuTime = 0;
     quint64 m_totalEvents = 0;

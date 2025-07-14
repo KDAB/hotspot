@@ -103,6 +103,8 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
             }
         }
     });
+    connect(m_parser, &PerfParser::summaryDataAvailable, this,
+            [eventModel](const Data::Summary& summary) { eventModel->setApplicationTime(summary.applicationTime); });
 
     connect(m_parser, &PerfParser::tracepointDataAvailable, this,
             [this](const Data::TracepointResults& data) { m_timeAxisHeaderView->setTracepoints(data); });

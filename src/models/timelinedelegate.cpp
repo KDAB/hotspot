@@ -317,7 +317,8 @@ bool TimeLineDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, con
             found = findSamples(results.offCpuTimeCostId, true);
         }
 
-        const auto formattedTime = Util::formatTimeString(time - data.time.start);
+        const auto appStartTime = index.data(EventModel::ApplicationStartTimeRole).value<quint64>();
+        const auto formattedTime = Util::formatTimeString(time - appStartTime);
         const auto totalCosts = index.data(EventModel::TotalCostsRole).value<QVector<Data::CostSummary>>();
         if (found.numLost > 0) {
             QToolTip::showText(

@@ -118,6 +118,10 @@ QVariant EventModel::data(const QModelIndex& index, int role) const
         return m_time.end;
     } else if (role == MinTimeRole) {
         return m_time.start;
+    } else if (role == ApplicationStartTimeRole) {
+        return m_applicationTime.start;
+    } else if (role == ApplicationEndTimeRole) {
+        return m_applicationTime.end;
     } else if (role == MaxCostRole) {
         return m_maxCost;
     } else if (role == NumProcessesRole) {
@@ -324,6 +328,11 @@ void EventModel::setData(const Data::EventResults& data)
 Data::TimeRange EventModel::timeRange() const
 {
     return m_time;
+}
+
+void EventModel::setApplicationTime(Data::TimeRange timeRange)
+{
+    m_applicationTime = timeRange;
 }
 
 QModelIndex EventModel::index(int row, int column, const QModelIndex& parent) const
