@@ -146,7 +146,7 @@ private:
     // stub implementation necessary for testing
     virtual LineFormat formatLine(const QString& line)
     {
-        return {{QTextLayout::FormatRange {0, line.length(), {}}}};
+        return {{QTextLayout::FormatRange {0, static_cast<int>(line.length()), {}}}};
     }
 
     Q_DISABLE_COPY(HighlightingImplementation)
