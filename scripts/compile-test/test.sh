@@ -25,9 +25,9 @@ testWithPreset()
 }
 
 testWithoutPreset ubuntu20.04 "-E tst_perfdata"
-testWithoutPreset fedora34
 
 testWithPreset ubuntu22.04
-testWithPreset archlinux
-testWithPreset opensusetumbleweed
+testWithPreset archlinuxqt6
+testWithPreset opensusetumbleweedqt6
+testWithPreset fedora42qt6
 testWithPreset neonqt6

@@ -20,8 +20,8 @@ pushDependencies()
 
 pushDependencies ubuntu20.04
 pushDependencies ubuntu22.04
-pushDependencies archlinux
-pushDependencies archlinuxwithoutoptional
-pushDependencies opensusetumbleweed
-pushDependencies fedora34
+pushDependencies archlinuxqt6
+pushDependencies archlinuxwithoutoptionalqt6
+pushDependencies opensusetumbleweedqt6
+pushDependencies fedora42qt6
 pushDependencies neonqt6
