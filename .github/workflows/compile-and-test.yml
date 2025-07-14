@@ -66,7 +66,7 @@ jobs:
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-archlinux-dependencies
+    container: ghcr.io/kdab/hotspot-archlinuxqt6-dependencies
 
     steps:
     - name: Checkout
@@ -75,21 +75,21 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-asan
+      run: cmake --preset dev-asan-qt6
            -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
 
     - name: Build
-      run: cmake --build --preset dev-asan
+      run: cmake --build --preset dev-asan-qt6
 
     - name: Test
-      run: ctest --preset dev-asan
+      run: ctest --preset dev-asan-qt6
 
   archlinux-clang-clazy:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-archlinux-dependencies
+    container: ghcr.io/kdab/hotspot-archlinuxqt6-dependencies
 
     steps:
     - name: Checkout
@@ -98,20 +98,20 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-clazy
+      run: cmake --preset dev-clazy-qt6
 
     - name: Build
-      run: cmake --build --preset dev-clazy
+      run: cmake --build --preset dev-clazy-qt6
 
     - name: Test
-      run: ctest --preset dev-clazy
+      run: ctest --preset dev-clazy-qt6
 
   archlinux-clang-tidy:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-archlinux-dependencies
+    container: ghcr.io/kdab/hotspot-archlinuxqt6-dependencies
 
     steps:
     - name: Checkout
@@ -120,14 +120,14 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-clazy
+      run: cmake --preset dev-clazy-qt6
 
     - name: Analyze
       # the first lines ensures all moc generated headers are available
-      run: cd build-dev-clazy &&
+      run: cd build-dev-clazy-qt6 &&
            ninja -t targets all | grep "mocs_compilation.cpp:" | cut -f1 -d':' | xargs ninja &&
            cd .. &&
-           ./scripts/run_clang_tidy.sh build-dev-clazy &&
+           ./scripts/run_clang_tidy.sh build-dev-clazy-qt6 &&
            [ ! -s scripts/fixits/fixits.yaml ]
 
     - name: Upload Fixits
@@ -142,7 +142,7 @@ jobs:
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-archlinuxwithoutoptional-dependencies
+    container: ghcr.io/kdab/hotspot-archlinuxwithoutoptionalqt6-dependencies
 
     steps:
     - name: Checkout
@@ -151,21 +151,20 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-asan
-           -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
+      run: cmake --preset dev-asan-qt6 -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
 
     - name: Build
-      run: cmake --build --preset dev-asan
+      run: cmake --build --preset dev-asan-qt6
 
     - name: Test
-      run: ctest --preset dev-asan
+      run: ctest --preset dev-asan-qt6
 
-  fedora34:
+  fedora42:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-fedora34-dependencies
+    container: ghcr.io/kdab/hotspot-fedora42qt6-dependencies
 
     steps:
     - name: Checkout
@@ -174,22 +173,20 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -G Ninja
-          -DCMAKE_CXX_FLAGS_INIT="-g -fsanitize=address,undefined -Werror"
-          -DCMAKE_C_FLAGS_INIT="-g -fsanitize=address,undefined -Werror"
+      run: cmake --preset dev-asan-qt6 -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
 
     - name: Build
-      run: cmake --build build
+      run: cmake --build --preset dev-asan-qt6
 
     - name: Test
-      run: ctest --test-dir build --output-on-failure
+      run: ctest --preset dev-asan-qt6
 
   opensuse-tumbleweed:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-opensusetumbleweed-dependencies
+    container: ghcr.io/kdab/hotspot-opensusetumbleweedqt6-dependencies
 
     steps:
     - name: Checkout
@@ -198,13 +195,13 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-asan -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
+      run: cmake --preset dev-asan-qt6 -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
 
     - name: Build
-      run: cmake --build --preset dev-asan
+      run: cmake --build --preset dev-asan-qt6
 
     - name: Test
-      run: ctest --preset dev-asan
+      run: ctest --preset dev-asan-qt6
 
   neon-qt6:
     needs: pre_job
