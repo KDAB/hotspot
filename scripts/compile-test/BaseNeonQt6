@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -6,8 +6,8 @@ RUN apt-get update && \
     apt-get install -y gnupg2 wget && \
     wget https://archive.neon.kde.org/public.key -O /tmp/public.key && \
     apt-key add /tmp/public.key && rm /tmp/public.key && \
-    echo "deb http://archive.neon.kde.org/unstable jammy main" > /etc/apt/sources.list.d/neon.list && \
-    echo "deb-src http://archive.neon.kde.org/unstable jammy main" >> /etc/apt/sources.list.d/neon.list && \
+    echo "deb http://archive.neon.kde.org/unstable noble main" > /etc/apt/sources.list.d/neon.list && \
+    echo "deb-src http://archive.neon.kde.org/unstable noble main" >> /etc/apt/sources.list.d/neon.list && \
     apt-get update && apt-get dist-upgrade -y --allow-downgrades && \
     apt-get install -y qt6-base-dev qt6-base-private-dev qt6-svg-dev \
     locales cmake libdwarf-dev mesa-common-dev \
