@@ -162,8 +162,6 @@ ENV LANG=en_US.UTF-8 \
     LANGUAGE=en_US:en \
     LC_ALL=en_US.UTF-8
 
-RUN git config --global --add safe.directory /github/workspace
-
 COPY --from=stripped /usr /usr
 COPY --from=stripped /usr/local/lib64 /opt/rh/gcc-toolset-14/root/lib64
 

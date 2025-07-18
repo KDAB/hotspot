@@ -16,6 +16,10 @@ if [ -z "$srcdir" ] || [ -z "$buildir" ]; then
     exit 1
 fi
 
+# workaround owner/permission issues resulting in:
+# fatal: detected dubious ownership in repository at '/github/workspace'
+git config --global --add safe.directory "$srcdir"
+
 gitversion=$(git -C "$srcdir" describe)
 
 . /opt/rh/gcc-toolset-14/enable
