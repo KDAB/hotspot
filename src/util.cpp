@@ -294,34 +294,34 @@ QString Util::formatCostRelative(quint64 selfCost, quint64 totalCost, bool addPe
     return ret;
 }
 
-QString Util::formatTimeString(quint64 nanoseconds, bool shortForm)
+QString Util::formatTimeString(quint64 totalNanoseconds, bool shortForm)
 {
-    if (nanoseconds < 1000) {
-        return QString::number(nanoseconds) + QLatin1String("ns");
+    if (totalNanoseconds < 1000) {
+        return QString::number(totalNanoseconds) + QLatin1String("ns");
     }
 
     auto format = [](quint64 fragment, int precision) -> QString {
         return QString::number(fragment).rightJustified(precision, QLatin1Char('0'));
     };
 
-    const auto microseconds = nanoseconds / 1000;
-    if (nanoseconds < 1000000) {
-        const auto nanos = nanoseconds % 1000;
+    const auto microseconds = (totalNanoseconds / 1000) % 1000;
+    if (totalNanoseconds < 1000000) {
+        const auto nanoseconds = totalNanoseconds % 1000;
         if (shortForm) {
             return QString::number(microseconds) + QStringLiteral("µs");
         }
-        return format(microseconds, 3) + QLatin1Char('.') + format(nanos, 3) + QStringLiteral("µs");
+        return format(microseconds, 3) + QLatin1Char('.') + format(nanoseconds, 3) + QStringLiteral("µs");
     }
 
-    const auto milliseconds = (nanoseconds / 1000000) % 1000;
-    if (nanoseconds < 1000000000) {
+    const auto milliseconds = (totalNanoseconds / 1000000) % 1000;
+    if (totalNanoseconds < 1000000000) {
         if (shortForm) {
             return QString::number(milliseconds) + QLatin1String("ms");
         }
         return format(milliseconds, 3) + QLatin1Char('.') + format(microseconds, 3) + QLatin1String("ms");
     }
 
-    const auto totalSeconds = nanoseconds / 1000000000;
+    const auto totalSeconds = totalNanoseconds / 1000000000;
     const auto days = totalSeconds / 60 / 60 / 24;
     const auto hours = (totalSeconds / 60 / 60) % 24;
     const auto minutes = (totalSeconds / 60) % 60;
