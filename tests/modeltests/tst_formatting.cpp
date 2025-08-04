@@ -91,6 +91,58 @@ private slots:
         }
     }
 
+    void testFormatTimeString_data()
+    {
+        QTest::addColumn<quint64>("nanoseconds");
+        QTest::addColumn<bool>("shortForm");
+        QTest::addColumn<QString>("formattedString");
+
+        QTest::addRow("123ns") << static_cast<quint64>(123) << false << "123ns";
+        QTest::addRow("1.234µs") << static_cast<quint64>(1234) << false << "001.234µs";
+        QTest::addRow("12.345µs") << static_cast<quint64>(12345) << false << "012.345µs";
+        QTest::addRow("123.456µs") << static_cast<quint64>(123456) << false << "123.456µs";
+        QTest::addRow("1.234ms") << static_cast<quint64>(1234567) << false << "001.234ms";
+        QTest::addRow("12.345ms") << static_cast<quint64>(12345678) << false << "012.345ms";
+        QTest::addRow("123.456ms") << static_cast<quint64>(123456789) << false << "123.456ms";
+        QTest::addRow("1.234s") << static_cast<quint64>(1234567892) << false << "01.234s";
+        QTest::addRow("12.345s") << static_cast<quint64>(12345678920) << false << "12.345s";
+        // 123.456789203s = 120s + 3.456789203s = 2min 3.456s
+        QTest::addRow("123.456s") << static_cast<quint64>(123456789203) << false << "2min 03.456s";
+        // 1234.567892035s = 1200s + 34.567892035s = 20min 34.567s
+        QTest::addRow("1234.567s") << static_cast<quint64>(1234567892035) << false << "20min 34.567s";
+        // 12345.678920357s = 12300s + 45.678920357s = 205min 45.678s = 3h 25min 45.678s
+        QTest::addRow("12345.678s") << static_cast<quint64>(12345678920357) << false << "3h 25min 45.678s";
+        // 123456.789203574s = 123420s + 36.789203574s = 2057min 36.789s = 34h 17min 36.789s = 1d 10h 17min 36.789s
+        QTest::addRow("123456.789s") << static_cast<quint64>(123456789203574) << false << "1d 10h 17min 36.789s";
+
+        QTest::addRow("short: 123ns") << static_cast<quint64>(123) << true << "123ns";
+        QTest::addRow("short: 1.234µs") << static_cast<quint64>(1234) << true << "1µs";
+        QTest::addRow("short: 12.345µs") << static_cast<quint64>(12345) << true << "12µs";
+        QTest::addRow("short: 123.456µs") << static_cast<quint64>(123456) << true << "123µs";
+        QTest::addRow("short: 1.234ms") << static_cast<quint64>(1234567) << true << "1ms";
+        QTest::addRow("short: 12.345ms") << static_cast<quint64>(12345678) << true << "12ms";
+        QTest::addRow("short: 123.456ms") << static_cast<quint64>(123456789) << true << "123ms";
+        QTest::addRow("short: 1.234s") << static_cast<quint64>(1234567892) << true << "1s";
+        QTest::addRow("short: 12.345s") << static_cast<quint64>(12345678920) << true << "12s";
+        // 123.456789203s = 120s + 3.456789203s = 2min 3.456s
+        QTest::addRow("short: 123.456s") << static_cast<quint64>(123456789203) << true << "2min 3s";
+        // 1234.567892035s = 1200s + 34.567892035s = 20min 34.567s
+        QTest::addRow("short: 1234.567s") << static_cast<quint64>(1234567892035) << true << "20min 34s";
+        // 12345.678920357s = 12300s + 45.678920357s = 205min 45.678s = 3h 25min 45.678s
+        QTest::addRow("short: 12345.678s") << static_cast<quint64>(12345678920357) << true << "3h 25min 45s";
+        // 123456.789203574s = 123420s + 36.789203574s = 2057min 36.789s = 34h 17min 36.789s = 1d 10h 17min 36.789s
+        QTest::addRow("short: 123456.789s") << static_cast<quint64>(123456789203574) << true << "1d 10h 17min 36s";
+    }
+
+    void testFormatTimeString()
+    {
+        QFETCH(quint64, nanoseconds);
+        QFETCH(bool, shortForm);
+        QFETCH(QString, formattedString);
+
+        QCOMPARE(Util::formatTimeString(nanoseconds, shortForm), formattedString);
+    }
+
     void testMultilineHighlighting()
     {
 #if KFSyntaxHighlighting_FOUND
