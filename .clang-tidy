@@ -1,5 +1,37 @@
 ---
-Checks:          'clang-analyzer-*,bugprone-*,concurrency-*,misc-*,modernize-*,performance-*,portability-*,readability-*,-readability-braces-around-statements,-readability-uppercase-literal-suffix,-readability-identifier-length,-readability-magic-numbers,-modernize-avoid-c-arrays,-modernize-use-trailing-return-type,-bugprone-suspicious-include,-bugprone-easily-swappable-parameters,-misc-no-recursion,-readability-redundant-access-specifiers,-readability-implicit-bool-conversion,-readability-function-cognitive-complexity,-readability-else-after-return,-readability-qualified-auto,-bugprone-assignment-in-if-condition,-readability-inconsistent-declaration-parameter-name,-modernize-use-nodiscard,-bugprone-narrowing-conversions,-clang-analyzer-cplusplus.NewDeleteLeaks,-clang-analyzer-cplusplus.NewDelete,-misc-include-cleaner,-bugprone-switch-missing-default-case,-performance-enum-size,-readability-avoid-nested-conditional-operator'
+Checks:
+    clang-analyzer-*,
+        -clang-analyzer-cplusplus.NewDeleteLeaks,
+        -clang-analyzer-cplusplus.NewDelete,
+    bugprone-*,
+        -bugprone-suspicious-include,
+        -bugprone-easily-swappable-parameters,
+        -bugprone-assignment-in-if-condition,
+        -bugprone-narrowing-conversions,
+        -bugprone-switch-missing-default-case,
+    concurrency-*,
+    misc-*,
+        -misc-no-recursion,
+        -misc-include-cleaner,
+    modernize-*,
+        -modernize-avoid-c-arrays,
+        -modernize-use-trailing-return-type,
+        -modernize-use-nodiscard,
+    performance-*,
+        -performance-enum-size,
+    portability-*,
+    readability-*,
+        -readability-braces-around-statements,
+        -readability-uppercase-literal-suffix,
+        -readability-identifier-length,
+        -readability-magic-numbers,
+        -readability-redundant-access-specifiers,
+        -readability-implicit-bool-conversion,
+        -readability-function-cognitive-complexity,
+        -readability-else-after-return,
+        -readability-qualified-auto,
+        -readability-inconsistent-declaration-parameter-name,
+        -readability-avoid-nested-conditional-operator
 CheckOptions:
   - key:             readability-implicit-bool-conversion.AllowIntegerConditions
     value:           true
