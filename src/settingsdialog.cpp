@@ -174,6 +174,7 @@ void SettingsDialog::addPathSettingsPage()
         unwindPage->lineEditApplicationPath->setText(settings->appPath());
         unwindPage->lineEditKallsyms->setText(settings->kallsyms());
         unwindPage->lineEditObjdump->setText(settings->objdump());
+        unwindPage->lineEditPerfMapPath->setText(settings->perfMapPath());
 
         const auto arch = settings->arch();
         int itemIndex = 0;
@@ -197,6 +198,7 @@ void SettingsDialog::addPathSettingsPage()
         group.writeEntry("kallsyms", kallsyms());
         group.writeEntry("arch", arch());
         group.writeEntry("objdump", objdump());
+        group.writeEntry("perfMapPath", perfMapPath());
     };
 
     auto restoreFunction = [this, loadFromSettings](const KConfigGroup& group) {
@@ -217,6 +219,8 @@ void SettingsDialog::addPathSettingsPage()
         settings->setArch(arch);
         const auto objdump = group.readEntry("objdump");
         settings->setObjdump(objdump);
+        const auto perfMapPath = group.readEntry("perfMapPath");
+        settings->setPerfMapPath(perfMapPath);
 
         loadFromSettings();
     };
