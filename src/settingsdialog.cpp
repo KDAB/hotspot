@@ -122,7 +122,7 @@ QString SettingsDialog::arch() const
 
 QString SettingsDialog::objdump() const
 {
-    return unwindPage->lineEditObjdump->text();
+    return disassemblyPage->lineEditObjdump->text();
 }
 
 QString SettingsDialog::perfMapPath() const
@@ -173,7 +173,6 @@ void SettingsDialog::addPathSettingsPage()
         unwindPage->lineEditSysroot->setText(settings->sysroot());
         unwindPage->lineEditApplicationPath->setText(settings->appPath());
         unwindPage->lineEditKallsyms->setText(settings->kallsyms());
-        unwindPage->lineEditObjdump->setText(settings->objdump());
         unwindPage->lineEditPerfMapPath->setText(settings->perfMapPath());
 
         const auto arch = settings->arch();
@@ -236,8 +235,8 @@ void SettingsDialog::addPathSettingsPage()
 
     connect(this, &KPageDialog::accepted, this, [this] { m_configs->updateCurrentConfig(); });
 
-    for (auto field : {unwindPage->lineEditSysroot, unwindPage->lineEditApplicationPath, unwindPage->lineEditKallsyms,
-                       unwindPage->lineEditObjdump}) {
+    for (auto field :
+         {unwindPage->lineEditSysroot, unwindPage->lineEditApplicationPath, unwindPage->lineEditKallsyms}) {
         connect(field, &KUrlRequester::textEdited, m_configs, &MultiConfigWidget::updateCurrentConfig);
         connect(field, &KUrlRequester::urlSelected, m_configs, &MultiConfigWidget::updateCurrentConfig);
     }
@@ -350,6 +349,7 @@ void SettingsDialog::addSourcePathPage()
 
     setupMultiPath(disassemblyPage->sourcePaths, disassemblyPage->label, buttonBox()->button(QDialogButtonBox::Ok));
 
+    disassemblyPage->lineEditObjdump->setText(settings->objdump());
     disassemblyPage->showBranches->setChecked(settings->showBranches());
     disassemblyPage->showHexdump->setChecked(settings->showHexdump());
     disassemblyPage->tabWidth->setValue(settings->tabWidth());
@@ -360,4 +360,9 @@ void SettingsDialog::addSourcePathPage()
         settings->setShowHexdump(disassemblyPage->showHexdump->isChecked());
         settings->setTabWidth(disassemblyPage->tabWidth->value());
     });
+
+    for (auto field : {disassemblyPage->lineEditObjdump}) {
+        connect(field, &KUrlRequester::textEdited, m_configs, &MultiConfigWidget::updateCurrentConfig);
+        connect(field, &KUrlRequester::urlSelected, m_configs, &MultiConfigWidget::updateCurrentConfig);
+    }
 }

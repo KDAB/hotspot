@@ -17,13 +17,26 @@
    <bool>true</bool>
   </property>
   <layout class="QFormLayout" name="formLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="sysrootLabel">
+     <property name="toolTip">
+      <string>Path to the sysroot. Leave empty to use the local machine.</string>
+     </property>
+     <property name="text">
+      <string>Sysroot:</string>
+     </property>
+     <property name="buddy">
+      <cstring>lineEditSysroot</cstring>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="1">
     <widget class="KUrlRequester" name="lineEditSysroot">
      <property name="toolTip">
       <string>Path to the sysroot. Leave empty to use the local machine.</string>
      </property>
      <property name="mode">
-      <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
+      <set>KFile::Mode::Directory|KFile::Mode::ExistingOnly|KFile::Mode::LocalOnly</set>
      </property>
      <property name="placeholderText">
       <string>local machine</string>
@@ -53,10 +66,20 @@
      </property>
     </widget>
    </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="extraLibraryPathsLabel">
+     <property name="toolTip">
+      <string>List of paths that contain additional libraries.</string>
+     </property>
+     <property name="text">
+      <string>Extra Library Paths:</string>
+     </property>
+    </widget>
+   </item>
    <item row="3" column="1">
     <widget class="KEditListWidget" name="extraLibraryPaths">
      <property name="focusPolicy">
-      <enum>Qt::TabFocus</enum>
+      <enum>Qt::FocusPolicy::TabFocus</enum>
      </property>
      <property name="toolTip">
       <string>List of paths that contain additional libraries.</string>
@@ -76,7 +99,7 @@
    <item row="5" column="1">
     <widget class="KEditListWidget" name="debugPaths">
      <property name="focusPolicy">
-      <enum>Qt::TabFocus</enum>
+      <enum>Qt::FocusPolicy::TabFocus</enum>
      </property>
      <property name="toolTip">
       <string>List of paths that contain debug information.</string>
@@ -153,65 +176,16 @@
     </widget>
    </item>
    <item row="9" column="0">
-    <widget class="QLabel" name="objdumpLabel">
-     <property name="toolTip">
-      <string>&lt;qt&gt;The &lt;tt&gt;objdump&lt;/tt&gt; binary that will be used for the disassembly view. Leave empty to let it be auto-detected.&lt;/qt&gt;</string>
-     </property>
-     <property name="text">
-      <string>Objdump:</string>
-     </property>
-     <property name="buddy">
-      <cstring>lineEditObjdump</cstring>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="1">
-    <widget class="KUrlRequester" name="lineEditObjdump">
-     <property name="toolTip">
-      <string>&lt;qt&gt;The &lt;tt&gt;objdump&lt;/tt&gt; binary that will be used for the disassembly view. Leave empty to let it be auto-detected.&lt;/qt&gt;</string>
-     </property>
-     <property name="placeholderText">
-      <string>auto-detect</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="extraLibraryPathsLabel">
-     <property name="toolTip">
-      <string>List of paths that contain additional libraries.</string>
-     </property>
-     <property name="text">
-      <string>Extra Library Paths:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="sysrootLabel">
-     <property name="toolTip">
-      <string>Path to the sysroot. Leave empty to use the local machine.</string>
-     </property>
-     <property name="text">
-      <string>Sysroot:</string>
-     </property>
-     <property name="buddy">
-      <cstring>lineEditSysroot</cstring>
-     </property>
-    </widget>
-   </item>
-   <item row="10" column="0">
     <widget class="QLabel" name="perfMapPath">
      <property name="text">
       <string>Custom perf-$pid.map directory:</string>
      </property>
     </widget>
    </item>
-   <item row="10" column="1">
+   <item row="9" column="1">
     <widget class="KUrlRequester" name="lineEditPerfMapPath">
      <property name="mode">
-      <set>KFile::Directory|KFile::ExistingOnly|KFile::LocalOnly</set>
+      <set>KFile::Mode::Directory|KFile::Mode::ExistingOnly|KFile::Mode::LocalOnly</set>
      </property>
     </widget>
    </item>
@@ -236,7 +210,6 @@
   <tabstop>debugPaths</tabstop>
   <tabstop>lineEditKallsyms</tabstop>
   <tabstop>comboBoxArchitecture</tabstop>
-  <tabstop>lineEditObjdump</tabstop>
  </tabstops>
  <resources/>
  <connections/>
