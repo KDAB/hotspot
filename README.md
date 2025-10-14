@@ -21,10 +21,8 @@ performance data formats under this umbrella.
   - [Time Line](#time-line)
   - [Record Data](#record-data)
 - [Getting Hotspot](#getting-hotspot)
-  - [ArchLinux](#archlinux)
-  - [Debian / Ubuntu](#debian--ubuntu)
   - [Gentoo](#gentoo)
-  - [Fedora](#fedora)
+  - [Via package manager](#via-package-manager)
   - [For any Linux distro: AppImage](#for-any-linux-distro-appimage)
 - [Building Hotspot](#building-hotspot)
 - [Using](#using)
@@ -100,22 +98,13 @@ or to attach to already running process(es). Do take the
 *Note: Hotspot is not yet packaged on all Linux distributions. In such cases, or if you want to use the
 latest version, please use the AppImage which will work on any recent Linux distro just fine.*
 
-### ArchLinux
-
-Hotspot is available in AUR (https://aur.archlinux.org/packages/hotspot).
-
-### Debian / Ubuntu
-
-Hotspot is available in Debian (https://packages.debian.org/hotspot) and Ubuntu
-(https://packages.ubuntu.com/hotspot).
-
 ### Gentoo
 
 Hotspot ebuilds are available from our overlay (https://github.com/KDAB/kdab-overlay).
 
-### Fedora
+### Via package manager
 
-Hotspot is available in Fedora (https://packages.fedoraproject.org/pkgs/hotspot/hotspot/).
+[![Packaging status](https://repology.org/badge/vertical-allrepos/hotspot-perf.svg)](https://repology.org/project/hotspot-perf/versions)
 
 ### For any Linux distro: AppImage
 
