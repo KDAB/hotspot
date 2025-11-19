@@ -131,6 +131,9 @@ package manager or as an [AppImage](#for-any-linux-distro-appimage).
 For everyone that wants to contribute to Hotspot or use the newest version without the AppImage detailed
 notes are found at [HACKING](HACKING.md#table-of-contents).
 
+To build with all dependencies provided by vcpkg, use one of the `dev-vcpkg` / `rel-vcpkg` CMake presets directly,
+e.g. `cmake --preset=rel-vcpkg && cmake --build build-rel-vcpkg`.
+
 ## Using
 
 ### General

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "hotspot",
+  "version": "1.5.80",
+  "description": "The Linux perf GUI for performance analysis",
+  "dependencies": [
+    {
+      "name": "kddockwidgets",
+      "features": ["qtwidgets"]
+    },
+    "extra-cmake-modules",
+    "kcoreaddons",
+    "karchive",
+    "kitemviews",
+    "kitemmodels",
+    "plasma-wayland-protocols",
+    "kwindowsystem",
+    "kcrash",
+    "threadweaver",
+    "solid",
+    "syntax-highlighting",
+    "kcodecs",
+    "kguiaddons",
+    "kwidgetsaddons",
+    "kconfig",
+    "kdbusaddons",
+    "kcompletion",
+    "knotifications",
+    "kjobwidgets",
+    "ki18n",
+    "kauth",
+    "kcolorscheme",
+    "kconfigwidgets",
+    "kiconthemes",
+    "kglobalaccel",
+    "kxmlgui",
+    "kbookmarks",
+    "kservice",
+    "kio",
+    "kparts"
+  ]
+}

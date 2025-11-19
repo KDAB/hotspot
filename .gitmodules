@@ -5,3 +5,6 @@
 [submodule "3rdparty/PrefixTickLabels"]
 	path = 3rdparty/PrefixTickLabels
 	url = https://github.com/koenpoppe/PrefixTickLabels
+[submodule "3rdparty/vcpkg"]
+	path = 3rdparty/vcpkg
+	url = https://github.com/microsoft/vcpkg.git
