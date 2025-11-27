@@ -98,10 +98,10 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-clazy-qt6
+      run: cmake --trace-expand --preset dev-clazy-qt6
 
     - name: Build
-      run: cmake --build --preset dev-clazy-qt6
+      run: cmake  --trace-expand --build --preset dev-clazy-qt6
 
     - name: Test
       run: ctest --preset dev-clazy-qt6
