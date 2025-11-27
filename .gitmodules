@@ -7,4 +7,4 @@
 	url = https://github.com/koenpoppe/PrefixTickLabels
 [submodule "3rdparty/fmtparser"]
 	path = 3rdparty/fmtparser
-	url = https://github.com/fmtparser/fmtparser
+	url = git@github.com:lievenhey/fmtparser.git
