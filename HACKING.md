@@ -61,8 +61,9 @@ As of now, you will need the following dependencies to build this project:
 
 ### On Debian/Ubuntu
 
+#### For Qt5
+
 ```bash
-add-apt-repository ppa:kubuntu-ppa/backports
 apt-get update
 apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev libkf5syntaxhighlighting-dev \
     libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libkf5kio-dev libkf5parts-dev \
@@ -70,18 +71,16 @@ apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev li
     libdw-dev cmake extra-cmake-modules gettext libqt5svg5-dev
 ```
 
-Note: Ubuntu 20.04 does not provide the minimal version of QT, if you use this old Ubuntu version then
-you'd need to _additionally_ install it from a version outside of the distro repository.
-The automatic builds via GitHub actions [use the following][Ubuntu2004Script] for that:
+#### For Qt6
 
 ```bash
-    sudo add-apt-repository ppa:beineri/opt-qt-5.15.4-focal
-    sudo apt-get update
-    sudo apt-get install -y qt515base qt515svg qt515x11extras \
-        libqt5x11extras5-dev   # this one is optional for Hotspot, but required for KDDockWidgets
+apt-get update
+apt-get install libkf6threadweaver-dev libkf6i18n-dev libkf6configwidgets-dev libkf6syntaxhighlighting-dev \
+    libkf6coreaddons-dev libkf6itemviews-dev libkf6itemmodels-dev libkf6kio-dev libkf6parts-dev \
+    libkf6solid-dev libkf6windowsystem-dev libkf6notifications-dev libkf6iconthemes-dev libelf-dev \
+    libdw-dev libdwarf-dev libdebuginfod-dev cmake extra-cmake-modules qt6-svg-dev libzstd-dev \
+    libkddockwidgets-qt6-dev kgraphviewer-dev libqcustomplot-dev
 ```
-
-[Ubuntu2004Script]:https://github.com/KDAB/hotspot/blob/master/scripts/compile-test/BaseUbuntu20.04
 
 ### On Fedora
 
@@ -123,6 +122,8 @@ make
 ./bin/hotspot
 # or `make install` it and launch it from your $PATH
 ```
+
+To build for Qt6 pass `-DQT6_BUILD=ON` when running the `cmake` command.
 
 If you need help building this project for your platform, [contact us for help](https://www.kdab.com/about/contact/).
 
