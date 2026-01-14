@@ -85,6 +85,15 @@ int firstAvailableIde()
     }
     return -1;
 }
+
+QString shortenedFilePath(QString path)
+{
+    const auto home = QDir::homePath();
+    if (path.startsWith(home)) {
+        path.replace(0, home.size(), QStringLiteral("~"));
+    }
+    return path;
+}
 }
 
 MainWindow::MainWindow(QWidget* parent)
@@ -342,7 +351,7 @@ void MainWindow::openFile(const QString& path, bool isReload)
     clear(isReload);
 
     const auto file = QFileInfo(path);
-    setWindowTitle(tr("%1 - Hotspot").arg(file.fileName()));
+    setWindowTitle(tr("%1 - Hotspot").arg(shortenedFilePath(file.filePath())));
 
     m_startPage->showParseFileProgress();
     m_pageStack->setCurrentWidget(m_startPage);
