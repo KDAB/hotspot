@@ -342,7 +342,12 @@ void MainWindow::openFile(const QString& path, bool isReload)
     clear(isReload);
 
     const auto file = QFileInfo(path);
-    setWindowTitle(tr("%1 - Hotspot").arg(file.fileName()));
+    auto filePath = file.filePath();
+    const auto home = qEnvironmentVariable("HOME");
+    if (!home.isEmpty() && filePath.startsWith(home)) {
+        filePath.replace(0, home.size(), QStringLiteral("~"));
+    }
+    setWindowTitle(tr("%1 - Hotspot").arg(filePath));
 
     m_startPage->showParseFileProgress();
     m_pageStack->setCurrentWidget(m_startPage);
