@@ -69,7 +69,7 @@ QByteArray perfBuildOptions(const QString& perfPath)
 
 bool canTrace(const QString& path)
 {
-    const QFileInfo info(QLatin1String("/sys/kernel/debug/tracing/") + path);
+    const QFileInfo info(QLatin1String("/sys/kernel/tracing/") + path);
     if (!info.isDir() || !info.isReadable()) {
         return false;
     }
@@ -111,15 +111,9 @@ bool privsAlreadyElevated()
         return false;
     }
 
-    auto checkPerms = [](const char* path) {
-        const mode_t required = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH; // 755
-        struct stat buf;
-        return stat(path, &buf) == 0 && ((buf.st_mode & 07777) & required) == required;
-    };
-    static const auto paths = {"/sys/kernel/debug", "/sys/kernel/debug/tracing"};
-    isElevated = std::all_of(paths.begin(), paths.end(), checkPerms);
-
-    return isElevated;
+    const mode_t required = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH; // 755
+    struct stat buf;
+    return stat("/sys/kernel/tracing", &buf) == 0 && ((buf.st_mode & 07777) & required) == required;
 }
 
 RecordHost::PerfCapabilities fetchLocalPerfCapabilities(const QString& perfPath)
