@@ -84,12 +84,25 @@ apt-get install libkf6threadweaver-dev libkf6i18n-dev libkf6configwidgets-dev li
 
 ### On Fedora
 
+#### For Qt5
+
 ```bash
 dnf install cmake gcc glibc-static gcc-c++ libstdc++-static qt5-qtbase qt5-qtbase-devel qt5-qtsvg-devel \
     extra-cmake-modules elfutils-devel kf5-threadweaver-devel \
     kf5-kconfigwidgets-devel kf5-kitemviews-devel kf5-kitemmodels-devel kf5-syntax-highlighting-devel \
     kf5-kio-devel kf5-solid-devel kf5-kwindowsystem-devel kf5-kiconthemes-devel \
     kf5-knotifications-devel kf5-kparts-devel
+```
+
+#### For Qt6
+
+```bash
+dnf install cmake gcc glibc-static gcc-c++ libstdc++-static git ninja-build libasan libubsan wget \
+    qt6-qtbase qt6-qtbase-devel qt6-qtsvg-devel \
+    qt6-qtbase-private-devel extra-cmake-modules elfutils-devel kf6-threadweaver-devel kf6-syntax-highlighting-devel \
+    kf6-kconfigwidgets-devel kf6-kitemviews-devel kf6-kitemmodels-devel kf6-karchive-devel \
+    kf6-kio-devel kf6-solid-devel kf6-kwindowsystem-devel kf6-kiconthemes-devel \
+    kf6-knotifications-devel kf6-kparts-devel libzstd-devel
 ```
 
 ### Arch Linux
