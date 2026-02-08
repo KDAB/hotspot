@@ -9,3 +9,4 @@ d-demangle.tar.gz
 *.orig
 *.cache
 scripts/output
+compile_commands.json
