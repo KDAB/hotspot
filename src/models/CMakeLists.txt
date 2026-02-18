@@ -11,6 +11,7 @@ add_library(
     disassemblymodel.cpp
     disassemblyoutput.cpp
     eventmodel.cpp
+    eventmodelproxy.cpp
     filterandzoomstack.cpp
     formattingutils.cpp
     frequencymodel.cpp
@@ -22,11 +23,13 @@ add_library(
     timeaxisheaderview.cpp
     timelinedelegate.cpp
     topproxy.cpp
+    tracepointformat.cpp
     treemodel.cpp
 )
 
 target_link_libraries(
     models
+    fmt_parser
     Qt::Core
     Qt::Widgets
     KF${QT_MAJOR_VERSION}::ItemModels

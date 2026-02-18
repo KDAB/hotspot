@@ -12,6 +12,7 @@
 #include <QSet>
 #include <QString>
 #include <QTypeInfo>
+#include <QVariant>
 #include <QVector>
 
 #include "../util.h"
@@ -787,6 +788,9 @@ const constexpr auto INVALID_CPU_ID = std::numeric_limits<quint32>::max();
 const constexpr int INVALID_TID = -1;
 const constexpr int INVALID_PID = -1;
 
+const constexpr auto INVALID_TRACEPOINTFORMAT = std::numeric_limits<quint32>::max();
+const constexpr auto INVALID_TRACEPOINTDATA = std::numeric_limits<quint32>::max();
+
 struct Event
 {
     quint64 time = 0;
@@ -794,11 +798,13 @@ struct Event
     qint32 type = -1;
     qint32 stackId = -1;
     quint32 cpuId = INVALID_CPU_ID;
+    quint32 tracepointFormat = INVALID_TRACEPOINTFORMAT;
+    quint32 tracepointData = INVALID_TRACEPOINTDATA;
 
     bool operator==(const Event& rhs) const
     {
-        return std::tie(time, cost, type, stackId, cpuId)
-            == std::tie(rhs.time, rhs.cost, rhs.type, rhs.stackId, rhs.cpuId);
+        return std::tie(time, cost, type, stackId, cpuId, tracepointFormat, tracepointData)
+            == std::tie(rhs.time, rhs.cost, rhs.type, rhs.stackId, rhs.cpuId, rhs.tracepointFormat, rhs.tracepointData);
     }
 };
 
@@ -952,34 +958,48 @@ struct ThreadNames
     QHash<qint32, QHash<qint32, QString>> names;
 };
 
+struct TracepointEvents
+{
+    QString name;
+    Events events;
+    bool operator==(const TracepointEvents& rhs) const
+    {
+        return std::tie(name, events) == std::tie(rhs.name, rhs.events);
+    }
+};
+
+struct TracePointFormat
+{
+    QString systemId;
+    QString nameId;
+    quint32 flags;
+    QString format;
+};
+
+#include <QHash>
+using TracePointData = QHash<QString, QVariant>;
+
 struct EventResults
 {
     QVector<ThreadEvents> threads;
     QVector<CpuEvents> cpus;
+    QVector<TracepointEvents> tracepoints;
     QVector<QVector<qint32>> stacks;
     QVector<CostSummary> totalCosts;
+    QHash<quint32, TracePointFormat> tracePointFormats;
+    QVector<TracePointData> tracePointData;
     qint32 offCpuTimeCostId = -1;
     qint32 lostEventCostId = -1;
+    qint32 tracepointEventCostId = -1;
 
     ThreadEvents* findThread(qint32 pid, qint32 tid);
     const ThreadEvents* findThread(qint32 pid, qint32 tid) const;
 
     bool operator==(const EventResults& rhs) const
     {
-        return std::tie(threads, cpus, stacks, totalCosts, offCpuTimeCostId)
-            == std::tie(rhs.threads, rhs.cpus, rhs.stacks, rhs.totalCosts, rhs.offCpuTimeCostId);
+        return std::tie(threads, cpus, tracepoints, stacks, totalCosts, offCpuTimeCostId)
+            == std::tie(rhs.threads, rhs.cpus, rhs.tracepoints, rhs.stacks, rhs.totalCosts, rhs.offCpuTimeCostId);
     }
-};
-
-struct Tracepoint
-{
-    quint64 time = 0;
-    QString name;
-};
-
-struct TracepointResults
-{
-    QVector<Tracepoint> tracepoints;
 };
 
 struct FilterAction
@@ -1094,11 +1114,8 @@ Q_DECLARE_TYPEINFO(Data::ThreadNames, Q_MOVABLE_TYPE);
 Q_DECLARE_METATYPE(Data::EventResults)
 Q_DECLARE_TYPEINFO(Data::EventResults, Q_MOVABLE_TYPE);
 
-Q_DECLARE_METATYPE(Data::Tracepoint)
-Q_DECLARE_TYPEINFO(Data::Tracepoint, Q_MOVABLE_TYPE);
-
-Q_DECLARE_METATYPE(Data::TracepointResults)
-Q_DECLARE_TYPEINFO(Data::TracepointResults, Q_MOVABLE_TYPE);
+Q_DECLARE_METATYPE(Data::TracepointEvents)
+Q_DECLARE_TYPEINFO(Data::TracepointEvents, Q_MOVABLE_TYPE);
 
 Q_DECLARE_METATYPE(Data::TimeRange)
 Q_DECLARE_TYPEINFO(Data::TimeRange, Q_MOVABLE_TYPE);
