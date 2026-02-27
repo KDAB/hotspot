@@ -31,6 +31,7 @@ performance data formats under this umbrella.
   - [Import Export](#import-export)
   - [tracepoints](#tracepoints)
   - [Disassembler](#disassembler)
+  - [Rust v0 Mangling](#rust-v0-mangling)
 - [Known Issues](#known-issues)
   - [Broken Backtraces](#broken-backtraces)
   - [debuginfod](#debuginfod)
@@ -325,6 +326,17 @@ In the sourcecode view you can press ctrl+f or press the search icon to open a s
 
 If you have the sources in different directory, you can use `--sourcePaths` or the settings to
 select tell the disassembler to search there for the source code.
+
+### Rust v0 Mangling
+
+Support for Rust's v0 mangling scheme requires the rust demangling library.
+You can get this [here](https://github.com/rust-lang/rustc-demangle), or via a
+system package manager, such as `librustc_demangle` on [Fedora](https://packages.fedoraproject.org/pkgs/rust-rustc-demangle-capi/librustc_demangle).
+
+You might encounter that some information is hidden from excessive collapsing.
+To expand the collapsed sections, you can disable collapsing in the `view` menu:
+
+![hotspot view collapse](screenshots/rust-v0-mangle-collapse.png?raw=true "Hotspot view collapse")
 
 ## Known Issues
 
