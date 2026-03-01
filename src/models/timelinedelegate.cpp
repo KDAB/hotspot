@@ -27,11 +27,7 @@
 namespace {
 QPoint globalPos(const QMouseEvent* event)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    return event->globalPos();
-#else
     return event->globalPosition().toPoint();
-#endif
 }
 }
 
@@ -364,12 +360,8 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
         return QStyledItemDelegate::eventFilter(watched, event);
     }
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const auto pos = isHover ? static_cast<QHoverEvent*>(event)->pos() : static_cast<QMouseEvent*>(event)->localPos();
-#else
     const auto pos =
         isHover ? static_cast<QHoverEvent*>(event)->position() : static_cast<QMouseEvent*>(event)->position();
-#endif
 
     // the pos may lay outside any valid index, but for the code below we need
     // to query for some values that require any valid index. use the first rows index

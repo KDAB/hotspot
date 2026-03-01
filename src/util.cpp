@@ -24,12 +24,8 @@
 
 #include <kcoreaddons_version.h>
 
-#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 86, 0)
 #include <KPluginFactory>
 #include <KPluginMetaData>
-#else
-#include <KService>
-#endif
 
 #include <KParts/ReadOnlyPart>
 
@@ -439,25 +435,11 @@ QProcessEnvironment Util::appImageEnvironment()
 
 KParts::ReadOnlyPart* Util::createPart(const QString& pluginName)
 {
-#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(5, 86, 0)
-
-#if KCOREADDONS_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     const auto prefix = QStringLiteral("kf6/parts/");
-#else
-    const auto prefix = QLatin1String();
-#endif
 
     const auto metadata = KPluginMetaData(prefix + pluginName);
 
     const auto result = KPluginFactory::instantiatePlugin<KParts::ReadOnlyPart>(metadata, nullptr, {});
 
     return result.plugin;
-#else
-    KService::Ptr service = KService::serviceByDesktopName(pluginName);
-
-    if (!service) {
-        return nullptr;
-    }
-    return service->createInstance<KParts::ReadOnlyPart>();
-#endif
 }

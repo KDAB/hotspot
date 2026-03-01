@@ -15,52 +15,6 @@ jobs:
         concurrent_skipping: 'same_content'
         do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
 
-  ubuntu-2004:
-    needs: pre_job
-    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
-
-    runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-ubuntu20.04-dependencies
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-
-    - name: Configure
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -G Ninja
-          -DCMAKE_CXX_FLAGS_INIT="-g -fsanitize=address,undefined -Werror"
-          -DCMAKE_C_FLAGS_INIT="-g -fsanitize=address,undefined -Werror"
-
-    - name: Build
-      run: cmake --build build
-
-    - name: Test
-      run: cd build && ctest --output-on-failure -E tst_perfdata
-
-  ubuntu-2204:
-    needs: pre_job
-    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
-
-    runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-ubuntu22.04-dependencies
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-
-    - name: Configure
-      run: cmake --preset dev-asan -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
-
-    - name: Build
-      run: cmake --build build-dev-asan
-
-    - name: Test
-      run: ctest --preset dev-asan
-
   archlinux-gcc:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
@@ -75,14 +29,14 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-asan-qt6
+      run: cmake --preset dev-asan
            -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
 
     - name: Build
-      run: cmake --build --preset dev-asan-qt6
+      run: cmake --build --preset dev-asan
 
     - name: Test
-      run: ctest --preset dev-asan-qt6
+      run: ctest --preset dev-asan
 
   archlinux-clang-clazy:
     needs: pre_job
@@ -98,13 +52,13 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-clazy-qt6
+      run: cmake --preset dev-clazy
 
     - name: Build
-      run: cmake --build --preset dev-clazy-qt6
+      run: cmake --build --preset dev-clazy
 
     - name: Test
-      run: ctest --preset dev-clazy-qt6
+      run: ctest --preset dev-clazy
 
   archlinux-clang-tidy:
     needs: pre_job
@@ -120,14 +74,14 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-clazy-qt6
+      run: cmake --preset dev-clazy
 
     - name: Analyze
       # the first lines ensures all moc generated headers are available
-      run: cd build-dev-clazy-qt6 &&
+      run: cd build-dev-clazy &&
            ninja -t targets all | grep "mocs_compilation.cpp:" | cut -f1 -d':' | xargs ninja &&
            cd .. &&
-           ./scripts/run_clang_tidy.sh build-dev-clazy-qt6 &&
+           ./scripts/run_clang_tidy.sh build-dev-clazy &&
            [ ! -s scripts/fixits/fixits.yaml ]
 
     - name: Upload Fixits
@@ -151,13 +105,13 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-asan-qt6 -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
+      run: cmake --preset dev-asan -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
 
     - name: Build
-      run: cmake --build --preset dev-asan-qt6
+      run: cmake --build --preset dev-asan
 
     - name: Test
-      run: ctest --preset dev-asan-qt6
+      run: ctest --preset dev-asan
 
   fedora42:
     needs: pre_job
@@ -173,13 +127,13 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-asan-qt6 -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
+      run: cmake --preset dev-asan -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
 
     - name: Build
-      run: cmake --build --preset dev-asan-qt6
+      run: cmake --build --preset dev-asan
 
     - name: Test
-      run: ctest --preset dev-asan-qt6
+      run: ctest --preset dev-asan
 
   opensuse-tumbleweed:
     needs: pre_job
@@ -195,15 +149,15 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-asan-qt6 -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
+      run: cmake --preset dev-asan -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
 
     - name: Build
-      run: cmake --build --preset dev-asan-qt6
+      run: cmake --build --preset dev-asan
 
     - name: Test
-      run: ctest --preset dev-asan-qt6
+      run: ctest --preset dev-asan
 
-  neon-qt6:
+  neon:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
@@ -217,10 +171,10 @@ jobs:
         submodules: recursive
 
     - name: Configure
-      run: cmake --preset dev-asan-qt6 -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
+      run: cmake --preset dev-asan -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
 
     - name: Build
-      run: cmake --build --preset dev-asan-qt6
+      run: cmake --build --preset dev-asan
 
     - name: Test
-      run: ctest --preset dev-asan-qt6
+      run: ctest --preset dev-asan
