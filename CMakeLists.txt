@@ -27,7 +27,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(APPIMAGE_BUILD "configure build for bundling in an appimage" OFF)
-option(QT6_BUILD "configure build to use Qt6/KF6" OFF)
 
 # Enable the test harness
 enable_testing()
@@ -38,15 +37,9 @@ set(HOTSPOT_VERSION_STRING "${hotspot_VERSION}")
 include(HotspotMacrosInternal)
 include(FeatureSummary)
 
-if(QT6_BUILD)
-    set(QT_MAJOR_VERSION 6)
-    set(QT_MIN_VERSION 6.4)
-    set(KDDW_SUFFIX "-qt6")
-else()
-    set(QT_MAJOR_VERSION 5)
-    set(QT_MIN_VERSION 5.15)
-    set(KDDW_SUFFIX "")
-endif()
+set(QT_MAJOR_VERSION 6)
+set(QT_MIN_VERSION 6.4)
+set(KDDW_SUFFIX "-qt6")
 
 find_package(
     Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION}

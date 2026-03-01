@@ -82,10 +82,6 @@ std::unique_ptr<QCoreApplication> createApplication(int& argc, char* argv[])
         }
     }
 
-    // otherwise create full gui app
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QGuiApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
-#endif
     return std::make_unique<QApplication>(argc, argv);
 }
 }

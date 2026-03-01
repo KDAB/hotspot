@@ -36,10 +36,7 @@
 #include <KShell>
 #include <KStandardAction>
 
-#include <kio_version.h>
-#if KIO_VERSION >= QT_VERSION_CHECK(5, 69, 0)
 #include <KIO/CommandLauncherJob>
-#endif
 
 #include <kddockwidgets/LayoutSaver.h>
 
@@ -146,11 +143,7 @@ MainWindow::MainWindow(QWidget* parent)
         m_exportAction->setEnabled(true);
 
         auto* notification = new KNotification(QStringLiteral("fileSaved"));
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        notification->setWidget(this);
-#else
         notification->setWindow(window()->windowHandle());
-#endif
         notification->setUrls({url});
         notification->setText(tr("Processed data saved"));
         notification->sendEvent();
@@ -472,9 +465,7 @@ void MainWindow::setupCodeNavigationMenu()
         action->setCheckable(true);
         action->setChecked(currentIdx == i);
         action->setData(i);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0) // It's not worth it to reimplement missing findExecutable for Qt4.
         action->setEnabled(isAppAvailable(ideSettings[i].app));
-#endif
         group->addAction(action);
         menu->addAction(action);
     }
@@ -562,7 +553,6 @@ void MainWindow::navigateToCode(const QString& filePath, int lineNumber, int col
             arg.replace(QLatin1String("%c"), QString::number(std::max(1, columnNumber)));
         }
 
-#if KIO_VERSION >= QT_VERSION_CHECK(5, 69, 0)
         auto* job = new KIO::CommandLauncherJob(command, args);
         job->setDesktopName(desktopEntryName);
 
@@ -574,11 +564,6 @@ void MainWindow::navigateToCode(const QString& filePath, int lineNumber, int col
         });
 
         job->start();
-#else
-        if (!QProcess::startDetached(command, args)) {
-            m_resultsPage->showError(tr("Failed to launch command: %1 %2").arg(command, args.join(QLatin1Char(' '))));
-        }
-#endif
     } else {
         QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
         return;
