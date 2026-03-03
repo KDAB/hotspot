@@ -136,8 +136,8 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
             const auto& locationCost = it.value();
 
             if (role == Qt::ToolTipRole) {
-                auto tooltip = tr("addr: <tt>%1</tt><br/>assembly: <tt>%2</tt><br/>disassembly: <tt>%3</tt>")
-                                   .arg(QString::number(data.addr, 16), line);
+                auto tooltip = tr("addr: <tt>%1</tt><br/>assembly: <tt>%2</tt><br/>hexdump: <tt>%3</tt>")
+                                   .arg(QString::number(data.addr, 16), line, data.hexdump);
                 return Util::formatTooltip(tooltip, locationCost, m_results.selfCosts);
             }
 
