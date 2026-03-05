@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.7.0](https://github.com/KDAB/hotspot/compare/v1.6.0...v1.7.0) (2026-03-05)
+
+
+### Features
+
+* **HACKING:** add qt6 Fedora packages section ([f117a7e](https://github.com/KDAB/hotspot/commit/f117a7efde244a901f76c599acddb04cc468395c))
+* **README:** add section for rust's v0 mangling scheme ([c99740d](https://github.com/KDAB/hotspot/commit/c99740dbad7fadfd9abb392451f07d18599d461e))
+
+
+### Bug Fixes
+
+* use full path in abbreviated form in window title ([9f01033](https://github.com/KDAB/hotspot/commit/9f01033b2331f4d7c06b5bd74b83231167ccd70b))
+
 ## [1.6.0](https://github.com/KDAB/hotspot/compare/v1.5.1...v1.6.0) (2026-01-28)
 
 
