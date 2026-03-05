@@ -21,12 +21,7 @@
 #include <csignal>
 #include <unistd.h>
 
-#include <kwindowsystem_version.h>
-#if KWINDOWSYSTEM_VERSION >= QT_VERSION_CHECK(5, 101, 0)
 #include <KX11Extras>
-#else
-#include <KWindowSystem>
-#endif
 
 namespace {
 void createOutputFile(const QString& outputPath)

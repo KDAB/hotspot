@@ -35,14 +35,14 @@ package manager or as an [AppImage](README#for-any-linux-distro-appimage).
 
 As of now, you will need the following dependencies to build this project:
 
-- CMake 3.1.0 or higher
-- any C++11 enabled compiler
-- Qt 5.15.0 or higher
+- CMake 3.16.0 or higher
+- any C++17 enabled compiler
+- Qt 6.0.0 or higher
 - libelf
 - libelfutils
 - gettext
 - extra-cmake-modules
-- KDE Frameworks 5 (packages are usually called libkf5-*-devel):
+- KDE Frameworks 6 (packages are usually called libkf6-*-devel):
   - threadweaver
   - i18n
   - configwidgets
@@ -61,21 +61,9 @@ As of now, you will need the following dependencies to build this project:
 
 ### On Debian/Ubuntu
 
-#### For Qt5
-
 ```bash
-apt-get update
-apt-get install libkf5threadweaver-dev libkf5i18n-dev libkf5configwidgets-dev libkf5syntaxhighlighting-dev \
-    libkf5coreaddons-dev libkf5itemviews-dev libkf5itemmodels-dev libkf5kio-dev libkf5parts-dev \
-    libkf5solid-dev libkf5windowsystem-dev libkf5notifications-dev libkf5iconthemes-dev libelf-dev \
-    libdw-dev cmake extra-cmake-modules gettext libqt5svg5-dev
-```
-
-#### For Qt6
-
-```bash
-apt-get update
-apt-get install libkf6threadweaver-dev libkf6i18n-dev libkf6configwidgets-dev libkf6syntaxhighlighting-dev \
+apt update
+apt install libkf6threadweaver-dev libkf6i18n-dev libkf6configwidgets-dev libkf6syntaxhighlighting-dev \
     libkf6coreaddons-dev libkf6itemviews-dev libkf6itemmodels-dev libkf6kio-dev libkf6parts-dev \
     libkf6solid-dev libkf6windowsystem-dev libkf6notifications-dev libkf6iconthemes-dev libelf-dev \
     libdw-dev libdwarf-dev libdebuginfod-dev cmake extra-cmake-modules qt6-svg-dev libzstd-dev \
