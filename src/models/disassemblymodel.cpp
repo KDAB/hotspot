@@ -130,14 +130,15 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
             return {};
         }
 
+        const auto tooltip = tr("addr: <tt>%1</tt><br/>assembly: <tt>%2</tt><br/>hexdump: <tt>%3</tt>")
+                                 .arg(QString::number(data.addr, 16), line.toHtmlEscaped(), data.hexdump);
+
         auto it = m_offsetMap.find(data.addr);
         if (it != m_offsetMap.end()) {
             const auto event = index.column() - COLUMN_COUNT;
             const auto& locationCost = it.value();
 
             if (role == Qt::ToolTipRole) {
-                auto tooltip = tr("addr: <tt>%1</tt><br/>assembly: <tt>%2</tt><br/>disassembly: <tt>%3</tt>")
-                                   .arg(QString::number(data.addr, 16), line);
                 return Util::formatTooltip(tooltip, locationCost, m_results.selfCosts);
             }
 
@@ -156,7 +157,7 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
             return Util::formatCostRelative(costLine, totalCost, true);
         } else {
             if (role == Qt::ToolTipRole) {
-                return tr("<qt><tt>%1</tt><hr/>No samples at this location.</qt>").arg(line.toHtmlEscaped());
+                return tr("<qt>%1<hr/>No samples at this location.</qt>").arg(tooltip);
             } else
                 return QString();
         }
