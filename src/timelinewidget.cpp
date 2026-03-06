@@ -9,6 +9,7 @@
 
 #include "filterandzoomstack.h"
 #include "models/eventmodel.h"
+#include "models/eventmodelproxy.h"
 #include "resultsutil.h"
 #include "timelinedelegate.h"
 
@@ -16,9 +17,11 @@
 #include "parsers/perf/perfparser.h"
 
 #include <QLabel>
+#include <QListView>
 #include <QPointer>
 #include <QProgressBar>
 #include <QSortFilterProxyModel>
+#include <QStandardItemModel>
 #include <QVBoxLayout>
 
 #include <KLocalizedString>
@@ -61,12 +64,8 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
     ui->setupUi(this);
 
     auto* eventModel = new EventModel(this);
-    auto* timeLineProxy = new QSortFilterProxyModel(this);
-    timeLineProxy->setRecursiveFilteringEnabled(true);
+    auto* timeLineProxy = new EventModelProxy(this);
     timeLineProxy->setSourceModel(eventModel);
-    timeLineProxy->setSortRole(EventModel::SortRole);
-    timeLineProxy->setFilterKeyColumn(EventModel::ThreadColumn);
-    timeLineProxy->setFilterRole(Qt::DisplayRole);
     ResultsUtil::connectFilter(ui->timeLineSearch, timeLineProxy, ui->regexCheckBox);
     ui->timeLineView->setModel(timeLineProxy);
     ui->timeLineView->setSortingEnabled(true);
@@ -85,9 +84,24 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
     connect(timeLineProxy, &QAbstractItemModel::rowsInserted, this, [this]() { ui->timeLineView->expandToDepth(1); });
     connect(timeLineProxy, &QAbstractItemModel::modelReset, this, [this]() { ui->timeLineView->expandToDepth(1); });
 
-    connect(m_parser, &PerfParser::bottomUpDataAvailable, this, [this](const Data::BottomUpResults& data) {
-        ResultsUtil::fillEventSourceComboBox(ui->timeLineEventSource, data.costs, tr("Show timeline for %1 events."));
-    });
+    connect(m_parser, &PerfParser::bottomUpDataAvailable, this,
+            [this, timeLineProxy](const Data::BottomUpResults& data) {
+                ResultsUtil::fillEventSourceComboBoxMultiSelect(ui->timeLineEventSource, data.costs,
+                                                                tr("Show timeline for %1 events."));
+
+                auto model = qobject_cast<QStandardItemModel*>(ui->timeLineEventSource->model());
+                connect(ui->timeLineEventSource->model(), &QStandardItemModel::dataChanged, model,
+                        [timeLineProxy](const QModelIndex& topLeft, const QModelIndex& /*bottomRight*/,
+                                        const QVector<int>& /*roles*/) {
+                            auto checkState = topLeft.data(Qt::CheckStateRole).value<Qt::CheckState>();
+
+                            if (checkState == Qt::CheckState::Checked) {
+                                timeLineProxy->showCostId(topLeft.data(Qt::UserRole + 1).toUInt());
+                            } else {
+                                timeLineProxy->hideCostId(topLeft.data(Qt::UserRole + 1).toUInt());
+                            }
+                        });
+            });
 
     connect(m_parser, &PerfParser::eventsAvailable, this, [this, eventModel](const Data::EventResults& data) {
         eventModel->setData(data);
@@ -106,14 +120,10 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
     connect(m_parser, &PerfParser::summaryDataAvailable, this,
             [eventModel](const Data::Summary& summary) { eventModel->setApplicationTime(summary.applicationTime); });
 
-    connect(m_parser, &PerfParser::tracepointDataAvailable, this,
-            [this](const Data::TracepointResults& data) { m_timeAxisHeaderView->setTracepoints(data); });
-
-    connect(ui->timeLineEventSource, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
-            [this](int index) {
-                const auto typeId = ui->timeLineEventSource->itemData(index).toInt();
-                m_timeLineDelegate->setEventType(typeId);
-            });
+    connect(m_timeLineDelegate, &TimeLineDelegate::addToFavorites, this,
+            [eventModel](const QModelIndex& index) { eventModel->addToFavorites(index); });
+    connect(m_timeLineDelegate, &TimeLineDelegate::removeFromFavorites, this,
+            [eventModel](const QModelIndex& index) { eventModel->removeFromFavorites(index); });
 
     connect(m_timeLineDelegate, &TimeLineDelegate::stacksHovered, this, [this](const QSet<qint32>& stackIds) {
         if (stackIds.isEmpty()) {

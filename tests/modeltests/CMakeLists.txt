@@ -39,6 +39,7 @@ set_target_properties(
 
 ecm_add_test(
     tst_disassemblyoutput.cpp
+    ../../src/settings.cpp
     LINK_LIBRARIES
     Qt::Core
     Qt::Test
@@ -46,7 +47,6 @@ ecm_add_test(
     PrefixTickLabels
     TEST_NAME
     tst_disassemblyoutput
-    ../../src/settings.cpp
 )
 
 set_target_properties(
@@ -95,3 +95,15 @@ ecm_add_test(
     tst_formatting
 )
 set_target_properties(tst_formatting PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}")
+
+ecm_add_test(
+    tst_tracepointformat.cpp
+    LINK_LIBRARIES
+    Qt::Test
+    models
+    TEST_NAME
+    tst_tracepointformat
+)
+set_target_properties(
+    tst_tracepointformat PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/${KDE_INSTALL_BINDIR}"
+)

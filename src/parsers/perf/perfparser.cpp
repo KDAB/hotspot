@@ -554,7 +554,7 @@ QDataStream& operator>>(QDataStream& stream, TracePointFormat& format)
     return stream;
 }
 
-QDebug operator<<(QDebug stream, TracePointFormat format)
+QDebug operator<<(QDebug stream, const TracePointFormat& format)
 {
     stream.noquote().nospace() << "TracePointFormat{"
                                << "systemId=" << format.systemId << ", "
@@ -564,13 +564,24 @@ QDebug operator<<(QDebug stream, TracePointFormat format)
     return stream;
 }
 
-using TracePointData = QHash<qint32, QVariant>;
+struct TracePointData
+{
+    quint32 formatId;
+    QHash<quint32, QVariant> data;
+};
+
+QDataStream& operator>>(QDataStream& stream, TracePointData& traceData)
+{
+    stream >> traceData.formatId >> traceData.data;
+    return stream;
+}
 
 QDebug operator<<(QDebug stream, const TracePointData& traceData)
 {
     auto s = stream.noquote().nospace();
     s << "TracePointData{";
-    for (auto it = traceData.cbegin(), end = traceData.cend(); it != end; it++) {
+    s << "eventId=" << traceData.formatId << ", ";
+    for (auto it = traceData.data.cbegin(), end = traceData.data.cend(); it != end; it++) {
         s << it.key() << "=" << it.value() << ", ";
     }
     s << "}";
@@ -799,12 +810,11 @@ public:
             }
 
             if (static_cast<EventType>(eventType) == EventType::TracePointSample) {
-                quint32 eventFormatId;
                 TracePointData traceData;
-                stream >> eventFormatId >> traceData;
-                tracepointData[eventFormatId].push_back(traceData);
+                stream >> traceData;
+                tracepointData.push_back(traceData);
                 qCDebug(LOG_PERFPARSER) << "parsed:" << traceData;
-                sample.tracePointFormat = eventFormatId;
+                sample.tracePointFormat = traceData.formatId;
                 sample.tracePointData = tracepointData.size() - 1;
             }
 
@@ -925,7 +935,7 @@ public:
         case EventType::TracePointFormat: {
             qint32 id;
             TracePointFormat format;
-            stream >> id >> format;
+            stream >> id >> format; // id is the tracepoint id, see /sys/kernel/tracing/system/tracepoint
             qCDebug(LOG_PERFPARSER) << "parsed:" << format;
             tracepointFormat[id] = format;
             break;
@@ -957,6 +967,28 @@ public:
         buildTopDownResult();
         buildPerLibraryResult();
         buildCallerCalleeResult();
+
+        eventResult.tracepoints.reserve(tracepoints.size());
+        for (auto it = tracepoints.cbegin(), end = tracepoints.cend(); it != end; it++) {
+            eventResult.tracepoints.push_back({strings[it.key()], {it.value()}});
+        }
+
+        eventResult.tracePointData.reserve(tracepointData.size());
+        std::transform(tracepointData.cbegin(), tracepointData.cend(), std::back_inserter(eventResult.tracePointData),
+                       [this](const TracePointData& data) -> Data::TracePointData {
+                           QHash<QString, QVariant> tracepointData;
+
+                           for (auto it = data.data.cbegin(), end = data.data.cend(); it != end; it++) {
+                               tracepointData[strings.value(it.key())] = it.value();
+                           }
+
+                           return tracepointData;
+                       });
+
+        for (auto it = tracepointFormat.cbegin(), end = tracepointFormat.cend(); it != end; it++) {
+            eventResult.tracePointFormats[it.key()] = {strings.value(it->systemId.id), strings.value(it->nameId.id),
+                                                       it->flags, strings.value(it->format.id)};
+        }
 
         for (auto& thread : eventResult.threads) {
             thread.time.start = std::max(thread.time.start, applicationTime.start);
@@ -1174,17 +1206,22 @@ public:
             event.type = attributeIdsToCostIds.value(sampleCost.attributeId, -1);
             event.stackId = internStack(sample.frames);
             event.cpuId = sample.cpu;
+            event.tracepointFormat = sample.tracePointFormat;
+            event.tracepointData = sample.tracePointData;
             thread->events.push_back(event);
             cpu.events.push_back(event);
 
             const auto attribute = attributes.value(event.type);
             if (attribute.type == static_cast<quint32>(AttributesDefinition::Type::Tracepoint)) {
-                Data::Tracepoint tracepoint;
-                tracepoint.time = event.time;
-                tracepoint.name = strings.value(attribute.name.id);
-                if (tracepoint.name != QLatin1String("sched:sched_switch")) {
-                    // sched_switch events are handled separately already
-                    tracepointResult.tracepoints.push_back(tracepoint);
+                if (eventResult.tracepointEventCostId == -1) {
+                    eventResult.tracepointEventCostId =
+                        addCostType(QStringLiteral("Tracepoint"), Data::Costs::Unit::Tracepoint);
+                }
+
+                if (attribute.name.id != m_schedSwitchId) {
+                    auto& tracepointList = tracepoints[attribute.name.id];
+                    event.type = eventResult.tracepointEventCostId;
+                    tracepointList.push_back(event);
                 }
             }
         }
@@ -1201,6 +1238,10 @@ public:
     {
         Q_ASSERT(string.id == strings.size());
         strings.push_back(QString::fromUtf8(string.string));
+
+        if (string.string == "sched:sched_switch") {
+            m_schedSwitchId = string.id;
+        }
     }
 
     void addSampleToBottomUp(const Sample& sample)
@@ -1471,7 +1512,7 @@ public:
     Data::CallerCalleeResults callerCalleeResult;
     Data::ByFileResults byFileResult;
     Data::EventResults eventResult;
-    Data::TracepointResults tracepointResult;
+    QHash<uint64_t, Data::Events> tracepoints;
     Data::FrequencyResults frequencyResult;
     Data::ThreadNames commands;
     std::unique_ptr<QTextStream> perfScriptOutput;
@@ -1483,11 +1524,12 @@ public:
     QHash<int, qint32> attributeNameToCostIds;
     qint32 m_nextCostId = 0;
     qint32 m_schedSwitchCostId = -1;
+    qint32 m_schedSwitchId = -1;
     QHash<quint32, quint64> m_lastSampleTimePerCore;
     Settings::CostAggregation costAggregation;
     bool perfMapFileExists = false;
     QHash<quint32, TracePointFormat> tracepointFormat;
-    QHash<quint32, QVector<TracePointData>> tracepointData;
+    QVector<TracePointData> tracepointData;
 
     // samples recorded without --call-graph have only one frame
     int m_numSamplesWithMoreThanOneFrame = 0;
@@ -1519,7 +1561,6 @@ PerfParser::PerfParser(QObject* parent)
     qRegisterMetaType<Data::ByFileResults>();
     qRegisterMetaType<Data::EventResults>();
     qRegisterMetaType<Data::PerLibraryResults>();
-    qRegisterMetaType<Data::TracepointResults>();
     qRegisterMetaType<Data::FrequencyResults>();
     qRegisterMetaType<Data::ThreadNames>();
 
@@ -1547,11 +1588,6 @@ PerfParser::PerfParser(QObject* parent)
     connect(this, &PerfParser::eventsAvailable, this, [this](const Data::EventResults& data) {
         if (m_events.threads.isEmpty()) {
             m_events = data;
-        }
-    });
-    connect(this, &PerfParser::tracepointDataAvailable, this, [this](const Data::TracepointResults& data) {
-        if (m_tracepointResults.tracepoints.isEmpty()) {
-            m_tracepointResults = data;
         }
     });
     connect(this, &PerfParser::threadNamesAvailable, this,
@@ -1672,7 +1708,6 @@ void PerfParser::startParseFile(const QString& path)
     m_bottomUpResults = {};
     m_callerCalleeResults = {};
     m_byFileResults = {};
-    m_tracepointResults = {};
     m_events = {};
     m_frequencyResults = {};
 
@@ -1696,7 +1731,6 @@ void PerfParser::startParseFile(const QString& path)
             emit summaryDataAvailable(d.summaryResult);
             emit callerCalleeDataAvailable(d.callerCalleeResult);
             emit byFileDataAvailable(d.byFileResult);
-            emit tracepointDataAvailable(d.tracepointResult);
             emit eventsAvailable(d.eventResult);
             emit frequencyDataAvailable(d.frequencyResult);
             emit threadNamesAvailable(d.commands);
@@ -1825,7 +1859,6 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         Data::EventResults events = m_events;
         Data::CallerCalleeResults callerCallee;
         Data::ByFileResults byFile;
-        Data::TracepointResults tracepointResults = m_tracepointResults;
         auto frequencyResults = m_frequencyResults;
         const bool filterByTime = filter.time.isValid();
         const bool filterByCpu = filter.cpuId != std::numeric_limits<quint32>::max();
@@ -1907,10 +1940,13 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
             }
 
             if (filterByTime) {
-                auto it = std::remove_if(
-                    tracepointResults.tracepoints.begin(), tracepointResults.tracepoints.end(),
-                    [filter](const Data::Tracepoint& tracepoint) { return !filter.time.contains(tracepoint.time); });
-                tracepointResults.tracepoints.erase(it, tracepointResults.tracepoints.end());
+                // TODO: parallelize
+                for (auto& tracepoints : events.tracepoints) {
+                    auto it = std::remove_if(
+                        tracepoints.events.begin(), tracepoints.events.end(),
+                        [filter](const Data::Event& event) { return !filter.time.contains(event.time); });
+                    tracepoints.events.erase(it, tracepoints.events.end());
+                }
 
                 for (auto& core : frequencyResults.cores) {
                     for (auto& costType : core.costs) {
@@ -2025,7 +2061,6 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         emit callerCalleeDataAvailable(callerCallee);
         emit byFileDataAvailable(byFile);
         emit frequencyDataAvailable(frequencyResults);
-        emit tracepointDataAvailable(tracepointResults);
         emit eventsAvailable(events);
         emit parsingFinished();
     });
