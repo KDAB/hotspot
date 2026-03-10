@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.7.0](https://github.com/KDAB/hotspot/compare/v1.6.0...v1.7.0) (2026-03-10)
+
+
+### Features
+
+* Drop Qt5 support ([66400cc](https://github.com/KDAB/hotspot/commit/66400ccc0d9a61639ffc37c9485b4c7460f37973))
+* **HACKING:** add qt6 Fedora packages section ([f117a7e](https://github.com/KDAB/hotspot/commit/f117a7efde244a901f76c599acddb04cc468395c))
+* **README:** add section for rust's v0 mangling scheme ([c99740d](https://github.com/KDAB/hotspot/commit/c99740dbad7fadfd9abb392451f07d18599d461e))
+
+
+### Bug Fixes
+
+* Add 3rd argument to avoid %3 showing in disassembly view ([27aeedb](https://github.com/KDAB/hotspot/commit/27aeedba3045ee72d7f03d49cd8b21037f2fee87))
+* Escape HTML elements in disassembly view ([9d2767d](https://github.com/KDAB/hotspot/commit/9d2767d148abe072866df36e6df3246e23fe43a8))
+* Show the same thing on lines with and without samples ([c072239](https://github.com/KDAB/hotspot/commit/c0722396d7304d55849ad2d38418da19e477be9b))
+* use full path in abbreviated form in window title ([9f01033](https://github.com/KDAB/hotspot/commit/9f01033b2331f4d7c06b5bd74b83231167ccd70b))
+
 ## [1.6.0](https://github.com/KDAB/hotspot/compare/v1.5.1...v1.6.0) (2026-01-28)
 
 
