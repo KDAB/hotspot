@@ -10,6 +10,8 @@
 #include <QSet>
 #include <QStyledItemDelegate>
 
+#include <KColorScheme>
+
 #include "data.h"
 
 class QAbstractItemView;
@@ -69,11 +71,13 @@ protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
+    void updateColorScheme();
     void updateView();
     void updateZoomState();
 
     FilterAndZoomStack* m_filterAndZoomStack = nullptr;
     QAbstractItemView* m_view = nullptr;
+    KColorScheme m_colorScheme;
     Data::TimeRange m_timeSlice;
     QSet<qint32> m_selectedStacks;
     QSet<qint32> m_hoveredStacks;

@@ -19,8 +19,6 @@
 #include "eventmodel.h"
 #include "filterandzoomstack.h"
 
-#include <KColorScheme>
-
 #include <algorithm>
 #include <utility>
 
@@ -146,6 +144,7 @@ TimeLineDelegate::TimeLineDelegate(FilterAndZoomStack* filterAndZoomStack, QAbst
 
     connect(filterAndZoomStack, &FilterAndZoomStack::filterChanged, this, &TimeLineDelegate::updateView);
     connect(filterAndZoomStack, &FilterAndZoomStack::zoomChanged, this, &TimeLineDelegate::updateZoomState);
+    updateColorScheme();
 }
 
 TimeLineDelegate::~TimeLineDelegate() = default;
@@ -179,11 +178,9 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         if (threadTimeRect.right() > option.rect.width())
             threadTimeRect.setRight(option.rect.width());
 
-        const auto scheme = KColorScheme(palette.currentColorGroup());
-
-        auto runningColor = scheme.background(KColorScheme::PositiveBackground).color();
+        auto runningColor = m_colorScheme.background(KColorScheme::PositiveBackground).color();
         runningColor.setAlpha(128);
-        auto runningOutlineColor = scheme.foreground(KColorScheme::PositiveText).color();
+        auto runningOutlineColor = m_colorScheme.foreground(KColorScheme::PositiveText).color();
         runningOutlineColor.setAlpha(128);
         painter->setBrush(QBrush(runningColor));
         painter->setPen(QPen(runningOutlineColor, 1));
@@ -193,8 +190,8 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         painter->setBrush(QBrush());
 
         if (offCpuCostId != -1) {
-            const auto offCpuColor = scheme.background(KColorScheme::NegativeBackground).color();
-            const auto offCpuColorSelected = scheme.foreground(KColorScheme::NegativeText).color();
+            const auto offCpuColor = m_colorScheme.background(KColorScheme::NegativeBackground).color();
+            const auto offCpuColorSelected = m_colorScheme.foreground(KColorScheme::NegativeText).color();
             const auto offCpuColorHovered = toHoverColor(offCpuColorSelected);
             for (const auto& event : data.events) {
                 if (event.type != offCpuCostId) {
@@ -210,10 +207,10 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
             }
         }
 
-        const auto selectedPen = QPen(scheme.foreground(KColorScheme::ActiveText), 1);
+        const auto selectedPen = QPen(m_colorScheme.foreground(KColorScheme::ActiveText), 1);
         const auto hoveredPen = QPen(toHoverColor(selectedPen.color()), 1);
-        const auto eventPen = QPen(scheme.foreground(KColorScheme::NeutralText), 1);
-        const auto lostEventPen = QPen(scheme.foreground(KColorScheme::NegativeText), 1);
+        const auto eventPen = QPen(m_colorScheme.foreground(KColorScheme::NeutralText), 1);
+        const auto lostEventPen = QPen(m_colorScheme.foreground(KColorScheme::NegativeText), 1);
 
         int last_x = -1;
         // TODO: accumulate cost for events that fall to the same pixel somehow
@@ -352,6 +349,11 @@ bool TimeLineDelegate::eventFilter(QObject* watched, QEvent* event)
     const bool isMove = event->type() == QEvent::MouseMove;
     const bool isHover = event->type() == QEvent::HoverEnter || event->type() == QEvent::HoverMove
         || event->type() == QEvent::HoverLeave;
+
+    if (event->type() == QEvent::PaletteChange) {
+        updateColorScheme();
+    }
+
     if (!isButtonRelease && !isButtonPress && !isMove && !isHover) {
         return QStyledItemDelegate::eventFilter(watched, event);
     }
@@ -590,4 +592,9 @@ void TimeLineDelegate::updateZoomState()
 {
     m_timeSlice = {};
     updateView();
+}
+
+void TimeLineDelegate::updateColorScheme()
+{
+    m_colorScheme = KColorScheme(QPalette::ColorGroup::Inactive);
 }
