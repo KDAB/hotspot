@@ -158,15 +158,19 @@ void TimeLineDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     const bool is_alternate = option.features & QStyleOptionViewItem::Alternate;
     const auto& palette = option.palette;
 
-    painter->fillRect(option.rect, is_alternate ? palette.base() : palette.alternateBase());
-
-    // skip threads that are outside the visible (zoomed) region
     painter->save();
+    // disable antialiasing, we are only drawing straight boxes and lines
+    painter->setRenderHint(QPainter::Antialiasing, false);
+
+    // background
+    painter->fillRect(option.rect, is_alternate ? palette.base() : palette.alternateBase());
 
     // transform into target coordinate system
     painter->translate(option.rect.topLeft());
     // account for padding
     painter->translate(TimeLineData::padding, TimeLineData::padding);
+
+    // skip threads that are outside the visible (zoomed) region
 
     // visualize the time where the thread was active
     // i.e. paint events for threads that have any in the selected time range
