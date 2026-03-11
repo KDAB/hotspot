@@ -128,19 +128,6 @@ To build for Qt6 pass `-DQT6_BUILD=ON` when running the `cmake` command.
 
 If you need help building this project for your platform, [contact us for help](https://www.kdab.com/about/contact/).
 
-## Online
-
-Instead of installing all dependencies and building Hotspot locally you may do so online with the following link:
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io#https://github.com/GitMensch/hotspot)
-This environment uses a clean, pre-configured Ubuntu 22.04 LTS environment. Just open, possibly
-have a look at the multiple building tasks, wait a bit until building is finished which is done
-as soon as a hotspot window opens in the preview and you can start coding / debugging hotspot.
-
-Notes:
-
-- This Gitpod setup is maintained by @GitMensch and not used by @KDAB directly.
-- Building may take a while as we don't use pre-builts or a special docker container in this environment yet.
-
 ## Debugging the AppImage
 
 When the AppImage crashes or is excessively slow, please provide a usable backtrace or profile run.
