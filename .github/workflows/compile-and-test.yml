@@ -113,6 +113,28 @@ jobs:
     - name: Test
       run: ctest --preset dev-asan
 
+  ubuntu25.04:
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+
+    runs-on: ubuntu-latest
+    container: ghcr.io/kdab/hotspot-ubuntu25.04qt6-dependencies
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Configure
+      run: cmake --preset dev-asan -DCMAKE_CXX_FLAGS_INIT=-Werror -DCMAKE_C_FLAGS_INIT=-Werror
+
+    - name: Build
+      run: cmake --build --preset dev-asan
+
+    - name: Test
+      run: ctest --preset dev-asan
+
   fedora42:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
