@@ -9,7 +9,7 @@ testWithPreset()
     tag=$1
     shift 1
 
-    podman run hotspot-$tag bash -c "cd hotspot && ctest --preset dev-asan -j \$(nproc) $@"
+    podman run hotspot-$tag-dev-asan bash -c "cd hotspot && ctest --preset dev-asan -j \$(nproc) $@"
 }
 
 testWithPreset ubuntu25.04
