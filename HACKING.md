@@ -72,16 +72,6 @@ apt install libkf6threadweaver-dev libkf6i18n-dev libkf6configwidgets-dev libkf6
 
 ### On Fedora
 
-#### For Qt5
-
-```bash
-dnf install cmake gcc glibc-static gcc-c++ libstdc++-static qt5-qtbase qt5-qtbase-devel qt5-qtsvg-devel \
-    extra-cmake-modules elfutils-devel kf5-threadweaver-devel \
-    kf5-kconfigwidgets-devel kf5-kitemviews-devel kf5-kitemmodels-devel kf5-syntax-highlighting-devel \
-    kf5-kio-devel kf5-solid-devel kf5-kwindowsystem-devel kf5-kiconthemes-devel \
-    kf5-knotifications-devel kf5-kparts-devel
-```
-
 #### For Qt6
 
 ```bash
@@ -123,8 +113,6 @@ make
 ./bin/hotspot
 # or `make install` it and launch it from your $PATH
 ```
-
-To build for Qt6 pass `-DQT6_BUILD=ON` when running the `cmake` command.
 
 If you need help building this project for your platform, [contact us for help](https://www.kdab.com/about/contact/).
 
