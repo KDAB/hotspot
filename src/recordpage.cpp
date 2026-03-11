@@ -158,14 +158,6 @@ RecordPage::RecordPage(QWidget* parent)
     connect(m_recordHost, &RecordHost::isReadyChanged, this,
             [this](bool isReady) { ui->startRecordingButton->setEnabled(isReady); });
 
-    connect(m_recordHost, &RecordHost::isPerfInstalledChanged, this, [this](bool isInstalled) {
-        if (!isInstalled) {
-            ui->startRecordingButton->setEnabled(false);
-            ui->applicationRecordErrorMessage->setText(QObject::tr("Please install perf before trying to record."));
-            ui->applicationRecordErrorMessage->setVisible(true);
-        }
-    });
-
     connect(m_recordHost, &RecordHost::clientApplicationChanged, this, [this](const QString& filePath) {
         const auto config = applicationConfig(filePath);
         ui->workingDirectory->setText(config.readEntry("workingDir", QString()));
@@ -700,6 +692,11 @@ void RecordPage::appendOutput(const QString& text)
 
 void RecordPage::setError(const QString& message)
 {
+    if (message.isEmpty() && !m_recordHost->isReady() && !m_recordHost->errorMessage().isEmpty()) {
+        // don't hide record host error when we reset the error state
+        setError(m_recordHost->errorMessage());
+        return;
+    }
     ui->applicationRecordErrorMessage->setText(message);
     ui->applicationRecordErrorMessage->setVisible(!message.isEmpty());
 }

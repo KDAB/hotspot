@@ -239,7 +239,7 @@ void RecordHost::setHost(const QString& host)
         },
         [this](bool isInstalled) {
             if (!isInstalled) {
-                emit errorOccurred(tr("perf is not installed"));
+                emit errorOccurred(tr("Recording is not possible, no <tt>perf</tt> executable could be found."));
             }
             m_isPerfInstalled = isInstalled;
             emit isPerfInstalledChanged(isInstalled);
