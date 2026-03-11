@@ -222,7 +222,7 @@ private slots:
 
         QTemporaryFile tempFile;
         if (perfFile.isEmpty()) {
-            tempFile.open();
+            QVERIFY(tempFile.open());
             tempFile.write("test content");
             tempFile.close();
             tempFile.setPermissions({}); // drop all permissons
@@ -317,7 +317,7 @@ private slots:
 
         const QString exePath = findExe(QStringLiteral("cpp-inlining"));
         QTemporaryFile tempFile;
-        tempFile.open();
+        QVERIFY(tempFile.open());
 
         // top-down data is too vague here, don't check it
         try {
@@ -355,7 +355,7 @@ private slots:
 
         const QString exePath = findExe(QStringLiteral("cpp-inlining"));
         QTemporaryFile tempFile;
-        tempFile.open();
+        QVERIFY(tempFile.open());
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
@@ -379,7 +379,7 @@ private slots:
 
         const QString exePath = findExe(QStringLiteral("cpp-inlining"));
         QTemporaryFile tempFile;
-        tempFile.open();
+        QVERIFY(tempFile.open());
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
@@ -399,7 +399,7 @@ private slots:
 
         const QString exePath = findExe(QStringLiteral("cpp-inlining"));
         QTemporaryFile tempFile;
-        tempFile.open();
+        QVERIFY(tempFile.open());
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
@@ -448,7 +448,7 @@ private slots:
 
         const QString exePath = findExe(QStringLiteral("cpp-recursion"));
         QTemporaryFile tempFile;
-        tempFile.open();
+        QVERIFY(tempFile.open());
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
             testPerfData(cppRecursionTopSymbol(), cppRecursionTopSymbol(), tempFile.fileName());
@@ -465,7 +465,7 @@ private slots:
 
         const QString exePath = findExe(QStringLiteral("cpp-recursion"));
         QTemporaryFile tempFile;
-        tempFile.open();
+        QVERIFY(tempFile.open());
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
@@ -493,7 +493,7 @@ private slots:
 
         const QString exePath = findExe(QStringLiteral("cpp-recursion"));
         QTemporaryFile tempFile;
-        tempFile.open();
+        QVERIFY(tempFile.open());
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
@@ -512,7 +512,7 @@ private slots:
 
         const QString exePath = findExe(QStringLiteral("cpp-recursion"));
         QTemporaryFile tempFile;
-        tempFile.open();
+        QVERIFY(tempFile.open());
 
         try {
             perfRecord(perfOptions, exePath, exeOptions, tempFile.fileName());
@@ -546,7 +546,7 @@ private slots:
         const QString exePath = findExe(QStringLiteral("cpp-stdin"));
 
         QTemporaryFile tempFile;
-        tempFile.open();
+        QVERIFY(tempFile.open());
 
         RecordHost host;
         PerfRecord perf(&host);
@@ -569,7 +569,7 @@ private slots:
         const QString exePath = findExe(QStringLiteral("cpp-sleep"));
 
         QTemporaryFile tempFile;
-        tempFile.open();
+        QVERIFY(tempFile.open());
 
         try {
             perfRecord(perfOptions, exePath, {}, tempFile.fileName());
@@ -591,7 +591,7 @@ private slots:
         const QString exePath = findExe(QStringLiteral("cpp-threadnames"));
 
         QTemporaryFile tempFile;
-        tempFile.open();
+        QVERIFY(tempFile.open());
 
         try {
             perfRecord(perfOptions, exePath, {}, tempFile.fileName());
@@ -640,7 +640,7 @@ private slots:
         const QString exePath = findExe(QStringLiteral("cpp-sleep"));
 
         QTemporaryFile tempFile;
-        tempFile.open();
+        QVERIFY(tempFile.open());
 
         try {
             perfRecord(perfOptions, exePath, {}, tempFile.fileName());
@@ -688,7 +688,7 @@ private slots:
         perfOptions += PerfRecord::offCpuProfilingOptions();
 
         QTemporaryFile tempFile;
-        tempFile.open();
+        QVERIFY(tempFile.open());
 
         try {
             perfRecord(perfOptions, sleep, {QStringLiteral(".5")}, tempFile.fileName());
@@ -717,7 +717,7 @@ private slots:
         const QStringList exeArgs = {QString::number(numThreads)};
 
         QTemporaryFile tempFile;
-        tempFile.open();
+        QVERIFY(tempFile.open());
 
         try {
             perfRecord(perfOptions, exePath, exeArgs, tempFile.fileName());
@@ -819,7 +819,7 @@ private slots:
 
         PerfParser parser;
         QFile decompressed(parser.decompressIfNeeded(filename));
-        decompressed.open(QIODevice::ReadOnly);
+        QVERIFY(decompressed.open(QIODevice::ReadOnly));
 
         QCOMPARE(decompressed.readAll(), QByteArrayLiteral("Hello World\n"));
     }
@@ -843,7 +843,7 @@ private slots:
 
         PerfParser parser;
         QFile decompressed(parser.decompressIfNeeded(filename));
-        decompressed.open(QIODevice::ReadOnly);
+        QVERIFY(decompressed.open(QIODevice::ReadOnly));
 
         QCOMPARE(decompressed.readAll(), QByteArrayLiteral("Hello World\n"));
     }

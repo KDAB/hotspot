@@ -147,7 +147,10 @@ void PerfOutputWidgetKonsole::addPartToLayout()
 {
     Q_ASSERT(!m_konsoleFile);
     m_konsoleFile = new QTemporaryFile(m_konsolePart);
-    m_konsoleFile->open();
+    if (!m_konsoleFile->open()) {
+        qWarning() << "failed to open temporary file" << m_konsoleFile->fileName() << m_konsoleFile->errorString();
+        return;
+    }
 
     const auto terminalInterface = qobject_cast<TerminalInterface*>(m_konsolePart);
     terminalInterface->startProgram(tailExe(), {tailExe(), QStringLiteral("-f"), m_konsoleFile->fileName()});

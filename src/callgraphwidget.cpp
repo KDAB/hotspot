@@ -56,7 +56,9 @@ CallgraphWidget::CallgraphWidget(Data::CallerCalleeResults results, KParts::Read
     // used to find mouseclicks in the kgraphviewer part
     qApp->installEventFilter(this);
 
-    m_graphFile->open();
+    if (!m_graphFile->open()) {
+        qWarning() << "failed to open temporary file:" << m_graphFile->fileName() << m_graphFile->errorString();
+    }
 
     connect(Settings::instance(), &Settings::callgraphChanged, this, [this] { generateCallgraph(m_currentSymbol); });
 }

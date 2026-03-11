@@ -1601,7 +1601,10 @@ bool PerfParser::initParserArgs(const QString& path)
     // peek into file header
     const auto filename = decompressIfNeeded(path);
     QFile file(filename);
-    file.open(QIODevice::ReadOnly);
+    if (!file.open(QIODevice::ReadOnly)) {
+        emit parsingFailed(tr("FAiled to open file %1: %2").arg(filename, file.errorString()));
+        return false;
+    }
     if (file.peek(8) != "PERFILE2" && file.peek(11) != "QPERFSTREAM") {
         if (file.peek(8) == "PERFFILE") {
             emit parsingFailed(tr("Failed to parse file %1: %2").arg(path, tr("Unsupported V1 perf data")));
@@ -1713,7 +1716,10 @@ void PerfParser::startParseFile(const QString& path)
         // note: file is always readable and in supported format here,
         //        already validated in initParserArgs()
         QFile file(path);
-        file.open(QIODevice::ReadOnly);
+        if (!file.open(QIODevice::ReadOnly)) {
+            emit parsingFailed(tr("FAiled to open file %1: %2").arg(path, file.errorString()));
+            return;
+        }
         if (file.peek(11) == "QPERFSTREAM") {
             d.setInput(&file);
             while (!file.atEnd() && !d.stopRequested) {
@@ -2120,7 +2126,10 @@ auto extractFromArchive = [](const std::unique_ptr<KArchive>& archive) -> std::u
     auto extractFile = [](const KArchiveDirectory* directory,
                           const QString& filename) -> std::unique_ptr<QTemporaryFile> {
         auto extracted = std::make_unique<QTemporaryFile>();
-        extracted->open();
+        if (!extracted->open()) {
+            qWarning() << "failed to open temporary file" << extracted->fileName() << extracted->errorString();
+            return {};
+        }
 
         auto fileToExtract = directory->file(filename);
         if (!fileToExtract) {
@@ -2206,7 +2215,10 @@ QString PerfParser::decompressIfNeeded(const QString& path)
     // we now have a compressed file that could be an archive -> decompress
     {
         auto decompressed = std::make_unique<QTemporaryFile>();
-        decompressed->open();
+        if (!decompressed->open()) {
+            qWarning() << "Failed to open temporary file:" << decompressed->fileName() << decompressed->errorString();
+            return path;
+        }
 
         const int chunkSize = 1024 * 100;
 

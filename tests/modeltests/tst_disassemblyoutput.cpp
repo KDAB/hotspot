@@ -114,7 +114,10 @@ private slots:
         }
 
         auto file = new QTemporaryFile(this);
-        file->open();
+        if (!file->open()) {
+            qWarning() << "failed to open temporary file" << file->fileName() << file->errorString();
+            return {};
+        }
 
         auto text = actualText;
 
@@ -175,7 +178,7 @@ private slots:
 
         auto createFile = [tempPath = tempDir.path()](const QString& path) {
             QFile file(tempPath + QDir::separator() + path);
-            file.open(QIODevice::WriteOnly);
+            QVERIFY(file.open(QIODevice::WriteOnly));
             file.write("test");
             file.close();
         };

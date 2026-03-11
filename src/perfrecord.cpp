@@ -32,7 +32,11 @@ void createOutputFile(const QString& outputPath)
     // QFile::rename does not overwrite files, so we need to remove it manually
     QFile::remove(bakPath);
     QFile::rename(outputPath, bakPath);
-    QFile(outputPath).open(QIODevice::WriteOnly);
+
+    QFile file(outputPath);
+    if (!file.open(QIODevice::WriteOnly)) {
+        qWarning() << "Failed to create output file" << outputPath << file.errorString();
+    }
 }
 }
 
