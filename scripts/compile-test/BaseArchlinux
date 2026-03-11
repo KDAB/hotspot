@@ -7,4 +7,4 @@ RUN pacman -Sy --noconfirm && \
     pacman -Syu --noconfirm git make cmake gcc extra-cmake-modules \
     libelf gettext qt6-base ninja wget \
     threadweaver kconfigwidgets knotifications karchive syntax-highlighting \
-    kiconthemes kitemviews kitemmodels kwindowsystem kio kparts solid clazy python python-yaml
+    kiconthemes kitemviews kitemmodels kwindowsystem kio kparts solid clazy python python-yaml && locale-gen
