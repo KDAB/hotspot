@@ -46,14 +46,21 @@ buildHotspotWithPresets()
     kddw_version=$2
     tag=$(toLower $distro)
 
+    preset=$3
+    if [ -z "$preset" ]; then
+        preset="dev-asan"
+    fi
+
     buildDependencies $distro $kddw_version
-    podman build --ulimit nofile=1024:262144 -t hotspot-$tag \
+    podman build --ulimit nofile=1024:262144 -t hotspot-$tag-$preset \
         --build-arg BASEIMAGE=hotspot-$tag-dependencies \
+        --build-arg PRESET=$preset \
         -f scripts/compile-test/BuildHotspotWithPresets $extraArgs .
 }
 
 buildHotspotWithPresets Ubuntu25.04 2.2
 buildHotspotWithPresets Archlinux 2.3
+buildHotspotWithPresets Archlinux 2.3 dev-clazy
 buildHotspotWithPresets ArchlinuxWithoutOptional 2.3
 buildHotspotWithPresets OpenSuseTumbleweed 2.3
 buildHotspotWithPresets Fedora42 2.3
