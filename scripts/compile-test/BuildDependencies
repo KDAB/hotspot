@@ -1,6 +1,10 @@
 ARG BASEIMAGE
 FROM $BASEIMAGE
 
+LABEL org.opencontainers.image.source=https://github.com/kdab/hotspot
+LABEL org.opencontainers.image.description="$BASEIMAGE base image plus dependencies for building hotspot"
+LABEL org.opencontainers.image.licenses=MIT
+
 ARG KDDOCKWIDGETS_VERSION
 ARG LIBDIR
 WORKDIR /opt

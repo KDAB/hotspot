@@ -1,6 +1,9 @@
 ARG BASEIMAGE
 FROM $BASEIMAGE
 
+LABEL org.opencontainers.image.source=https://github.com/kdab/hotspot
+LABEL org.opencontainers.image.licenses=MIT
+
 ARG PRESET
 
 WORKDIR /opt

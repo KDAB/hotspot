@@ -1,5 +1,9 @@
 FROM fedora:42
 
+LABEL org.opencontainers.image.source=https://github.com/kdab/hotspot
+LABEL org.opencontainers.image.description="Fedora base image for building hotspot"
+LABEL org.opencontainers.image.licenses=MIT
+
 # install dependencies
 
 RUN echo "max_parallel_downloads=10" >> /etc/dnf/dnf.conf && \
