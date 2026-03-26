@@ -1,5 +1,9 @@
 FROM opensuse/tumbleweed:latest
 
+LABEL org.opencontainers.image.source=https://github.com/kdab/hotspot
+LABEL org.opencontainers.image.description="OpenSuse Tumbleweed base image for building hotspot"
+LABEL org.opencontainers.image.licenses=MIT
+
 # install dependencies
 
 RUN zypper --non-interactive update && \

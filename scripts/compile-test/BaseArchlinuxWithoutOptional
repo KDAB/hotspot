@@ -1,5 +1,9 @@
 FROM archlinux:latest
 
+LABEL org.opencontainers.image.source=https://github.com/kdab/hotspot
+LABEL org.opencontainers.image.description="Archlinux base image for building hotspot, without optional dependencies"
+LABEL org.opencontainers.image.licenses=MIT
+
 # install dependencies
 
 RUN pacman -Sy --noconfirm && \
