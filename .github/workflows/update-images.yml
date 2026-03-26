@@ -1,0 +1,71 @@
+name: Build CI build images
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        os: [Ubuntu25.04, Archlinux, ArchlinuxWithoutOptional, Fedora42, Neon, OpenSuseTumbleweed]
+        include:
+          - os: Ubuntu25.04
+            kddockwidgets_version: 2.2
+            libdir: /usr/lib/x86_64-linux-gnu/
+            tag: ubuntu25.04
+          - os: Archlinux
+            kddockwidgets_version: 2.3
+            libdir: /usr/lib/
+            tag: archlinux
+          - os: ArchlinuxWithoutOptional
+            kddockwidgets_version: 2.3
+            libdir: /usr/lib/
+            tag: archlinuxwithoutoptional
+          - os: Fedora42
+            kddockwidgets_version: 2.3
+            libdir: /usr/lib/
+            tag: fedora42
+          - os: OpenSuseTumbleweed
+            kddockwidgets_version: 2.3
+            libdir: /usr/lib/
+            tag: opensusetumbleweed
+          - os: Neon
+            kddockwidgets_version: 2.3
+            libdir: /usr/lib/x86_64-linux-gnu/
+            tag: neon
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build base image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./scripts/compile-test
+          file: ./scripts/compile-test/Base${{ matrix.os }}
+          push: false
+          tags: ${{ matrix.tag }}:latest
+
+      - name: Build dependencies image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./scripts/compile-test
+          file: ./scripts/compile-test/BuildDependencies
+          push: true
+          tags: ghcr.io/kdab/${{ matrix.tag }}qt6-dependencies:latest
+          build-args: |
+            BASEIMAGE=${{ matrix.tag }}:latest
+            KDDOCKWIDGETS_VERSION=${{ matrix.kddockwidgets_version }}
+            LIBDIR=${{ matrix.libdir }}
