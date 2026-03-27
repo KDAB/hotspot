@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.7.0](https://github.com/KDAB/hotspot/compare/v1.6.0...v1.7.0) (2026-03-27)
+
+
+### Features
+
+* add github workflow to update packages ([21ea2b4](https://github.com/KDAB/hotspot/commit/21ea2b48ed2a542c9f27ad47e9ca4616d0964d48))
+* also setup a dev-clazy preset build ([2490115](https://github.com/KDAB/hotspot/commit/2490115c2e0d39832bdb3e5b5e9a86384f3ad2b1))
+* disable antialiasing while drawing timeline ([8797fd5](https://github.com/KDAB/hotspot/commit/8797fd5bca0a022dc7e4d26b2d10aa63480b1468))
+* Drop Qt5 support ([66400cc](https://github.com/KDAB/hotspot/commit/66400ccc0d9a61639ffc37c9485b4c7460f37973))
+* **HACKING:** add qt6 Fedora packages section ([f117a7e](https://github.com/KDAB/hotspot/commit/f117a7efde244a901f76c599acddb04cc468395c))
+* optimize TimeLineDelegate painint, cache KColorScheme ([2b05332](https://github.com/KDAB/hotspot/commit/2b05332a68ad29e2560b9ed36416c64d816b36ad))
+* **README:** add section for rust's v0 mangling scheme ([c99740d](https://github.com/KDAB/hotspot/commit/c99740dbad7fadfd9abb392451f07d18599d461e))
+
+
+### Bug Fixes
+
+* Add 3rd argument to avoid %3 showing in disassembly view ([27aeedb](https://github.com/KDAB/hotspot/commit/27aeedba3045ee72d7f03d49cd8b21037f2fee87))
+* bump perfparser to fix compiler warnings ([3b88d6a](https://github.com/KDAB/hotspot/commit/3b88d6adf31c80c29ce6fec899fd83537e036af8))
+* cleanup [[nodiscard]] compiler warnings ([8e96243](https://github.com/KDAB/hotspot/commit/8e962438a9063c2c68259f816225860a564ab033))
+* Don't reset recording host error message when showing record page ([3fb77c9](https://github.com/KDAB/hotspot/commit/3fb77c94ed255499d958ca334ab5156e807660ce))
+* Escape HTML elements in disassembly view ([9d2767d](https://github.com/KDAB/hotspot/commit/9d2767d148abe072866df36e6df3246e23fe43a8))
+* remove broken .gitpod.yml ([9d6d2ba](https://github.com/KDAB/hotspot/commit/9d6d2bad74222b41478ae8e7091bbf467a7476b3))
+* remove/cleanup obsolete qt5 docs and scripts ([6e38585](https://github.com/KDAB/hotspot/commit/6e38585364ba3b1e5e47c1ec28937fad7ba1c000))
+* Show the same thing on lines with and without samples ([c072239](https://github.com/KDAB/hotspot/commit/c0722396d7304d55849ad2d38418da19e477be9b))
+* use C.UTF-8 locale, fixes tons of log spam on archlinux builders ([4316449](https://github.com/KDAB/hotspot/commit/4316449a84d67cd6c9bf2facc56c6e8a6b352efe))
+* use full path in abbreviated form in window title ([9f01033](https://github.com/KDAB/hotspot/commit/9f01033b2331f4d7c06b5bd74b83231167ccd70b))
+
 ## [1.6.0](https://github.com/KDAB/hotspot/compare/v1.5.1...v1.6.0) (2026-01-28)
 
 
