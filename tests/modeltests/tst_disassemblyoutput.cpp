@@ -266,11 +266,12 @@ private slots:
         };
 
         for (const auto& line : result.disassemblyLines) {
-            QVERIFY(!line.branchVisualisation.isEmpty());
-
-            // check that we only captures valid visualisation characters
-            QVERIFY(std::all_of(line.branchVisualisation.cbegin(), line.branchVisualisation.cend(),
-                                isValidVisualisationCharacter));
+            // not every architecture emits branch visualisation for every line (e.g. ppc64el)
+            if (!line.branchVisualisation.isEmpty()) {
+                // check that we only capture valid visualisation characters
+                QVERIFY(std::all_of(line.branchVisualisation.cbegin(), line.branchVisualisation.cend(),
+                                    isValidVisualisationCharacter));
+            }
 
             QVERIFY(std::all_of(line.hexdump.cbegin(), line.hexdump.cend(), isValidHexdumpCharacter));
 
@@ -395,8 +396,7 @@ private:
     };
     static FunctionData findAddressAndSizeOfFunc(const QString& library, const QString& name)
     {
-        QRegularExpression regex(QStringLiteral("[ ]+[0-9]+: ([0-9a-f]+)[ ]+([0-9]+)[0-9 a-zA-Z]+%1\\n").arg(name));
-
+        QRegularExpression regex(QStringLiteral("[ ]+[0-9]+: ([0-9a-f]+)[ ]+([0-9]+)[^\\n]+%1").arg(name));
         const auto readelfBinary = QStandardPaths::findExecutable(QStringLiteral("readelf"));
         VERIFY_OR_THROW(!readelfBinary.isEmpty());
 
