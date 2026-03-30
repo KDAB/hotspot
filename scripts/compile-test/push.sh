@@ -15,8 +15,8 @@ pushDependencies()
     tag=$1
 
     # NOTE: qt6 suffix remains for compatibility reasons
-    podman tag hotspot-$tag-dependencies:latest ghcr.io/kdab/hotspot-${tag}qt6-dependencies:latest
-    podman push ghcr.io/kdab/hotspot-${tag}qt6-dependencies:latest
+    podman tag hotspot-$tag-dependencies:latest ghcr.io/kdab/hotspot/${tag}qt6-dependencies:latest
+    podman push ghcr.io/kdab/hotspot/${tag}qt6-dependencies:latest
 }
 
 pushDependencies ubuntu25.04

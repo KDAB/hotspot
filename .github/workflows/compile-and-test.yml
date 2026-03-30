@@ -20,7 +20,7 @@ jobs:
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-archlinuxqt6-dependencies
+    container: ghcr.io/kdab/hotspot/archlinuxqt6-dependencies
 
     steps:
     - name: Checkout
@@ -43,7 +43,7 @@ jobs:
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-archlinuxqt6-dependencies
+    container: ghcr.io/kdab/hotspot/archlinuxqt6-dependencies
 
     steps:
     - name: Checkout
@@ -65,7 +65,7 @@ jobs:
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-archlinuxqt6-dependencies
+    container: ghcr.io/kdab/hotspot/archlinuxqt6-dependencies
 
     steps:
     - name: Checkout
@@ -96,7 +96,7 @@ jobs:
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-archlinuxwithoutoptionalqt6-dependencies
+    container: ghcr.io/kdab/hotspot/archlinuxwithoutoptionalqt6-dependencies
 
     steps:
     - name: Checkout
@@ -118,7 +118,7 @@ jobs:
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-ubuntu25.04qt6-dependencies
+    container: ghcr.io/kdab/hotspot/ubuntu25.04qt6-dependencies
 
     steps:
     - name: Checkout
@@ -140,7 +140,7 @@ jobs:
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-fedora42qt6-dependencies
+    container: ghcr.io/kdab/hotspot/fedora42qt6-dependencies
 
     steps:
     - name: Checkout
@@ -162,7 +162,7 @@ jobs:
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-opensusetumbleweedqt6-dependencies
+    container: ghcr.io/kdab/hotspot/opensusetumbleweedqt6-dependencies
 
     steps:
     - name: Checkout
@@ -184,7 +184,7 @@ jobs:
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
     runs-on: ubuntu-latest
-    container: ghcr.io/kdab/hotspot-neonqt6-dependencies
+    container: ghcr.io/kdab/hotspot/neonqt6-dependencies
 
     steps:
     - name: Checkout

@@ -64,7 +64,7 @@ jobs:
           context: ./scripts/compile-test
           file: ./scripts/compile-test/BuildDependencies
           push: true
-          tags: ghcr.io/kdab/${{ matrix.tag }}qt6-dependencies:latest
+          tags: ghcr.io/kdab/hotspot/${{ matrix.tag }}qt6-dependencies:latest
           build-args: |
             BASEIMAGE=${{ matrix.tag }}:latest
             KDDOCKWIDGETS_VERSION=${{ matrix.kddockwidgets_version }}
