@@ -8,9 +8,19 @@ import sys
 import yaml
 
 
+srcDir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/"
+
+
 def fileOffsetToLine(message):
     ''' to ease manual inspection, translate FileOffset to a FileLine '''
     if message['FilePath'] == "":
+        return
+    if message['FilePath'].startswith("/usr"):
+        return
+    # github action dir to local dir
+    message['FilePath'] = message['FilePath'].replace("/__w/hotspot/hotspot/", srcDir)
+    # build dir files may not exist when downloading from github
+    if "/build-" in message['FilePath']:
         return
     with open(message['FilePath'], 'r', encoding='utf-8') as sourceFile:
         numNewlines = sourceFile.read(message['FileOffset']).count('\n')
@@ -42,6 +52,9 @@ with open(inputFile, 'r', encoding='utf-8') as mainFixitsFile:
 
 
 baseDir = os.path.dirname(inputFile)
+if baseDir == "":
+    baseDir = os.getcwd()
+
 for diagnostic, fixits in groupedFixits.items():
     diagnosticDir = f"{baseDir}/{diagnostic}"
     if not os.path.isdir(diagnosticDir):
