@@ -53,25 +53,28 @@ public:
     {
         if (parent.column() >= 1) {
             return 0;
-        } else if (auto item = itemFromIndex(parent)) {
-            if (!m_simplify || item == rootItem() || item->children.size() != 1) {
-                return item->children.size();
-            } else if (item->parent && item->parent->children.size() == 1) {
-                // simplified
-                return 0;
-            }
+        }
 
-            // aggregate all simplified nodes
-            int numChildren = 1;
-            item = item->children.constData();
-            while (item->children.size() == 1) {
-                numChildren++;
-                item = item->children.constData();
-            }
-            return numChildren;
-        } else {
+        auto item = itemFromIndex(parent);
+        if (!item) {
             return 0;
         }
+
+        if (!m_simplify || item == rootItem() || item->children.size() != 1) {
+            return item->children.size();
+        } else if (item->parent && item->parent->children.size() == 1) {
+            // simplified
+            return 0;
+        }
+
+        // aggregate all simplified nodes
+        int numChildren = 1;
+        item = item->children.constData();
+        while (item->children.size() == 1) {
+            numChildren++;
+            item = item->children.constData();
+        }
+        return numChildren;
     }
 
     int columnCount(const QModelIndex& parent = {}) const final override
