@@ -113,7 +113,7 @@ jobs:
     - name: Test
       run: ctest --preset dev-asan
 
-  ubuntu25.04:
+  ubuntu2504:
     needs: pre_job
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
 
