@@ -1,4 +1,4 @@
-ARG BASEIMAGE
+ARG BASEIMAGE="you-must-set-a-BASEIMAGE"
 FROM $BASEIMAGE
 
 LABEL org.opencontainers.image.source=https://github.com/kdab/hotspot
