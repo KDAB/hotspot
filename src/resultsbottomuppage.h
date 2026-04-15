@@ -34,7 +34,7 @@ class ResultsBottomUpPage : public QWidget
 public:
     explicit ResultsBottomUpPage(FilterAndZoomStack* filterStack, PerfParser* parser, CostContextMenu* contextMenu,
                                  QMenu* exportMenu, QWidget* parent = nullptr);
-    ~ResultsBottomUpPage();
+    ~ResultsBottomUpPage() override;
 
     void clear();
 

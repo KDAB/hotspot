@@ -26,7 +26,7 @@ class PerfControlFifoWrapper : public QObject
 
 public:
     using QObject::QObject;
-    ~PerfControlFifoWrapper();
+    ~PerfControlFifoWrapper() override;
 
     bool isOpen() const
     {

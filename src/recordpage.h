@@ -39,7 +39,7 @@ class RecordPage : public QWidget
     Q_OBJECT
 public:
     explicit RecordPage(QWidget* parent = nullptr);
-    ~RecordPage();
+    ~RecordPage() override;
 
     void showRecordPage();
     void stopRecording();

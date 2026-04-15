@@ -16,7 +16,7 @@ class CostHeaderView : public QHeaderView
     Q_OBJECT
 public:
     explicit CostHeaderView(CostContextMenu* contextMenu, QWidget* parent = nullptr);
-    ~CostHeaderView();
+    ~CostHeaderView() override;
 
     void setAutoResize(bool autoResize)
     {

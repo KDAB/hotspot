@@ -20,7 +20,7 @@ class CostContextMenu : public QObject
     Q_OBJECT
 public:
     explicit CostContextMenu(QObject* parent = nullptr);
-    ~CostContextMenu();
+    ~CostContextMenu() override;
 
     void addToMenu(QHeaderView* view, QMenu* menu);
     void hideColumns(QTreeView* view);

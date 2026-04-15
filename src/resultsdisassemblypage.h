@@ -44,7 +44,7 @@ class ResultsDisassemblyPage : public QWidget
     Q_OBJECT
 public:
     explicit ResultsDisassemblyPage(CostContextMenu* costContextMenu, QWidget* parent = nullptr);
-    ~ResultsDisassemblyPage();
+    ~ResultsDisassemblyPage() override;
 
     void clear();
     void setSymbol(const Data::Symbol& data);

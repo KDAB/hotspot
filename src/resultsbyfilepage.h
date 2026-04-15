@@ -32,7 +32,7 @@ class ResultsByFilePage : public QWidget
 public:
     explicit ResultsByFilePage(FilterAndZoomStack* filterStack, PerfParser* parser, CostContextMenu* contextMenu,
                                QWidget* parent = nullptr);
-    ~ResultsByFilePage();
+    ~ResultsByFilePage() override;
 
     void clear();
 

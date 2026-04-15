@@ -21,7 +21,7 @@ class AboutDialog : public QDialog
     Q_OBJECT
 public:
     explicit AboutDialog(QWidget* parent = nullptr);
-    ~AboutDialog();
+    ~AboutDialog() override;
 
     void setTitle(const QString& title);
     void setText(const QString& text);

@@ -16,7 +16,7 @@ class AbstractTreeModel : public QAbstractItemModel
     Q_OBJECT
 public:
     explicit AbstractTreeModel(QObject* parent = nullptr);
-    ~AbstractTreeModel();
+    ~AbstractTreeModel() override;
 
     enum Roles
     {
@@ -35,9 +35,9 @@ public:
         : AbstractTreeModel(parent)
     {
     }
-    ~TreeModel() = default;
+    ~TreeModel() override = default;
 
-    bool hasChildren(const QModelIndex& parent = {}) const final override
+    bool hasChildren(const QModelIndex& parent = {}) const final
     {
         if (parent.column() >= 1)
             return false;
@@ -49,7 +49,7 @@ public:
         return item && !item->children.isEmpty();
     }
 
-    int rowCount(const QModelIndex& parent = {}) const final override
+    int rowCount(const QModelIndex& parent = {}) const final
     {
         if (parent.column() >= 1) {
             return 0;
@@ -74,7 +74,7 @@ public:
         return 0;
     }
 
-    int columnCount(const QModelIndex& parent = {}) const final override
+    int columnCount(const QModelIndex& parent = {}) const final
     {
         if (!parent.isValid() || parent.column() == 0) {
             return numColumns();
@@ -83,7 +83,7 @@ public:
         }
     }
 
-    QModelIndex index(int row, int column, const QModelIndex& parent = {}) const final override
+    QModelIndex index(int row, int column, const QModelIndex& parent = {}) const final
     {
         if (row < 0 || column < 0 || column >= numColumns() || row > rowCount(parent)) {
             return {};
@@ -98,7 +98,7 @@ public:
         return createIndex(row, column, tag);
     }
 
-    QModelIndex parent(const QModelIndex& child) const final override
+    QModelIndex parent(const QModelIndex& child) const final
     {
         const auto* childItem = itemFromIndex(child);
         if (!childItem) {
@@ -114,7 +114,7 @@ public:
         return indexFromItem(parent, 0);
     }
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const final override
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const final
     {
         if (orientation != Qt::Horizontal || section < 0 || section >= numColumns()) {
             return {};
@@ -123,7 +123,7 @@ public:
         return headerColumnData(section, role);
     }
 
-    QVariant data(const QModelIndex& index, int role) const final override
+    QVariant data(const QModelIndex& index, int role) const final
     {
         const auto* item = itemFromIndex(index);
         if (!item || item == rootItem()) {
@@ -233,7 +233,7 @@ public:
         : Base(parent)
     {
     }
-    ~CostTreeModel() = default;
+    ~CostTreeModel() override = default;
 
     using Base::setData;
     void setData(const Results& data)
@@ -249,7 +249,7 @@ public:
     }
 
 protected:
-    const typename Base::TreeNode* rootItem() const final override
+    const typename Base::TreeNode* rootItem() const final
     {
         return &m_results.root;
     }
@@ -262,7 +262,7 @@ class BottomUpModel : public CostTreeModel<Data::BottomUpResults, BottomUpModel>
     Q_OBJECT
 public:
     explicit BottomUpModel(QObject* parent = nullptr);
-    ~BottomUpModel();
+    ~BottomUpModel() override;
     enum Columns
     {
         Symbol = 0,
@@ -274,9 +274,9 @@ public:
         InitialSortColumn = Binary + 1 // the first cost column
     };
 
-    QVariant headerColumnData(int column, int role) const final override;
-    QVariant rowData(const Data::BottomUp* row, int column, int role) const final override;
-    int numColumns() const final override;
+    QVariant headerColumnData(int column, int role) const final;
+    QVariant rowData(const Data::BottomUp* row, int column, int role) const final;
+    int numColumns() const final;
 };
 
 class TopDownModel : public CostTreeModel<Data::TopDownResults, TopDownModel>
@@ -284,7 +284,7 @@ class TopDownModel : public CostTreeModel<Data::TopDownResults, TopDownModel>
     Q_OBJECT
 public:
     explicit TopDownModel(QObject* parent = nullptr);
-    ~TopDownModel();
+    ~TopDownModel() override;
 
     enum Columns
     {
@@ -297,9 +297,9 @@ public:
         InitialSortColumn = Binary + 1 // the first cost column
     };
 
-    QVariant headerColumnData(int column, int role) const final override;
-    QVariant rowData(const Data::TopDown* row, int column, int role) const final override;
-    int numColumns() const final override;
+    QVariant headerColumnData(int column, int role) const final;
+    QVariant rowData(const Data::TopDown* row, int column, int role) const final;
+    int numColumns() const final;
     int selfCostColumn(int cost) const;
 };
 
@@ -311,7 +311,7 @@ public:
         : CostTreeModel(parent)
     {
     }
-    ~PerLibraryModel() = default;
+    ~PerLibraryModel() override = default;
 
     enum Columns
     {
@@ -323,7 +323,7 @@ public:
         InitialSortColumn = Binary + 1 // the first cost column
     };
 
-    QVariant headerColumnData(int column, int role) const final override;
-    QVariant rowData(const Data::PerLibrary* row, int column, int role) const final override;
-    int numColumns() const final override;
+    QVariant headerColumnData(int column, int role) const final;
+    QVariant rowData(const Data::PerLibrary* row, int column, int role) const final;
+    int numColumns() const final;
 };

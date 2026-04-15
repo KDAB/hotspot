@@ -29,7 +29,7 @@ class SettingsDialog : public KPageDialog
 
 public:
     explicit SettingsDialog(QWidget* parent = nullptr);
-    ~SettingsDialog();
+    ~SettingsDialog() override;
     void initSettings();
     QString sysroot() const;
     QString appPath() const;

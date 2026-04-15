@@ -20,7 +20,7 @@ class CallerCalleeModel : public HashModel<Data::CallerCalleeEntryMap, CallerCal
     Q_OBJECT
 public:
     explicit CallerCalleeModel(QObject* parent = nullptr);
-    ~CallerCalleeModel();
+    ~CallerCalleeModel() override;
 
     void setResults(const Data::CallerCalleeResults& results);
 
@@ -47,10 +47,9 @@ public:
         SymbolRole,
     };
 
-    QVariant headerCell(int column, int role) const final override;
-    QVariant cell(int column, int role, const Data::Symbol& symbol,
-                  const Data::CallerCalleeEntry& entry) const final override;
-    int numColumns() const final override;
+    QVariant headerCell(int column, int role) const final;
+    QVariant cell(int column, int role, const Data::Symbol& symbol, const Data::CallerCalleeEntry& entry) const final;
+    int numColumns() const final;
     QModelIndex indexForSymbol(const Data::Symbol& symbol) const;
 
 private:
@@ -80,7 +79,7 @@ public:
         Parent::connect(Settings::instance(), &Settings::collapseDepthChanged, this, dataChangedHelper);
     }
 
-    virtual ~SymbolCostModelImpl() = default;
+    ~SymbolCostModelImpl() override = default;
 
     void setResults(const Data::SymbolCostMap& map, const Data::Costs& costs)
     {
@@ -106,7 +105,7 @@ public:
         SymbolRole
     };
 
-    QVariant headerCell(int column, int role) const final override
+    QVariant headerCell(int column, int role) const final
     {
         if (role == Qt::InitialSortOrderRole && column > Binary) {
             return Qt::DescendingOrder;
@@ -134,7 +133,7 @@ public:
         return {};
     }
 
-    QVariant cell(int column, int role, const Data::Symbol& symbol, const Data::ItemCost& costs) const final override
+    QVariant cell(int column, int role, const Data::Symbol& symbol, const Data::ItemCost& costs) const final
     {
         if (role == SortRole) {
             switch (column) {
@@ -164,7 +163,7 @@ public:
         return {};
     }
 
-    int numColumns() const final override
+    int numColumns() const final
     {
         return NUM_BASE_COLUMNS + m_costs.numTypes();
     }
@@ -180,9 +179,9 @@ class CallerModel : public SymbolCostModelImpl<CallerModel>
     Q_OBJECT
 public:
     explicit CallerModel(QObject* parent = nullptr);
-    ~CallerModel();
+    ~CallerModel() override;
 
-    QString symbolHeader() const final override;
+    QString symbolHeader() const final;
 };
 
 class CalleeModel : public SymbolCostModelImpl<CalleeModel>
@@ -190,9 +189,9 @@ class CalleeModel : public SymbolCostModelImpl<CalleeModel>
     Q_OBJECT
 public:
     explicit CalleeModel(QObject* parent = nullptr);
-    ~CalleeModel();
+    ~CalleeModel() override;
 
-    QString symbolHeader() const final override;
+    QString symbolHeader() const final;
 };
 
 template<typename ModelImpl>
@@ -204,7 +203,7 @@ public:
     {
     }
 
-    virtual ~LocationCostModelImpl() = default;
+    ~LocationCostModelImpl() override = default;
 
     void setResults(const Data::SourceLocationCostMap& map, const Data::Costs& totalCosts)
     {
@@ -229,7 +228,7 @@ public:
         FileLineRole,
     };
 
-    QVariant headerCell(int column, int role) const final override
+    QVariant headerCell(int column, int role) const final
     {
         if (role == Qt::InitialSortOrderRole && column > Location) {
             return Qt::DescendingOrder;
@@ -260,8 +259,7 @@ public:
         return {};
     }
 
-    QVariant cell(int column, int role, const Data::FileLine& fileLine,
-                  const Data::LocationCost& costs) const final override
+    QVariant cell(int column, int role, const Data::FileLine& fileLine, const Data::LocationCost& costs) const final
     {
         if (role == SortRole) {
             if (column == Location) {
@@ -302,7 +300,7 @@ public:
         return {};
     }
 
-    int numColumns() const final override
+    int numColumns() const final
     {
         return 1 + (m_totalCosts.numTypes() * 2);
     }
@@ -316,5 +314,5 @@ class SourceMapModel : public LocationCostModelImpl<SourceMapModel>
     Q_OBJECT
 public:
     explicit SourceMapModel(QObject* parent = nullptr);
-    ~SourceMapModel();
+    ~SourceMapModel() override;
 };

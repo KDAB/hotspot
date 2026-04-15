@@ -15,7 +15,7 @@ class PerfOutputWidget : public QWidget
     Q_OBJECT
 public:
     PerfOutputWidget(QWidget* parent = nullptr);
-    virtual ~PerfOutputWidget();
+    ~PerfOutputWidget() override;
 
     virtual void addOutput(const QString&) = 0;
     virtual void clear() = 0;

@@ -18,7 +18,7 @@ class FilterAndZoomStack : public QObject
     Q_OBJECT
 public:
     explicit FilterAndZoomStack(QObject* parent = nullptr);
-    ~FilterAndZoomStack();
+    ~FilterAndZoomStack() override;
 
     Data::FilterAction filter() const;
     Data::ZoomAction zoom() const;

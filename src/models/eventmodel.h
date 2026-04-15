@@ -16,7 +16,7 @@ class EventModel : public QAbstractItemModel
     Q_OBJECT
 public:
     explicit EventModel(QObject* parent = nullptr);
-    virtual ~EventModel();
+    ~EventModel() override;
 
     enum Columns
     {

@@ -19,7 +19,7 @@ class MultiConfigWidget : public QWidget
     Q_OBJECT
 public:
     MultiConfigWidget(QWidget* parent = nullptr);
-    ~MultiConfigWidget();
+    ~MultiConfigWidget() override;
 
     QString currentConfig() const;
 

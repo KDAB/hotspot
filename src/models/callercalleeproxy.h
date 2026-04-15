@@ -53,7 +53,7 @@ class SourceMapProxy : public CallerCalleeProxy<SourceMapModel>
     Q_OBJECT
 public:
     SourceMapProxy(QObject* parent = nullptr);
-    ~SourceMapProxy();
+    ~SourceMapProxy() override;
 
 protected:
     bool lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const override;

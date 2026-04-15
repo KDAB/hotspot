@@ -32,7 +32,7 @@ class ResultsTopDownPage : public QWidget
 public:
     explicit ResultsTopDownPage(FilterAndZoomStack* filterStack, PerfParser* parser, CostContextMenu* contextMenu,
                                 QWidget* parent = nullptr);
-    ~ResultsTopDownPage();
+    ~ResultsTopDownPage() override;
 
     void clear();
 

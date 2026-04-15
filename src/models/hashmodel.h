@@ -19,20 +19,20 @@ public:
         : QAbstractTableModel(parent)
     {
     }
-    virtual ~HashModel() = default;
+    ~HashModel() override = default;
 
-    int columnCount(const QModelIndex& parent = {}) const final override
+    int columnCount(const QModelIndex& parent = {}) const final
     {
         return parent.isValid() ? 0 : numColumns();
     }
 
-    int rowCount(const QModelIndex& parent = {}) const final override
+    int rowCount(const QModelIndex& parent = {}) const final
     {
         return parent.isValid() ? 0 : m_keys.size();
     }
 
     QVariant headerData(int section, Qt::Orientation orientation = Qt::Horizontal,
-                        int role = Qt::DisplayRole) const final override
+                        int role = Qt::DisplayRole) const final
     {
         if (section < 0 || section > numColumns() || orientation != Qt::Horizontal) {
             return {};
@@ -41,7 +41,7 @@ public:
         return headerCell(section, role);
     }
 
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const final override
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const final
     {
         if (!hasIndex(index.row(), index.column(), index.parent())) {
             return {};
