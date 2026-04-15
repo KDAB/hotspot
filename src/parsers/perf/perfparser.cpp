@@ -1742,55 +1742,54 @@ void PerfParser::startParseFile(const QString& path)
 
         d.setInput(&process);
 
-        connect(&process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), &process,
-                [finalize, this](int exitCode, QProcess::ExitStatus exitStatus) {
-                    if (m_stopRequested) {
-                        emit parsingFailed(tr("Parsing stopped."));
-                        return;
-                    }
-                    qCDebug(LOG_PERFPARSER) << exitCode << exitStatus;
+        connect(
+            &process, &QProcess::finished, &process, [finalize, this](int exitCode, QProcess::ExitStatus exitStatus) {
+                if (m_stopRequested) {
+                    emit parsingFailed(tr("Parsing stopped."));
+                    return;
+                }
+                qCDebug(LOG_PERFPARSER) << exitCode << exitStatus;
 
-                    enum ErrorCodes
-                    {
-                        NoError,
-                        TcpSocketError,
-                        CannotOpen,
-                        BadMagic,
-                        HeaderError,
-                        DataError,
-                        MissingData,
-                        InvalidOption
-                    };
-                    switch (exitCode) {
-                    case NoError:
-                        finalize();
-                        break;
-                    case TcpSocketError:
-                        emit parsingFailed(
-                            tr("The hotspot-perfparser binary exited with code %1 (TCP socket error).").arg(exitCode));
-                        break;
-                    case CannotOpen:
-                        emit parsingFailed(
-                            tr("The hotspot-perfparser binary exited with code %1 (file could not be opened).")
-                                .arg(exitCode));
-                        break;
-                    case BadMagic:
-                    case HeaderError:
-                    case DataError:
-                    case MissingData:
-                        emit parsingFailed(
-                            tr("The hotspot-perfparser binary exited with code %1 (invalid perf data file).")
-                                .arg(exitCode));
-                        break;
-                    case InvalidOption:
-                        emit parsingFailed(
-                            tr("The hotspot-perfparser binary exited with code %1 (invalid option).").arg(exitCode));
-                        break;
-                    default:
-                        emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1.").arg(exitCode));
-                        break;
-                    }
-                });
+                enum ErrorCodes
+                {
+                    NoError,
+                    TcpSocketError,
+                    CannotOpen,
+                    BadMagic,
+                    HeaderError,
+                    DataError,
+                    MissingData,
+                    InvalidOption
+                };
+                switch (exitCode) {
+                case NoError:
+                    finalize();
+                    break;
+                case TcpSocketError:
+                    emit parsingFailed(
+                        tr("The hotspot-perfparser binary exited with code %1 (TCP socket error).").arg(exitCode));
+                    break;
+                case CannotOpen:
+                    emit parsingFailed(
+                        tr("The hotspot-perfparser binary exited with code %1 (file could not be opened).")
+                            .arg(exitCode));
+                    break;
+                case BadMagic:
+                case HeaderError:
+                case DataError:
+                case MissingData:
+                    emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1 (invalid perf data file).")
+                                           .arg(exitCode));
+                    break;
+                case InvalidOption:
+                    emit parsingFailed(
+                        tr("The hotspot-perfparser binary exited with code %1 (invalid option).").arg(exitCode));
+                    break;
+                default:
+                    emit parsingFailed(tr("The hotspot-perfparser binary exited with code %1.").arg(exitCode));
+                    break;
+                }
+            });
 
         connect(&process, &QProcess::errorOccurred, &process, [&process, this](QProcess::ProcessError error) {
             if (m_stopRequested) {
@@ -1810,8 +1809,7 @@ void PerfParser::startParseFile(const QString& path)
         }
 
         QEventLoop loop;
-        connect(&process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), &loop,
-                &QEventLoop::quit);
+        connect(&process, &QProcess::finished, &loop, &QEventLoop::quit);
         loop.exec();
     });
 }
