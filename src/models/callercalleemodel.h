@@ -304,7 +304,7 @@ public:
 
     int numColumns() const final override
     {
-        return 1 + m_totalCosts.numTypes() * 2;
+        return 1 + (m_totalCosts.numTypes() * 2);
     }
 
 private:
