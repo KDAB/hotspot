@@ -18,6 +18,7 @@
 
 #include <limits>
 #include <tuple>
+#include <utility>
 #include <valarray>
 
 namespace Data {
@@ -25,15 +26,15 @@ QString prettifySymbol(const QString& symbol);
 
 struct Symbol
 {
-    Symbol(const QString& symbol = {}, quint64 relAddr = 0, quint64 size = 0, const QString& binary = {},
-           const QString& path = {}, const QString& actualPath = {}, bool isKernel = false, bool isInline = false)
+    Symbol(const QString& symbol = {}, quint64 relAddr = 0, quint64 size = 0, QString binary = {}, QString path = {},
+           QString actualPath = {}, bool isKernel = false, bool isInline = false)
         : symbol(symbol)
         , prettySymbol(Data::prettifySymbol(symbol))
         , relAddr(relAddr)
         , size(size)
-        , binary(binary)
-        , path(path)
-        , actualPath(actualPath)
+        , binary(std::move(std::move(binary)))
+        , path(std::move(path))
+        , actualPath(std::move(actualPath))
         , isKernel(isKernel)
         , isInline(isInline)
     {
@@ -93,8 +94,8 @@ inline uint qHash(const Symbol& symbol, uint seed = 0)
 struct FileLine
 {
     FileLine() = default;
-    FileLine(const QString& file, int line)
-        : file(file)
+    FileLine(QString file, int line)
+        : file(std::move(file))
         , line(line)
     {
     }
@@ -181,9 +182,9 @@ inline uint qHash(const Location& location, uint seed = 0)
 
 struct FrameLocation
 {
-    FrameLocation(qint32 parentLocationId = -1, const Data::Location& location = {})
+    FrameLocation(qint32 parentLocationId = -1, Data::Location location = {})
         : parentLocationId(parentLocationId)
-        , location(location)
+        , location(std::move(location))
     {
     }
 
@@ -884,8 +885,8 @@ struct CpuEvents
 struct CostSummary
 {
     CostSummary() = default;
-    CostSummary(const QString& label, quint64 sampleCount, quint64 totalPeriod, Costs::Unit unit)
-        : label(label)
+    CostSummary(QString label, quint64 sampleCount, quint64 totalPeriod, Costs::Unit unit)
+        : label(std::move(label))
         , sampleCount(sampleCount)
         , totalPeriod(totalPeriod)
         , unit(unit)
