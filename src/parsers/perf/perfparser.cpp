@@ -669,6 +669,7 @@ QProcessEnvironment perfparserEnvironment(const QStringList& debuginfodUrls)
 Q_DECLARE_TYPEINFO(AttributesDefinition, Q_MOVABLE_TYPE);
 Q_DECLARE_TYPEINFO(SampleCost, Q_MOVABLE_TYPE);
 
+namespace {
 class PerfParserPrivate : public QObject
 {
     Q_OBJECT
@@ -1502,6 +1503,7 @@ signals:
     void progress(float percent);
     void debugInfoDownloadProgress(const QString& module, const QString& url, qint64 numerator, qint64 denominator);
 };
+}
 
 PerfParser::PerfParser(QObject* parent)
     : QObject(parent)

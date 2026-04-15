@@ -110,6 +110,7 @@ private:
 };
 Q_DECLARE_METATYPE(FrameGraphicsItem*)
 
+namespace {
 class FrameGraphicsRootItem : public FrameGraphicsItem
 {
 public:
@@ -133,6 +134,7 @@ private:
     QString m_costName;
     Data::Costs::Unit m_unit;
 };
+}
 
 Q_DECLARE_METATYPE(FrameGraphicsRootItem*)
 
