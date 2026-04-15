@@ -20,10 +20,11 @@ public:
     void setCostColumn(int costColumn);
     void setNumBaseColumns(int numBaseColumns);
 
+    int rowCount(const QModelIndex& parent = {}) const override;
+
+protected:
     bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
     bool filterAcceptsColumn(int source_column, const QModelIndex& source_parent) const override;
-
-    int rowCount(const QModelIndex& parent = {}) const override;
 
 private:
     int m_costColumn; // NOLINT(modernize-use-default-member-init)

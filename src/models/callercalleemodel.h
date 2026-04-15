@@ -47,12 +47,13 @@ public:
         SymbolRole,
     };
 
-    QVariant headerCell(int column, int role) const final;
-    QVariant cell(int column, int role, const Data::Symbol& symbol, const Data::CallerCalleeEntry& entry) const final;
-    int numColumns() const final;
     QModelIndex indexForSymbol(const Data::Symbol& symbol) const;
 
 private:
+    QVariant headerCell(int column, int role) const final;
+    QVariant cell(int column, int role, const Data::Symbol& symbol, const Data::CallerCalleeEntry& entry) const final;
+    int numColumns() const final;
+
     Data::CallerCalleeResults m_results;
 };
 
@@ -105,6 +106,7 @@ public:
         SymbolRole
     };
 
+private:
     QVariant headerCell(int column, int role) const final
     {
         if (role == Qt::InitialSortOrderRole && column > Binary) {
@@ -168,7 +170,6 @@ public:
         return NUM_BASE_COLUMNS + m_costs.numTypes();
     }
 
-private:
     virtual QString symbolHeader() const = 0;
 
     Data::Costs m_costs;
@@ -181,6 +182,7 @@ public:
     explicit CallerModel(QObject* parent = nullptr);
     ~CallerModel() override;
 
+private:
     QString symbolHeader() const final;
 };
 
@@ -191,6 +193,7 @@ public:
     explicit CalleeModel(QObject* parent = nullptr);
     ~CalleeModel() override;
 
+private:
     QString symbolHeader() const final;
 };
 
@@ -228,6 +231,7 @@ public:
         FileLineRole,
     };
 
+private:
     QVariant headerCell(int column, int role) const final
     {
         if (role == Qt::InitialSortOrderRole && column > Location) {
@@ -305,7 +309,6 @@ public:
         return 1 + (m_totalCosts.numTypes() * 2);
     }
 
-private:
     Data::Costs m_totalCosts;
 };
 

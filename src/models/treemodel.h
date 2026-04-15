@@ -248,12 +248,13 @@ public:
         return m_results;
     }
 
-protected:
+private:
     const typename Base::TreeNode* rootItem() const final
     {
         return &m_results.root;
     }
 
+protected:
     Results m_results; // NOLINT(misc-non-private-member-variables-in-classes)
 };
 
@@ -274,6 +275,7 @@ public:
         InitialSortColumn = Binary + 1 // the first cost column
     };
 
+private:
     QVariant headerColumnData(int column, int role) const final;
     QVariant rowData(const Data::BottomUp* row, int column, int role) const final;
     int numColumns() const final;
@@ -297,10 +299,12 @@ public:
         InitialSortColumn = Binary + 1 // the first cost column
     };
 
+    int selfCostColumn(int cost) const;
+
+private:
     QVariant headerColumnData(int column, int role) const final;
     QVariant rowData(const Data::TopDown* row, int column, int role) const final;
     int numColumns() const final;
-    int selfCostColumn(int cost) const;
 };
 
 class PerLibraryModel : public CostTreeModel<Data::PerLibraryResults, PerLibraryModel>
@@ -323,6 +327,7 @@ public:
         InitialSortColumn = Binary + 1 // the first cost column
     };
 
+private:
     QVariant headerColumnData(int column, int role) const final;
     QVariant rowData(const Data::PerLibrary* row, int column, int role) const final;
     int numColumns() const final;

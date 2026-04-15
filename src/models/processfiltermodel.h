@@ -17,11 +17,12 @@ class ProcessFilterModel : public QSortFilterProxyModel
 public:
     explicit ProcessFilterModel(QObject* parent);
 
+protected:
     bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
     bool filterAcceptsColumn(int source_column, const QModelIndex& source_parent) const override;
+    bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
 
 private:
-    bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
     QString m_currentProcId;
     QString m_currentUser;
 };

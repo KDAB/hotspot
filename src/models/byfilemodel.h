@@ -41,11 +41,12 @@ public:
         FileRole,
     };
 
-    QVariant headerCell(int column, int role) const final;
-    QVariant cell(int column, int role, const QString& file, const Data::ByFileEntry& entry) const final;
-    int numColumns() const final;
     QModelIndex indexForFile(const QString& file) const;
 
 private:
+    QVariant headerCell(int column, int role) const final;
+    QVariant cell(int column, int role, const QString& file, const Data::ByFileEntry& entry) const final;
+    int numColumns() const final;
+
     Data::ByFileResults m_results;
 };

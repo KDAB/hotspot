@@ -39,6 +39,8 @@ public:
 
     void selectSymbol(const Data::Symbol& symbol);
 
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
 signals:
     void clickedOn(const Data::Symbol& symbol);
 
@@ -46,7 +48,6 @@ public slots:
     void setResults(const Data::CallerCalleeResults& results);
 
 protected:
-    bool eventFilter(QObject* watched, QEvent* event) override;
     void changeEvent(QEvent* event) override;
     void showEvent(QShowEvent* event) override;
 

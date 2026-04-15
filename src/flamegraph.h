@@ -40,7 +40,6 @@ public:
     void saveSvg(const QString& fileName) const;
     bool canConvertToImage() const;
 
-protected:
     bool eventFilter(QObject* object, QEvent* event) override;
 
 private slots:

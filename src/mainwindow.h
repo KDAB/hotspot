@@ -64,10 +64,12 @@ signals:
     void exportFinished(const QUrl& url);
     void exportFailed(const QString& errorMessage);
 
+protected:
+    void closeEvent(QCloseEvent* event) override;
+
 private:
     void clear(bool isReload);
     void openFile(const QString& path, bool isReload);
-    void closeEvent(QCloseEvent* event) override;
     void setupCodeNavigationMenu();
     QString queryOpenDataFile();
 
