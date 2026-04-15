@@ -620,7 +620,7 @@ void RecordPage::onStartRecordingButtonClicked(bool checked)
             break;
         }
         case RecordType::AttachToProcess: {
-            QItemSelectionModel* selectionModel = ui->processesTableView->selectionModel();
+            QItemSelectionModel const* selectionModel = ui->processesTableView->selectionModel();
             QStringList pids;
 
             const auto selection = selectionModel->selectedIndexes();

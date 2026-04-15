@@ -87,7 +87,7 @@ inline bool operator!=(const Symbol& lhs, const Symbol& rhs)
 
 inline uint qHash(const Symbol& symbol, uint seed = 0)
 {
-    Util::HashCombine hash;
+    Util::HashCombine const hash;
     seed = hash(seed, symbol.symbol);
     seed = hash(seed, symbol.binary);
     seed = hash(seed, symbol.path);
@@ -143,7 +143,7 @@ inline bool operator!=(const FileLine& lhs, const FileLine& rhs)
 
 inline uint qHash(const FileLine& fileLine, uint seed = 0)
 {
-    Util::HashCombine hash;
+    Util::HashCombine const hash;
     seed = hash(seed, fileLine.file);
     seed = hash(seed, fileLine.line);
     return seed;
@@ -184,7 +184,7 @@ inline bool operator!=(const Location& lhs, const Location& rhs)
 
 inline uint qHash(const Location& location, uint seed = 0)
 {
-    Util::HashCombine hash;
+    Util::HashCombine const hash;
     seed = hash(seed, location.address);
     seed = hash(seed, location.relAddr);
     seed = hash(seed, location.fileLine);

@@ -58,7 +58,7 @@ int search(const it begin, const it end, int current, Direction direction, Searc
         return search_helper(begin, end, std::next(currentIt), searchFunc, endReached);
     }
 
-    int resultIndex = search_helper(std::make_reverse_iterator(end), std::make_reverse_iterator(begin),
-                                    std::make_reverse_iterator(currentIt), searchFunc, endReached);
+    int const resultIndex = search_helper(std::make_reverse_iterator(end), std::make_reverse_iterator(begin),
+                                          std::make_reverse_iterator(currentIt), searchFunc, endReached);
     return resultIndex != -1 ? (size - resultIndex - 1) : -1;
 }
