@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include <QHashFunctions>
 #include <QtGlobal>
 
 class QString;
@@ -37,18 +36,6 @@ QString findLibexecBinary(const QString& name);
  * Find the perfparser binary and return its path.
  */
 QString perfParserBinaryPath();
-
-// HashCombine was taken from Qt's file qhashfunctions.h
-struct HashCombine
-{
-    using result_type = uint;
-    template<typename T>
-    Q_DECL_CONSTEXPR result_type operator()(uint seed, const T& t) const Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
-    // combiner taken from N3876 / boost::hash_combine
-    {
-        return seed ^ (qHash(t) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
-    }
-};
 
 QString formatString(const QString& input, bool replaceEmptyString = true);
 QString formatSymbol(const Data::Symbol& symbol, bool replaceEmptyString = true);
