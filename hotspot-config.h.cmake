@@ -7,6 +7,8 @@
 
 #pragma once
 
+// NOLINTBEGIN(modernize-macro-to-enum)
+
 #define HOTSPOT_VERSION_STRING "@HOTSPOT_VERSION_STRING@"
 #define HOTSPOT_VERSION_MAJOR @hotspot_VERSION_MAJOR@
 #define HOTSPOT_VERSION_MINOR @hotspot_VERSION_MINOR@
@@ -26,3 +28,5 @@
 #cmakedefine01 QCustomPlot_FOUND
 
 #cmakedefine01 KGraphViewerPart_FOUND
+
+// NOLINTEND(modernize-macro-to-enum)
