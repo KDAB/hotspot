@@ -31,7 +31,7 @@ void CostDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, 
     }
 
     const auto totalCost = index.data(m_totalCostRole).toULongLong();
-    const auto fraction = std::abs(float(cost) / totalCost);
+    const auto fraction = std::abs(static_cast<float>(cost) / totalCost);
 
     auto rect = option.rect;
     rect.setWidth(rect.width() * fraction);

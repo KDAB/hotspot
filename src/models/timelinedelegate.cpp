@@ -37,30 +37,30 @@ TimeLineData::TimeLineData(Data::Events events, quint64 maxCost, Data::TimeRange
     , threadTime(threadTime)
     , h(rect.height() - (2 * padding))
     , w(rect.width() - (2 * padding))
-    , xMultiplicator(double(w) / time.delta())
-    , yMultiplicator(double(h) / maxCost)
+    , xMultiplicator(static_cast<double>(w) / time.delta())
+    , yMultiplicator(static_cast<double>(h) / maxCost)
 {
 }
 
 int TimeLineData::mapTimeToX(quint64 t) const
 {
-    return time.start > t ? 0 : int(double(t - time.start) * xMultiplicator);
+    return time.start > t ? 0 : static_cast<int>(static_cast<double>(t - time.start) * xMultiplicator);
 }
 
 quint64 TimeLineData::mapXToTime(int x) const
 {
-    return quint64(double(x) / xMultiplicator) + time.start;
+    return static_cast<quint64>(static_cast<double>(x) / xMultiplicator) + time.start;
 }
 
 int TimeLineData::mapCostToY(quint64 cost) const
 {
-    return double(cost) * yMultiplicator;
+    return static_cast<double>(cost) * yMultiplicator;
 }
 
 void TimeLineData::zoom(Data::TimeRange t)
 {
     time = t;
-    xMultiplicator = double(w) / time.delta();
+    xMultiplicator = static_cast<double>(w) / time.delta();
 }
 
 template<typename Callback>
