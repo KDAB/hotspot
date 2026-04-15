@@ -69,9 +69,9 @@ public:
                 item = item->children.constData();
             }
             return numChildren;
-        } else {
-            return 0;
         }
+
+        return 0;
     }
 
     int columnCount(const QModelIndex& parent = {}) const final override
