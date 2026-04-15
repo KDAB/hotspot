@@ -35,12 +35,12 @@
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QWheelEvent>
+#include <QtConcurrent/QtConcurrentRun>
 
 #include <KColorScheme>
 #include <KLocalizedString>
 #include <KSqueezedTextLabel>
 #include <KStandardAction>
-#include <ThreadWeaver/ThreadWeaver>
 
 #include "models/filterandzoomstack.h"
 #include "resultsutil.h"
@@ -1075,7 +1075,6 @@ void FlameGraph::showData()
     setData(nullptr);
 
     m_buildingScene = true;
-    using namespace ThreadWeaver;
     auto bottomUpData = m_bottomUpData;
     auto topDownData = m_topDownData;
     const auto collapseRecursion = m_collapseRecursion;
@@ -1083,18 +1082,15 @@ void FlameGraph::showData()
     auto threshold = m_costThreshold;
     auto brushConfig = ::brushConfig(Settings::instance()->colorScheme());
 
-    stream() << make_job(
-        [showBottomUpData, bottomUpData, topDownData, type, threshold, brushConfig, collapseRecursion, this]() {
-            FrameGraphicsItem* parsedData = nullptr;
-            if (showBottomUpData) {
-                parsedData = parseData(bottomUpData.costs, type, bottomUpData.root.children, threshold, brushConfig,
-                                       collapseRecursion);
-            } else {
-                parsedData = parseData(topDownData.inclusiveCosts, type, topDownData.root.children, threshold,
-                                       brushConfig, collapseRecursion);
-            }
-            QMetaObject::invokeMethod(this, "setData", Qt::QueuedConnection, Q_ARG(FrameGraphicsItem*, parsedData));
-        });
+    QtConcurrent::run([showBottomUpData, bottomUpData, topDownData, type, threshold, brushConfig, collapseRecursion]() {
+        if (showBottomUpData) {
+            return parseData(bottomUpData.costs, type, bottomUpData.root.children, threshold, brushConfig,
+                             collapseRecursion);
+        } else {
+            return parseData(topDownData.inclusiveCosts, type, topDownData.root.children, threshold, brushConfig,
+                             collapseRecursion);
+        }
+    }).then(this, [this](FrameGraphicsItem* parsedData) { setData(parsedData); });
     updateNavigationActions();
 }
 
