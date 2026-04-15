@@ -254,7 +254,7 @@ protected:
         return &m_results.root;
     }
 
-    Results m_results;
+    Results m_results; // NOLINT(misc-non-private-member-variables-in-classes)
 };
 
 class BottomUpModel : public CostTreeModel<Data::BottomUpResults, BottomUpModel>
