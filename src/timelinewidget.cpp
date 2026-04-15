@@ -109,11 +109,10 @@ TimeLineWidget::TimeLineWidget(PerfParser* parser, QMenu* filterMenu, FilterAndZ
     connect(m_parser, &PerfParser::tracepointDataAvailable, this,
             [this](const Data::TracepointResults& data) { m_timeAxisHeaderView->setTracepoints(data); });
 
-    connect(ui->timeLineEventSource, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
-            [this](int index) {
-                const auto typeId = ui->timeLineEventSource->itemData(index).toInt();
-                m_timeLineDelegate->setEventType(typeId);
-            });
+    connect(ui->timeLineEventSource, &QComboBox::currentIndexChanged, this, [this](int index) {
+        const auto typeId = ui->timeLineEventSource->itemData(index).toInt();
+        m_timeLineDelegate->setEventType(typeId);
+    });
 
     connect(m_timeLineDelegate, &TimeLineDelegate::stacksHovered, this, [this](const QSet<qint32>& stackIds) {
         if (stackIds.isEmpty()) {
