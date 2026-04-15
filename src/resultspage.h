@@ -96,5 +96,5 @@ private:
     FrequencyPage* m_frequencyPage = nullptr;
     DockWidget* m_frequencyDock = nullptr;
     QWidget* m_filterBusyIndicator = nullptr;
-    bool m_timelineVisible;
+    bool m_timelineVisible = true;
 };
