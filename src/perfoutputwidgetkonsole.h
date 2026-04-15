@@ -23,7 +23,7 @@ class PerfOutputWidgetKonsole : public PerfOutputWidget
     Q_OBJECT
 public:
     PerfOutputWidgetKonsole(KParts::ReadOnlyPart* part, QWidget* parent = nullptr);
-    ~PerfOutputWidgetKonsole();
+    ~PerfOutputWidgetKonsole() override;
 
     static PerfOutputWidgetKonsole* create(QWidget* parent = nullptr);
 

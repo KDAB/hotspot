@@ -32,7 +32,7 @@ class ResultsFlameGraphPage : public QWidget
 public:
     explicit ResultsFlameGraphPage(FilterAndZoomStack* filterStack, PerfParser* parser, QMenu* exportMenu,
                                    QWidget* parent = nullptr);
-    ~ResultsFlameGraphPage();
+    ~ResultsFlameGraphPage() override;
 
     void clear();
 

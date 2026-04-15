@@ -35,7 +35,7 @@ class MainWindow : public KParts::MainWindow
 
 public:
     explicit MainWindow(QWidget* parent = nullptr);
-    ~MainWindow();
+    ~MainWindow() override;
 
 public slots:
     void clear();

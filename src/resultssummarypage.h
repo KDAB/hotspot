@@ -30,7 +30,7 @@ class ResultsSummaryPage : public QWidget
 public:
     explicit ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfParser* parser, CostContextMenu* contextMenu,
                                 QWidget* parent = nullptr);
-    ~ResultsSummaryPage();
+    ~ResultsSummaryPage() override;
 
 signals:
     void jumpToCallerCallee(const Data::Symbol& symbol);

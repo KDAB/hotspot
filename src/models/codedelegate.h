@@ -14,7 +14,7 @@ class CodeDelegate : public QStyledItemDelegate
     Q_OBJECT
 public:
     CodeDelegate(int lineNumberRole, int highlightRole, int syntaxHighlightRole, QObject* parent = nullptr);
-    ~CodeDelegate();
+    ~CodeDelegate() override;
 
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;

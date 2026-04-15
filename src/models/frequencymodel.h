@@ -16,7 +16,7 @@ class FrequencyModel : public QAbstractTableModel
     Q_OBJECT
 public:
     explicit FrequencyModel(QObject* parent = nullptr);
-    ~FrequencyModel();
+    ~FrequencyModel() override;
 
     int rowCount(const QModelIndex& parent = {}) const override;
     int columnCount(const QModelIndex& parent = {}) const override;

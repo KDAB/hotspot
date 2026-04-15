@@ -22,7 +22,7 @@ class PerfParser : public QObject
     Q_OBJECT
 public:
     explicit PerfParser(QObject* parent = nullptr);
-    ~PerfParser();
+    ~PerfParser() override;
 
     void startParseFile(const QString& path);
 

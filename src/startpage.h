@@ -23,7 +23,7 @@ class StartPage : public QWidget
     Q_OBJECT
 public:
     explicit StartPage(QWidget* parent = nullptr);
-    ~StartPage();
+    ~StartPage() override;
 
     void showStartPage();
     void showParseFileProgress();

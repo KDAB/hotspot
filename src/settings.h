@@ -224,7 +224,7 @@ public slots:
 
 private:
     using QObject::QObject;
-    ~Settings();
+    ~Settings() override;
 
     bool m_prettifySymbols = true;
     bool m_collapseTemplates = true;

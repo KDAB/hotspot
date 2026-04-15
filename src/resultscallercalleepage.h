@@ -36,7 +36,7 @@ class ResultsCallerCalleePage : public QWidget
 public:
     explicit ResultsCallerCalleePage(FilterAndZoomStack* filterStack, PerfParser* parser, CostContextMenu* contextMenu,
                                      QWidget* parent = nullptr);
-    ~ResultsCallerCalleePage();
+    ~ResultsCallerCalleePage() override;
 
     void setSysroot(const QString& path);
     void setAppPath(const QString& path);

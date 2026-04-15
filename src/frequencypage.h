@@ -26,7 +26,7 @@ class FrequencyPage : public QWidget
     Q_OBJECT
 public:
     FrequencyPage(PerfParser* parser, QWidget* parent = nullptr);
-    ~FrequencyPage();
+    ~FrequencyPage() override;
 
 protected:
     void changeEvent(QEvent* event) override;

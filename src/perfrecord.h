@@ -22,7 +22,7 @@ class PerfRecord : public QObject
     Q_OBJECT
 public:
     explicit PerfRecord(const RecordHost* host, QObject* parent = nullptr);
-    ~PerfRecord();
+    ~PerfRecord() override;
 
     void record(const QStringList& perfOptions, const QString& outputPath, bool elevatePrivileges,
                 const QString& exePath, const QStringList& exeOptions, const QString& workingDirectory = QString());

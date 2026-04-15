@@ -17,7 +17,7 @@ class ByFileModel : public HashModel<Data::ByFileEntryMap, ByFileModel>
     Q_OBJECT
 public:
     explicit ByFileModel(QObject* parent = nullptr);
-    ~ByFileModel();
+    ~ByFileModel() override;
 
     void setResults(const Data::ByFileResults& results);
 
@@ -41,9 +41,9 @@ public:
         FileRole,
     };
 
-    QVariant headerCell(int column, int role) const final override;
-    QVariant cell(int column, int role, const QString& file, const Data::ByFileEntry& entry) const final override;
-    int numColumns() const final override;
+    QVariant headerCell(int column, int role) const final;
+    QVariant cell(int column, int role, const QString& file, const Data::ByFileEntry& entry) const final;
+    int numColumns() const final;
     QModelIndex indexForFile(const QString& file) const;
 
 private:

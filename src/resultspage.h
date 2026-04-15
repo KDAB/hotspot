@@ -44,7 +44,7 @@ class ResultsPage : public QWidget
     Q_OBJECT
 public:
     explicit ResultsPage(PerfParser* parser, QWidget* parent = nullptr);
-    ~ResultsPage();
+    ~ResultsPage() override;
 
     void selectSummaryTab();
     void clear();

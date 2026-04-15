@@ -33,7 +33,7 @@ class CallgraphWidget : public QWidget
 {
     Q_OBJECT
 public:
-    ~CallgraphWidget();
+    ~CallgraphWidget() override;
 
     static CallgraphWidget* createCallgraphWidget(const Data::CallerCalleeResults& results, QWidget* parent = nullptr);
 

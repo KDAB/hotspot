@@ -18,7 +18,7 @@ class ProcessModel : public QAbstractTableModel
     Q_OBJECT
 public:
     explicit ProcessModel(QObject* parent = nullptr);
-    virtual ~ProcessModel();
+    ~ProcessModel() override;
 
     void setProcesses(const ProcDataList& processes);
     void mergeProcesses(const ProcDataList& processes);

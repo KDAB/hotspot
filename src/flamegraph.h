@@ -28,7 +28,7 @@ class FlameGraph : public QWidget
     Q_OBJECT
 public:
     explicit FlameGraph(QWidget* parent = nullptr, Qt::WindowFlags flags = {});
-    ~FlameGraph();
+    ~FlameGraph() override;
 
     void setHoveredStacks(const QVector<QVector<Data::Symbol>>& stacks);
     void setFilterStack(FilterAndZoomStack* filterStack);
