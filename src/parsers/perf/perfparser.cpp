@@ -1563,7 +1563,7 @@ PerfParser::PerfParser(QObject* parent)
 
     auto parsingStopped = [this] {
         m_isParsing = false;
-        m_decompressed.reset();
+        m_decompressed = {};
     };
 
     connect(Settings::instance(), &Settings::costAggregationChanged, this, [this] { m_costAggregationChanged = true; });
