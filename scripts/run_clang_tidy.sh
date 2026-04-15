@@ -14,6 +14,7 @@ rm -Rf scripts/fixits
 mkdir -p scripts/fixits
 
 run-clang-tidy -quiet -extra-arg="-Wno-gnu-zero-variadic-macro-arguments" \
+    -exclude-header-filter "\.moc$" \
     -j $(nproc) -config-file .clang-tidy -export-fixes scripts/fixits/fixits.yaml \
     -use-color -p "$build_dir" "$PWD/src"
 
