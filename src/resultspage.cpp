@@ -87,7 +87,7 @@ ResultsPage::ResultsPage(PerfParser* parser, QWidget* parent)
 #if QCustomPlot_FOUND
     , m_frequencyPage(new FrequencyPage(parser, this))
 #endif
-    , m_timelineVisible(true)
+
 {
     m_exportMenu->setIcon(QIcon::fromTheme(QStringLiteral("document-export")));
     {
