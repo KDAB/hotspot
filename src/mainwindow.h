@@ -29,7 +29,7 @@ class ResultsPage;
 class RecordPage;
 class SettingsDialog;
 
-class MainWindow : public KParts::MainWindow
+class MainWindow : public KParts::MainWindow // NOLINT(misc-multiple-inheritance)
 {
     Q_OBJECT
 
