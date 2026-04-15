@@ -26,6 +26,6 @@ public:
     int rowCount(const QModelIndex& parent = {}) const override;
 
 private:
-    int m_costColumn;
-    int m_numBaseColumns;
+    int m_costColumn; // NOLINT(modernize-use-default-member-init)
+    int m_numBaseColumns; // NOLINT(modernize-use-default-member-init)
 };
