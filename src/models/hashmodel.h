@@ -88,6 +88,7 @@ protected:
                           const typename Rows::mapped_type& entry) const = 0;
     virtual int numColumns() const = 0;
 
+private:
     QVector<typename Rows::key_type> m_keys;
     QVector<typename Rows::mapped_type> m_values;
 };
