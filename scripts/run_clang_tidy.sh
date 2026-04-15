@@ -25,5 +25,5 @@ if [ -s "scripts/fixits/fixits.yaml" ]; then
 
     echo "fixits with auto replacements:"
 
-    grep -l Replacements:$ scripts/fixits/*/fixits.yaml | xargs dirname
+    grep -l Replacements:$ scripts/fixits/*/fixits.yaml | xargs dirname 2> /dev/null
 fi
