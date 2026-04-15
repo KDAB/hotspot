@@ -152,14 +152,16 @@ QVariant DisassemblyModel::data(const QModelIndex& index, int role) const
                 return costLine;
             } else if (role == TotalCostRole) {
                 return totalCost;
-            } else if (!costLine)
+            } else if (!costLine) {
                 return {};
+            }
             return Util::formatCostRelative(costLine, totalCost, true);
         } else {
             if (role == Qt::ToolTipRole) {
                 return tr("<qt>%1<hr/>No samples at this location.</qt>").arg(tooltip);
-            } else
+            } else {
                 return QString();
+            }
         }
     } else if (role == DisassemblyModel::HighlightRole) {
         return data.fileLine.line == m_highlightLine;
