@@ -42,7 +42,7 @@ struct ProcData
     QString state;
     QString user;
 
-    inline bool equals(const ProcData& other) const
+    bool equals(const ProcData& other) const
     {
         return ppid == other.ppid && name == other.name && state == other.state && user == other.user;
     }

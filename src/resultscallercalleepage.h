@@ -58,7 +58,7 @@ private:
 
     struct SourceMapLocation
     {
-        inline explicit operator bool() const
+        explicit operator bool() const
         {
             return !path.isEmpty();
         }
