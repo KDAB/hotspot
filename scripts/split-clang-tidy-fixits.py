@@ -8,6 +8,11 @@ import sys
 import yaml
 
 
+def normalizePaths(message):
+    """to enable deduplication, normalize paths"""
+    message["FilePath"] = os.path.normpath(message["FilePath"])
+
+
 def fileOffsetToLine(message):
     """to ease manual inspection, translate FileOffset to a FileLine"""
     if message["FilePath"] == "":
@@ -19,6 +24,7 @@ def fileOffsetToLine(message):
 
 inputFile = sys.argv[1]
 groupedFixits = {}
+seenFixits = {}
 
 
 with open(inputFile, "r", encoding="utf-8") as mainFixitsFile:
@@ -29,11 +35,27 @@ with open(inputFile, "r", encoding="utf-8") as mainFixitsFile:
         sys.exit(0)
 
     for fixit in mainFixits["Diagnostics"]:
+        diagnostic = fixit["DiagnosticName"]
+
+        # normalize and add file offsets
+        normalizePaths(fixit["DiagnosticMessage"])
         fileOffsetToLine(fixit["DiagnosticMessage"])
         for note in fixit.get("Notes", []):
+            normalizePaths(note)
             fileOffsetToLine(note)
+        for replacement in fixit["DiagnosticMessage"].get("Replacements", []):
+            normalizePaths(replacement)
 
-        diagnostic = fixit["DiagnosticName"]
+        stringified = yaml.dump(fixit, sort_keys=True)
+        seenGroup = seenFixits.get(diagnostic)
+        if not seenGroup:
+            seenFixits[diagnostic] = set(stringified)
+        elif stringified in seenGroup:
+            # duplicate entry, e.g. from header
+            continue
+        else:
+            seenGroup.add(stringified)
+
         group = groupedFixits.get(diagnostic)
         if not group:
             groupedFixits[diagnostic] = [fixit]
