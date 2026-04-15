@@ -61,7 +61,7 @@ public:
     enum CustomRoles
     {
         CostRole = Qt::UserRole,
-        TotalCostRole = Qt::UserRole + 1,
+        TotalCostRole,
         HighlightRole,
         AddrRole,
         LinkedFunctionNameRole,
