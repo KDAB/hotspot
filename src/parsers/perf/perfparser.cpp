@@ -29,8 +29,6 @@
 #include <hotspot-config.h>
 #include <util.h>
 
-#include <functional>
-
 #include "settings.h"
 
 #if KFArchive_FOUND
