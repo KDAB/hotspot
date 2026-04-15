@@ -41,7 +41,7 @@ QString perfParserBinaryPath();
 // HashCombine was taken from Qt's file qhashfunctions.h
 struct HashCombine
 {
-    typedef uint result_type;
+    using result_type = uint;
     template<typename T>
     Q_DECL_CONSTEXPR result_type operator()(uint seed, const T& t) const Q_DECL_NOEXCEPT_EXPR(noexcept(qHash(t)))
     // combiner taken from N3876 / boost::hash_combine
