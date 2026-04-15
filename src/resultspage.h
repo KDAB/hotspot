@@ -67,8 +67,10 @@ public slots:
 signals:
     void navigateToCode(const QString& url, int lineNumber, int columnNumber);
 
-private:
+protected:
     void resizeEvent(QResizeEvent* event) override;
+
+private:
     void repositionFilterBusyIndicator();
 
     std::unique_ptr<Ui::ResultsPage> ui;

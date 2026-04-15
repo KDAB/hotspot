@@ -25,7 +25,6 @@ class DockingArea : public DockMainWindow
 public:
     using DockMainWindow::MainWindow;
 
-protected:
     QMargins centerWidgetMargins() const override
     {
         return {};

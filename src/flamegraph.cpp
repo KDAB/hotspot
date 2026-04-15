@@ -66,6 +66,7 @@ public:
     {
     }
 
+protected:
     QWidget* createWidget(QWidget* parent) override
     {
         auto widget = new QWidget(parent);

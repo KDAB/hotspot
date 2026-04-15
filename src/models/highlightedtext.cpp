@@ -89,13 +89,6 @@ public:
         return definition().name();
     }
 
-    virtual LineFormat formatLine(const QString& line)
-    {
-        m_lineFormat.clear();
-        m_state = highlightLine(line, m_state);
-        return m_lineFormat;
-    }
-
 protected:
     void applyFormat(int offset, int length, const KSyntaxHighlighting::Format& format) override
     {
@@ -106,6 +99,13 @@ protected:
     }
 
 private:
+    virtual LineFormat formatLine(const QString& line)
+    {
+        m_lineFormat.clear();
+        m_state = highlightLine(line, m_state);
+        return m_lineFormat;
+    }
+
     KSyntaxHighlighting::Repository* m_repository;
     KSyntaxHighlighting::State m_state;
     QStringList m_lines; // for reformatting if definition changes

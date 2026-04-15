@@ -23,10 +23,11 @@ public:
         m_autoResize = autoResize;
     }
 
-private:
+protected:
     void resizeEvent(QResizeEvent* event) override;
     void resizeColumns(bool reset);
 
+private:
     bool m_isResizing = false;
     bool m_autoResize = true;
 };

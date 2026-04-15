@@ -83,12 +83,12 @@ protected:
         endResetModel();
     }
 
+private:
     virtual QVariant headerCell(int column, int role) const = 0;
     virtual QVariant cell(int column, int role, const typename Rows::key_type& key,
                           const typename Rows::mapped_type& entry) const = 0;
     virtual int numColumns() const = 0;
 
-private:
     QVector<typename Rows::key_type> m_keys;
     QVector<typename Rows::mapped_type> m_values;
 };

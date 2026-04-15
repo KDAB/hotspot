@@ -40,6 +40,7 @@ public:
     QString objdump() const;
     QString perfMapPath() const;
 
+protected:
     void keyPressEvent(QKeyEvent* event) override;
 
 private:
