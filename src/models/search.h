@@ -23,7 +23,7 @@ enum class Direction
  * return: offset from begin
  * */
 template<typename it, typename SearchFunc, typename EndReached>
-int search_helper(const it begin, const it end, const it current, SearchFunc searchFunc, EndReached endReached)
+int search_helper(const it& begin, const it& end, const it& current, SearchFunc searchFunc, EndReached endReached)
 {
     // if current points to the last line, current will now point to end -> wrap around
     const auto start = (current == end) ? begin : current;
