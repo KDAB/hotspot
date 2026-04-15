@@ -55,11 +55,10 @@ ResultsSummaryPage::ResultsSummaryPage(FilterAndZoomStack* filterStack, PerfPars
     ResultsUtil::setupHeaderView(ui->topLibraryTreeView, contextMenu);
     ResultsUtil::setupContextMenu(ui->topLibraryTreeView, contextMenu, perLibraryModel, filterStack, this, {});
 
-    connect(ui->eventSourceComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
-            [topHotspotsProxy, this]() {
-                topHotspotsProxy->setCostColumn(ui->eventSourceComboBox->currentData().toInt()
-                                                + BottomUpModel::NUM_BASE_COLUMNS);
-            });
+    connect(ui->eventSourceComboBox, &QComboBox::currentIndexChanged, this, [topHotspotsProxy, this]() {
+        topHotspotsProxy->setCostColumn(ui->eventSourceComboBox->currentData().toInt()
+                                        + BottomUpModel::NUM_BASE_COLUMNS);
+    });
 
     connect(ui->eventSourceComboBox_2, qOverload<int>(&QComboBox::currentIndexChanged), this,
             [topLibraryProxy, this]() {
