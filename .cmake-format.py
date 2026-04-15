@@ -4,8 +4,12 @@
 with section("parse"):
 
     # Specify structure for custom cmake functions
-    additional_commands = {'foo': {'flags': ['BAR', 'BAZ'],
-                                   'kwargs': {'DEPENDS': '*', 'HEADERS': '*', 'SOURCES': '*'}}}
+    additional_commands = {
+        "foo": {
+            "flags": ["BAR", "BAZ"],
+            "kwargs": {"DEPENDS": "*", "HEADERS": "*", "SOURCES": "*"},
+        }
+    }
 
     # Override configurations per-command where available
     override_spec = {}
@@ -41,7 +45,7 @@ with section("format"):
     # 'use-space', fractional indentation is left as spaces (utf-8 0x20). If set
     # to `round-up` fractional indentation is replaced with a single tab character
     # (utf-8 0x09) effectively shifting the column to the next tabstop
-    fractional_tab_policy = 'use-space'
+    fractional_tab_policy = "use-space"
 
     # If an argument group contains more than this many sub-groups (parg or kwarg
     # groups) then force it to a vertical layout.
@@ -69,7 +73,7 @@ with section("format"):
     # to this reference: `prefix`: the start of the statement,  `prefix-indent`:
     # the start of the statement, plus one indentation  level, `child`: align to
     # the column of the arguments
-    dangle_align = 'prefix'
+    dangle_align = "prefix"
 
     # If the statement spelling length (including space and parenthesis) is
     # smaller than this amount, then force reject nested layouts.
@@ -85,17 +89,22 @@ with section("format"):
     max_lines_hwrap = 2
 
     # What style line endings to use in the output.
-    line_ending = 'unix'
+    line_ending = "unix"
 
     # Format command names consistently as 'lower' or 'upper' case
-    command_case = 'lower'
+    command_case = "lower"
 
     # Format keywords consistently as 'lower' or 'upper' case
-    keyword_case = 'upper'
+    keyword_case = "upper"
 
     # A list of command names which should always be wrapped
-    always_wrap = ["add_executable", "add_library",
-                   "target_link_libraries", "target_include_directories", "install"]
+    always_wrap = [
+        "add_executable",
+        "add_library",
+        "target_link_libraries",
+        "target_include_directories",
+        "install",
+    ]
 
     # If true, the argument lists which are known to be sortable will be sorted
     # lexicographicall
@@ -121,10 +130,10 @@ with section("format"):
 with section("markup"):
 
     # What character to use for bulleted lists
-    bullet_char = '*'
+    bullet_char = "*"
 
     # What character to use as punctuation after numerals in an enumerated list
-    enum_char = '.'
+    enum_char = "."
 
     # If comment markup is enabled, don't reflow the first comment block in each
     # listfile. Use this to preserve formatting of your copyright/license
@@ -137,15 +146,15 @@ with section("markup"):
 
     # Regular expression to match preformat fences in comments default=
     # ``r'^\s*([`~]{3}[`~]*)(.*)$'``
-    fence_pattern = '^\\s*([`~]{3}[`~]*)(.*)$'
+    fence_pattern = "^\\s*([`~]{3}[`~]*)(.*)$"
 
     # Regular expression to match rulers in comments default=
     # ``r'^\s*[^\w\s]{3}.*[^\w\s]{3}$'``
-    ruler_pattern = '^\\s*[^\\w\\s]{3}.*[^\\w\\s]{3}$'
+    ruler_pattern = "^\\s*[^\\w\\s]{3}.*[^\\w\\s]{3}$"
 
     # If a comment line matches starts with this pattern then it is explicitly a
     # trailing comment for the preceeding argument. Default is '#<'
-    explicit_trailing_pattern = '#<'
+    explicit_trailing_pattern = "#<"
 
     # If a comment line starts with at least this many consecutive hash
     # characters, then don't lstrip() them off. This allows for lazy hash rulers
@@ -168,38 +177,38 @@ with section("lint"):
     disabled_codes = []
 
     # regular expression pattern describing valid function names
-    function_pattern = '[0-9a-z_]+'
+    function_pattern = "[0-9a-z_]+"
 
     # regular expression pattern describing valid macro names
-    macro_pattern = '[0-9a-z_]+'
+    macro_pattern = "[0-9a-z_]+"
 
     # regular expression pattern describing valid names for variables with global
     # (cache) scope
-    global_var_pattern = '[A-Z][0-9A-Z_]+'
+    global_var_pattern = "[A-Z][0-9A-Z_]+"
 
     # regular expression pattern describing valid names for variables with global
     # scope (but internal semantic)
-    internal_var_pattern = '[A-Z][0-9A-Z_]+'
+    internal_var_pattern = "[A-Z][0-9A-Z_]+"
 
     # regular expression pattern describing valid names for variables with local
     # scope
-    local_var_pattern = '[A-Za-z][A-Za-z0-9_]+'
+    local_var_pattern = "[A-Za-z][A-Za-z0-9_]+"
 
     # regular expression pattern describing valid names for privatedirectory
     # variables
-    private_var_pattern = '[0-9a-z_]+'
+    private_var_pattern = "[0-9a-z_]+"
 
     # regular expression pattern describing valid names for public directory
     # variables
-    public_var_pattern = '.*'
+    public_var_pattern = ".*"
 
     # regular expression pattern describing valid names for function/macro
     # arguments and loop variables.
-    argument_var_pattern = '[a-z_][a-z0-9_]+'
+    argument_var_pattern = "[a-z_][a-z0-9_]+"
 
     # regular expression pattern describing valid names for keywords used in
     # functions or macros
-    keyword_pattern = '[A-Z][0-9A-Z_]+'
+    keyword_pattern = "[A-Z][0-9A-Z_]+"
 
     # In the heuristic for C0201, how many conditionals to match within a loop in
     # before considering the loop a parser.
@@ -225,11 +234,11 @@ with section("encode"):
     emit_byteorder_mark = False
 
     # Specify the encoding of the input file. Defaults to utf-8
-    input_encoding = 'utf-8'
+    input_encoding = "utf-8"
 
     # Specify the encoding of the output file. Defaults to utf-8. Note that cmake
     # only claims to support utf-8 so be careful when using anything else
-    output_encoding = 'utf-8'
+    output_encoding = "utf-8"
 
 # -------------------------------------
 # Miscellaneous configurations options.

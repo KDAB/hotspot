@@ -26,10 +26,10 @@ repos:
   - id: pylint
     args: ["--disable=C0103,C0301,C0114,R0801,E0401"]
     exclude: (\.cmake-format\.py)
-- repo: https://github.com/pre-commit/mirrors-autopep8
-  rev: v1.7.0
+- repo: https://github.com/psf/black
+  rev: 26.3.1
   hooks:
-  - id: autopep8
+    - id: black
 - repo: https://github.com/cheshirekow/cmake-format-precommit
   rev: v0.6.13
   hooks:
