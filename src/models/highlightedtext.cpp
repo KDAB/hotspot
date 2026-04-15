@@ -154,6 +154,7 @@ private:
 };
 #endif
 
+namespace {
 class AnsiHighlightingImplementation : public HighlightingImplementation
 {
 public:
@@ -226,6 +227,7 @@ private:
 
     KColorScheme m_colorScheme;
 };
+}
 
 // QTextLayout is slow, this class acts as a cache that only creates and fills the QTextLayout on demand
 class HighlightedLine
