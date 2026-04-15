@@ -473,7 +473,7 @@ void layoutItems(FrameGraphicsItem* parent)
 
     for (auto child : std::as_const(children)) {
         auto frameChild = static_cast<FrameGraphicsItem*>(child);
-        const qreal w = maxWidth * double(frameChild->cost()) / parent->cost();
+        const qreal w = maxWidth * static_cast<double>(frameChild->cost()) / parent->cost();
         frameChild->setVisible(w > 1);
         if (frameChild->isVisible()) {
             frameChild->setRect(QRectF(x, y, w, h));
