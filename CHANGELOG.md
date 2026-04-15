@@ -1,5 +1,53 @@
 # Changelog
 
+## [1.7.0](https://github.com/KDAB/hotspot/compare/v1.6.0...v1.7.0) (2026-04-15)
+
+
+### Features
+
+* add github workflow to update packages ([21ea2b4](https://github.com/KDAB/hotspot/commit/21ea2b48ed2a542c9f27ad47e9ca4616d0964d48))
+* also setup a dev-clazy preset build ([2490115](https://github.com/KDAB/hotspot/commit/2490115c2e0d39832bdb3e5b5e9a86384f3ad2b1))
+* disable antialiasing while drawing timeline ([8797fd5](https://github.com/KDAB/hotspot/commit/8797fd5bca0a022dc7e4d26b2d10aa63480b1468))
+* Drop Qt5 support ([66400cc](https://github.com/KDAB/hotspot/commit/66400ccc0d9a61639ffc37c9485b4c7460f37973))
+* **HACKING:** add qt6 Fedora packages section ([f117a7e](https://github.com/KDAB/hotspot/commit/f117a7efde244a901f76c599acddb04cc468395c))
+* optimize TimeLineDelegate painint, cache KColorScheme ([2b05332](https://github.com/KDAB/hotspot/commit/2b05332a68ad29e2560b9ed36416c64d816b36ad))
+* **README:** add section for rust's v0 mangling scheme ([c99740d](https://github.com/KDAB/hotspot/commit/c99740dbad7fadfd9abb392451f07d18599d461e))
+
+
+### Bug Fixes
+
+* Add 3rd argument to avoid %3 showing in disassembly view ([27aeedb](https://github.com/KDAB/hotspot/commit/27aeedba3045ee72d7f03d49cd8b21037f2fee87))
+* bump perfparser to fix compiler warnings ([3b88d6a](https://github.com/KDAB/hotspot/commit/3b88d6adf31c80c29ce6fec899fd83537e036af8))
+* clang-tidy misc-const-correctness ([19f8e49](https://github.com/KDAB/hotspot/commit/19f8e49226adcb318bae162639dd5f51fec5c1ec))
+* clang-tidy misc-non-private-member-variables-in-classes ([0e1c302](https://github.com/KDAB/hotspot/commit/0e1c302a21c3f8c4f9e12b9de49590f4993059c9))
+* clang-tidy misc-override-with-different-visibility ([d0c85ed](https://github.com/KDAB/hotspot/commit/d0c85edb1f6583a9417187b8798e0750ed773228))
+* clang-tidy misc-use-internal-linkage ([49300c7](https://github.com/KDAB/hotspot/commit/49300c79445f755c56f01950c26b953856003ef8))
+* clang-tidy modernize-avoid-c-style-cast ([6888c34](https://github.com/KDAB/hotspot/commit/6888c34b48517c5298a1c0383968903d9e7680ba))
+* clang-tidy modernize-pass-by-value ([bf6ed91](https://github.com/KDAB/hotspot/commit/bf6ed91b04fea15b3988f21a37f91b2efc2f1046))
+* clang-tidy modernize-use-default-member-init ([6618d56](https://github.com/KDAB/hotspot/commit/6618d56327b6fd5768aca10e7c5b8aa538eafc3e))
+* clang-tidy modernize-use-override ([4c9176d](https://github.com/KDAB/hotspot/commit/4c9176d787483b73624f5f4e3fe933f4dc7a7dba))
+* clang-tidy modernize-use-using ([cf36942](https://github.com/KDAB/hotspot/commit/cf3694279f9f95fb0d81a35cb32721efec6d69e6))
+* clang-tidy performance-unnecessary-value-param ([a9dd433](https://github.com/KDAB/hotspot/commit/a9dd433f9a00c3f4b40f0e849383d3e8cb7cf9d8))
+* clang-tidy readability-ambiguous-smartptr-reset-call ([91377a7](https://github.com/KDAB/hotspot/commit/91377a74cf07bcbb819856028098f7b8752684f4))
+* clang-tidy readability-enum-initial-value ([d2d2c4c](https://github.com/KDAB/hotspot/commit/d2d2c4ccd2bd430e8a6794ea65b6945388d48d33))
+* clang-tidy readability-inconsistent-ifelse-braces ([7b0cea7](https://github.com/KDAB/hotspot/commit/7b0cea7eecc1bfb8fad410bbaad279ac709fe9f8))
+* clang-tidy readability-math-missing-parentheses ([42da43c](https://github.com/KDAB/hotspot/commit/42da43caf9eed274c24c7a76a070e4ca4fc496b7))
+* clang-tidy readability-redundant-casting ([659e377](https://github.com/KDAB/hotspot/commit/659e377b934af63548ce5b4c82e26277252f8aff))
+* clang-tidy readability-redundant-inline-specifier ([b22e9d1](https://github.com/KDAB/hotspot/commit/b22e9d1fd4ab51f90ac529b0c4ea6cd404a221fd))
+* cleanup [[nodiscard]] compiler warnings ([8e96243](https://github.com/KDAB/hotspot/commit/8e962438a9063c2c68259f816225860a564ab033))
+* deduplicate clang-tidy fixits in headers ([38ed9b7](https://github.com/KDAB/hotspot/commit/38ed9b7102e892bed292ab052ca4524f73b6f3de))
+* Don't reset recording host error message when showing record page ([3fb77c9](https://github.com/KDAB/hotspot/commit/3fb77c94ed255499d958ca334ab5156e807660ce))
+* Escape HTML elements in disassembly view ([9d2767d](https://github.com/KDAB/hotspot/commit/9d2767d148abe072866df36e6df3246e23fe43a8))
+* remove broken .gitpod.yml ([9d6d2ba](https://github.com/KDAB/hotspot/commit/9d6d2bad74222b41478ae8e7091bbf467a7476b3))
+* remove/cleanup obsolete qt5 docs and scripts ([6e38585](https://github.com/KDAB/hotspot/commit/6e38585364ba3b1e5e47c1ec28937fad7ba1c000))
+* sanitize identifier in compile-and-test.yml ([e3d6c74](https://github.com/KDAB/hotspot/commit/e3d6c74d8c50bed1a6aae0cae3a85b3dab2225c7))
+* Show the same thing on lines with and without samples ([c072239](https://github.com/KDAB/hotspot/commit/c0722396d7304d55849ad2d38418da19e477be9b))
+* silence error when no fixits have auto replacements ([4e546e3](https://github.com/KDAB/hotspot/commit/4e546e305125a4980e2aa0483a321972ad8c9755))
+* silence github linter warnings about missing BASEIMAGE ([8b0d103](https://github.com/KDAB/hotspot/commit/8b0d103b297d5b6deb23c9e7248e378532607d8b))
+* use C.UTF-8 locale, fixes tons of log spam on archlinux builders ([4316449](https://github.com/KDAB/hotspot/commit/4316449a84d67cd6c9bf2facc56c6e8a6b352efe))
+* use full path in abbreviated form in window title ([9f01033](https://github.com/KDAB/hotspot/commit/9f01033b2331f4d7c06b5bd74b83231167ccd70b))
+* use hotspot-namespaced package names ([0702409](https://github.com/KDAB/hotspot/commit/07024091e4a4662176b88fa3a44d1d207247a06c))
+
 ## [1.6.0](https://github.com/KDAB/hotspot/compare/v1.5.1...v1.6.0) (2026-01-28)
 
 
