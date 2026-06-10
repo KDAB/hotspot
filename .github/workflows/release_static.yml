@@ -3,13 +3,13 @@ name: release static link version
 on:
   push:
     tags:
-      - 'v*' 
+      - 'v*'
 permissions:
   contents: write
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest 
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         cpu: [aarch64, loongarch64, powerpc64le, riscv64, x86_64]
@@ -17,23 +17,20 @@ jobs:
     steps:
     - name: fetch code
       uses: actions/checkout@v4
-
     - name: install dependency
       run: |
         sudo apt-get update
         sudo apt-get install -y wget
-
     - name: build source
       run: |
         wget -q https://github.com/fifbroman8/buildroot/releases/download/v1.1.0/${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot.tar.gz
-        tar xf ${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot.tar.gz 
+        tar xf ${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot.tar.gz
         ${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot/relocate-sdk.sh
         find ${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot -type d -name "sysroot" -exec sh -c 'for d; do rm -f "$d"/usr/lib/*.so; done' _ {} +
         git submodule update --init
         cmake . -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_TOOLCHAIN_FILE=${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot/share/buildroot/toolchainfile.cmake || true
-        make -j4 hotspot hotspot-perfparser
-        
-    - name: check 
+        make -j4 hotspot hotspot-perfparser 
+    - name: check
       run: |
         file bin/hotspot
         ldd bin/hotspot || echo "🏆 Check Pass: Not a dynamic executable!"
