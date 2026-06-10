@@ -2,6 +2,7 @@ name: release static link version
 
 on:
   push:
+    branches: ["master"]
     tags:
       - 'v*' 
 permissions:
