@@ -30,7 +30,7 @@ jobs:
         ${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot/relocate-sdk.sh
         find ${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot -type d -name "sysroot" -exec sh -c 'for d; do rm -f "$d"/usr/lib/*.so; done' _ {} +
         git submodule update --init
-        cmake . -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_TOOLCHAIN_FILE=../../${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot/share/buildroot/toolchainfile.cmake || true
+        cmake . -DCMAKE_EXE_LINKER_FLAGS="-static" -DCMAKE_TOOLCHAIN_FILE=${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot/share/buildroot/toolchainfile.cmake || true
         make -j4 hotspot hotspot-perfparser
         
     - name: check 
