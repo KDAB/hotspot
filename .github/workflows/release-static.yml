@@ -23,7 +23,7 @@ jobs:
         sudo apt-get install -y wget
     - name: build source
       run: |
-        wget -q https://github.com/fifbroman8/buildroot/releases/download/v1.1.0/${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot.tar.gz
+        wget -q https://github.com/fifbroman8/buildroot/releases/download/v1.2.0/${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot.tar.gz
         tar xf ${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot.tar.gz
         ${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot/relocate-sdk.sh
         find ${{ matrix.cpu }}-buildroot-linux-musl_sdk-buildroot -type d -name "sysroot" -exec sh -c 'for d; do rm -f "$d"/usr/lib/*.so; done' _ {} +
