@@ -35,8 +35,8 @@ jobs:
         file bin/hotspot
         ldd bin/hotspot || echo "🏆 Check Pass: Not a dynamic executable!"
         cp bin/hotspot hotspot
-        cp libexec/hotspot-perfparser hotspot-perfpaeser
-        tar -czvf hotspot-${{ matrix.cpu }}.tar.gz hotspot hotspot-perfpaeser
+        cp libexec/hotspot-perfparser hotspot-perfparser
+        tar -czvf hotspot-${{ matrix.cpu }}.tar.gz hotspot hotspot-perfparser
 
     - name: upload
       uses: softprops/action-gh-release@v2
