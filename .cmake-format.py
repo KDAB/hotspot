@@ -153,7 +153,7 @@ with section("markup"):
     ruler_pattern = "^\\s*[^\\w\\s]{3}.*[^\\w\\s]{3}$"
 
     # If a comment line matches starts with this pattern then it is explicitly a
-    # trailing comment for the preceeding argument. Default is '#<'
+    # trailing comment for the preceding argument. Default is '#<'
     explicit_trailing_pattern = "#<"
 
     # If a comment line starts with at least this many consecutive hash
