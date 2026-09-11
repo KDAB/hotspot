@@ -45,6 +45,7 @@ find_package(
     Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION}
     COMPONENTS Core
                Widgets
+               WidgetsPrivate
                Network
                Test
                Svg
