@@ -23,7 +23,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         fetch-depth: 0
         submodules: recursive
@@ -32,13 +32,13 @@ jobs:
       uses: docker://ghcr.io/kdab/kdesrc-build:latest
 
     - name: Upload AppImage
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: appimage
         path: ${{ github.workspace }}/*.AppImage
 
     - name: Upload Debug Info
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: debuginfo
         path: ${{ github.workspace }}/hotspot-debuginfo-*
