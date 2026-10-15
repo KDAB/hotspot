@@ -5,5 +5,8 @@ set(VCPKG_LIBRARY_LINKAGE dynamic)
 set(VCPKG_CMAKE_SYSTEM_NAME Linux)
 
 set(VCPKG_FIXUP_ELF_RPATH ON)
+
+# Don't build deps twice, release with debug info is enough for debugging hotspot
+set(VCPKG_BUILD_TYPE release)
 string(APPEND VCPKG_C_FLAGS_RELEASE " -g")
 string(APPEND VCPKG_CXX_FLAGS_RELEASE " -g")
