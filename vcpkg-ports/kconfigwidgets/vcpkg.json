@@ -1,0 +1,20 @@
+{
+  "name": "kconfigwidgets",
+  "version": "6.20.0",
+  "port-version": 0,
+  "description": "KDE Config Widgets",
+  "homepage": "https://invent.kde.org/frameworks/kconfigwidgets",
+  "license": "LGPL-2.0-or-later",
+  "dependencies": [
+    { "name": "vcpkg-cmake", "host": true },
+    { "name": "vcpkg-cmake-config", "host": true },
+    "extra-cmake-modules",
+    "kcodecs",
+    "kconfig",
+    "kcolorscheme",
+    "kcoreaddons",
+    "kguiaddons",
+    "ki18n",
+    "kwidgetsaddons"
+  ]
+}
