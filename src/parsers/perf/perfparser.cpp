@@ -1745,7 +1745,6 @@ void PerfParser::startParseFile(const QString& path)
         connect(
             &process, &QProcess::finished, &process, [finalize, this](int exitCode, QProcess::ExitStatus exitStatus) {
                 if (m_stopRequested) {
-                    emit parsingFailed(tr("Parsing stopped."));
                     return;
                 }
                 qCDebug(LOG_PERFPARSER) << exitCode << exitStatus;
@@ -1793,7 +1792,6 @@ void PerfParser::startParseFile(const QString& path)
 
         connect(&process, &QProcess::errorOccurred, &process, [&process, this](QProcess::ProcessError error) {
             if (m_stopRequested) {
-                emit parsingFailed(tr("Parsing stopped."));
                 return;
             }
 
@@ -1933,7 +1931,6 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
             // TODO: parallelize
             for (auto& thread : events.threads) {
                 if (m_stopRequested) {
-                    emit parsingFailed(tr("Parsing stopped."));
                     return;
                 }
 
@@ -1959,7 +1956,6 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
                 }
 
                 if (m_stopRequested) {
-                    emit parsingFailed(tr("Parsing stopped."));
                     return;
                 }
 
@@ -1999,7 +1995,6 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
             Data::BottomUp::initializeParents(&bottomUp.root);
 
             if (m_stopRequested) {
-                emit parsingFailed(tr("Parsing stopped."));
                 return;
             }
 
@@ -2008,7 +2003,6 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         }
 
         if (m_stopRequested) {
-            emit parsingFailed(tr("Parsing stopped."));
             return;
         }
 
@@ -2017,7 +2011,6 @@ void PerfParser::filterResults(const Data::FilterAction& filter)
         const auto perLibrary = Data::PerLibraryResults::fromTopDown(topDown);
 
         if (m_stopRequested) {
-            emit parsingFailed(tr("Parsing stopped."));
             return;
         }
 
@@ -2039,6 +2032,7 @@ void PerfParser::stop()
 {
     m_stopRequested = true;
     emit stopRequested();
+    emit parsingFailed(tr("Parsing stopped."));
 }
 
 void PerfParser::exportResults(const QString& path, const QUrl& url)
