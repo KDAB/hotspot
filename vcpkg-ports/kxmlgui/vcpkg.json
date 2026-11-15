@@ -1,0 +1,22 @@
+{
+  "name": "kxmlgui",
+  "version": "6.20.0",
+  "port-version": 0,
+  "description": "KDE XML GUI library",
+  "homepage": "https://invent.kde.org/frameworks/kxmlgui",
+  "license": "LGPL-2.0-or-later",
+  "dependencies": [
+    { "name": "vcpkg-cmake", "host": true },
+    { "name": "vcpkg-cmake-config", "host": true },
+    "extra-cmake-modules",
+    "kcoreaddons",
+    "kitemviews",
+    "kconfig",
+    "kconfigwidgets",
+    "kguiaddons",
+    "ki18n",
+    "kiconthemes",
+    "kwidgetsaddons",
+    "kglobalaccel"
+  ]
+}

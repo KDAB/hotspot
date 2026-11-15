@@ -62,6 +62,60 @@
         "dev-opt",
         "asan"
       ]
+    },
+    {
+      "name": "vcpkg",
+      "hidden": true,
+      "toolchainFile": "${sourceDir}/3rdparty/vcpkg/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/vcpkg-triplets/",
+        "VCPKG_TARGET_TRIPLET": "x64-linux-dynamic"
+      }
+    },
+    {
+      "name": "dev-vcpkg",
+      "displayName": "dev with vcpkg",
+      "description": "Preset for developers, with dependencies built by vcpkg",
+      "inherits": [
+        "dev",
+        "vcpkg"
+      ]
+    },
+    {
+      "name": "rel-vcpkg",
+      "displayName": "release with vcpkg",
+      "description": "Release build, with dependencies built by vcpkg",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "BUILD_TESTING": "OFF"
+      },
+      "inherits": [
+        "vcpkg"
+      ]
+    },
+    {
+      "name": "dev-vcpkg-static",
+      "displayName": "dev with vcpkg (static)",
+      "description": "Preset for developers, with dependencies built by vcpkg using the static triplet",
+      "inherits": [
+        "dev-vcpkg"
+      ],
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-linux"
+      }
+    },
+    {
+      "name": "rel-vcpkg-static",
+      "displayName": "release with vcpkg (static)",
+      "description": "Release build, with dependencies built by vcpkg using the static triplet",
+      "inherits": [
+        "rel-vcpkg"
+      ],
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "x64-linux"
+      }
     }
   ],
   "buildPresets": [
@@ -84,6 +138,22 @@
     {
       "name": "dev-clazy",
       "configurePreset": "dev-clazy"
+    },
+    {
+      "name": "dev-vcpkg",
+      "configurePreset": "dev-vcpkg"
+    },
+    {
+      "name": "rel-vcpkg",
+      "configurePreset": "rel-vcpkg"
+    },
+    {
+      "name": "dev-vcpkg-static",
+      "configurePreset": "dev-vcpkg-static"
+    },
+    {
+      "name": "rel-vcpkg-static",
+      "configurePreset": "rel-vcpkg-static"
     }
   ],
   "testPresets": [
@@ -116,6 +186,16 @@
     {
       "name": "dev-clazy",
       "configurePreset": "dev-clazy",
+      "inherits": "base"
+    },
+    {
+      "name": "dev-vcpkg",
+      "configurePreset": "dev-vcpkg",
+      "inherits": "base"
+    },
+    {
+      "name": "dev-vcpkg-static",
+      "configurePreset": "dev-vcpkg-static",
       "inherits": "base"
     }
   ]

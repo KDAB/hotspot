@@ -1,0 +1,18 @@
+{
+  "name": "extra-cmake-modules",
+  "version": "6.20.0",
+  "port-version": 0,
+  "description": "Extra CMake modules for KDE Frameworks",
+  "homepage": "https://invent.kde.org/frameworks/extra-cmake-modules",
+  "license": "BSD-3-Clause",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}

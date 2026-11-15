@@ -34,9 +34,9 @@ repos:
   rev: v0.6.13
   hooks:
   - id: cmake-lint
-    exclude: (cmake/ECMEnableSanitizers\.cmake|cmake/Find|3rdparty/perfparser|3rdparty/PrefixTickLabels|\.h\.cmake$)
+    exclude: (cmake/ECMEnableSanitizers\.cmake|cmake/Find|3rdparty/perfparser|3rdparty/PrefixTickLabels|\.h\.cmake$|^vcpkg-ports/|^vcpkg-triplets/)
   - id: cmake-format
-    exclude: (cmake/ECMEnableSanitizers\.cmake|cmake/Find|3rdparty/perfparser|3rdparty/PrefixTickLabels|\.h\.cmake$)
+    exclude: (cmake/ECMEnableSanitizers\.cmake|cmake/Find|3rdparty/perfparser|3rdparty/PrefixTickLabels|\.h\.cmake$|^vcpkg-ports/|^vcpkg-triplets/)
 - repo: https://github.com/markdownlint/markdownlint
   rev: v0.11.0
   hooks:

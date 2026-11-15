@@ -1,0 +1,64 @@
+name: vcpkg
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build:
+    name: ${{ matrix.preset }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [dev-vcpkg, rel-vcpkg, rel-vcpkg-static]
+
+    env:
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.vcpkg-binary-cache
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        submodules: recursive
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          ninja-build cmake pkg-config autoconf automake libtool autoconf-archive \
+          bison flex gperf python3 python3-jinja2 perl nasm curl zip unzip tar \
+          gettext iso-codes linux-libc-dev wayland-protocols \
+          libltdl-dev libcanberra-dev libfreetype-dev libvulkan-dev libmount-dev \
+          libudev-dev libbz2-dev liblzma-dev zlib1g-dev libacl1-dev libattr1-dev \
+          libdebuginfod-dev \
+          libegl-dev libgl-dev libglu1-mesa-dev libx11-dev libx11-xcb-dev \
+          libxcb1-dev libxcb-*-dev libxkbcommon-dev libxkbcommon-x11-dev \
+          libxext-dev libxfixes-dev libxi-dev libxrender-dev libxrandr-dev \
+          libxcursor-dev libxinerama-dev libxdamage-dev libxcomposite-dev \
+          libxtst-dev libxxf86vm-dev libwayland-dev libdbus-1-dev libfontconfig-dev \
+          libelf-dev libdw-dev libzstd-dev libssl-dev
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.8.3'
+        cache: true
+
+    - name: Restore vcpkg binary cache
+      uses: actions/cache@v5
+      with:
+        path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        key: vcpkg-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json', 'vcpkg-ports/**', 'vcpkg-triplets/**') }}
+        restore-keys: |
+          vcpkg-${{ matrix.preset }}-
+
+    - name: Create binary cache directory
+      run: mkdir -p "$VCPKG_DEFAULT_BINARY_CACHE"
+
+    - name: Configure
+      env:
+        CMAKE_PREFIX_PATH: ${{ env.QT_ROOT_DIR }}
+      run: cmake --preset ${{ matrix.preset }}
+
+    - name: Build
+      run: cmake --build --preset ${{ matrix.preset }}
