@@ -242,14 +242,14 @@ QString Util::perfParserBinaryPath()
     if (const auto perfparser = qEnvironmentVariable("HOTSPOT_PERFPARSER"); !perfparser.isEmpty()) {
         return QStandardPaths::findExecutable(perfparser);
     }
-    
+
     const auto hotspotPerfparser = QStringLiteral("hotspot-perfparser");
-    
+
     // common option: find binary by configured libexec
     if (const auto parserBinary = Util::findLibexecBinary(hotspotPerfparser); !parserBinary.isEmpty()) {
         return parserBinary;
     }
-    
+
     // fallback: try system paths
     return QStandardPaths::findExecutable(hotspotPerfparser);
 }
