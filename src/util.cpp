@@ -238,18 +238,20 @@ QString Util::findLibexecBinary(const QString& name)
 
 QString Util::perfParserBinaryPath()
 {
-    auto parserBinary = QString::fromLocal8Bit(qgetenv("HOTSPOT_PERFPARSER"));
     // prefer configured one (returns an error in the caller if invalid)
-    if (!parserBinary.isEmpty()) {
-        return QStandardPaths::findExecutable(parserBinary);
+    if (const auto perfparser = qEnvironmentVariable("HOTSPOT_PERFPARSER"); !perfparser.isEmpty()) {
+        return QStandardPaths::findExecutable(perfparser);
     }
+    
+    const auto hotspotPerfparser = QStringLiteral("hotspot-perfparser");
+    
     // common option: find binary by configured libexec
-    parserBinary = Util::findLibexecBinary(QStringLiteral("hotspot-perfparser"));
-    if (!parserBinary.isEmpty()) {
+    if (const auto parserBinary = Util::findLibexecBinary(hotspotPerfparser); !parserBinary.isEmpty()) {
         return parserBinary;
     }
-    // if both are empty: try system paths
-    return QStandardPaths::findExecutable(QStringLiteral("hotspot-perfparser"));
+    
+    // fallback: try system paths
+    return QStandardPaths::findExecutable(hotspotPerfparser);
 }
 
 QString Util::formatString(const QString& input, bool replaceEmptyString)
